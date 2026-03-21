@@ -91,20 +91,20 @@
             background: var(--glass-effect);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px;
-            padding: 30px 20px;
+            padding: 20px 20px;
             text-align: center;
-            margin: 15px 0;
+            margin: 10px 0;
             transition: background 0.3s ease;
             position: relative;
         }
 
         .big-display {
-            font-size: 110px; 
+            font-size: 100px; 
             line-height: 1;
             font-weight: 900;
             color: var(--text-primary);
             text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-            margin: 20px 0;
+            margin: 15px 0;
             font-variant-numeric: tabular-nums;
             transition: color 0.3s ease;
         }
@@ -112,17 +112,18 @@
         #modalLabel {
             color: var(--amber-orange);
             letter-spacing: 4px;
-            font-size: 16px;
+            font-size: 14px;
             margin: 0;
             text-transform: uppercase;
         }
 
         #targetRange {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             color: var(--electric-blue);
-            min-height: 24px;
-            margin: 10px 0;
+            min-height: 30px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
         }
 
         .recording-pulse {
@@ -131,7 +132,7 @@
             border-radius: 50%;
             display: none;
             position: absolute;
-            top: 20px; right: 20px;
+            top: 15px; right: 15px;
             box-shadow: 0 0 10px var(--crimson-red);
             animation: pulse 1.5s infinite;
         }
@@ -142,23 +143,21 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        .stats-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 20px;
-            font-size: 12px;
-            margin: 5px;
+        .result-badge {
+            display: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 24px;
+            margin-top: 10px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-
-        /* Peripheral Status States */
-        .state-idle { background: var(--bg-dark); }
-        .state-pending { background: rgba(255, 171, 0, 0.08); }
-        .state-success { background: rgba(0, 200, 83, 0.12); }
-        .state-conflict { background: rgba(255, 23, 68, 0.12); }
+        .pass { background-color: var(--emerald-green); color: black; display: inline-block; }
+        .fail { background-color: var(--crimson-red); color: white; display: inline-block; }
 
         input { 
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; 
+            width: 100%; padding: 15px; margin: 5px 0; border-radius: 12px; 
             box-sizing: border-box; background: rgba(255,255,255,0.05); 
             border: 1px solid rgba(255,255,255,0.1); color: white; 
             font-size: 16px;
@@ -169,7 +168,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 5px;
         }
         .dual-inputs input {
             max-width: 80px;
@@ -183,7 +182,7 @@
     <div class="container" id="mainDashboard">
         <h2>HVAC Librarian</h2>
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ CAPACITOR TEST</button>
-        <hr style="opacity:0.1; margin:20px 0;">
+        <hr style="opacity:0.1; margin:15px 0;">
         <input type="text" id="custName" placeholder="Customer Name">
         <button class="btn btn-primary" onclick="startJob()">1. Create Job Shell</button>
         <div id="pipelineSection" style="display:none;">
@@ -197,7 +196,7 @@
                 <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
                 <button onclick="clearBuffer()" style="padding:4px 10px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.3); color:red; border-radius:4px; font-size:10px; cursor:pointer;">CLEAR LOG</button>
             </div>
-            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:20px; cursor:pointer;">&times;</button>
+            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:18px; cursor:pointer;">&times;</button>
         </div>
 
         <div class="voice-console" id="consoleBody">
@@ -205,7 +204,9 @@
             <div id="targetRange">READY FOR VOLTS</div>
             <div id="bigDisplay" class="big-display">0.0</div>
             
-            <div id="capConfig">
+            <div id="passFailBadge" class="result-badge">---</div>
+
+            <div id="capConfig" style="margin-top: 10px;">
                 <div class="dual-inputs">
                     <input type="number" id="hermRating" value="45" placeholder="Herm">
                     <span style="font-size:24px; font-weight:bold; color:var(--amber-orange);">+</span>
@@ -213,17 +214,17 @@
                 </div>
             </div>
 
-            <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="margin:10px auto; width:180px; padding:12px;">START MIC</button>
+            <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="margin:10px auto; width:160px; padding:10px;">START MIC</button>
         </div>
 
-        <div style="display:flex; height:70px; gap:15px;">
+        <div style="display:flex; height:60px; gap:15px;">
             <button onclick="scrubDisplay()" style="background:rgba(255,23,68,0.1); border: 1px solid var(--crimson-red); color: var(--crimson-red); flex:1;" class="btn">SCRUB</button>
             <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green); flex:1;" class="btn">COPY</button>
         </div>
 
         <div id="stagingLog" style="flex:1; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius: 12px; margin-top:20px; padding:15px; font-size:14px; border: 1px solid rgba(255,255,255,0.05);"></div>
         
-        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: 15px;">SEAL & SYNC DATA</button>
+        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: 10px;">SEAL & SYNC DATA</button>
     </div>
 
     <script>
@@ -232,6 +233,7 @@
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBuffer')) || [];
         let field = "Herm Volts"; 
         let currentVolts = 0;
+        let expectedRange = null;
         let isCapturing = false; 
         let recognition = null;
         let isMicOn = false;
@@ -257,6 +259,7 @@
             document.getElementById('modalLabel').innerText = field.toUpperCase();
             document.getElementById('bigDisplay').innerText = "0.0";
             document.getElementById('targetRange').innerText = "READY FOR VOLTS";
+            document.getElementById('passFailBadge').style.display = "none";
             stopMic();
         }
 
@@ -293,7 +296,6 @@
             if (!SR) return alert("Mic not supported.");
             
             try {
-                // Ensure fresh context
                 if (recognition) recognition.stop();
                 
                 recognition = new SR();
@@ -303,7 +305,6 @@
                 recognition.onstart = () => {
                     isMicOn = true;
                     document.getElementById('targetRange').innerText = "🎤 LISTENING...";
-                    document.getElementById('targetRange').style.color = "var(--electric-blue)";
                     document.getElementById('micTrigger').innerText = "STOP MIC";
                     document.getElementById('micTrigger').className = "btn btn-stop";
                     document.getElementById('pwrIndicator').style.display = "block";
@@ -315,23 +316,19 @@
                     let result = e.results[e.results.length-1];
                     let transcript = result[0].transcript.toLowerCase();
                     
-                    // REFINED MOBILE LOGIC: Trigger on keyword regardless of 'isFinal' 
-                    // Use a cooldown to prevent rapid-fire confirms
                     if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("save")) { 
                         confirmReading(); 
                         return; 
                     }
                     
                     let num = transcript.replace(/[^0-9.]/g, '');
-                    // Only update display if it's NOT a confirm word
                     if(num && !isCapturing) {
                         document.getElementById('bigDisplay').innerText = num;
                     }
                 };
 
                 recognition.onend = () => {
-                    // Mobile browsers often auto-end. Restart only if we didn't manually stop.
-                    if (isMicOn) recognition.start();
+                    if (isMicOn) try { recognition.start(); } catch(e){}
                 };
 
                 recognition.onerror = (e) => {
@@ -347,18 +344,18 @@
         function stopMic() {
             isMicOn = false;
             if (recognition) {
-                recognition.onend = null; // Kill auto-restart
+                recognition.onend = null;
                 recognition.stop();
             }
             document.getElementById('micTrigger').innerText = "START MIC";
             document.getElementById('micTrigger').className = "btn btn-primary";
             document.getElementById('pwrIndicator').style.display = "none";
-            document.getElementById('targetRange').innerText = "MIC STANDBY";
-            document.getElementById('targetRange').style.color = "var(--text-secondary)";
+            if(!field.includes("Amps")) document.getElementById('targetRange').innerText = "MIC STANDBY";
         }
 
         function scrubDisplay() {
             document.getElementById('bigDisplay').innerText = "0.0";
+            document.getElementById('passFailBadge').style.display = "none";
         }
 
         function confirmReading() {
@@ -367,9 +364,24 @@
             if (val === "0.0") return;
 
             isCapturing = true; 
-            buffer.push(field + " ◘ " + val);
+            const badge = document.getElementById('passFailBadge');
+            badge.style.display = "none";
+
+            // PASS/FAIL CHECK
+            if (field.includes("Amps") && expectedRange) {
+                const measured = parseFloat(val);
+                if (measured >= parseFloat(expectedRange.min) && measured <= parseFloat(expectedRange.max)) {
+                    badge.innerText = "PASS";
+                    badge.className = "result-badge pass";
+                } else {
+                    badge.innerText = "FAIL";
+                    badge.className = "result-badge fail";
+                }
+                badge.style.display = "inline-block";
+            }
+
+            buffer.push(field + " ◘ " + val + (badge.style.display === 'inline-block' ? " [" + badge.innerText + "]" : ""));
             localStorage.setItem('hvacStagingBuffer', JSON.stringify(buffer));
-            
             syncLogToUI();
             
             const display = document.getElementById('bigDisplay');
@@ -396,10 +408,11 @@
 
             // Update Prediction Text for the NEXT field (Amps)
             if (field.includes("Amps") && rating && currentVolts > 0) {
-                 const range = calculateExpectedAmps(currentVolts, rating);
-                 document.getElementById('targetRange').innerText = "EXPECTED: " + range.min + " - " + range.max;
+                 expectedRange = calculateExpectedAmps(currentVolts, rating);
+                 document.getElementById('targetRange').innerText = "EXPECTED: " + expectedRange.min + " - " + expectedRange.max;
                  document.getElementById('targetRange').style.color = "var(--amber-orange)";
             } else if (field.includes("Volts")) {
+                 expectedRange = null;
                  document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
                  document.getElementById('targetRange').style.color = "var(--electric-blue)";
             }
@@ -409,7 +422,7 @@
                 document.getElementById('modalLabel').innerText = field.toUpperCase();
                 document.getElementById('bigDisplay').innerText = "0.0";
                 isCapturing = false;
-            }, 1000); // Wait longer for mobile
+            }, 1200);
         }
 
         function sendFinalBlock() {
