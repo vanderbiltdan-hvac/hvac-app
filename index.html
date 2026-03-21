@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Librarian</title>
+    <title>HVAC Master Librarian v11</title>
     
     <!-- PWA NATIVE FEEL META TAGS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -98,12 +98,12 @@
         }
 
         .big-display {
-            font-size: 110px; 
+            font-size: 100px; 
             line-height: 1;
             font-weight: 900;
             color: var(--text-primary);
             text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-            margin: 10px 0;
+            margin: 5px 0;
             font-variant-numeric: tabular-nums;
             transition: color 0.3s ease;
         }
@@ -117,10 +117,10 @@
         }
 
         #targetRange {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
             color: var(--electric-blue);
-            min-height: 34px;
+            min-height: 32px;
             margin: 5px 0;
             text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
         }
@@ -144,12 +144,12 @@
 
         .result-badge {
             display: none;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 30px;
             font-weight: 900;
-            font-size: 20px;
+            font-size: 22px;
             margin: 5px 0;
-            text-transform: uppercase;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         .pass { background-color: var(--emerald-green); color: black; display: inline-block; }
         .fail { background-color: var(--crimson-red); color: white; display: inline-block; }
@@ -168,9 +168,10 @@
             gap: 10px;
         }
         .dual-inputs input {
-            max-width: 70px;
+            max-width: 65px;
             text-align: center;
             padding: 8px;
+            background: rgba(255,255,255,0.1);
         }
 
         .log-list {
@@ -178,7 +179,7 @@
             overflow-y: auto;
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
-            margin: 10px 0;
+            margin: 5px 0;
             padding: 12px;
             font-size: 13px;
             border: 1px solid rgba(255,255,255,0.05);
@@ -192,23 +193,22 @@
             border-bottom: 1px solid rgba(255,255,255,0.03);
         }
         .del-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,0,0,0.2);
-            color: #ff5555;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,68,68,0.4);
+            color: #ff6666;
             border-radius: 4px;
-            padding: 3px 8px;
+            padding: 2px 6px;
             cursor: pointer;
-            font-size: 11px;
-            font-weight: bold;
+            font-size: 10px;
         }
         
         #manualInputZone {
             display: none;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-dark);
+            background: #111;
             z-index: 100;
-            padding: 30px 15px;
+            padding: 20px;
             border-radius: 20px;
             align-items: center;
             justify-content: center;
@@ -223,9 +223,18 @@
         }
 
         .control-row .btn { flex: 1; margin: 0; }
+        .btn-manual-toggle { background: #333; color: #fff; border: 1px solid #444; }
+
+        .ver-tag { position: absolute; bottom: 5px; left: 10px; font-size: 10px; color: #444; }
+        .tolerance-pill { 
+            background: rgba(255,255,255,0.05); border: 1px solid #333; 
+            padding: 4px 8px; border-radius: 15px; font-size: 10px; 
+            cursor: pointer; color: var(--text-secondary);
+        }
+        .tolerance-pill.active { background: #444; color: var(--electric-blue); border-color: var(--electric-blue); }
     </style>
 </head>
-<body>
+<body id="masterBody">
     <div class="container" id="mainDashboard">
         <h2>HVAC Librarian</h2>
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ CAPACITOR TEST</button>
@@ -235,13 +244,17 @@
         <div id="pipelineSection" style="display:none;">
             <button class="btn btn-quick" onclick="runPipeline()">2. Run Pipeline</button>
         </div>
+        <div style="font-size:9px; color:#333; text-align:right; margin-top:10px;">PRO BUILD v11</div>
     </div>
 
     <div id="voiceModal" class="modal-overlay state-idle">
         <!-- HEADER -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
-            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:20px; cursor:pointer;">&times;</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
+                <button onclick="clearBuffer()" style="padding:2px 8px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:red; border-radius:4px; font-size:9px;">WIPE LOG</button>
+            </div>
+            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:18px;">&times;</button>
         </div>
 
         <!-- MAIN CONSOLE -->
@@ -252,33 +265,42 @@
             
             <div id="passFailBadge" class="result-badge">---</div>
 
+            <!-- MANUAL OVERLAY -->
             <div id="manualInputZone">
-                <h3 style="margin:0 0 15px 0; font-size: 20px;">KEYBOARD ENTRY</h3>
-                <input type="number" id="manualValue" placeholder="Enter Value" style="font-size:32px; text-align:center; padding: 15px;">
-                <div class="control-row" style="margin-top:20px;">
+                <h3 style="margin:0 0 10px 0; font-size: 18px;">KEYBOARD ENTRY</h3>
+                <input type="number" id="manualValue" placeholder="Enter Value" style="font-size:28px; text-align:center;">
+                <div class="control-row" style="margin-top:15px;">
                     <button onclick="saveManual()" class="btn btn-primary">SAVE</button>
-                    <button onclick="toggleManual(false)" class="btn" style="background:rgba(255,255,255,0.1);">CANCEL</button>
+                    <button onclick="toggleManual(false)" class="btn" style="background:#222;">BACK</button>
                 </div>
             </div>
 
-            <div id="capConfig">
-                <div class="dual-inputs">
-                    <input type="number" id="hermRating" value="45" placeholder="Herm">
-                    <span style="font-size:20px; font-weight:bold; color:var(--amber-orange);">+</span>
-                    <input type="number" id="fanRating" value="5" placeholder="Fan">
+            <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+                <div id="capConfig">
+                    <div class="dual-inputs">
+                        <input type="number" id="hermRating" value="45">
+                        <span style="font-size:18px; font-weight:bold; color:var(--amber-orange);">+</span>
+                        <input type="number" id="fanRating" value="5">
+                    </div>
+                </div>
+                <div id="tolSelector" style="display:flex; gap:5px;">
+                    <div class="tolerance-pill" onclick="setTol(5)">5%</div>
+                    <div class="tolerance-pill active" id="tol6" onclick="setTol(6)">6%</div>
+                    <div class="tolerance-pill" onclick="setTol(10)">10%</div>
                 </div>
             </div>
 
-            <div class="control-row" style="margin-top:10px;">
+            <div class="control-row" style="margin-top:15px;">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2;">START MIC</button>
-                <button onclick="toggleManual(true)" class="btn" style="background:rgba(255,255,255,0.05); font-size:12px;">MANUAL</button>
+                <button onclick="toggleManual(true)" class="btn btn-manual-toggle" style="flex:1; font-size:13px;">MANUAL</button>
             </div>
+            <div class="ver-tag">ENGINE v11.2</div>
         </div>
 
         <!-- SECONDARY ACTIONS -->
         <div class="control-row">
-            <button onclick="scrubDisplay()" style="background:rgba(255,23,68,0.1); border: 1px solid var(--crimson-red); color: var(--crimson-red);" class="btn">SCRUB</button>
-            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green);" class="btn">COPY</button>
+            <button onclick="deleteLogItem(buffer.length-1)" style="background:rgba(255,23,68,0.1); border: 1px solid var(--crimson-red); color: var(--crimson-red);" class="btn">UNDO / SCRUB</button>
+            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green);" class="btn">COPY / CONFIRM</button>
         </div>
 
         <!-- STAGING LOG -->
@@ -297,11 +319,19 @@
         let isCapturing = false; 
         let recognition = null;
         let isMicOn = false;
+        let tolerance = 0.06;
 
         const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps"];
 
         syncLogToUI();
         recalculateField();
+
+        function setTol(val) {
+            tolerance = val / 100;
+            document.querySelectorAll('.tolerance-pill').forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            recalculateField();
+        }
 
         function toggleManual(show) {
             const zone = document.getElementById('manualInputZone');
@@ -344,7 +374,7 @@
                 if(currentVolts > 0 && rating) {
                     expectedRange = calculateExpectedAmps(currentVolts, rating);
                     document.getElementById('targetRange').innerText = "RANGE: " + expectedRange.min + " - " + expectedRange.max;
-                    document.getElementById('targetRange').style.color = "var(--electric-blue)"; // Changed back to blue for better contrast
+                    document.getElementById('targetRange').style.color = "var(--electric-blue)"; 
                 }
             } else {
                 document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
@@ -354,8 +384,16 @@
         }
 
         function deleteLogItem(index) {
+            if(index < 0) return;
             buffer.splice(index, 1);
             localStorage.setItem('hvacStagingBuffer', JSON.stringify(buffer));
+            syncLogToUI();
+            recalculateField();
+        }
+
+        function clearBuffer() {
+            buffer = [];
+            localStorage.removeItem('hvacStagingBuffer');
             syncLogToUI();
             recalculateField();
         }
@@ -390,8 +428,8 @@
             const target = (rating * volts) / 2652;
             return {
                 target: target.toFixed(2),
-                min: (target * 0.94).toFixed(2),
-                max: (target * 1.06).toFixed(2)
+                min: (target * (1 - tolerance)).toFixed(2),
+                max: (target * (1 + tolerance)).toFixed(2)
             };
         }
 
@@ -428,9 +466,14 @@
                     let result = e.results[e.results.length-1];
                     let transcript = result[0].transcript.toLowerCase();
                     
+                    // VOICE COMMANDS
                     if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("save")) { 
                         confirmReading(); 
                         return; 
+                    }
+                    if (transcript.includes("scrub") || transcript.includes("reject") || transcript.includes("delete") || transcript.includes("undo")) {
+                        deleteLogItem(buffer.length - 1);
+                        return;
                     }
                     
                     let num = transcript.replace(/[^0-9.]/g, '');
@@ -479,19 +522,25 @@
             const badge = document.getElementById('passFailBadge');
             badge.style.display = "none";
 
+            let resultExtra = "";
             if (field.includes("Amps") && expectedRange) {
-                const measured = parseFloat(val);
-                if (measured >= parseFloat(expectedRange.min) && measured <= parseFloat(expectedRange.max)) {
-                    badge.innerText = "PASS";
-                    badge.className = "result-badge pass";
-                } else {
-                    badge.innerText = "FAIL";
-                    badge.className = "result-badge fail";
-                }
+                const measuredAmps = parseFloat(val);
+                const measuredUF = (measuredAmps * 2652) / currentVolts;
+                
+                const ratingId = field === "Herm Amps" ? "hermRating" : "fanRating";
+                const rating = parseFloat(document.getElementById(ratingId).value);
+                const variance = ((measuredUF / rating) - 1) * 100;
+                
+                const isPass = Math.abs(variance/100) <= tolerance;
+                
+                badge.innerText = isPass ? "PASS" : "FAIL";
+                badge.className = "result-badge " + (isPass ? "pass" : "fail");
                 badge.style.display = "inline-block";
+                
+                resultExtra = ` (${measuredUF.toFixed(1)}µF | ${variance > 0 ? "+" : ""}${variance.toFixed(1)}%) [${badge.innerText}]`;
             }
 
-            buffer.push(field + " ◘ " + val + (badge.style.display === 'inline-block' ? " [" + badge.innerText + "]" : ""));
+            buffer.push(field + " ◘ " + val + resultExtra);
             localStorage.setItem('hvacStagingBuffer', JSON.stringify(buffer));
             syncLogToUI();
             
@@ -502,11 +551,7 @@
                 display.style.color = "var(--text-primary)";
                 recalculateField(); 
                 isCapturing = false;
-                // Aggressive stop if cycle ends
-                if (buffer.length % FIELD_CYCLE.length === 0) {
-                     document.getElementById('targetRange').innerText = "CYCLE DONE";
-                     stopMic();
-                }
+                if (buffer.length % FIELD_CYCLE.length === 0) stopMic();
             }, 1000);
         }
 
