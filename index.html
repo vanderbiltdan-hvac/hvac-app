@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Librarian v14</title>
+    <title>HVAC Librarian v15</title>
     
     <!-- PWA NATIVE FEEL META TAGS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -49,7 +49,7 @@
             position: relative;
         }
 
-        h1, h2 {
+        h2 {
             font-size: 24px;
             margin-bottom: 20px;
             background: linear-gradient(90deg, var(--electric-blue), var(--emerald-green));
@@ -146,10 +146,10 @@
 
         .result-badge {
             display: none;
-            padding: 12px 24px;
+            padding: 8px 20px;
             border-radius: 40px;
             font-weight: 900;
-            font-size: 22px;
+            font-size: 18px;
             margin: 2px 0;
             text-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
@@ -216,7 +216,7 @@
             border-radius: 12px;
             margin: 5px 0;
             padding: 8px;
-            font-size: 11px;
+            font-size: 10px;
             border: 1px solid rgba(255,255,255,0.05);
         }
 
@@ -224,9 +224,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px 0;
+            padding: 4px 0;
             border-bottom: 1px solid rgba(255,255,255,0.03);
         }
+        .item-text { flex: 1; }
+        .badge-small { 
+            padding: 2px 6px; border-radius: 4px; border: 1px solid transparent;
+            font-weight: 900; font-size: 9px; margin-left: 5px;
+        }
+        .pass-small { background: rgba(0,255,0,0.1); color: #00ff00; border-color: #00ff00; }
+        .fail-small { background: rgba(255,0,0,0.1); color: #ff0000; border-color: #ff0000; }
+
         .del-btn {
             background: rgba(0,0,0,0.3);
             border: 1px solid rgba(255,68,68,0.4);
@@ -235,6 +243,7 @@
             padding: 2px 6px;
             cursor: pointer;
             font-size: 9px;
+            margin-left: 8px;
         }
         
         #manualInputZone {
@@ -276,14 +285,13 @@
             padding: 5px 10px;
             background: #444;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             letter-spacing: 1px;
         }
     </style>
 </head>
 <body id="masterBody">
     <div class="container" id="mainDashboard">
-        <div id="splashVer">v14 FULL</div>
+        <div id="splashVer">v15 DYNAMIC</div>
         <h2>HVAC Librarian</h2>
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ SYSTEM DIAGNOSTIC</button>
         <hr style="opacity:0.1; margin:20px 0;">
@@ -299,7 +307,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
-                <button onclick="clearBuffer()" style="padding:4px 12px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:red; border-radius:6px; font-size:10px; font-weight:900;">WIPE ALL</button>
+                <button onclick="clearBuffer()" style="padding:4px 10px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:red; border-radius:6px; font-size:8px; font-weight:900;">WIPE ALL</button>
             </div>
             <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:20px;">&times;</button>
         </div>
@@ -316,14 +324,14 @@
             <div id="manualInputZone">
                 <h3 style="margin:0 0 10px 0;">NUMERIC ENTRY</h3>
                 <input type="number" id="manualValue" placeholder="0.00" style="font-size:40px; text-align:center; height:80px;">
-                <div class="control-row" style="margin-top:20px;">
+                <div class="control-row" style="margin-top:15px;">
                     <button onclick="saveManual()" class="btn btn-primary">SAVE</button>
                     <button onclick="toggleManual(false)" class="btn" style="background:#222;">BACK</button>
                 </div>
             </div>
 
             <!-- DUAL INPUTS & TOLERANCE -->
-            <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; flex-direction:column; gap:2px;">
                 <div class="dual-inputs">
                     <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
                         <span style="font-size:9px; color:#aaa; font-weight:bold;">HERM</span>
@@ -361,38 +369,37 @@
                 </div>
             </div>
 
-            <div class="control-row" style="margin-top:10px;">
+            <div class="control-row">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2;">START MIC</button>
-                <button onclick="toggleManual(true)" class="btn btn-orange" style="flex:1; font-size:14px;">MANUAL</button>
+                <button onclick="toggleManual(true)" class="btn btn-orange" style="flex:1; font-size:13px;">MANUAL</button>
             </div>
-            <div class="ver-tag">DIAGNOSTIC ENGINE v14.0</div>
+            <div class="ver-tag">DYNAMIC ENGINE v15.1</div>
         </div>
 
         <!-- SECONDARY ACTIONS -->
         <div class="control-row">
-            <button onclick="deleteLogItem(buffer.length-1)" style="background:rgba(255,23,68,0.1); border: 1px solid var(--crimson-red); color: var(--crimson-red); font-size:15px;" class="btn">UNDO / SCRUB</button>
-            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green); font-size:15px;" class="btn">COPY / CONFIRM</button>
+            <button onclick="deleteLogItem(buffer.length-1)" style="background:rgba(255,23,68,0.05); border: 1px solid var(--crimson-red); color: var(--crimson-red); font-size:14px;" class="btn">UNDO / SCRUB</button>
+            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.05); border: 1px solid var(--emerald-green); color: var(--emerald-green); font-size:14px;" class="btn">COPY / CONFIRM</button>
         </div>
 
         <!-- STAGING LOG -->
         <div id="stagingLog" class="log-list"></div>
         
-        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:15px; font-size:18px;">SEAL & SYNC DATA</button>
+        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:12px; font-size:18px;">SEAL & SYNC DATA</button>
     </div>
 
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
-        let buffer = JSON.parse(localStorage.getItem('hvacStagingBuffer')) || [];
+        // v15: BUFFER STORES OBJECTS FOR DYNAMIC RENDERING
+        let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferObjects')) || [];
         let field = "Herm Volts"; 
-        let currentVolts = 0;
         let isCapturing = false; 
         let recognition = null;
         let isMicOn = false;
         let tolerance = 0.06;
         let activeRatingTarget = 'herm';
 
-        // EXTENDED CYCLE v14
         const FIELD_CYCLE = [
             "Herm Volts", "Herm Amps", 
             "Fan Volts", "Fan Amps",
@@ -415,6 +422,9 @@
             const wrap = document.getElementById(activeRatingTarget + 'Wrap');
             wrap.style.background = 'rgba(0, 229, 255, 0.4)';
             setTimeout(() => wrap.style.background = 'rgba(0, 229, 255, 0.1)', 200);
+            
+            // v15: If we are actively looking at the result of a dialled rating, we re-sync UI
+            if(buffer.length > 0) syncLogToUI();
         }
 
         function setTol(val) {
@@ -422,15 +432,14 @@
             document.querySelectorAll('.tolerance-pill').forEach(p => p.classList.remove('active'));
             document.getElementById('tol' + val).classList.add('active');
             recalculateField();
+            // v15: CRITICAL - Trigger UI sync to update PASS/FAIL on ALL items
+            syncLogToUI();
         }
 
         function toggleManual(show) {
             const zone = document.getElementById('manualInputZone');
             zone.style.display = show ? 'flex' : 'none';
-            if(show) {
-                stopMic();
-                document.getElementById('manualValue').focus();
-            }
+            if(show) { stopMic(); document.getElementById('manualValue').focus(); }
         }
 
         function saveManual() {
@@ -445,49 +454,35 @@
         function recalculateField() {
             const index = buffer.length % FIELD_CYCLE.length;
             field = FIELD_CYCLE[index];
-            
             document.getElementById('modalLabel').innerText = field.toUpperCase();
             
-            // IF WE ARE IN THE "POST-COPY" PHASE (result visible)
-            // WE RE-EVALUATE THE BADGE BASED ON CURRENT INPUTS
-            const badge = document.getElementById('passFailBadge');
-            const display = document.getElementById('bigDisplay');
-            const val = display.innerText;
-
-            if (field.includes("Amps") && val !== "0.0") {
-                // If we have a value on screen, it means we are in the "Confirm and Pulse" phase or just loaded
-                // Actually, recalculateField is called AFTER push. So display is usually "0.0" here or Cycle Complete.
-            }
-
-            // FIND LAST VOLTS FOR PREDICTION
+            // FIND PREVIOUS VOLTS FOR PREDICTION
             let lastVolt = 0;
             for(let i = buffer.length-1; i >= 0; i--) {
-                if(buffer[i].includes("Volts")) {
-                    lastVolt = parseFloat(buffer[i].split("◘")[1]);
+                if(buffer[i].field.includes("Volts")) {
+                    lastVolt = buffer[i].val;
                     break;
                 }
             }
-            currentVolts = lastVolt;
 
             if (field.includes("Amps") && !field.includes("Compressor") && !field.includes("Outdoor")) {
                 const ratingId = field === "Herm Amps" ? "hermRating" : "fanRating";
                 const rating = parseFloat(document.getElementById(ratingId).value);
-                if(currentVolts > 0 && rating) {
-                    const target = (rating * currentVolts) / 2652;
+                if(lastVolt > 0 && rating) {
+                    const target = (rating * lastVolt) / 2652;
                     const min = (target * (1 - tolerance)).toFixed(2);
                     const max = (target * (1 + tolerance)).toFixed(2);
                     document.getElementById('targetRange').innerText = "RANGE: " + min + " - " + max;
                 }
             } else {
                 document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
-                badge.style.display = "none";
             }
         }
 
         function deleteLogItem(index) {
             if(index < 0) return;
             buffer.splice(index, 1);
-            localStorage.setItem('hvacStagingBuffer', JSON.stringify(buffer));
+            localStorage.setItem('hvacStagingBufferObjects', JSON.stringify(buffer));
             syncLogToUI();
             recalculateField();
         }
@@ -495,7 +490,7 @@
         function clearBuffer() {
             if(!confirm("WIPE ALL READINGS?")) return;
             buffer = [];
-            localStorage.removeItem('hvacStagingBuffer');
+            localStorage.removeItem('hvacStagingBufferObjects');
             syncLogToUI();
             recalculateField();
         }
@@ -507,12 +502,33 @@
                 document.getElementById('voiceModal').className = 'modal-overlay state-idle';
                 return;
             }
-            log.innerHTML = buffer.map((item, idx) => `
-                <div class="log-item">
-                    <span>${item.replace('◘', ': ')}</span>
-                    <button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button>
-                </div>
-            `).join('');
+
+            // v15 DYNAMIC RENDERING - Uses current Rating and Tolerance
+            log.innerHTML = buffer.map((item, idx) => {
+                let badgeHtml = "";
+                let details = "";
+                
+                if (item.field.includes("Amps") && !item.field.includes("Compressor") && !item.field.includes("Outdoor") && item.volts > 0) {
+                    // Use CURRENT rating from the inputs (which handles user adjustments)
+                    const ratingId = item.field === "Herm Amps" ? "hermRating" : "fanRating";
+                    const currentRating = parseFloat(document.getElementById(ratingId).value);
+                    
+                    const uF = (item.val * 2652) / item.volts;
+                    const variance = ((uF / currentRating) - 1) * 100;
+                    const isPass = Math.abs(variance/100) <= (tolerance + 0.0001);
+                    
+                    details = ` (${uF.toFixed(1)}µF | ${variance > 0 ? "+" : ""}${variance.toFixed(1)}%)`;
+                    badgeHtml = `<span class="badge-small ${isPass ? 'pass-small' : 'fail-small'}">${isPass ? 'PASS' : 'FAIL'}</span>`;
+                }
+
+                return `
+                    <div class="log-item">
+                        <div class="item-text"><b>${item.field}:</b> ${item.val}${details}${badgeHtml}</div>
+                        <button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button>
+                    </div>
+                `;
+            }).join('');
+            
             log.scrollTop = log.scrollHeight;
             document.getElementById('voiceModal').className = 'modal-overlay state-pending';
         }
@@ -524,10 +540,7 @@
             recalculateField();
         }
 
-        function toggleMic() {
-            if (isMicOn) stopMic();
-            else startListening();
-        }
+        function toggleMic() { if (isMicOn) stopMic(); else startListening(); }
 
         async function startListening() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -568,34 +581,28 @@
 
         function confirmReading() {
             if (isCapturing) return;
-            let val = document.getElementById('bigDisplay').innerText;
-            if (val === "0.0") return;
+            let val = parseFloat(document.getElementById('bigDisplay').innerText);
+            if (val === 0) return;
 
             isCapturing = true; 
-            const badge = document.getElementById('passFailBadge');
-            badge.style.display = "none";
-
-            let resultExtra = "";
             
-            // MATH v14
-            if (field.includes("Amps") && !field.includes("Compressor") && !field.includes("Outdoor") && currentVolts > 0) {
-                const measuredAmps = parseFloat(val);
-                const ratingId = (field === "Herm Amps") ? "hermRating" : "fanRating";
-                const rating = parseFloat(document.getElementById(ratingId).value);
-                
-                const measuredUF = (measuredAmps * 2652) / currentVolts;
-                const variance = ((measuredUF / rating) - 1) * 100;
-                const isPass = Math.abs(variance/100) <= (tolerance + 0.0001); 
-                
-                badge.innerText = isPass ? "PASS" : "FAIL";
-                badge.className = "result-badge " + (isPass ? "pass" : "fail");
-                badge.style.display = "inline-block";
-                
-                resultExtra = ` (${measuredUF.toFixed(1)}µF | ${variance > 0 ? "+" : ""}${variance.toFixed(1)}%) [${badge.innerText}]`;
+            // FIND PREVIOUS VOLTS FOR STORAGE
+            let lastVolt = 0;
+            for(let i = buffer.length-1; i >= 0; i--) {
+                if(buffer[i].field.includes("Volts")) {
+                    lastVolt = buffer[i].val;
+                    break;
+                }
             }
 
-            buffer.push(field + " ◘ " + val + resultExtra);
-            localStorage.setItem('hvacStagingBuffer', JSON.stringify(buffer));
+            // v15: SAVE RAW DATA OBJECT
+            buffer.push({
+                field: field,
+                val: val,
+                volts: lastVolt
+            });
+
+            localStorage.setItem('hvacStagingBufferObjects', JSON.stringify(buffer));
             syncLogToUI();
             
             const display = document.getElementById('bigDisplay');
@@ -619,12 +626,28 @@
             const syncBtn = document.getElementById('syncBtn');
             syncBtn.disabled = true;
             syncBtn.innerText = "SYNCING...";
-            const lump = buffer.join(" | ");
+
+            // v15: FORMAT LUMP FOR BACKEND
+            const lump = buffer.map(item => {
+                let badgeTxt = "";
+                let extra = "";
+                if (item.field.includes("Amps") && !item.field.includes("Compressor") && !item.field.includes("Outdoor") && item.volts > 0) {
+                    const ratingId = item.field === "Herm Amps" ? "hermRating" : "fanRating";
+                    const rating = parseFloat(document.getElementById(ratingId).value);
+                    const uF = (item.val * 2652) / item.volts;
+                    const variance = ((uF / rating) - 1) * 100;
+                    const isPass = Math.abs(variance/100) <= (tolerance + 0.0001);
+                    badgeTxt = isPass ? " [PASS]" : " [FAIL]";
+                    extra = ` (${uF.toFixed(1)}µF | ${variance > 0 ? "+" : ""}${variance.toFixed(1)}%)`;
+                }
+                return `${item.field} ◘ ${item.val}${extra}${badgeTxt}`;
+            }).join(" | ");
+
             fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "syncVoice", payload: lump }), mode: "no-cors" })
             .then(() => {
                 document.getElementById('voiceModal').className = 'modal-overlay state-success';
                 setTimeout(() => {
-                    buffer = []; localStorage.removeItem('hvacStagingBuffer');
+                    buffer = []; localStorage.removeItem('hvacStagingBufferObjects');
                     syncLogToUI(); syncBtn.disabled = false; syncBtn.innerText = "SEAL & SYNC DATA";
                     alert("Sync Success!"); recalculateField();
                 }, 1500);
