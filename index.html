@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Librarian v12</title>
+    <title>HVAC Librarian v13</title>
     
     <!-- PWA NATIVE FEEL META TAGS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -83,7 +83,7 @@
             background: var(--bg-dark); 
             z-index:10000; 
             flex-direction:column; 
-            padding:15px; 
+            padding:10px; 
             box-sizing:border-box; 
             color: white; 
         }
@@ -94,18 +94,18 @@
             border-radius: 20px;
             padding: 10px 15px;
             text-align: center;
-            margin: 5px 0;
+            margin: 2px 0;
             flex-shrink: 0;
             position: relative;
         }
 
         .big-display {
-            font-size: 110px; 
+            font-size: 100px; 
             line-height: 1;
             font-weight: 900;
             color: var(--text-primary);
             text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-            margin: 10px 0;
+            margin: 5px 0;
             font-variant-numeric: tabular-nums;
             transition: color 0.3s ease;
         }
@@ -113,18 +113,18 @@
         #modalLabel {
             color: var(--amber-orange);
             letter-spacing: 2px;
-            font-size: 13px;
+            font-size: 12px;
             margin: 0;
             text-transform: uppercase;
         }
 
         #targetRange {
-            font-size: 30px;
-            font-weight: 800;
+            font-size: 32px;
+            font-weight: 900;
             color: var(--electric-blue);
-            min-height: 36px;
-            margin: 5px 0;
-            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
+            min-height: 38px;
+            margin: 2px 0;
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
         }
 
         .recording-pulse {
@@ -146,11 +146,11 @@
 
         .result-badge {
             display: none;
-            padding: 10px 24px;
+            padding: 8px 20px;
             border-radius: 40px;
             font-weight: 900;
-            font-size: 24px;
-            margin: 5px 0;
+            font-size: 22px;
+            margin: 2px 0;
             text-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
         .pass { background-color: var(--emerald-green); color: black; display: inline-block; }
@@ -167,33 +167,42 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 5px;
+            gap: 10px;
         }
-        .dual-inputs input {
+        .cap-cell { 
+            display:flex; flex-direction:column; align-items:center; 
+            border: 2px solid transparent; border-radius: 10px; padding: 5px; cursor: pointer;
+            transition: border 0.3s;
+        }
+        .cap-cell.active { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.05); }
+        
+        .cap-cell input {
             max-width: 60px;
             text-align: center;
             padding: 8px;
             background: rgba(255,255,255,0.1);
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
+            pointer-events: none; /* Block keyboard */
         }
 
         .quick-dial {
             display: flex;
             gap: 5px;
             overflow-x: auto;
-            padding: 5px 0;
+            padding: 10px 0;
             margin-top: 5px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
             -webkit-overflow-scrolling: touch;
         }
         .dial-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid #333;
-            color: var(--text-secondary);
-            padding: 5px 12px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #eee;
+            padding: 8px 15px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
             white-space: nowrap;
         }
@@ -205,8 +214,8 @@
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
             margin: 5px 0;
-            padding: 10px;
-            font-size: 12px;
+            padding: 8px;
+            font-size: 11px;
             border: 1px solid rgba(255,255,255,0.05);
         }
 
@@ -214,16 +223,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
+            padding: 4px 0;
             border-bottom: 1px solid rgba(255,255,255,0.03);
         }
         .del-btn {
-            background: rgba(255,0,0,0.1);
-            border: 1px solid rgba(255,0,0,0.3);
-            color: #ff5555;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,68,68,0.4);
+            color: #ff6666;
             border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 10px;
+            padding: 1px 5px;
+            cursor: pointer;
+            font-size: 9px;
         }
         
         #manualInputZone {
@@ -241,16 +251,17 @@
 
         .control-row {
             display: flex;
-            gap: 10px;
-            margin: 5px 0;
+            gap: 8px;
+            margin: 4px 0;
             width: 100%;
         }
-        .control-row .btn { flex: 1; margin: 0; }
+        .control-row .btn { flex: 1; margin: 0; padding: 12px; font-size: 15px; }
 
         .ver-tag { position: absolute; bottom: 5px; left: 10px; font-size: 10px; color: #444; }
+        
         .tolerance-pill { 
             background: rgba(255,255,255,0.05); border: 1px solid #333; 
-            padding: 6px 12px; border-radius: 15px; font-size: 12px; 
+            padding: 5px 10px; border-radius: 15px; font-size: 11px; 
             cursor: pointer; color: var(--text-secondary);
             font-weight: bold;
         }
@@ -259,18 +270,21 @@
         #splashVer {
             position: absolute;
             top: 15px; right: 15px;
-            font-size: 10px; color: #444;
+            font-size: 12px; color: #fff;
             font-weight: bold;
+            padding: 4px 8px;
+            background: #333;
+            border-radius: 5px;
             letter-spacing: 1px;
         }
     </style>
 </head>
 <body id="masterBody">
     <div class="container" id="mainDashboard">
-        <div id="splashVer">BUILD v12</div>
+        <div id="splashVer">v13 PRO</div>
         <h2>HVAC Librarian</h2>
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ CAPACITOR TEST</button>
-        <hr style="opacity:0.1; margin:15px 0;">
+        <hr style="opacity:0.1; margin:20px 0;">
         <input type="text" id="custName" placeholder="Customer Name">
         <button class="btn btn-primary" onclick="startJob()">1. Create Job Shell</button>
         <div id="pipelineSection" style="display:none;">
@@ -280,12 +294,12 @@
 
     <div id="voiceModal" class="modal-overlay state-idle">
         <!-- HEADER -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
-                <button onclick="clearBuffer()" style="padding:2px 8px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:red; border-radius:4px; font-size:9px;">WIPE LOG</button>
+                <button onclick="clearBuffer()" style="padding:2px 8px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:red; border-radius:4px; font-size:9px;">WIPE ALL</button>
             </div>
-            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:18px;">&times;</button>
+            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:18px;">&times;</button>
         </div>
 
         <!-- MAIN CONSOLE -->
@@ -298,7 +312,7 @@
 
             <!-- MANUAL OVERLAY -->
             <div id="manualInputZone">
-                <h3 style="margin:0 0 10px 0; font-size: 20px;">KEYBOARD ENTRY</h3>
+                <h3 style="margin:0 0 10px 0; font-size: 18px;">KEYBOARD ENTRY</h3>
                 <input type="number" id="manualValue" placeholder="Enter Value" style="font-size:32px; text-align:center;">
                 <div class="control-row" style="margin-top:20px;">
                     <button onclick="saveManual()" class="btn btn-primary">SAVE</button>
@@ -306,29 +320,36 @@
                 </div>
             </div>
 
-            <!-- DUAL INPUTS & TOLERANCE -->
-            <div style="display:flex; flex-direction:column; gap:5px; margin-top:5px;">
+            <!-- NON-KEYBOARD SELECTORS -->
+            <div style="display:flex; flex-direction:column; gap:2px;">
                 <div class="dual-inputs">
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                        <span style="font-size:9px; color:#555;">HERM</span>
-                        <input type="number" id="hermRating" value="45" onclick="selectRating('herm')">
+                    <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
+                        <span style="font-size:9px; color:#aaa;">HERM</span>
+                        <input type="number" id="hermRating" value="45" readonly>
                     </div>
-                    <span style="font-size:20px; font-weight:bold; color:var(--amber-orange); margin-top:10px;">+</span>
-                    <div style="display:flex; flex-direction:column; align-items:center;">
-                        <span style="font-size:9px; color:#555;">FAN</span>
-                        <input type="number" id="fanRating" value="5" onclick="selectRating('fan')">
+                    <span style="font-size:20px; font-weight:bold; color:var(--amber-orange); margin-top:15px;">+</span>
+                    <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')">
+                        <span style="font-size:9px; color:#aaa;">FAN</span>
+                        <input type="number" id="fanRating" value="5" readonly>
                     </div>
-                    <div id="tolSelector" style="display:flex; flex-direction:column; gap:4px; margin-left:10px;">
-                        <div class="tolerance-pill" onclick="setTol(5)">5%</div>
-                        <div class="tolerance-pill active" id="tolActive" onclick="setTol(6)">6%</div>
-                        <div class="tolerance-pill" onclick="setTol(10)">10%</div>
+                    <div id="tolSelector" style="display:flex; flex-direction:column; gap:3px; margin-left:10px;">
+                        <div class="tolerance-pill" id="tol5" onclick="setTol(5)">5%</div>
+                        <div class="tolerance-pill active" id="tol6" onclick="setTol(6)">6%</div>
+                        <div class="tolerance-pill" id="tol10" onclick="setTol(10)">10%</div>
                     </div>
                 </div>
                 
-                <!-- QUICK DIAL -->
+                <!-- COMPREHENSIVE QUICK DIAL -->
                 <div class="quick-dial" id="ratingDial">
-                    <span style="font-size:9px; color:#444; padding: 5px 2px;">DIAL:</span>
+                    <button class="dial-btn" onclick="dial(3)">3.0</button>
+                    <button class="dial-btn" onclick="dial(4)">4.0</button>
+                    <button class="dial-btn" onclick="dial(5)">5.0</button>
+                    <button class="dial-btn" onclick="dial(7.5)">7.5</button>
+                    <button class="dial-btn" onclick="dial(10)">10</button>
+                    <button class="dial-btn" onclick="dial(25)">25</button>
+                    <button class="dial-btn" onclick="dial(30)">30</button>
                     <button class="dial-btn" onclick="dial(35)">35</button>
+                    <button class="dial-btn" onclick="dial(40)">40</button>
                     <button class="dial-btn" onclick="dial(45)">45</button>
                     <button class="dial-btn" onclick="dial(50)">50</button>
                     <button class="dial-btn" onclick="dial(55)">55</button>
@@ -338,23 +359,23 @@
                 </div>
             </div>
 
-            <div class="control-row" style="margin-top:10px;">
+            <div class="control-row">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2;">START MIC</button>
                 <button onclick="toggleManual(true)" class="btn btn-orange" style="flex:1; font-size:13px;">MANUAL</button>
             </div>
-            <div class="ver-tag">ENGINE v12.1</div>
+            <div class="ver-tag">PRECISION ENGINE v13.0</div>
         </div>
 
         <!-- SECONDARY ACTIONS -->
         <div class="control-row">
-            <button onclick="deleteLogItem(buffer.length-1)" style="background:rgba(255,23,68,0.05); border: 1px solid var(--crimson-red); color: var(--crimson-red); font-size:14px;" class="btn">UNDO / SCRUB</button>
-            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.05); border: 1px solid var(--emerald-green); color: var(--emerald-green); font-size:14px;" class="btn">COPY / CONFIRM</button>
+            <button onclick="deleteLogItem(buffer.length-1)" style="background:rgba(255,23,68,0.05); border: 1px solid var(--crimson-red); color: var(--crimson-red); font-size:13px;" class="btn">UNDO / SCRUB</button>
+            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.05); border: 1px solid var(--emerald-green); color: var(--emerald-green); font-size:13px;" class="btn">COPY / CONFIRM</button>
         </div>
 
         <!-- STAGING LOG -->
         <div id="stagingLog" class="log-list"></div>
         
-        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:15px;">SEAL & SYNC DATA</button>
+        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:12px; font-size:16px;">SEAL & SYNC DATA</button>
     </div>
 
     <script>
@@ -363,7 +384,6 @@
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBuffer')) || [];
         let field = "Herm Volts"; 
         let currentVolts = 0;
-        let expectedRange = null;
         let isCapturing = false; 
         let recognition = null;
         let isMicOn = false;
@@ -377,23 +397,24 @@
 
         function selectRating(target) {
             activeRatingTarget = target;
-            document.querySelectorAll('.dual-inputs input').forEach(i => i.style.borderColor = 'rgba(255,255,255,0.1)');
-            document.getElementById(target + 'Rating').style.borderColor = 'var(--electric-blue)';
+            document.getElementById('hermWrap').classList.remove('active');
+            document.getElementById('fanWrap').classList.remove('active');
+            document.getElementById(target + 'Wrap').classList.add('active');
         }
 
         function dial(val) {
             document.getElementById(activeRatingTarget + 'Rating').value = val;
             recalculateField();
-            // Pulse the input to show it changed
-            const input = document.getElementById(activeRatingTarget + 'Rating');
-            input.style.background = 'rgba(0, 229, 255, 0.2)';
-            setTimeout(() => input.style.background = 'rgba(255,255,255,0.1)', 300);
+            // Micro-feedback
+            const wrap = document.getElementById(activeRatingTarget + 'Wrap');
+            wrap.style.background = 'rgba(0, 229, 255, 0.4)';
+            setTimeout(() => wrap.style.background = 'rgba(0, 229, 255, 0.05)', 200);
         }
 
         function setTol(val) {
             tolerance = val / 100;
             document.querySelectorAll('.tolerance-pill').forEach(p => p.classList.remove('active'));
-            event.target.classList.add('active');
+            document.getElementById('tol' + val).classList.add('active');
             recalculateField();
         }
 
@@ -436,14 +457,15 @@
                 const ratingId = field === "Herm Amps" ? "hermRating" : "fanRating";
                 const rating = parseFloat(document.getElementById(ratingId).value);
                 if(currentVolts > 0 && rating) {
-                    expectedRange = calculateExpectedAmps(currentVolts, rating);
-                    document.getElementById('targetRange').innerText = "RANGE: " + expectedRange.min + " - " + expectedRange.max;
+                    const target = (rating * currentVolts) / 2652;
+                    const min = (target * (1 - tolerance)).toFixed(2);
+                    const max = (target * (1 + tolerance)).toFixed(2);
+                    document.getElementById('targetRange').innerText = "RANGE: " + min + " - " + max;
                     document.getElementById('targetRange').style.color = "var(--electric-blue)"; 
                 }
             } else {
                 document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
                 document.getElementById('targetRange').style.color = "var(--electric-blue)";
-                expectedRange = null;
             }
         }
 
@@ -470,7 +492,6 @@
                 document.getElementById('voiceModal').className = 'modal-overlay state-idle';
                 return;
             }
-            
             log.innerHTML = buffer.map((item, idx) => `
                 <div class="log-item">
                     <span>${item.replace('◘', ': ')}</span>
@@ -486,16 +507,6 @@
             document.getElementById('voiceModal').style.display = 'flex';
             syncLogToUI();
             recalculateField();
-        }
-
-        function calculateExpectedAmps(volts, rating) {
-            if (!volts || !rating) return null;
-            const target = (rating * volts) / 2652;
-            return {
-                target: target.toFixed(2),
-                min: (target * (1 - tolerance)).toFixed(2),
-                max: (target * (1 + tolerance)).toFixed(2)
-            };
         }
 
         function toggleMic() {
@@ -520,6 +531,7 @@
 
                 recognition.onstart = () => {
                     isMicOn = true;
+                    document.getElementById('targetRange').innerText = "🎤 LISTENING...";
                     document.getElementById('micTrigger').innerText = "STOP MIC";
                     document.getElementById('micTrigger').className = "btn btn-stop";
                     document.getElementById('pwrIndicator').style.display = "block";
@@ -541,13 +553,15 @@
                     }
                     
                     let num = transcript.replace(/[^0-9.]/g, '');
-                    if(num && !isCapturing) {
-                        document.getElementById('bigDisplay').innerText = num;
-                    }
+                    if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
                 };
 
                 recognition.onend = () => {
                     if (isMicOn) try { recognition.start(); } catch(e){}
+                };
+
+                recognition.onerror = (e) => {
+                    if (e.error === 'not-allowed') alert("Mic Blocked.");
                 };
 
                 recognition.start();
@@ -583,15 +597,17 @@
             badge.style.display = "none";
 
             let resultExtra = "";
-            if (field.includes("Amps") && expectedRange) {
+            
+            // MATH AUDIT FOR v13
+            if (field.includes("Amps") && currentVolts > 0) {
                 const measuredAmps = parseFloat(val);
-                const measuredUF = (measuredAmps * 2652) / currentVolts;
-                
-                const ratingId = field === "Herm Amps" ? "hermRating" : "fanRating";
+                const ratingId = (field === "Herm Amps") ? "hermRating" : "fanRating";
                 const rating = parseFloat(document.getElementById(ratingId).value);
-                const variance = ((measuredUF / rating) - 1) * 100;
                 
-                const isPass = Math.abs(variance/100) <= tolerance;
+                // Pure Math
+                const measuredUF = (measuredAmps * 2652) / currentVolts;
+                const variance = ((measuredUF / rating) - 1) * 100;
+                const isPass = Math.abs(variance/100) <= (tolerance + 0.0001); // Float padding
                 
                 badge.innerText = isPass ? "PASS" : "FAIL";
                 badge.className = "result-badge " + (isPass ? "pass" : "fail");
@@ -611,7 +627,10 @@
                 display.style.color = "var(--text-primary)";
                 recalculateField(); 
                 isCapturing = false;
-                if (buffer.length % FIELD_CYCLE.length === 0) stopMic();
+                if (buffer.length % FIELD_CYCLE.length === 0) {
+                    document.getElementById('targetRange').innerText = "CYCLE COMPLETE";
+                    stopMic();
+                }
             }, 1000);
         }
 
@@ -623,12 +642,7 @@
             syncBtn.innerText = "SYNCING...";
 
             const lump = buffer.join(" | ");
-            
-            fetch(WEB_APP_URL, {
-                method: "POST",
-                body: JSON.stringify({ action: "syncVoice", payload: lump }),
-                mode: "no-cors"
-            })
+            fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "syncVoice", payload: lump }), mode: "no-cors" })
             .then(() => {
                 document.getElementById('voiceModal').className = 'modal-overlay state-success';
                 setTimeout(() => {
@@ -648,22 +662,13 @@
             });
         }
 
-        function closeVoiceModal() { 
-            stopMic();
-            document.getElementById('voiceModal').style.display = 'none'; 
-            document.getElementById('mainDashboard').style.display = 'block';
-        }
-
+        function closeVoiceModal() { stopMic(); document.getElementById('voiceModal').style.display = 'none'; document.getElementById('mainDashboard').style.display = 'block'; }
         function startJob() { 
             const name = document.getElementById('custName').value;
             fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name }), mode: "no-cors" })
             .then(() => { document.getElementById('pipelineSection').style.display='block'; alert("Job Queued."); });
         }
-
-        function runPipeline() { 
-            fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }), mode: "no-cors" })
-            .then(() => alert("Pipeline Triggered."));
-        }
+        function runPipeline() { fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }), mode: "no-cors" }).then(() => alert("Pipeline Triggered.")); }
     </script>
 </body>
 </html>
