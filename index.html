@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Librarian v16 PRO</title>
+    <title>HVAC Librarian v17 SPEC MASTER</title>
     
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,8 +43,8 @@
             max-width: 500px;
             padding: 20px;
             background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.7);
             position: relative;
         }
 
@@ -175,16 +175,22 @@
         .spec-cell {
             background: rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 8px;
+            border-radius: 14px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .spec-cell.listening { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.1); }
-        .spec-label { font-size: 9px; color: #777; font-weight: 900; margin-bottom: 2px; }
-        .spec-val { font-size: 18px; font-weight: 900; color: var(--text-primary); }
+        .spec-cell.listening { 
+            border-color: var(--electric-blue); 
+            background: rgba(0, 229, 255, 0.2); 
+            transform: scale(1.05); 
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+        .spec-label { font-size: 10px; color: #777; font-weight: 900; margin-bottom: 4px; }
+        .spec-val { font-size: 20px; font-weight: 900; color: var(--text-primary); }
 
         .dual-inputs {
             display: flex;
@@ -230,13 +236,21 @@
         .tolerance-pill.active { background: #444; color: var(--electric-blue); border-color: var(--electric-blue); }
 
         #restoreBox { display: none; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--electric-blue); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; cursor: pointer; }
+
+        .master-indicator {
+            position: fixed; top: 0; left: 0; width: 100%; height: 6px; 
+            background: var(--electric-blue); display: none; z-index: 100000;
+            box-shadow: 0 0 15px var(--electric-blue);
+        }
     </style>
 </head>
 <body id="masterBody">
 
+    <div id="masterIndicator" class="master-indicator"></div>
+
     <!-- SPLASH / RIG ON-BOARDING -->
     <div class="container" id="mainDashboard">
-        <div id="splashVer">v16 MASTER</div>
+        <div id="splashVer">v17 MASTER</div>
         <h2>HVAC Librarian</h2>
 
         <!-- UNIT SPECS RIG -->
@@ -253,10 +267,15 @@
                 <span class="spec-label">TARGET SUB</span>
                 <span id="val-SUB" class="spec-val">--</span>
             </div>
-            <div class="spec-cell" style="cursor:default;">
-                <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="padding:10px; font-size:10px; margin:0;">📷 TAG PHOTO</button>
-                <input type="file" id="fileInput" style="display:none;" accept="image/*">
+            <div class="spec-cell" id="masterSpecBtn" onclick="toggleSpecMaster()" style="background:var(--amber-orange); color:black;">
+                <span class="spec-label" style="color:black;">SMART INTAKE</span>
+                <span style="font-size:14px; font-weight:900;">⚡ AUTO</span>
             </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="flex:1; padding:10px; font-size:12px;">📷 PHOTO TAG</button>
+            <input type="file" id="fileInput" style="display:none;" accept="image/*">
         </div>
 
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ RUN DIAGNOSTIC</button>
@@ -306,7 +325,6 @@
                     </div>
                 </div>
                 
-                <!-- COMPREHENSIVE QUICK DIAL -->
                 <div class="quick-dial" id="ratingDial">
                     <button class="dial-btn" onclick="dial(3)">3.0</button><button class="dial-btn" onclick="dial(4)">4.0</button><button class="dial-btn" onclick="dial(5)">5.0</button><button class="dial-btn" onclick="dial(7.5)">7.5</button><button class="dial-btn" onclick="dial(10)">10</button><button class="dial-btn" onclick="dial(25)">25</button><button class="dial-btn" onclick="dial(35)">35</button><button class="dial-btn" onclick="dial(45)">45</button><button class="dial-btn" onclick="dial(50)">50</button><button class="dial-btn" onclick="dial(55)">55</button><button class="dial-btn" onclick="dial(60)">60</button><button class="dial-btn" onclick="dial(70)">70</button><button class="dial-btn" onclick="dial(80)">80</button>
                 </div>
@@ -316,7 +334,7 @@
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2;">START MIC</button>
                 <button onclick="undoLast()" class="btn btn-orange" style="flex:1; font-size:12px;">UNDO LAST</button>
             </div>
-            <div style="font-size:9px; color:#444; position:absolute; bottom:5px; left:12px;">ENGINE v16.2 PRO</div>
+            <div style="font-size:9px; color:#444; position:absolute; bottom:5px; left:12px;">ENGINE v17.0 PRO</div>
         </div>
 
         <!-- STAGING LOG -->
@@ -329,16 +347,19 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
-        let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV16')) || [];
+        let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV17')) || [];
         let trashCan = null;
-        let specs = JSON.parse(localStorage.getItem('hvacSpecs')) || { RLA: 0, FLA: 0, SUB: 0 };
+        let specs = JSON.parse(localStorage.getItem('hvacSpecsV17')) || { RLA: 0, FLA: 0, SUB: 0 };
         let field = "Herm Volts"; 
         let isCapturing = false; 
         let recognition = null;
+        let masterRec = null; // Spec Master recognition
         let isMicOn = false;
-        let forceKill = false; // "Haunted Mic" fix
+        let isMasterOn = false;
+        let forceKill = false; 
         let tolerance = 0.06;
         let activeRatingTarget = 'herm';
+        let activeSpecTarget = null;
 
         const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Compressor Amps", "Outdoor Fan Amps"];
 
@@ -374,6 +395,71 @@
             if(buffer.length > 0) syncLogToUI();
         }
 
+        // v17: SMART INTAKE (HANDS FREE)
+        function toggleSpecMaster() {
+            if (isMasterOn) {
+                isMasterOn = false;
+                if (masterRec) masterRec.stop();
+                document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)';
+                document.getElementById('masterIndicator').style.display = 'none';
+                document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
+                return;
+            }
+
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return alert("Voice not supported.");
+            
+            isMasterOn = true;
+            document.getElementById('masterSpecBtn').style.background = 'var(--emerald-green)';
+            document.getElementById('masterIndicator').style.display = 'block';
+
+            masterRec = new SR();
+            masterRec.continuous = true;
+            masterRec.interimResults = true;
+
+            masterRec.onresult = (e) => {
+                let transcript = e.results[e.results.length-1][0].transcript.toLowerCase();
+                
+                // Keyword mapping
+                if (transcript.includes("rla")) activeSpecTarget = "RLA";
+                if (transcript.includes("fla")) activeSpecTarget = "FLA";
+                if (transcript.includes("sub") || transcript.includes("cool")) activeSpecTarget = "SUB";
+
+                if (activeSpecTarget) {
+                    document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
+                    document.getElementById('spec-' + activeSpecTarget).classList.add('listening');
+                    
+                    let num = transcript.replace(/[^0-9.]/g, '');
+                    if (num) {
+                        specs[activeSpecTarget] = parseFloat(num);
+                        document.getElementById('val-' + activeSpecTarget).innerText = num;
+                        localStorage.setItem('hvacSpecsV17', JSON.stringify(specs));
+                        
+                        // Small success flash
+                        const cell = document.getElementById('spec-' + activeSpecTarget);
+                        cell.style.boxShadow = '0 0 30px var(--emerald-green)';
+                        setTimeout(() => cell.style.boxShadow = 'none', 300);
+                    }
+                }
+            };
+
+            masterRec.onend = () => { if (isMasterOn) masterRec.start(); };
+            masterRec.start();
+        }
+
+        function openSpecVoice(target) {
+            // One-off capture if they click a specific box
+            activeSpecTarget = target;
+            toggleSpecMaster(); 
+        }
+
+        function openVoiceConsole() { 
+            if(isMasterOn) toggleSpecMaster(); // turn off spec master
+            document.getElementById('mainDashboard').style.display = 'none';
+            document.getElementById('voiceModal').style.display = 'flex';
+            syncLogToUI(); recalculateField();
+        }
+
         function recalculateField() {
             const index = buffer.length % FIELD_CYCLE.length;
             field = FIELD_CYCLE[index];
@@ -389,7 +475,7 @@
                 const rating = parseFloat(document.getElementById(ratingId).value);
                 if(lastVolt > 0 && rating) {
                     const target = (rating * lastVolt) / 2652;
-                    document.getElementById('targetRange').innerText = "RANGE: "+(target*0.94).toFixed(2)+" - "+(target*1.06).toFixed(2);
+                    document.getElementById('targetRange').innerText = "RANGE: "+(target*(1-tolerance)).toFixed(2)+" - "+(target*(1+tolerance)).toFixed(2);
                 }
             } else if (field === "Compressor Amps") {
                 document.getElementById('targetRange').innerText = specs.RLA ? "RLA: " + specs.RLA : "READY";
@@ -405,7 +491,7 @@
         function deleteLogItem(index) {
             if(index < 0) return;
             buffer.splice(index, 1);
-            localStorage.setItem('hvacStagingBufferV16', JSON.stringify(buffer));
+            localStorage.setItem('hvacStagingBufferV17', JSON.stringify(buffer));
             syncLogToUI();
             recalculateField();
         }
@@ -414,7 +500,7 @@
             if(!confirm("WIPE ALL READINGS?")) return;
             trashCan = [...buffer];
             buffer = [];
-            localStorage.removeItem('hvacStagingBufferV16');
+            localStorage.removeItem('hvacStagingBufferV17');
             syncLogToUI();
             recalculateField();
             document.getElementById('restoreBox').style.display = 'block';
@@ -425,7 +511,7 @@
             if(!trashCan) return;
             buffer = [...trashCan];
             trashCan = null;
-            localStorage.setItem('hvacStagingBufferV16', JSON.stringify(buffer));
+            localStorage.setItem('hvacStagingBufferV17', JSON.stringify(buffer));
             syncLogToUI();
             recalculateField();
             document.getElementById('restoreBox').style.display = 'none';
@@ -460,32 +546,6 @@
             log.scrollTop = log.scrollHeight;
         }
 
-        async function openSpecVoice(target) {
-            stopMic(); // safety
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const sr = new SR();
-            const cell = document.getElementById('spec-' + target);
-            cell.classList.add('listening');
-            sr.onresult = (e) => {
-                let num = e.results[0][0].transcript.replace(/[^0-9.]/g, '');
-                if(num) {
-                    specs[target] = parseFloat(num);
-                    document.getElementById('val-'+target).innerText = num;
-                    localStorage.setItem('hvacSpecs', JSON.stringify(specs));
-                    cell.style.background = 'var(--emerald-green)';
-                    setTimeout(() => cell.style.background = 'rgba(0,0,0,0.3)', 500);
-                }
-            };
-            sr.onend = () => cell.classList.remove('listening');
-            sr.start();
-        }
-
-        function openVoiceConsole() { 
-            document.getElementById('mainDashboard').style.display = 'none';
-            document.getElementById('voiceModal').style.display = 'flex';
-            syncLogToUI(); recalculateField();
-        }
-
         function toggleMic() { if (isMicOn) stopMic(); else startListening(); }
 
         async function startListening() {
@@ -501,6 +561,15 @@
                     if (isCapturing) return;
                     let transcript = e.results[e.results.length-1][0].transcript.toLowerCase();
                     if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("save")) { confirmReading(); return; }
+                    if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
+                    let num = transcript.replace(/[^0-9.]/g, '');
+                    if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
+                };
+                recognition.onresult = (e) => {
+                    if (isCapturing) return;
+                    let result = e.results[e.results.length-1];
+                    let transcript = result[0].transcript.toLowerCase();
+                    if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("save")) { confirmReading(); return; }
                     if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
                     let num = transcript.replace(/[^0-9.]/g, '');
                     if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
@@ -526,7 +595,7 @@
             let lastVolt = 0;
             for(let i = buffer.length-1; i >= 0; i--) { if(buffer[i].field.includes("Volts")) { lastVolt = buffer[i].val; break; } }
             buffer.push({ field: field, val: val, volts: lastVolt });
-            localStorage.setItem('hvacStagingBufferV16', JSON.stringify(buffer));
+            localStorage.setItem('hvacStagingBufferV17', JSON.stringify(buffer));
             syncLogToUI();
             const display = document.getElementById('bigDisplay');
             display.style.color = "var(--emerald-green)";
@@ -554,7 +623,7 @@
                     const varPct = ((uF / rating) - 1) * 100;
                     badge = Math.abs(varPct/100) <= (tolerance + 0.0001) ? " [PASS]" : " [FAIL]";
                     extra = ` (${uF.toFixed(1)}µF | ${varPct.toFixed(1)}%)`;
-                } else if (item.field.includes("Amps") && specs.RLA && item.field === "Compressor Amps") {
+                } else if (item.field === "Compressor Amps" && specs.RLA) {
                     const pct = (item.val / specs.RLA) * 100;
                     badge = pct <= 100 ? " [PASS]" : " [FAIL]";
                     extra = ` (${pct.toFixed(0)}% RLA)`;
@@ -564,7 +633,7 @@
             fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "syncVoice", payload: lump }), mode: "no-cors" })
             .then(() => {
                 alert("Success!");
-                buffer = []; localStorage.removeItem('hvacStagingBufferV16');
+                buffer = []; localStorage.removeItem('hvacStagingBufferV17');
                 syncLogToUI(); syncBtn.innerText = "SEAL & SYNC DATA"; recalculateField();
             });
         }
