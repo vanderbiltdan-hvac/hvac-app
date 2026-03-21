@@ -71,6 +71,7 @@
 
         .btn:active { transform: scale(0.98); }
         .btn-primary { background-color: #0056b3; color: white; }
+        .btn-stop { background-color: var(--crimson-red); color: white; }
         .btn-quick { background-color: var(--amber-orange); color: black; padding: 25px; font-size: 22px; box-shadow: 0 0 20px rgba(255, 171, 0, 0.3); }
 
         .modal-overlay { 
@@ -90,14 +91,15 @@
             background: var(--glass-effect);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px;
-            padding: 40px 20px;
+            padding: 30px 20px;
             text-align: center;
             margin: 15px 0;
             transition: background 0.3s ease;
+            position: relative;
         }
 
         .big-display {
-            font-size: 120px; 
+            font-size: 110px; 
             line-height: 1;
             font-weight: 900;
             color: var(--text-primary);
@@ -121,6 +123,23 @@
             color: var(--electric-blue);
             min-height: 24px;
             margin: 10px 0;
+        }
+
+        .recording-pulse {
+            width: 12px; height: 12px;
+            background: var(--crimson-red);
+            border-radius: 50%;
+            display: none;
+            position: absolute;
+            top: 20px; right: 20px;
+            box-shadow: 0 0 10px var(--crimson-red);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .stats-badge {
@@ -182,6 +201,7 @@
         </div>
 
         <div class="voice-console" id="consoleBody">
+            <div id="pwrIndicator" class="recording-pulse"></div>
             <div id="targetRange">READY FOR VOLTS</div>
             <div id="bigDisplay" class="big-display">0.0</div>
             
@@ -191,10 +211,9 @@
                     <span style="font-size:24px; font-weight:bold; color:var(--amber-orange);">+</span>
                     <input type="number" id="fanRating" value="5" placeholder="Fan">
                 </div>
-                <div class="stats-badge" id="toleranceTag" style="margin-top:10px;">±6% Std Tolerance</div>
             </div>
 
-            <button id="micTrigger" class="btn btn-primary" onclick="startListening()" style="margin:20px auto; width:160px; padding:12px;">START MIC</button>
+            <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="margin:10px auto; width:180px; padding:12px;">START MIC</button>
         </div>
 
         <div style="display:flex; height:70px; gap:15px;">
@@ -214,7 +233,8 @@
         let field = "Herm Volts"; 
         let currentVolts = 0;
         let isCapturing = false; 
-        let recognition;
+        let recognition = null;
+        let isMicOn = false;
 
         syncLogToUI();
 
@@ -237,8 +257,7 @@
             document.getElementById('modalLabel').innerText = field.toUpperCase();
             document.getElementById('bigDisplay').innerText = "0.0";
             document.getElementById('targetRange').innerText = "READY FOR VOLTS";
-            document.getElementById('micTrigger').style.display = 'block';
-            if(recognition) recognition.stop();
+            stopMic();
         }
 
         function syncLogToUI() {
@@ -250,8 +269,7 @@
 
         function openVoiceConsole() { 
             document.getElementById('mainDashboard').style.display = 'none';
-            const modal = document.getElementById('voiceModal');
-            modal.style.display = 'flex';
+            document.getElementById('voiceModal').style.display = 'flex';
             syncLogToUI();
         }
 
@@ -265,22 +283,30 @@
             };
         }
 
+        function toggleMic() {
+            if (isMicOn) stopMic();
+            else startListening();
+        }
+
         async function startListening() {
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) return alert("Mic not supported.");
             
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                stream.getTracks().forEach(t => t.stop());
-
+                // Ensure fresh context
+                if (recognition) recognition.stop();
+                
                 recognition = new SR();
                 recognition.continuous = true;
                 recognition.interimResults = true;
 
                 recognition.onstart = () => {
+                    isMicOn = true;
                     document.getElementById('targetRange').innerText = "🎤 LISTENING...";
                     document.getElementById('targetRange').style.color = "var(--electric-blue)";
-                    document.getElementById('micTrigger').style.display = 'none';
+                    document.getElementById('micTrigger').innerText = "STOP MIC";
+                    document.getElementById('micTrigger').className = "btn btn-stop";
+                    document.getElementById('pwrIndicator').style.display = "block";
                 };
 
                 recognition.onresult = (e) => {
@@ -289,28 +315,46 @@
                     let result = e.results[e.results.length-1];
                     let transcript = result[0].transcript.toLowerCase();
                     
-                    if (result.isFinal) {
-                        if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("save")) { 
-                            confirmReading(); 
-                            return; 
-                        }
+                    // REFINED MOBILE LOGIC: Trigger on keyword regardless of 'isFinal' 
+                    // Use a cooldown to prevent rapid-fire confirms
+                    if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("save")) { 
+                        confirmReading(); 
+                        return; 
                     }
                     
                     let num = transcript.replace(/[^0-9.]/g, '');
-                    if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
+                    // Only update display if it's NOT a confirm word
+                    if(num && !isCapturing) {
+                        document.getElementById('bigDisplay').innerText = num;
+                    }
+                };
+
+                recognition.onend = () => {
+                    // Mobile browsers often auto-end. Restart only if we didn't manually stop.
+                    if (isMicOn) recognition.start();
                 };
 
                 recognition.onerror = (e) => {
-                    if (e.error === 'no-speech') {
-                       recognition.stop();
-                       setTimeout(() => { try { if(document.getElementById('voiceModal').style.display === 'flex') recognition.start(); } catch(err){} }, 100);
-                    }
+                    console.log("Mic Error:", e.error);
                 };
 
                 recognition.start();
             } catch (e) {
                 alert("Mic Access Failed: " + e.name);
             }
+        }
+
+        function stopMic() {
+            isMicOn = false;
+            if (recognition) {
+                recognition.onend = null; // Kill auto-restart
+                recognition.stop();
+            }
+            document.getElementById('micTrigger').innerText = "START MIC";
+            document.getElementById('micTrigger').className = "btn btn-primary";
+            document.getElementById('pwrIndicator').style.display = "none";
+            document.getElementById('targetRange').innerText = "MIC STANDBY";
+            document.getElementById('targetRange').style.color = "var(--text-secondary)";
         }
 
         function scrubDisplay() {
@@ -331,16 +375,13 @@
             const display = document.getElementById('bigDisplay');
             display.style.color = "var(--emerald-green)";
             
-            // Cycle logic & Anticipator
             let rating = 0;
             if(field === "Herm Volts") {
                 currentVolts = parseFloat(val);
                 rating = parseFloat(document.getElementById('hermRating').value);
                 field = "Herm Amps";
             }
-            else if(field === "Herm Amps") {
-                field = "Fan Volts";
-            }
+            else if(field === "Herm Amps") field = "Fan Volts";
             else if(field === "Fan Volts") {
                 currentVolts = parseFloat(val);
                 rating = parseFloat(document.getElementById('fanRating').value);
@@ -350,7 +391,7 @@
                 field = "Herm Volts";
                 document.getElementById('targetRange').innerText = "CYCLE COMPLETE";
                 document.getElementById('targetRange').style.color = "var(--emerald-green)";
-                document.getElementById('micTrigger').style.display = 'block';
+                stopMic();
             }
 
             // Update Prediction Text for the NEXT field (Amps)
@@ -368,11 +409,12 @@
                 document.getElementById('modalLabel').innerText = field.toUpperCase();
                 document.getElementById('bigDisplay').innerText = "0.0";
                 isCapturing = false;
-            }, 800);
+            }, 1000); // Wait longer for mobile
         }
 
         function sendFinalBlock() {
             if (buffer.length === 0) return alert("No data to sync.");
+            stopMic();
             const syncBtn = document.getElementById('syncBtn');
             syncBtn.disabled = true;
             syncBtn.innerText = "SYNCING...";
@@ -405,7 +447,7 @@
         }
 
         function closeVoiceModal() { 
-            if(recognition) recognition.stop(); 
+            stopMic();
             document.getElementById('voiceModal').style.display = 'none'; 
             document.getElementById('mainDashboard').style.display = 'block';
         }
