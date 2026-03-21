@@ -34,7 +34,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow: hidden;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -60,7 +60,7 @@
         .btn {
             width: 100%;
             padding: 18px;
-            margin: 10px 0;
+            margin: 5px 0;
             border-radius: 12px;
             border: none;
             font-size: 18px;
@@ -81,83 +81,81 @@
             background: var(--bg-dark); 
             z-index:10000; 
             flex-direction:column; 
-            padding:20px; 
+            padding:15px; 
             box-sizing:border-box; 
             color: white; 
-            transition: background 0.5s ease;
         }
 
         .voice-console {
             background: var(--glass-effect);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px;
-            padding: 20px 20px;
+            padding: 10px 15px;
             text-align: center;
-            margin: 10px 0;
-            transition: background 0.3s ease;
+            margin: 5px 0;
+            flex-shrink: 0;
             position: relative;
         }
 
         .big-display {
-            font-size: 100px; 
+            font-size: 110px; 
             line-height: 1;
             font-weight: 900;
             color: var(--text-primary);
             text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-            margin: 15px 0;
+            margin: 10px 0;
             font-variant-numeric: tabular-nums;
             transition: color 0.3s ease;
         }
 
         #modalLabel {
             color: var(--amber-orange);
-            letter-spacing: 4px;
-            font-size: 14px;
+            letter-spacing: 2px;
+            font-size: 12px;
             margin: 0;
             text-transform: uppercase;
         }
 
         #targetRange {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 28px;
+            font-weight: 800;
             color: var(--electric-blue);
-            min-height: 30px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+            min-height: 34px;
+            margin: 5px 0;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
         }
 
         .recording-pulse {
-            width: 12px; height: 12px;
+            width: 14px; height: 14px;
             background: var(--crimson-red);
             border-radius: 50%;
             display: none;
             position: absolute;
             top: 15px; right: 15px;
-            box-shadow: 0 0 10px var(--crimson-red);
+            box-shadow: 0 0 15px var(--crimson-red);
             animation: pulse 1.5s infinite;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.5; }
+            50% { transform: scale(1.4); opacity: 0.4; }
             100% { transform: scale(1); opacity: 1; }
         }
 
         .result-badge {
             display: none;
-            padding: 10px 20px;
-            border-radius: 30px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-weight: 900;
-            font-size: 24px;
-            margin-top: 10px;
+            font-size: 20px;
+            margin: 5px 0;
             text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         .pass { background-color: var(--emerald-green); color: black; display: inline-block; }
         .fail { background-color: var(--crimson-red); color: white; display: inline-block; }
 
         input { 
-            width: 100%; padding: 15px; margin: 5px 0; border-radius: 12px; 
+            width: 100%; padding: 12px; margin: 4px 0; border-radius: 10px; 
             box-sizing: border-box; background: rgba(255,255,255,0.05); 
             border: 1px solid rgba(255,255,255,0.1); color: white; 
             font-size: 16px;
@@ -168,13 +166,22 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 5px;
         }
         .dual-inputs input {
-            max-width: 80px;
+            max-width: 70px;
             text-align: center;
-            padding: 10px;
-            margin: 0;
+            padding: 8px;
+        }
+
+        .log-list {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .log-item {
@@ -182,16 +189,17 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
         }
         .del-btn {
-            background: rgba(255,0,0,0.2);
-            border: none;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,0,0,0.2);
             color: #ff5555;
             border-radius: 4px;
-            padding: 2px 8px;
+            padding: 3px 8px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
+            font-weight: bold;
         }
         
         #manualInputZone {
@@ -199,20 +207,29 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-dark);
-            z-index: 10;
-            padding: 40px 20px;
+            z-index: 100;
+            padding: 30px 15px;
             border-radius: 20px;
             align-items: center;
             justify-content: center;
             flex-direction: column;
         }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin: 5px 0;
+            width: 100%;
+        }
+
+        .control-row .btn { flex: 1; margin: 0; }
     </style>
 </head>
 <body>
     <div class="container" id="mainDashboard">
         <h2>HVAC Librarian</h2>
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ CAPACITOR TEST</button>
-        <hr style="opacity:0.1; margin:20px 0;">
+        <hr style="opacity:0.1; margin:15px 0;">
         <input type="text" id="custName" placeholder="Customer Name">
         <button class="btn btn-primary" onclick="startJob()">1. Create Job Shell</button>
         <div id="pipelineSection" style="display:none;">
@@ -221,52 +238,53 @@
     </div>
 
     <div id="voiceModal" class="modal-overlay state-idle">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
-            </div>
-            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:18px; cursor:pointer;">&times;</button>
+        <!-- HEADER -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
+            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:20px; cursor:pointer;">&times;</button>
         </div>
 
+        <!-- MAIN CONSOLE -->
         <div class="voice-console" id="consoleBody">
             <div id="pwrIndicator" class="recording-pulse"></div>
-            <div id="targetRange">READY FOR VOLTS</div>
+            <div id="targetRange">READY...</div>
             <div id="bigDisplay" class="big-display">0.0</div>
             
             <div id="passFailBadge" class="result-badge">---</div>
 
-            <!-- MANUAL OVERLAY -->
             <div id="manualInputZone">
-                <h3 style="margin:0 0 15px 0;">MANUAL ENTRY</h3>
-                <input type="number" id="manualValue" placeholder="Enter Value" style="font-size:32px; text-align:center;">
-                <div style="display:flex; gap:10px; width:100%; margin-top:20px;">
-                    <button onclick="saveManual()" class="btn btn-primary" style="flex:1;">SAVE</button>
-                    <button onclick="toggleManual(false)" class="btn" style="flex:1; background:rgba(255,255,255,0.1);">CANCEL</button>
+                <h3 style="margin:0 0 15px 0; font-size: 20px;">KEYBOARD ENTRY</h3>
+                <input type="number" id="manualValue" placeholder="Enter Value" style="font-size:32px; text-align:center; padding: 15px;">
+                <div class="control-row" style="margin-top:20px;">
+                    <button onclick="saveManual()" class="btn btn-primary">SAVE</button>
+                    <button onclick="toggleManual(false)" class="btn" style="background:rgba(255,255,255,0.1);">CANCEL</button>
                 </div>
             </div>
 
-            <div id="capConfig" style="margin-top: 10px;">
+            <div id="capConfig">
                 <div class="dual-inputs">
                     <input type="number" id="hermRating" value="45" placeholder="Herm">
-                    <span style="font-size:24px; font-weight:bold; color:var(--amber-orange);">+</span>
+                    <span style="font-size:20px; font-weight:bold; color:var(--amber-orange);">+</span>
                     <input type="number" id="fanRating" value="5" placeholder="Fan">
                 </div>
             </div>
 
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2; padding:12px;">START MIC</button>
-                <button onclick="toggleManual(true)" class="btn" style="flex:1; background:rgba(255,255,255,0.05); font-size:12px; padding:12px;">MANUAL</button>
+            <div class="control-row" style="margin-top:10px;">
+                <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2;">START MIC</button>
+                <button onclick="toggleManual(true)" class="btn" style="background:rgba(255,255,255,0.05); font-size:12px;">MANUAL</button>
             </div>
         </div>
 
-        <div style="display:flex; height:60px; gap:15px;">
-            <button onclick="scrubDisplay()" style="background:rgba(255,23,68,0.1); border: 1px solid var(--crimson-red); color: var(--crimson-red); flex:1;" class="btn">SCRUB</button>
-            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green); flex:1;" class="btn">COPY</button>
+        <!-- SECONDARY ACTIONS -->
+        <div class="control-row">
+            <button onclick="scrubDisplay()" style="background:rgba(255,23,68,0.1); border: 1px solid var(--crimson-red); color: var(--crimson-red);" class="btn">SCRUB</button>
+            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green);" class="btn">COPY</button>
         </div>
 
-        <div id="stagingLog" style="flex:1; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius: 12px; margin-top:10px; padding:15px; font-size:14px; border: 1px solid rgba(255,255,255,0.05);"></div>
+        <!-- STAGING LOG -->
+        <div id="stagingLog" class="log-list"></div>
         
-        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: 10px;">SEAL & SYNC DATA</button>
+        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto;">SEAL & SYNC DATA</button>
     </div>
 
     <script>
@@ -284,10 +302,6 @@
 
         syncLogToUI();
         recalculateField();
-
-        function updateUIState(state) {
-            document.getElementById('voiceModal').className = 'modal-overlay ' + state;
-        }
 
         function toggleManual(show) {
             const zone = document.getElementById('manualInputZone');
@@ -308,7 +322,6 @@
         }
 
         function recalculateField() {
-            // Determine field based on buffer length
             const index = buffer.length % FIELD_CYCLE.length;
             field = FIELD_CYCLE[index];
             
@@ -316,25 +329,22 @@
             document.getElementById('bigDisplay').innerText = "0.0";
             document.getElementById('passFailBadge').style.display = "none";
             
-            // Logic for predictions when rewinding
-            if (field.includes("Amps")) {
-                // Find previous volts in buffer
-                const lastEntry = buffer[buffer.length-1]; // This is wrong if we just stepped back
-                // Let's search the buffer for the LAST volt reading
-                let lastVolt = 0;
-                for(let i = buffer.length-1; i >= 0; i--) {
-                    if(buffer[i].includes("Volts")) {
-                        lastVolt = parseFloat(buffer[i].split("◘")[1]);
-                        break;
-                    }
+            let lastVolt = 0;
+            for(let i = buffer.length-1; i >= 0; i--) {
+                if(buffer[i].includes("Volts")) {
+                    lastVolt = parseFloat(buffer[i].split("◘")[1]);
+                    break;
                 }
-                currentVolts = lastVolt;
+            }
+            currentVolts = lastVolt;
+
+            if (field.includes("Amps")) {
                 const ratingId = field === "Herm Amps" ? "hermRating" : "fanRating";
                 const rating = parseFloat(document.getElementById(ratingId).value);
                 if(currentVolts > 0 && rating) {
                     expectedRange = calculateExpectedAmps(currentVolts, rating);
-                    document.getElementById('targetRange').innerText = "EXPECTED: " + expectedRange.min + " - " + expectedRange.max;
-                    document.getElementById('targetRange').style.color = "var(--amber-orange)";
+                    document.getElementById('targetRange').innerText = "RANGE: " + expectedRange.min + " - " + expectedRange.max;
+                    document.getElementById('targetRange').style.color = "var(--electric-blue)"; // Changed back to blue for better contrast
                 }
             } else {
                 document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
@@ -350,31 +360,22 @@
             recalculateField();
         }
 
-        function clearBuffer() {
-            if(confirm("Wipe the staging log?")) {
-                buffer = [];
-                localStorage.removeItem('hvacStagingBuffer');
-                syncLogToUI();
-                recalculateField();
-            }
-        }
-
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
             if (buffer.length === 0) {
-                log.innerHTML = '<div style="color:#444; text-align:center; margin-top:10px;">Log is empty</div>';
-                updateUIState('state-idle');
+                log.innerHTML = '<div style="color:#444; text-align:center; height:100px; display:flex; align-items:center; justify-content:center;">Log is empty</div>';
+                document.getElementById('voiceModal').className = 'modal-overlay state-idle';
                 return;
             }
             
             log.innerHTML = buffer.map((item, idx) => `
                 <div class="log-item">
                     <span>${item.replace('◘', ': ')}</span>
-                    <button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button>
+                    <button class="del-btn" onclick="deleteLogItem(${idx})">&times; UNDO</button>
                 </div>
             `).join('');
             log.scrollTop = log.scrollHeight;
-            updateUIState('state-pending');
+            document.getElementById('voiceModal').className = 'modal-overlay state-pending';
         }
 
         function openVoiceConsole() { 
@@ -404,7 +405,11 @@
             if (!SR) return alert("Mic not supported.");
             
             try {
-                if (recognition) recognition.stop();
+                if (recognition) {
+                    recognition.onend = null;
+                    recognition.stop();
+                    recognition = null;
+                }
                 
                 recognition = new SR();
                 recognition.continuous = true;
@@ -412,7 +417,6 @@
 
                 recognition.onstart = () => {
                     isMicOn = true;
-                    document.getElementById('targetRange').innerText = "🎤 LISTENING...";
                     document.getElementById('micTrigger').innerText = "STOP MIC";
                     document.getElementById('micTrigger').className = "btn btn-stop";
                     document.getElementById('pwrIndicator').style.display = "block";
@@ -440,12 +444,12 @@
                 };
 
                 recognition.onerror = (e) => {
-                    console.log("Mic Error:", e.error);
+                    if (e.error === 'not-allowed') alert("Mic Blocked. Check SSL/Pages setting.");
                 };
 
                 recognition.start();
             } catch (e) {
-                alert("Mic Access Failed: " + e.name);
+                alert("Mic Access Failed.");
             }
         }
 
@@ -454,6 +458,7 @@
             if (recognition) {
                 recognition.onend = null;
                 recognition.stop();
+                recognition = null;
             }
             document.getElementById('micTrigger').innerText = "START MIC";
             document.getElementById('micTrigger').className = "btn btn-primary";
@@ -474,7 +479,6 @@
             const badge = document.getElementById('passFailBadge');
             badge.style.display = "none";
 
-            // PASS/FAIL CHECK
             if (field.includes("Amps") && expectedRange) {
                 const measured = parseFloat(val);
                 if (measured >= parseFloat(expectedRange.min) && measured <= parseFloat(expectedRange.max)) {
@@ -498,11 +502,16 @@
                 display.style.color = "var(--text-primary)";
                 recalculateField(); 
                 isCapturing = false;
+                // Aggressive stop if cycle ends
+                if (buffer.length % FIELD_CYCLE.length === 0) {
+                     document.getElementById('targetRange').innerText = "CYCLE DONE";
+                     stopMic();
+                }
             }, 1000);
         }
 
         function sendFinalBlock() {
-            if (buffer.length === 0) return alert("No data to sync.");
+            if (buffer.length === 0) return alert("No log to sync.");
             stopMic();
             const syncBtn = document.getElementById('syncBtn');
             syncBtn.disabled = true;
@@ -516,20 +525,19 @@
                 mode: "no-cors"
             })
             .then(() => {
-                updateUIState('state-success');
+                document.getElementById('voiceModal').className = 'modal-overlay state-success';
                 setTimeout(() => {
                     buffer = [];
                     localStorage.removeItem('hvacStagingBuffer');
                     syncLogToUI();
-                    updateUIState('state-idle');
                     syncBtn.disabled = false;
                     syncBtn.innerText = "SEAL & SYNC DATA";
-                    alert("Sync Success! Spreadsheet Updated.");
+                    alert("Sync Success!");
                     recalculateField();
                 }, 1500);
             })
             .catch(() => {
-                updateUIState('state-conflict');
+                document.getElementById('voiceModal').className = 'modal-overlay state-conflict';
                 syncBtn.disabled = false;
                 syncBtn.innerText = "RETRY";
             });
