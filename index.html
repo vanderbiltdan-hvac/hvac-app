@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HVAC Master Librarian</title>
+    
+    <!-- PWA NATIVE FEEL META TAGS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HVAC Librarian">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#121212">
+
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --electric-blue: #00e5ff;
+            --emerald-green: #00c853;
+            --crimson-red: #ff1744;
+            --amber-orange: #ffab00;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --glass-effect: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #mainDashboard { 
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            transition: opacity 0.3s ease;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--electric-blue), var(--emerald-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            margin: 10px 0;
+            border-radius: 12px;
+            border: none;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: #0056b3; color: white; }
+        .btn-quick { background-color: var(--amber-orange); color: black; padding: 25px; font-size: 22px; box-shadow: 0 0 20px rgba(255, 171, 0, 0.3); }
+
+        .modal-overlay { 
+            display:none; 
+            position:fixed; 
+            top:0; left:0; width:100%; height:100%; 
+            background: var(--bg-dark); 
+            z-index:10000; 
+            flex-direction:column; 
+            padding:20px; 
+            box-sizing:border-box; 
+            color: white; 
+            transition: background 0.5s ease;
+        }
+
+        .voice-console {
+            background: var(--glass-effect);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            margin: 15px 0;
+            transition: background 0.3s ease;
+        }
+
+        .big-display {
+            font-size: 120px; 
+            line-height: 1;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+            transition: color 0.3s ease;
+        }
+
+        #modalLabel {
+            color: var(--amber-orange);
+            letter-spacing: 4px;
+            font-size: 16px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        #targetRange {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--electric-blue);
+            min-height: 24px;
+            margin: 10px 0;
+        }
+
+        .stats-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 5px;
+        }
+
+        /* Peripheral Status States */
+        .state-idle { background: var(--bg-dark); }
+        .state-pending { background: rgba(255, 171, 0, 0.08); }
+        .state-success { background: rgba(0, 200, 83, 0.12); }
+        .state-conflict { background: rgba(255, 23, 68, 0.12); }
+
+        input { 
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; 
+            box-sizing: border-box; background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1); color: white; 
+            font-size: 16px;
+        }
+
+        .dual-inputs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .dual-inputs input {
+            max-width: 80px;
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainDashboard">
+        <h2>HVAC Librarian</h2>
+        <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ CAPACITOR TEST</button>
+        <hr style="opacity:0.1; margin:20px 0;">
+        <input type="text" id="custName" placeholder="Customer Name">
+        <button class="btn btn-primary" onclick="startJob()">1. Create Job Shell</button>
+        <div id="pipelineSection" style="display:none;">
+            <button class="btn btn-quick" onclick="runPipeline()">2. Run Pipeline</button>
+        </div>
+    </div>
+
+    <div id="voiceModal" class="modal-overlay state-idle">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
+                <button onclick="clearBuffer()" style="padding:4px 10px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.3); color:red; border-radius:4px; font-size:10px; cursor:pointer;">CLEAR LOG</button>
+            </div>
+            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:44px; height:44px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+
+        <div class="voice-console" id="consoleBody">
+            <div id="targetRange">READY FOR VOLTS</div>
+            <div id="bigDisplay" class="big-display">0.0</div>
+            
+            <div id="capConfig">
+                <div class="dual-inputs">
+                    <input type="number" id="hermRating" value="45" placeholder="Herm">
+                    <span style="font-size:24px; font-weight:bold; color:var(--amber-orange);">+</span>
+                    <input type="number" id="fanRating" value="5" placeholder="Fan">
+                </div>
+                <div class="stats-badge" id="toleranceTag" style="margin-top:10px;">±6% Std Tolerance</div>
+            </div>
+
+            <button id="micTrigger" class="btn btn-primary" onclick="startListening()" style="margin:20px auto; width:160px; padding:12px;">START MIC</button>
+        </div>
+
+        <div style="display:flex; height:70px; gap:15px;">
+            <button onclick="scrubDisplay()" style="background:rgba(255,23,68,0.1); border: 1px solid var(--crimson-red); color: var(--crimson-red); flex:1;" class="btn">SCRUB</button>
+            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green); flex:1;" class="btn">COPY</button>
+        </div>
+
+        <div id="stagingLog" style="flex:1; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius: 12px; margin-top:20px; padding:15px; font-size:14px; border: 1px solid rgba(255,255,255,0.05);"></div>
+        
+        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: 15px;">SEAL & SYNC DATA</button>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
+
+        let buffer = JSON.parse(localStorage.getItem('hvacStagingBuffer')) || [];
+        let field = "Herm Volts"; 
+        let currentVolts = 0;
+        let isCapturing = false; 
+        let recognition;
+
+        syncLogToUI();
+
+        function updateUIState(state) {
+            document.getElementById('voiceModal').className = 'modal-overlay ' + state;
+        }
+
+        function clearBuffer() {
+            if(confirm("Wipe the staging log?")) {
+                buffer = [];
+                localStorage.removeItem('hvacStagingBuffer');
+                syncLogToUI();
+                updateUIState('state-idle');
+                resetCycle();
+            }
+        }
+
+        function resetCycle() {
+            field = "Herm Volts";
+            document.getElementById('modalLabel').innerText = field.toUpperCase();
+            document.getElementById('bigDisplay').innerText = "0.0";
+            document.getElementById('targetRange').innerText = "READY FOR VOLTS";
+            document.getElementById('micTrigger').style.display = 'block';
+            if(recognition) recognition.stop();
+        }
+
+        function syncLogToUI() {
+            const log = document.getElementById('stagingLog');
+            log.innerHTML = buffer.length ? buffer.map(item => `<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05);">${item.replace('◘', ': ')}</div>`).join('') : '<div style="color:#444; text-align:center; margin-top:30px;">Log is empty</div>';
+            log.scrollTop = log.scrollHeight;
+            if (buffer.length > 0) updateUIState('state-pending');
+        }
+
+        function openVoiceConsole() { 
+            document.getElementById('mainDashboard').style.display = 'none';
+            const modal = document.getElementById('voiceModal');
+            modal.style.display = 'flex';
+            syncLogToUI();
+        }
+
+        function calculateExpectedAmps(volts, rating) {
+            if (!volts || !rating) return null;
+            const target = (rating * volts) / 2652;
+            return {
+                target: target.toFixed(2),
+                min: (target * 0.94).toFixed(2),
+                max: (target * 1.06).toFixed(2)
+            };
+        }
+
+        async function startListening() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return alert("Mic not supported.");
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(t => t.stop());
+
+                recognition = new SR();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+
+                recognition.onstart = () => {
+                    document.getElementById('targetRange').innerText = "🎤 LISTENING...";
+                    document.getElementById('targetRange').style.color = "var(--electric-blue)";
+                    document.getElementById('micTrigger').style.display = 'none';
+                };
+
+                recognition.onresult = (e) => {
+                    if (isCapturing) return;
+
+                    let result = e.results[e.results.length-1];
+                    let transcript = result[0].transcript.toLowerCase();
+                    
+                    if (result.isFinal) {
+                        if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("save")) { 
+                            confirmReading(); 
+                            return; 
+                        }
+                    }
+                    
+                    let num = transcript.replace(/[^0-9.]/g, '');
+                    if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
+                };
+
+                recognition.onerror = (e) => {
+                    if (e.error === 'no-speech') {
+                       recognition.stop();
+                       setTimeout(() => { try { if(document.getElementById('voiceModal').style.display === 'flex') recognition.start(); } catch(err){} }, 100);
+                    }
+                };
+
+                recognition.start();
+            } catch (e) {
+                alert("Mic Access Failed: " + e.name);
+            }
+        }
+
+        function scrubDisplay() {
+            document.getElementById('bigDisplay').innerText = "0.0";
+        }
+
+        function confirmReading() {
+            if (isCapturing) return;
+            let val = document.getElementById('bigDisplay').innerText;
+            if (val === "0.0") return;
+
+            isCapturing = true; 
+            buffer.push(field + " ◘ " + val);
+            localStorage.setItem('hvacStagingBuffer', JSON.stringify(buffer));
+            
+            syncLogToUI();
+            
+            const display = document.getElementById('bigDisplay');
+            display.style.color = "var(--emerald-green)";
+            
+            // Cycle logic & Anticipator
+            let rating = 0;
+            if(field === "Herm Volts") {
+                currentVolts = parseFloat(val);
+                rating = parseFloat(document.getElementById('hermRating').value);
+                field = "Herm Amps";
+            }
+            else if(field === "Herm Amps") {
+                field = "Fan Volts";
+            }
+            else if(field === "Fan Volts") {
+                currentVolts = parseFloat(val);
+                rating = parseFloat(document.getElementById('fanRating').value);
+                field = "Fan Amps";
+            }
+            else {
+                field = "Herm Volts";
+                document.getElementById('targetRange').innerText = "CYCLE COMPLETE";
+                document.getElementById('targetRange').style.color = "var(--emerald-green)";
+                document.getElementById('micTrigger').style.display = 'block';
+            }
+
+            // Update Prediction Text for the NEXT field (Amps)
+            if (field.includes("Amps") && rating && currentVolts > 0) {
+                 const range = calculateExpectedAmps(currentVolts, rating);
+                 document.getElementById('targetRange').innerText = "EXPECTED: " + range.min + " - " + range.max;
+                 document.getElementById('targetRange').style.color = "var(--amber-orange)";
+            } else if (field.includes("Volts")) {
+                 document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
+                 document.getElementById('targetRange').style.color = "var(--electric-blue)";
+            }
+            
+            setTimeout(() => {
+                display.style.color = "var(--text-primary)";
+                document.getElementById('modalLabel').innerText = field.toUpperCase();
+                document.getElementById('bigDisplay').innerText = "0.0";
+                isCapturing = false;
+            }, 800);
+        }
+
+        function sendFinalBlock() {
+            if (buffer.length === 0) return alert("No data to sync.");
+            const syncBtn = document.getElementById('syncBtn');
+            syncBtn.disabled = true;
+            syncBtn.innerText = "SYNCING...";
+
+            const lump = buffer.join(" | ");
+            
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "syncVoice", payload: lump }),
+                mode: "no-cors"
+            })
+            .then(() => {
+                updateUIState('state-success');
+                setTimeout(() => {
+                    buffer = [];
+                    localStorage.removeItem('hvacStagingBuffer');
+                    syncLogToUI();
+                    updateUIState('state-idle');
+                    syncBtn.disabled = false;
+                    syncBtn.innerText = "SEAL & SYNC DATA";
+                    alert("Sync Success! Spreadsheet Updated.");
+                    resetCycle();
+                }, 1500);
+            })
+            .catch(() => {
+                updateUIState('state-conflict');
+                syncBtn.disabled = false;
+                syncBtn.innerText = "RETRY";
+            });
+        }
+
+        function closeVoiceModal() { 
+            if(recognition) recognition.stop(); 
+            document.getElementById('voiceModal').style.display = 'none'; 
+            document.getElementById('mainDashboard').style.display = 'block';
+        }
+
+        function startJob() { 
+            const name = document.getElementById('custName').value;
+            fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name }), mode: "no-cors" })
+            .then(() => { document.getElementById('pipelineSection').style.display='block'; alert("Job Queued."); });
+        }
+
+        function runPipeline() { 
+            fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }), mode: "no-cors" })
+            .then(() => alert("Pipeline Triggered."));
+        }
+    </script>
+</body>
+</html>
