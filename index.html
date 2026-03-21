@@ -176,13 +176,43 @@
             padding: 10px;
             margin: 0;
         }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .del-btn {
+            background: rgba(255,0,0,0.2);
+            border: none;
+            color: #ff5555;
+            border-radius: 4px;
+            padding: 2px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        #manualInputZone {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark);
+            z-index: 10;
+            padding: 40px 20px;
+            border-radius: 20px;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
     <div class="container" id="mainDashboard">
         <h2>HVAC Librarian</h2>
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ CAPACITOR TEST</button>
-        <hr style="opacity:0.1; margin:15px 0;">
+        <hr style="opacity:0.1; margin:20px 0;">
         <input type="text" id="custName" placeholder="Customer Name">
         <button class="btn btn-primary" onclick="startJob()">1. Create Job Shell</button>
         <div id="pipelineSection" style="display:none;">
@@ -194,7 +224,6 @@
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
-                <button onclick="clearBuffer()" style="padding:4px 10px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.3); color:red; border-radius:4px; font-size:10px; cursor:pointer;">CLEAR LOG</button>
             </div>
             <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:18px; cursor:pointer;">&times;</button>
         </div>
@@ -206,6 +235,16 @@
             
             <div id="passFailBadge" class="result-badge">---</div>
 
+            <!-- MANUAL OVERLAY -->
+            <div id="manualInputZone">
+                <h3 style="margin:0 0 15px 0;">MANUAL ENTRY</h3>
+                <input type="number" id="manualValue" placeholder="Enter Value" style="font-size:32px; text-align:center;">
+                <div style="display:flex; gap:10px; width:100%; margin-top:20px;">
+                    <button onclick="saveManual()" class="btn btn-primary" style="flex:1;">SAVE</button>
+                    <button onclick="toggleManual(false)" class="btn" style="flex:1; background:rgba(255,255,255,0.1);">CANCEL</button>
+                </div>
+            </div>
+
             <div id="capConfig" style="margin-top: 10px;">
                 <div class="dual-inputs">
                     <input type="number" id="hermRating" value="45" placeholder="Herm">
@@ -214,7 +253,10 @@
                 </div>
             </div>
 
-            <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="margin:10px auto; width:160px; padding:10px;">START MIC</button>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2; padding:12px;">START MIC</button>
+                <button onclick="toggleManual(true)" class="btn" style="flex:1; background:rgba(255,255,255,0.05); font-size:12px; padding:12px;">MANUAL</button>
+            </div>
         </div>
 
         <div style="display:flex; height:60px; gap:15px;">
@@ -222,7 +264,7 @@
             <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green); flex:1;" class="btn">COPY</button>
         </div>
 
-        <div id="stagingLog" style="flex:1; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius: 12px; margin-top:20px; padding:15px; font-size:14px; border: 1px solid rgba(255,255,255,0.05);"></div>
+        <div id="stagingLog" style="flex:1; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius: 12px; margin-top:10px; padding:15px; font-size:14px; border: 1px solid rgba(255,255,255,0.05);"></div>
         
         <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: 10px;">SEAL & SYNC DATA</button>
     </div>
@@ -238,10 +280,74 @@
         let recognition = null;
         let isMicOn = false;
 
+        const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps"];
+
         syncLogToUI();
+        recalculateField();
 
         function updateUIState(state) {
             document.getElementById('voiceModal').className = 'modal-overlay ' + state;
+        }
+
+        function toggleManual(show) {
+            const zone = document.getElementById('manualInputZone');
+            zone.style.display = show ? 'flex' : 'none';
+            if(show) {
+                stopMic();
+                document.getElementById('manualValue').focus();
+            }
+        }
+
+        function saveManual() {
+            const val = document.getElementById('manualValue').value;
+            if(!val) return;
+            document.getElementById('bigDisplay').innerText = val;
+            confirmReading();
+            document.getElementById('manualValue').value = "";
+            toggleManual(false);
+        }
+
+        function recalculateField() {
+            // Determine field based on buffer length
+            const index = buffer.length % FIELD_CYCLE.length;
+            field = FIELD_CYCLE[index];
+            
+            document.getElementById('modalLabel').innerText = field.toUpperCase();
+            document.getElementById('bigDisplay').innerText = "0.0";
+            document.getElementById('passFailBadge').style.display = "none";
+            
+            // Logic for predictions when rewinding
+            if (field.includes("Amps")) {
+                // Find previous volts in buffer
+                const lastEntry = buffer[buffer.length-1]; // This is wrong if we just stepped back
+                // Let's search the buffer for the LAST volt reading
+                let lastVolt = 0;
+                for(let i = buffer.length-1; i >= 0; i--) {
+                    if(buffer[i].includes("Volts")) {
+                        lastVolt = parseFloat(buffer[i].split("◘")[1]);
+                        break;
+                    }
+                }
+                currentVolts = lastVolt;
+                const ratingId = field === "Herm Amps" ? "hermRating" : "fanRating";
+                const rating = parseFloat(document.getElementById(ratingId).value);
+                if(currentVolts > 0 && rating) {
+                    expectedRange = calculateExpectedAmps(currentVolts, rating);
+                    document.getElementById('targetRange').innerText = "EXPECTED: " + expectedRange.min + " - " + expectedRange.max;
+                    document.getElementById('targetRange').style.color = "var(--amber-orange)";
+                }
+            } else {
+                document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
+                document.getElementById('targetRange').style.color = "var(--electric-blue)";
+                expectedRange = null;
+            }
+        }
+
+        function deleteLogItem(index) {
+            buffer.splice(index, 1);
+            localStorage.setItem('hvacStagingBuffer', JSON.stringify(buffer));
+            syncLogToUI();
+            recalculateField();
         }
 
         function clearBuffer() {
@@ -249,31 +355,33 @@
                 buffer = [];
                 localStorage.removeItem('hvacStagingBuffer');
                 syncLogToUI();
-                updateUIState('state-idle');
-                resetCycle();
+                recalculateField();
             }
-        }
-
-        function resetCycle() {
-            field = "Herm Volts";
-            document.getElementById('modalLabel').innerText = field.toUpperCase();
-            document.getElementById('bigDisplay').innerText = "0.0";
-            document.getElementById('targetRange').innerText = "READY FOR VOLTS";
-            document.getElementById('passFailBadge').style.display = "none";
-            stopMic();
         }
 
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
-            log.innerHTML = buffer.length ? buffer.map(item => `<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05);">${item.replace('◘', ': ')}</div>`).join('') : '<div style="color:#444; text-align:center; margin-top:30px;">Log is empty</div>';
+            if (buffer.length === 0) {
+                log.innerHTML = '<div style="color:#444; text-align:center; margin-top:10px;">Log is empty</div>';
+                updateUIState('state-idle');
+                return;
+            }
+            
+            log.innerHTML = buffer.map((item, idx) => `
+                <div class="log-item">
+                    <span>${item.replace('◘', ': ')}</span>
+                    <button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button>
+                </div>
+            `).join('');
             log.scrollTop = log.scrollHeight;
-            if (buffer.length > 0) updateUIState('state-pending');
+            updateUIState('state-pending');
         }
 
         function openVoiceConsole() { 
             document.getElementById('mainDashboard').style.display = 'none';
             document.getElementById('voiceModal').style.display = 'flex';
             syncLogToUI();
+            recalculateField();
         }
 
         function calculateExpectedAmps(volts, rating) {
@@ -350,7 +458,6 @@
             document.getElementById('micTrigger').innerText = "START MIC";
             document.getElementById('micTrigger').className = "btn btn-primary";
             document.getElementById('pwrIndicator').style.display = "none";
-            if(!field.includes("Amps")) document.getElementById('targetRange').innerText = "MIC STANDBY";
         }
 
         function scrubDisplay() {
@@ -387,42 +494,11 @@
             const display = document.getElementById('bigDisplay');
             display.style.color = "var(--emerald-green)";
             
-            let rating = 0;
-            if(field === "Herm Volts") {
-                currentVolts = parseFloat(val);
-                rating = parseFloat(document.getElementById('hermRating').value);
-                field = "Herm Amps";
-            }
-            else if(field === "Herm Amps") field = "Fan Volts";
-            else if(field === "Fan Volts") {
-                currentVolts = parseFloat(val);
-                rating = parseFloat(document.getElementById('fanRating').value);
-                field = "Fan Amps";
-            }
-            else {
-                field = "Herm Volts";
-                document.getElementById('targetRange').innerText = "CYCLE COMPLETE";
-                document.getElementById('targetRange').style.color = "var(--emerald-green)";
-                stopMic();
-            }
-
-            // Update Prediction Text for the NEXT field (Amps)
-            if (field.includes("Amps") && rating && currentVolts > 0) {
-                 expectedRange = calculateExpectedAmps(currentVolts, rating);
-                 document.getElementById('targetRange').innerText = "EXPECTED: " + expectedRange.min + " - " + expectedRange.max;
-                 document.getElementById('targetRange').style.color = "var(--amber-orange)";
-            } else if (field.includes("Volts")) {
-                 expectedRange = null;
-                 document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
-                 document.getElementById('targetRange').style.color = "var(--electric-blue)";
-            }
-            
             setTimeout(() => {
                 display.style.color = "var(--text-primary)";
-                document.getElementById('modalLabel').innerText = field.toUpperCase();
-                document.getElementById('bigDisplay').innerText = "0.0";
+                recalculateField(); 
                 isCapturing = false;
-            }, 1200);
+            }, 1000);
         }
 
         function sendFinalBlock() {
@@ -449,7 +525,7 @@
                     syncBtn.disabled = false;
                     syncBtn.innerText = "SEAL & SYNC DATA";
                     alert("Sync Success! Spreadsheet Updated.");
-                    resetCycle();
+                    recalculateField();
                 }, 1500);
             })
             .catch(() => {
