@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Librarian v11</title>
+    <title>HVAC Librarian v12</title>
     
     <!-- PWA NATIVE FEEL META TAGS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -46,6 +46,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             transition: opacity 0.3s ease;
+            position: relative;
         }
 
         h2 {
@@ -72,6 +73,7 @@
         .btn:active { transform: scale(0.98); }
         .btn-primary { background-color: #0056b3; color: white; }
         .btn-stop { background-color: var(--crimson-red); color: white; }
+        .btn-orange { background-color: var(--amber-orange); color: black; }
         .btn-quick { background-color: var(--amber-orange); color: black; padding: 25px; font-size: 22px; box-shadow: 0 0 20px rgba(255, 171, 0, 0.3); }
 
         .modal-overlay { 
@@ -98,12 +100,12 @@
         }
 
         .big-display {
-            font-size: 100px; 
+            font-size: 110px; 
             line-height: 1;
             font-weight: 900;
             color: var(--text-primary);
             text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
-            margin: 5px 0;
+            margin: 10px 0;
             font-variant-numeric: tabular-nums;
             transition: color 0.3s ease;
         }
@@ -111,16 +113,16 @@
         #modalLabel {
             color: var(--amber-orange);
             letter-spacing: 2px;
-            font-size: 12px;
+            font-size: 13px;
             margin: 0;
             text-transform: uppercase;
         }
 
         #targetRange {
-            font-size: 26px;
+            font-size: 30px;
             font-weight: 800;
             color: var(--electric-blue);
-            min-height: 32px;
+            min-height: 36px;
             margin: 5px 0;
             text-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
         }
@@ -144,10 +146,10 @@
 
         .result-badge {
             display: none;
-            padding: 10px 20px;
-            border-radius: 30px;
+            padding: 10px 24px;
+            border-radius: 40px;
             font-weight: 900;
-            font-size: 22px;
+            font-size: 24px;
             margin: 5px 0;
             text-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
@@ -165,14 +167,37 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 15px;
+            margin-bottom: 5px;
         }
         .dual-inputs input {
-            max-width: 65px;
+            max-width: 60px;
             text-align: center;
             padding: 8px;
             background: rgba(255,255,255,0.1);
+            font-size: 20px;
+            font-weight: bold;
         }
+
+        .quick-dial {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 5px 0;
+            margin-top: 5px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .dial-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #333;
+            color: var(--text-secondary);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .dial-btn:active { background: var(--electric-blue); color: black; }
 
         .log-list {
             flex: 1;
@@ -180,8 +205,8 @@
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
             margin: 5px 0;
-            padding: 12px;
-            font-size: 13px;
+            padding: 10px;
+            font-size: 12px;
             border: 1px solid rgba(255,255,255,0.05);
         }
 
@@ -189,16 +214,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px solid rgba(255,255,255,0.03);
         }
         .del-btn {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,68,68,0.4);
-            color: #ff6666;
+            background: rgba(255,0,0,0.1);
+            border: 1px solid rgba(255,0,0,0.3);
+            color: #ff5555;
             border-radius: 4px;
             padding: 2px 6px;
-            cursor: pointer;
             font-size: 10px;
         }
         
@@ -207,7 +231,7 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: #111;
-            z-index: 100;
+            z-index: 1000;
             padding: 20px;
             border-radius: 20px;
             align-items: center;
@@ -217,25 +241,33 @@
 
         .control-row {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             margin: 5px 0;
             width: 100%;
         }
-
         .control-row .btn { flex: 1; margin: 0; }
-        .btn-manual-toggle { background: #333; color: #fff; border: 1px solid #444; }
 
         .ver-tag { position: absolute; bottom: 5px; left: 10px; font-size: 10px; color: #444; }
         .tolerance-pill { 
             background: rgba(255,255,255,0.05); border: 1px solid #333; 
-            padding: 4px 8px; border-radius: 15px; font-size: 10px; 
+            padding: 6px 12px; border-radius: 15px; font-size: 12px; 
             cursor: pointer; color: var(--text-secondary);
+            font-weight: bold;
         }
         .tolerance-pill.active { background: #444; color: var(--electric-blue); border-color: var(--electric-blue); }
+        
+        #splashVer {
+            position: absolute;
+            top: 15px; right: 15px;
+            font-size: 10px; color: #444;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
 <body id="masterBody">
     <div class="container" id="mainDashboard">
+        <div id="splashVer">BUILD v12</div>
         <h2>HVAC Librarian</h2>
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ CAPACITOR TEST</button>
         <hr style="opacity:0.1; margin:15px 0;">
@@ -244,7 +276,6 @@
         <div id="pipelineSection" style="display:none;">
             <button class="btn btn-quick" onclick="runPipeline()">2. Run Pipeline</button>
         </div>
-        <div style="font-size:9px; color:#333; text-align:right; margin-top:10px;">PRO BUILD v11</div>
     </div>
 
     <div id="voiceModal" class="modal-overlay state-idle">
@@ -267,46 +298,63 @@
 
             <!-- MANUAL OVERLAY -->
             <div id="manualInputZone">
-                <h3 style="margin:0 0 10px 0; font-size: 18px;">KEYBOARD ENTRY</h3>
-                <input type="number" id="manualValue" placeholder="Enter Value" style="font-size:28px; text-align:center;">
-                <div class="control-row" style="margin-top:15px;">
+                <h3 style="margin:0 0 10px 0; font-size: 20px;">KEYBOARD ENTRY</h3>
+                <input type="number" id="manualValue" placeholder="Enter Value" style="font-size:32px; text-align:center;">
+                <div class="control-row" style="margin-top:20px;">
                     <button onclick="saveManual()" class="btn btn-primary">SAVE</button>
                     <button onclick="toggleManual(false)" class="btn" style="background:#222;">BACK</button>
                 </div>
             </div>
 
-            <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
-                <div id="capConfig">
-                    <div class="dual-inputs">
-                        <input type="number" id="hermRating" value="45">
-                        <span style="font-size:18px; font-weight:bold; color:var(--amber-orange);">+</span>
-                        <input type="number" id="fanRating" value="5">
+            <!-- DUAL INPUTS & TOLERANCE -->
+            <div style="display:flex; flex-direction:column; gap:5px; margin-top:5px;">
+                <div class="dual-inputs">
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <span style="font-size:9px; color:#555;">HERM</span>
+                        <input type="number" id="hermRating" value="45" onclick="selectRating('herm')">
+                    </div>
+                    <span style="font-size:20px; font-weight:bold; color:var(--amber-orange); margin-top:10px;">+</span>
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <span style="font-size:9px; color:#555;">FAN</span>
+                        <input type="number" id="fanRating" value="5" onclick="selectRating('fan')">
+                    </div>
+                    <div id="tolSelector" style="display:flex; flex-direction:column; gap:4px; margin-left:10px;">
+                        <div class="tolerance-pill" onclick="setTol(5)">5%</div>
+                        <div class="tolerance-pill active" id="tolActive" onclick="setTol(6)">6%</div>
+                        <div class="tolerance-pill" onclick="setTol(10)">10%</div>
                     </div>
                 </div>
-                <div id="tolSelector" style="display:flex; gap:5px;">
-                    <div class="tolerance-pill" onclick="setTol(5)">5%</div>
-                    <div class="tolerance-pill active" id="tol6" onclick="setTol(6)">6%</div>
-                    <div class="tolerance-pill" onclick="setTol(10)">10%</div>
+                
+                <!-- QUICK DIAL -->
+                <div class="quick-dial" id="ratingDial">
+                    <span style="font-size:9px; color:#444; padding: 5px 2px;">DIAL:</span>
+                    <button class="dial-btn" onclick="dial(35)">35</button>
+                    <button class="dial-btn" onclick="dial(45)">45</button>
+                    <button class="dial-btn" onclick="dial(50)">50</button>
+                    <button class="dial-btn" onclick="dial(55)">55</button>
+                    <button class="dial-btn" onclick="dial(60)">60</button>
+                    <button class="dial-btn" onclick="dial(70)">70</button>
+                    <button class="dial-btn" onclick="dial(80)">80</button>
                 </div>
             </div>
 
-            <div class="control-row" style="margin-top:15px;">
+            <div class="control-row" style="margin-top:10px;">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2;">START MIC</button>
-                <button onclick="toggleManual(true)" class="btn btn-manual-toggle" style="flex:1; font-size:13px;">MANUAL</button>
+                <button onclick="toggleManual(true)" class="btn btn-orange" style="flex:1; font-size:13px;">MANUAL</button>
             </div>
-            <div class="ver-tag">ENGINE v11.2</div>
+            <div class="ver-tag">ENGINE v12.1</div>
         </div>
 
         <!-- SECONDARY ACTIONS -->
         <div class="control-row">
-            <button onclick="deleteLogItem(buffer.length-1)" style="background:rgba(255,23,68,0.1); border: 1px solid var(--crimson-red); color: var(--crimson-red);" class="btn">UNDO / SCRUB</button>
-            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.1); border: 1px solid var(--emerald-green); color: var(--emerald-green);" class="btn">COPY / CONFIRM</button>
+            <button onclick="deleteLogItem(buffer.length-1)" style="background:rgba(255,23,68,0.05); border: 1px solid var(--crimson-red); color: var(--crimson-red); font-size:14px;" class="btn">UNDO / SCRUB</button>
+            <button onclick="confirmReading()" style="background:rgba(0,200,83,0.05); border: 1px solid var(--emerald-green); color: var(--emerald-green); font-size:14px;" class="btn">COPY / CONFIRM</button>
         </div>
 
         <!-- STAGING LOG -->
         <div id="stagingLog" class="log-list"></div>
         
-        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto;">SEAL & SYNC DATA</button>
+        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:15px;">SEAL & SYNC DATA</button>
     </div>
 
     <script>
@@ -320,11 +368,27 @@
         let recognition = null;
         let isMicOn = false;
         let tolerance = 0.06;
+        let activeRatingTarget = 'herm';
 
         const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps"];
 
         syncLogToUI();
         recalculateField();
+
+        function selectRating(target) {
+            activeRatingTarget = target;
+            document.querySelectorAll('.dual-inputs input').forEach(i => i.style.borderColor = 'rgba(255,255,255,0.1)');
+            document.getElementById(target + 'Rating').style.borderColor = 'var(--electric-blue)';
+        }
+
+        function dial(val) {
+            document.getElementById(activeRatingTarget + 'Rating').value = val;
+            recalculateField();
+            // Pulse the input to show it changed
+            const input = document.getElementById(activeRatingTarget + 'Rating');
+            input.style.background = 'rgba(0, 229, 255, 0.2)';
+            setTimeout(() => input.style.background = 'rgba(255,255,255,0.1)', 300);
+        }
 
         function setTol(val) {
             tolerance = val / 100;
@@ -392,6 +456,7 @@
         }
 
         function clearBuffer() {
+            if(!confirm("Wipe all readings?")) return;
             buffer = [];
             localStorage.removeItem('hvacStagingBuffer');
             syncLogToUI();
@@ -401,7 +466,7 @@
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
             if (buffer.length === 0) {
-                log.innerHTML = '<div style="color:#444; text-align:center; height:100px; display:flex; align-items:center; justify-content:center;">Log is empty</div>';
+                log.innerHTML = '<div style="color:#444; text-align:center; height:60px; display:flex; align-items:center; justify-content:center;">Log is empty</div>';
                 document.getElementById('voiceModal').className = 'modal-overlay state-idle';
                 return;
             }
@@ -409,7 +474,7 @@
             log.innerHTML = buffer.map((item, idx) => `
                 <div class="log-item">
                     <span>${item.replace('◘', ': ')}</span>
-                    <button class="del-btn" onclick="deleteLogItem(${idx})">&times; UNDO</button>
+                    <button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button>
                 </div>
             `).join('');
             log.scrollTop = log.scrollHeight;
@@ -466,7 +531,6 @@
                     let result = e.results[e.results.length-1];
                     let transcript = result[0].transcript.toLowerCase();
                     
-                    // VOICE COMMANDS
                     if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("save")) { 
                         confirmReading(); 
                         return; 
@@ -484,10 +548,6 @@
 
                 recognition.onend = () => {
                     if (isMicOn) try { recognition.start(); } catch(e){}
-                };
-
-                recognition.onerror = (e) => {
-                    if (e.error === 'not-allowed') alert("Mic Blocked. Check SSL/Pages setting.");
                 };
 
                 recognition.start();
@@ -556,7 +616,7 @@
         }
 
         function sendFinalBlock() {
-            if (buffer.length === 0) return alert("No log to sync.");
+            if (buffer.length === 0) return alert("Log is empty.");
             stopMic();
             const syncBtn = document.getElementById('syncBtn');
             syncBtn.disabled = true;
