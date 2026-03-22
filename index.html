@@ -106,8 +106,18 @@
         .pass-small { color: var(--emerald-green); border: 1px solid var(--emerald-green); }
         .fail-small { color: var(--crimson-red); border: 1px solid var(--crimson-red); }
 
-        #splashVer { position: absolute; top: 12px; right: 16px; font-size: 10px; color: #fff; font-weight: 900; padding: 4px 8px; background: #333; border-radius: 6px; display: flex; align-items: center; gap: 8px; }
-        .report-btn { background: var(--amber-orange); color: black; padding: 2px 6px; border-radius: 4px; font-size: 9px; cursor: pointer; border: none; font-weight: 900; }
+        #splashVer { position: absolute; top: 10px; right: 10px; font-size: 9px; color: #fff; font-weight: 900; padding: 3px 6px; background: #333; border-radius: 4px; display: flex; align-items: center; gap: 5px; }
+        .report-btn { background: var(--amber-orange); color: black; padding: 2px 4px; border-radius: 3px; font-size: 8px; cursor: pointer; border: none; font-weight: 900; }
+        
+        /* APP NAV BAR */
+        .app-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: rgba(18,18,18,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 9999; }
+        .nav-btn { background: transparent; border: none; color: #777; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 9px; font-weight: 900; transition: all 0.3s; }
+        .nav-btn.active { color: var(--electric-blue); transform: translateY(-3px); }
+        .nav-btn i { font-size: 18px; margin-bottom: 2px; }
+
+        .spec-val { font-size: 13px; font-weight: 900; color: var(--text-primary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .spec-val.shrink { font-size: 10px; }
+        
         .tolerance-pill { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 900; color: #888; }
         .tolerance-pill.active { background: #444; color: var(--electric-blue); border-color: var(--electric-blue); }
 
@@ -141,9 +151,17 @@
 
     <div id="masterIndicator" class="master-indicator"></div>
 
-    <div class="container" id="mainDashboard">
+    <!-- APP NAVIGATION BAR -->
+    <nav class="app-nav">
+        <button class="nav-btn active" onclick="showSection('mainDashboard')" id="nav-home"><span>🏠</span> HOME</button>
+        <button class="nav-btn" onclick="openVoiceConsole()" id="nav-diag"><span>⚡</span> DIAG</button>
+        <button class="nav-btn" onclick="openReport()" id="nav-report"><span>📋</span> REPORT</button>
+        <button class="nav-btn" onclick="openManuals()" id="nav-manuals"><span>📄</span> MANUALS</button>
+    </nav>
+
+    <div class="container" id="mainDashboard" style="padding-bottom:80px;">
         <div id="splashVer">
-            <span>v20.22 Pro</span>
+            <span>v20.23 Pro</span>
             <button class="report-btn" onclick="openReport()">📋 REPORT</button>
         </div>
         <h2>⚡ HVAC Diag</h2>
@@ -286,6 +304,23 @@
         <div id="restoreBox" onclick="restoreBuffer()">↩️ RESTORE WIPED DATA</div>
     </div>
 
+    <!-- MANUALS OVERLAY -->
+    <div id="manualsOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+            <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">📄 SYSTEM MANUALS</h2>
+            <button onclick="closeManuals()" style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
+        </div>
+        <div id="manualsContent" style="flex:1; overflow-y:auto; padding:15px;">
+            <div id="manualLinks" style="display:grid; gap:10px;">
+                <div style="color:#666; text-align:center; padding:40px;">No Manuals Indexed. Tap LIBRARIAN on Home to search.</div>
+            </div>
+        </div>
+        <div style="padding:15px; border-top:1px solid #333;">
+            <button class="btn btn-primary" onclick="runLibrarianInApp()">🔍 RE-SCAN MANUALS</button>
+            <button class="btn btn-outline" onclick="closeManuals()" style="margin-top:10px;">CLOSE</button>
+        </div>
+    </div>
+
     <!-- REPORT OVERLAY -->
     <div id="reportOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
@@ -312,7 +347,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.22";
+        const APP_VERSION = "20.23";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -344,7 +379,10 @@
         function initSplash() {
             Object.keys(specs).forEach(k => {
                 const el = document.getElementById('val-' + k);
-                if (el) el.innerText = specs[k] || '--';
+                if (el) {
+                    el.innerText = specs[k] || '--';
+                    el.classList.toggle('shrink', String(specs[k]).length > 10);
+                }
             });
         }
 
@@ -441,7 +479,11 @@
                 if (numMatch) {
                     const num = parseFloat(numMatch[1]);
                     specs[target] = num;
-                    document.getElementById('val-' + target).innerText = num;
+                    const valEl = document.getElementById('val-' + target);
+                    if (valEl) {
+                        valEl.innerText = num;
+                        valEl.classList.toggle('shrink', String(num).length > 10);
+                    }
                     localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
                     const cell = document.getElementById('spec-' + target);
                     cell.style.boxShadow = '0 0 30px var(--emerald-green)';
@@ -512,27 +554,36 @@
                         if (input.length > 0) {
                             let val = input.toUpperCase();
                             
+                            // Normalization: Brand
+                            if (masterTarget === "BRAND") {
+                                if (/\b(train|tranes)\b/.test(input)) val = "Trane";
+                                else if (/\b(comfort\s?maker)\b/.test(input)) val = "Comfortmaker";
+                                else if (/\b(carrier)\b/.test(input)) val = "Carrier";
+                                else if (/\b(bryant)\b/.test(input)) val = "Bryant";
+                                else if (/\b(rheem)\b/.test(input)) val = "Rheem";
+                                else if (/\b(ruud)\b/.test(input)) val = "Ruud";
+                                else if (/\b(lennox)\b/.test(input)) val = "Lennox";
+                                else if (/\b(daikin)\b/.test(input)) val = "Daikin";
+                                else if (/\b(goodman)\b/.test(input)) val = "Goodman";
+                                else if (/\b(amana)\b/.test(input)) val = "Amana";
+                            }
                             // Normalization: Refrigerant
                             if (masterTarget === "REF") {
                                 if (/\b4[:.]?1?0\b/.test(input)) val = "R-410A";
                                 else if (/\b22\b/.test(input)) val = "R-22";
                                 else if (/\b407\b/.test(input)) val = "R-407C";
                                 else if (/\b134\b/.test(input)) val = "R-134a";
+                                else if (/\b454\b/.test(input)) val = "R-454B";
                                 else if (/\b438\b/.test(input)) val = "R-438A (MO99)";
                                 else if (/\b422\b/.test(input)) val = "R-422D";
-                            }
-                            // Normalization: Metering
-                            if (masterTarget === "METER") {
-                                if (/\bt\s?xv\b/.test(input)) val = "TXV";
-                                else if (/\be\s?xv\b/.test(input)) val = "EXV";
-                                else if (/\be\s?ev\b/.test(input)) val = "EEV";
-                                else if (/\bpiston\b/.test(input)) val = "Piston";
-                                else if (/\bcap\b/.test(input)) val = "Cap Tube";
                             }
 
                             specs[masterTarget] = val;
                             const valEl = document.getElementById('val-' + masterTarget);
-                            if (valEl) valEl.innerText = val;
+                            if (valEl) {
+                                valEl.innerText = val;
+                                valEl.classList.toggle('shrink', val.length > 10);
+                            }
                             localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
                             
                             const cell = document.getElementById('spec-' + masterTarget);
@@ -557,8 +608,33 @@
             if(isMasterOn) toggleSpecMaster(); 
             document.getElementById('mainDashboard').style.display = 'none';
             document.getElementById('voiceModal').style.display = 'flex';
-            fieldIndex = buffer.length % FIELD_CYCLE.length;
+            
+            // Default to first empty step
+            let firstEmpty = 0;
+            for(let i=0; i<FIELD_CYCLE.length; i++) { if(!buffer[i]) { firstEmpty = i; break; } }
+            fieldIndex = firstEmpty;
+            
+            updateNavUI('nav-diag');
             syncLogToUI(); updateStepNav(); recalculateField();
+        }
+
+        function showSection(id) {
+            closeAllModals();
+            document.getElementById('mainDashboard').style.display = 'none';
+            document.getElementById(id).style.display = 'block';
+            updateNavUI('nav-home');
+        }
+
+        function updateNavUI(activeId) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(activeId).classList.add('active');
+        }
+
+        function closeAllModals() {
+            document.getElementById('voiceModal').style.display = 'none';
+            document.getElementById('reportOverlay').style.display = 'none';
+            document.getElementById('manualsOverlay').style.display = 'none';
+            stopMic();
         }
 
         function setTol(val) {
@@ -805,6 +881,8 @@
         }
 
         function openReport() {
+            closeAllModals();
+            updateNavUI('nav-report');
             const content = document.getElementById('reportContent');
             let txt = `<div style="color:var(--amber-orange); border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;"><b>SYSTEM PROFILE</b></div>`;
             
@@ -826,7 +904,14 @@
             document.getElementById('reportOverlay').style.display = 'flex';
         }
 
-        function closeReport() { document.getElementById('reportOverlay').style.display = 'none'; }
+        function closeReport() { closeAllModals(); showSection('mainDashboard'); }
+
+        function openManuals() {
+            closeAllModals();
+            updateNavUI('nav-manuals');
+            document.getElementById('manualsOverlay').style.display = 'flex';
+        }
+        function closeManuals() { closeAllModals(); showSection('mainDashboard'); }
 
         function copyReport() {
             let block = `--- HVAC MASTER PRO v${APP_VERSION} REPORT ---\n\n`;
