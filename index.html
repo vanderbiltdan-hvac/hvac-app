@@ -98,11 +98,28 @@
         #restoreBox { display: none; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--electric-blue); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
         .master-indicator { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: var(--electric-blue); display: none; z-index: 100000; box-shadow: 0 0 15px var(--electric-blue); }
 
-        /* MULTI PHOTO PROGRESS */
-        #photoStatus { font-size: 10px; color: var(--amber-orange); margin-top: 5px; text-align: center; display: none; }
+        /* MULTI PHOTO PROGRESS BAR */
+        .progress-box { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 10px; overflow: hidden; display: none; }
+        .progress-bar { height: 100%; width: 0%; background: var(--electric-blue); transition: width 0.3s; box-shadow: 0 0 10px var(--electric-blue); }
+
+        /* EQUIPMENT CARDS (DEEP LIBRARIAN) */
+        .equipment-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .card-type { font-size: 10px; font-weight: 900; color: var(--amber-orange); text-transform: uppercase; letter-spacing: 1px; }
+        .card-model { font-size: 16px; font-weight: 900; color: var(--text-primary); }
+        .link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .mini-link { background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.1); color: var(--electric-blue); padding: 8px; border-radius: 8px; text-decoration: none; font-size: 11px; font-weight: 700; text-align: center; }
+        .mini-link:active { background: rgba(0, 229, 255, 0.2); }
+
+        /* DRAFT REPORT DRAWER */
+        .report-drawer { position: fixed; bottom: -80vh; left: 0; width: 100%; height: 80vh; background: var(--bg-dark); border-top: 2px solid var(--electric-blue); z-index: 11000; transition: bottom 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        .report-drawer.open { bottom: 0; }
+        .drawer-handle { width: 50px; height: 5px; background: #333; border-radius: 10px; margin: -10px auto 15px auto; }
+        .drawer-content { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; }
         
-        /* MANUALS LIST */
-        .manual-link { display: block; background: rgba(255,255,255,0.05); color: var(--electric-blue); padding: 12px; border-radius: 8px; margin-bottom: 6px; text-decoration: none; font-weight: 900; border: 1px solid rgba(0, 229, 255, 0.2); }
+        /* FOOTER TAB */
+        .report-tab { position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 10999; }
+        .tab-btn { color: var(--electric-blue); font-weight: 900; font-size: 13px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
     </style>
 </head>
 <body id="masterBody">
@@ -136,7 +153,8 @@
         <div style="margin-bottom:15px;">
             <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
             <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
-            <div id="photoStatus">Processing Photos...</div>
+            <div id="photoProgressBox" class="progress-box"><div id="photoProgressBar" class="progress-bar"></div></div>
+            <div id="photoStatus" style="font-size:10px; color:var(--amber-orange); margin-top:5px; text-align:center; display:none;">Processing...</div>
         </div>
 
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ RUN DIAGNOSTIC</button>
@@ -201,20 +219,42 @@
         <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:18px; font-size:18px;">SEAL & SYNC REPORT</button>
     </div>
 
-    <!-- AI PREVIEW MODAL -->
-    <div id="aiModal" class="modal-overlay" style="background:rgba(0,0,0,0.95); justify-content:center; display:none;">
-        <div class="container" style="background:#222; border:1px solid var(--electric-blue); max-width:400px;">
-            <h2 style="font-size:20px; color:var(--electric-blue);">AI TAG SCAN RESULTS</h2>
-            <div id="aiResults" style="font-size:14px; max-height:300px; overflow-y:auto; margin-bottom:20px; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px;">
-                <div style="text-align:center; padding:20px;">Analyzing Tag...</div>
+    <!-- AI TRAY (NON-BLOCKING) -->
+    <div id="aiTray" class="modal-overlay" style="background:rgba(0,0,0,0.95); justify-content:flex-end; display:none; height:auto; top:auto; bottom:0; padding:0; border-top:2px solid var(--electric-blue);">
+        <div class="container" style="background:#1a1a1a; border-radius: 20px 20px 0 0; border:none; max-width:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="font-size:18px; color:var(--electric-blue); margin:0;">AI TAG RESULTS</h2>
+                <button onclick="closeAiModal()" style="background:none; border:none; color:white; font-size:24px;">&times;</button>
             </div>
-            <button class="btn btn-primary" onclick="confirmAiSpecs()">CONFIRM & MERGE</button>
-            <button class="btn btn-outline" onclick="closeAiModal()" style="margin-top:10px;">DISCARD</button>
+            <div id="aiResults" style="font-size:14px; max-height:200px; overflow-y:auto; margin:10px 0; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px;"></div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" onclick="confirmAiSpecs()" style="font-size:14px; padding:12px;">MERGE & SEARCH MANUALS</button>
+                <button class="btn btn-outline" onclick="closeAiModal()" style="font-size:14px; padding:12px;">DISCARD</button>
+            </div>
         </div>
     </div>
 
+    <!-- DRAFT REPORT DRAWER -->
+    <div id="reportDrawer" class="report-drawer" onclick="if(event.target === this) toggleDrawer()">
+        <div class="drawer-handle"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="margin:0; font-size:22px;">DRAFT REPORT</h2>
+            <button onclick="toggleDrawer()" style="background:none; border:none; color:white; font-size:20px;">READY &times;</button>
+        </div>
+        <div class="drawer-content" id="drawerContent">
+            <!-- Dynamic Content -->
+        </div>
+        <button class="btn btn-accent" onclick="sendFinalBlock()" style="background:var(--emerald-green); color:black; margin-top:15px; padding:20px; font-size:20px;">SEAL & SYNC REPORT</button>
+    </div>
+
+    <!-- FOOTER TAB -->
+    <div class="report-tab" id="reportTab">
+        <div class="tab-btn" onclick="toggleDrawer()">📋 VIEW DRAFT REPORT</div>
+        <div id="tabStatus" style="font-size:11px; color:#666;">EMPTY</div>
+    </div>
+
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcb_6H7QFJfWq2QsdDGet1q6yKjRWExBT5EvN1T1QInld0Uerd3MsxcqJ1-Xl4hLdv/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlH-ta2DPWcVES8Kj49jbD3tWpbqdPm4Of0CAsvD6m1ZlVFhhAH0Fij33mwBP_wv2z/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || [];
         let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { RLA: 0, FLA: 0, SUB: 0 };
@@ -234,7 +274,12 @@
         async function handleMultiPhotos(input) {
             const files = input.files; if (files.length === 0) return;
             const status = document.getElementById('photoStatus');
-            status.style.display = 'block'; status.innerText = `Sending ${files.length} Photos to Gemini...`;
+            const pbox = document.getElementById('photoProgressBox');
+            const pbar = document.getElementById('photoProgressBar');
+            
+            status.style.display = 'block'; 
+            pbox.style.display = 'block';
+            pbar.style.width = '0%';
 
             for (let i = 0; i < files.length; i++) {
                 const reader = new FileReader();
@@ -243,18 +288,23 @@
                     const filename = files[i].name;
                     const mime = files[i].type;
                     
-                    status.innerText = `Analyzing Nameplate: ${filename}...`;
+                    status.innerText = `Analyzing: ${filename}...`;
+                    pbar.style.width = `${((i + 1) / files.length) * 100}%`;
                     
-                    const response = await fetch(WEB_APP_URL, {
-                        method: "POST",
-                        body: JSON.stringify({ action: "uploadPhotoAI", data: base64, filename: filename, mimeType: mime }),
-                        // We need CORS here to get the JSON back! I'll update Apps Script to handle it.
-                    });
-                    
-                    const result = await response.json();
-                    if(result && result.extractedData) {
-                        tempAiSpecs = result.extractedData;
-                        openAiModal(result.extractedData);
+                    try {
+                        const response = await fetch(WEB_APP_URL, {
+                            method: "POST",
+                            body: JSON.stringify({ action: "uploadPhotoAI", data: base64, filename: filename, mimeType: mime })
+                        });
+                        const result = await response.json();
+                        if(result && result.extractedData) {
+                            tempAiSpecs = result.extractedData;
+                            openAiModal(result.extractedData);
+                        }
+                    } catch (err) { console.error(err); }
+
+                    if (i === files.length - 1) {
+                        setTimeout(() => { pbox.style.display = 'none'; status.style.display = 'none'; }, 2000);
                     }
                 };
                 reader.readAsDataURL(files[i]);
@@ -262,44 +312,64 @@
         }
 
         function openAiModal(data) {
-            const modal = document.getElementById('aiModal');
+            const tray = document.getElementById('aiTray');
             const results = document.getElementById('aiResults');
-            modal.style.display = 'flex';
+            tray.style.display = 'flex';
             results.innerHTML = Object.entries(data).map(([k, v]) => `
-                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333;">
-                    <b style="color:#aaa;">${k}:</b>
-                    <b style="color:var(--electric-blue); font-size:16px;">${v}</b>
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <b style="color:#aaa; font-size:12px;">${k}:</b>
+                    <b style="color:var(--electric-blue); font-size:14px;">${v}</b>
                 </div>
             `).join('');
         }
 
         function confirmAiSpecs() {
-            if(tempAiSpecs.RLA) { specs.RLA = parseFloat(tempAiSpecs.RLA); document.getElementById('val-RLA').innerText = specs.RLA; }
-            if(tempAiSpecs.FLA) { specs.FLA = parseFloat(tempAiSpecs.FLA); document.getElementById('val-FLA').innerText = specs.FLA; }
-            if(tempAiSpecs["Target SC"]) { specs.SUB = parseFloat(tempAiSpecs["Target SC"]); document.getElementById('val-SUB').innerText = specs.SUB; }
+            if(tempAiSpecs.RLA) specs.RLA = parseFloat(tempAiSpecs.RLA);
+            if(tempAiSpecs.FLA) specs.FLA = parseFloat(tempAiSpecs.FLA);
+            if(tempAiSpecs.TargetSC) specs.SUB = parseFloat(tempAiSpecs.TargetSC);
+            if(tempAiSpecs.Model) {
+                // Future: add to persistent equipment list
+            }
             localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+            initSplash();
+            syncLogToUI();
+            runLibrarianInApp(); // Auto-search after confirmation
             closeAiModal();
         }
 
-        function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; document.getElementById('photoStatus').style.display = 'none'; }
+        function closeAiModal() { document.getElementById('aiTray').style.display = 'none'; }
 
         async function runLibrarianInApp() {
             const linksDiv = document.getElementById('manualLinks');
-            linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center;">Searching Manuals...</div>';
+            linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center; padding:10px;">Searching Library...</div>';
             
-            // First trigger the search link logic in sheet
-            await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }) });
-            
-            // Then fetch the links
-            const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchManuals" }) });
-            const links = await response.json();
-            
-            if(links.length === 0) {
-                linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>';
-            } else {
-                linksDiv.innerHTML = links.map(l => `
-                    <a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>
-                `).join('');
+            try {
+                // Sync to sheet first to update the search range
+                await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }), mode: "no-cors" });
+                
+                // Fetch the structured results
+                const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchManuals" }) });
+                const equipment = await response.json();
+                
+                if(!equipment || equipment.length === 0) {
+                    linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals found for these models.</div>';
+                } else {
+                    linksDiv.innerHTML = equipment.map(e => `
+                        <div class="equipment-card">
+                            <div class="card-header">
+                                <div>
+                                    <div class="card-type">${e.type}</div>
+                                    <div class="card-model">${e.model}</div>
+                                </div>
+                            </div>
+                            <div class="link-grid">
+                                ${e.links.map(l => `<a href="${l.url}" target="_blank" class="mini-link">${l.text}</a>`).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                linksDiv.innerHTML = '<div style="color:red; text-align:center;">Search Error. Check Connection.</div>';
             }
         }
 
@@ -362,7 +432,17 @@
 
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
-            if (buffer.length === 0) { log.innerHTML = '<div style="color:#444; text-align:center;">Log is empty</div>'; return; }
+            const drawerContent = document.getElementById('drawerContent');
+            const statusLabel = document.getElementById('tabStatus');
+
+            if (buffer.length === 0 && !specs.RLA && !specs.FLA && !specs.SUB) { 
+                log.innerHTML = '<div style="color:#444; text-align:center;">Log is empty</div>'; 
+                drawerContent.innerHTML = '<div style="color:#666; text-align:center; padding:40px;">No data staged for sync.</div>';
+                statusLabel.innerText = "EMPTY";
+                return; 
+            }
+
+            // Sync Log for Modal
             log.innerHTML = buffer.map((item, idx) => {
                 let badge = ""; let details = "";
                 if (item.field.includes("Amps") && !item.field.includes("Compressor") && !item.field.includes("Outdoor") && item.volts > 0) {
@@ -376,9 +456,28 @@
                     const pct = (item.val / specs.RLA) * 100; details = ` (${pct.toFixed(2)}% RLA)`;
                     badge = `<span class="badge-small ${pct <= 100 ? 'pass-small' : 'fail-small'}">${pct <= 100 ? 'PASS' : 'FAIL'}</span>`;
                 }
-                return `<div class="log-item"><div class="item-text"><b>${item.field}:</b> ${item.val}${details}${badge}</div><button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button></div>`;
-            }).join(''); log.scrollTop = log.scrollHeight;
+                return `<div class="log-item"><div class="item-text"><b>${item.field}:</b> ${item.val.toFixed(2)}${details}${badge}</div><button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button></div>`;
+            }).join(''); 
+            log.scrollTop = log.scrollHeight;
+
+            // Sync Drawer (Draft Report)
+            let specHtml = `<div style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">
+                <h3 style="font-size:12px; color:var(--amber-orange);">UNIT SPECS</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div>RLA: <b>${specs.RLA || '--'}</b></div>
+                    <div>FLA: <b>${specs.FLA || '--'}</b></div>
+                    <div>Target SC: <b>${specs.SUB || '--'}</b></div>
+                </div>
+            </div>`;
+
+            let logHtml = `<h3 style="font-size:12px; color:var(--amber-orange);">DIAGNOSTIC LOG</h3>` + 
+                buffer.map(i => `<div style="font-size:13px; margin:4px 0;">• ${i.field}: <b>${i.val.toFixed(2)}</b></div>`).join('');
+
+            drawerContent.innerHTML = specHtml + logHtml;
+            statusLabel.innerText = `${buffer.length + (specs.RLA?1:0) + (specs.FLA?1:0) + (specs.SUB?1:0)} ITEMS STAGED`;
         }
+
+        function toggleDrawer() { document.getElementById('reportDrawer').classList.toggle('open'); }
 
         function toggleMic() { if (isMicOn) stopMic(); else startListening(); }
 
