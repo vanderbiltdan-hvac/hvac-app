@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Librarian v17 SPEC MASTER</title>
+    <title>HVAC Librarian v20 MASTER PRO</title>
     
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -48,32 +48,9 @@
             position: relative;
         }
 
-        h2 {
-            font-size: 26px;
-            margin: 10px 0 20px 0;
-            background: linear-gradient(90deg, var(--electric-blue), var(--emerald-green));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 900;
-        }
+        h2 { font-size: 26px; margin: 10px 0 20px 0; background: linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
 
-        .btn {
-            width: 100%;
-            padding: 16px;
-            margin: 6px 0;
-            border-radius: 12px;
-            border: none;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.3s, border 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
+        .btn { width: 100%; padding: 16px; margin: 6px 0; border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.2s, background 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn:active { transform: scale(0.97); }
         .btn-primary { background-color: #0056b3; color: white; }
         .btn-stop { background-color: var(--crimson-red); color: white; }
@@ -81,176 +58,59 @@
         .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; }
         .btn-quick { background: linear-gradient(135deg, var(--amber-orange), #ff6d00); color: black; padding: 22px; font-size: 20px; box-shadow: 0 4px 20px rgba(255, 171, 0, 0.2); }
 
-        .modal-overlay { 
-            display:none; 
-            position:fixed; 
-            top:0; left:0; width:100%; height:100%; 
-            background: var(--bg-dark); 
-            z-index: 10000; 
-            flex-direction:column; 
-            padding:12px; 
-            box-sizing:border-box; 
-        }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-dark); z-index: 10000; flex-direction:column; padding:12px; box-sizing:border-box; }
 
-        .voice-console {
-            background: var(--glass-effect);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 24px;
-            padding: 12px;
-            text-align: center;
-            margin: 4px 0;
-            flex-shrink: 0;
-            position: relative;
-        }
+        .voice-console { background: var(--glass-effect); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 12px; text-align: center; margin: 4px 0; flex-shrink: 0; position: relative; }
 
-        .big-display {
-            font-size: 110px; 
-            line-height: 1;
-            font-weight: 900;
-            color: var(--text-primary);
-            margin: 5px 0;
-            font-variant-numeric: tabular-nums;
-            text-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
-        }
+        .big-display { font-size: 110px; line-height: 1; font-weight: 900; color: var(--text-primary); margin: 5px 0; font-variant-numeric: tabular-nums; text-shadow: 0 0 30px rgba(255, 255, 255, 0.15); }
+        #modalLabel { color: var(--amber-orange); letter-spacing: 2px; font-size: 11px; text-transform: uppercase; font-weight: 900; }
+        #targetRange { font-size: 32px; font-weight: 900; color: var(--electric-blue); min-height: 40px; margin-bottom: 5px; text-shadow: 0 0 20px rgba(0, 229, 255, 0.4); }
 
-        #modalLabel {
-            color: var(--amber-orange);
-            letter-spacing: 2px;
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 900;
-        }
+        .recording-pulse { width: 14px; height: 14px; background: var(--crimson-red); border-radius: 50%; display: none; position: absolute; top: 20px; right: 20px; box-shadow: 0 0 20px var(--crimson-red); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.3; } 100% { transform: scale(1); opacity: 1; } }
 
-        #targetRange {
-            font-size: 32px;
-            font-weight: 900;
-            color: var(--electric-blue);
-            min-height: 40px;
-            margin-bottom: 5px;
-            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
-        }
+        input { width: 100%; padding: 12px; margin: 4px 0; border-radius: 12px; box-sizing: border-box; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 16px; }
 
-        .recording-pulse {
-            width: 14px; height: 14px;
-            background: var(--crimson-red);
-            border-radius: 50%;
-            display: none;
-            position: absolute;
-            top: 20px; right: 20px;
-            box-shadow: 0 0 20px var(--crimson-red);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.3; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .result-badge {
-            display: none;
-            padding: 10px 24px;
-            border-radius: 40px;
-            font-weight: 900;
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-        .pass { background: var(--emerald-green); color: black; display: inline-block; }
-        .fail { background: var(--crimson-red); color: white; display: inline-block; }
-
-        input { 
-            width: 100%; padding: 12px; margin: 4px 0; border-radius: 12px; 
-            box-sizing: border-box; background: rgba(255,255,255,0.05); 
-            border: 1px solid rgba(255,255,255,0.1); color: white; 
-            font-size: 16px;
-        }
-
-        /* SPEC RIG STYLING */
-        .rig-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .spec-cell {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 14px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .spec-cell.listening { 
-            border-color: var(--electric-blue); 
-            background: rgba(0, 229, 255, 0.2); 
-            transform: scale(1.05); 
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
-        }
+        .rig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .spec-cell { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.3s; }
+        .spec-cell.listening { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.2); transform: scale(1.05); }
         .spec-label { font-size: 10px; color: #777; font-weight: 900; margin-bottom: 4px; }
         .spec-val { font-size: 20px; font-weight: 900; color: var(--text-primary); }
 
-        .dual-inputs {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 5px;
-        }
-        .cap-cell { 
-            display:flex; flex-direction:column; align-items:center; 
-            border: 2px solid transparent; border-radius: 12px; padding: 6px; cursor: pointer;
-            width: 80px;
-        }
+        .dual-inputs { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 5px; }
+        .cap-cell { display:flex; flex-direction:column; align-items:center; border: 2px solid transparent; border-radius: 12px; padding: 6px; cursor: pointer; width: 80px; }
         .cap-cell.active { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.1); }
-        .cap-cell input {
-            max-width: 60px; text-align: center; background: transparent; font-size: 22px; font-weight: bold; border: none; pointer-events: none;
-        }
+        .cap-cell input { max-width: 60px; text-align: center; background: transparent; font-size: 22px; font-weight: bold; border: none; pointer-events: none; }
 
-        .quick-dial {
-            display: flex; gap: 6px; overflow-x: auto; padding: 10px; margin-top: 5px;
-            background: rgba(0,0,0,0.3); border-radius: 14px; -webkit-overflow-scrolling: touch;
-        }
-        .dial-btn {
-            background: #2a2a2a; border: 1px solid #444; color: #eee;
-            padding: 10px 16px; border-radius: 10px; font-size: 15px; font-weight: 900; white-space: nowrap;
-        }
-        .dial-btn:active { background: var(--electric-blue); color: black; }
+        .quick-dial { display: flex; gap: 6px; overflow-x: auto; padding: 10px; margin-top: 5px; background: rgba(0,0,0,0.3); border-radius: 14px; }
+        .dial-btn { background: #2a2a2a; border: 1px solid #444; color: #eee; padding: 10px 16px; border-radius: 10px; font-size: 15px; font-weight: 900; }
 
-        .log-list {
-            flex: 1; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 10px; margin: 6px 0; font-size: 11px;
-        }
+        .log-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 10px; margin: 6px 0; font-size: 11px; }
         .log-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .item-text { flex: 1; }
         .badge-small { padding: 2px 6px; border-radius: 4px; font-weight: 900; font-size: 9px; margin-left: 6px; }
         .pass-small { color: var(--emerald-green); border: 1px solid var(--emerald-green); }
         .fail-small { color: var(--crimson-red); border: 1px solid var(--crimson-red); }
 
-        .del-btn { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.2); color: #ff6666; border-radius: 4px; padding: 2px 8px; font-weight: bold; cursor:pointer; }
-        
-        #splashVer { position: absolute; top: 15px; right: 20px; font-size: 12px; color: #fff; font-weight: 900; padding: 5px 12px; background: #333; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-
-        .tolerance-pill { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 900; color: #888; cursor: pointer; }
+        #splashVer { position: absolute; top: 15px; right: 20px; font-size: 12px; color: #fff; font-weight: 900; padding: 5px 12px; background: #333; border-radius: 8px; }
+        .tolerance-pill { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 900; color: #888; }
         .tolerance-pill.active { background: #444; color: var(--electric-blue); border-color: var(--electric-blue); }
 
-        #restoreBox { display: none; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--electric-blue); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; cursor: pointer; }
+        #restoreBox { display: none; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--electric-blue); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
+        .master-indicator { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: var(--electric-blue); display: none; z-index: 100000; box-shadow: 0 0 15px var(--electric-blue); }
 
-        .master-indicator {
-            position: fixed; top: 0; left: 0; width: 100%; height: 6px; 
-            background: var(--electric-blue); display: none; z-index: 100000;
-            box-shadow: 0 0 15px var(--electric-blue);
-        }
+        /* MULTI PHOTO PROGRESS */
+        #photoStatus { font-size: 10px; color: var(--amber-orange); margin-top: 5px; text-align: center; display: none; }
+        
+        /* MANUALS LIST */
+        .manual-link { display: block; background: rgba(255,255,255,0.05); color: var(--electric-blue); padding: 12px; border-radius: 8px; margin-bottom: 6px; text-decoration: none; font-weight: 900; border: 1px solid rgba(0, 229, 255, 0.2); }
     </style>
 </head>
 <body id="masterBody">
 
     <div id="masterIndicator" class="master-indicator"></div>
 
-    <!-- SPLASH / RIG ON-BOARDING -->
     <div class="container" id="mainDashboard">
-        <div id="splashVer">v17 MASTER</div>
+        <div id="splashVer">v20 MASTER PRO</div>
         <h2>HVAC Librarian</h2>
 
         <!-- UNIT SPECS RIG -->
@@ -273,23 +133,28 @@
             </div>
         </div>
 
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="flex:1; padding:10px; font-size:12px;">📷 PHOTO TAG</button>
-            <input type="file" id="fileInput" style="display:none;" accept="image/*">
+        <div style="margin-bottom:15px;">
+            <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
+            <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+            <div id="photoStatus">Processing Photos...</div>
         </div>
 
         <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ RUN DIAGNOSTIC</button>
         <hr style="opacity:0.1; margin:15px 0;">
-        <input type="text" id="custName" placeholder="Customer Name / Job #">
-        <button class="btn btn-primary" onclick="startJob()">1. Create Job Shell</button>
-        <div id="pipelineSection" style="display:none;">
-            <button class="btn btn-quick" onclick="runPipeline()">2. Run Pipeline</button>
+        
+        <div id="activeJobSection" style="background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+            <span style="font-size:9px; color:#aaa; font-weight:900; display:block; margin-bottom:5px;">ACTIVE JOB</span>
+            <input type="text" id="custName" placeholder="Enter Name / Job #">
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary" onclick="startJob()" style="flex:2;">CREATE SHELL</button>
+                <button class="btn btn-outline" onclick="runLibrarianInApp()" style="flex:1; font-size:10px;">LIBRARIAN</button>
+            </div>
+            <div id="manualLinks" style="margin-top:10px;"></div>
         </div>
     </div>
 
-    <!-- VOICE MODAL (DIAGNOSTIC) -->
+    <!-- VOICE MODAL -->
     <div id="voiceModal" class="modal-overlay">
-        <!-- HEADER -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
             <div style="display:flex; align-items:center; gap:10px;">
                 <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
@@ -298,68 +163,63 @@
             <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:20px;">&times;</button>
         </div>
 
-        <!-- MAIN CONSOLE -->
         <div class="voice-console" id="consoleBody">
             <div id="pwrIndicator" class="recording-pulse"></div>
             <div id="targetRange">READY...</div>
             <div id="bigDisplay" class="big-display">0.0</div>
             
-            <div id="passFailBadge" class="result-badge">---</div>
-
-            <!-- DUAL INPUTS & TOLERANCE -->
-            <div style="display:flex; flex-direction:column; gap:4px;">
-                <div class="dual-inputs">
-                    <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
-                        <span style="font-size:9px; color:#aaa; font-weight:bold;">HERM</span>
-                        <input type="number" id="hermRating" value="45" readonly>
-                    </div>
-                    <span style="font-size:24px; font-weight:bold; color:var(--amber-orange); margin-top:15px;">+</span>
-                    <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')">
-                        <span style="font-size:9px; color:#aaa; font-weight:bold;">FAN</span>
-                        <input type="number" id="fanRating" value="5" readonly>
-                    </div>
-                    <div id="tolSelector" style="display:flex; flex-direction:column; gap:4px; margin-left:10px;">
-                        <div class="tolerance-pill" id="tol5" onclick="setTol(5)">5%</div>
-                        <div class="tolerance-pill active" id="tol6" onclick="setTol(6)">6%</div>
-                        <div class="tolerance-pill" id="tol10" onclick="setTol(10)">10%</div>
-                    </div>
+            <div class="dual-inputs">
+                <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
+                    <span style="font-size:9px; color:#aaa; font-weight:bold;">HERM</span>
+                    <input type="number" id="hermRating" value="45" readonly>
                 </div>
-                
-                <div class="quick-dial" id="ratingDial">
-                    <button class="dial-btn" onclick="dial(3)">3.0</button><button class="dial-btn" onclick="dial(4)">4.0</button><button class="dial-btn" onclick="dial(5)">5.0</button><button class="dial-btn" onclick="dial(7.5)">7.5</button><button class="dial-btn" onclick="dial(10)">10</button><button class="dial-btn" onclick="dial(25)">25</button><button class="dial-btn" onclick="dial(35)">35</button><button class="dial-btn" onclick="dial(45)">45</button><button class="dial-btn" onclick="dial(50)">50</button><button class="dial-btn" onclick="dial(55)">55</button><button class="dial-btn" onclick="dial(60)">60</button><button class="dial-btn" onclick="dial(70)">70</button><button class="dial-btn" onclick="dial(80)">80</button>
+                <span style="font-size:24px; font-weight:bold; color:var(--amber-orange); margin-top:15px;">+</span>
+                <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')">
+                    <span style="font-size:9px; color:#aaa; font-weight:bold;">FAN</span>
+                    <input type="number" id="fanRating" value="5" readonly>
                 </div>
+                <div id="tolSelector" style="display:flex; flex-direction:column; gap:4px; margin-left:10px;">
+                    <div class="tolerance-pill" id="tol5" onclick="setTol(5)">5%</div>
+                    <div class="tolerance-pill active" id="tol6" onclick="setTol(6)">6%</div>
+                    <div class="tolerance-pill" id="tol10" onclick="setTol(10)">10%</div>
+                </div>
+            </div>
+            
+            <div class="quick-dial" id="ratingDial">
+                <button class="dial-btn" onclick="dial(3)">3.0</button><button class="dial-btn" onclick="dial(5)">5.0</button><button class="dial-btn" onclick="dial(35)">35</button><button class="dial-btn" onclick="dial(45)">45</button><button class="dial-btn" onclick="dial(50)">50</button>
             </div>
 
             <div class="control-row" style="margin-top:10px;">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2;">START MIC</button>
-                <button onclick="undoLast()" class="btn btn-orange" style="flex:1; font-size:12px;">UNDO LAST</button>
+                <button onclick="undoLast()" class="btn btn-orange" style="flex:1; font-size:12px;">UNDO</button>
             </div>
-            <div style="font-size:9px; color:#444; position:absolute; bottom:5px; left:12px;">ENGINE v17.0 PRO</div>
         </div>
 
-        <!-- STAGING LOG -->
         <div id="stagingLog" class="log-list"></div>
         <div id="restoreBox" onclick="restoreBuffer()">↩️ RESTORE WIPED DATA</div>
         
-        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:18px; font-size:18px; border-radius:18px;">SEAL & SYNC DATA</button>
+        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:18px; font-size:18px;">SEAL & SYNC REPORT</button>
+    </div>
+
+    <!-- AI PREVIEW MODAL -->
+    <div id="aiModal" class="modal-overlay" style="background:rgba(0,0,0,0.95); justify-content:center; display:none;">
+        <div class="container" style="background:#222; border:1px solid var(--electric-blue); max-width:400px;">
+            <h2 style="font-size:20px; color:var(--electric-blue);">AI TAG SCAN RESULTS</h2>
+            <div id="aiResults" style="font-size:14px; max-height:300px; overflow-y:auto; margin-bottom:20px; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px;">
+                <div style="text-align:center; padding:20px;">Analyzing Tag...</div>
+            </div>
+            <button class="btn btn-primary" onclick="confirmAiSpecs()">CONFIRM & MERGE</button>
+            <button class="btn btn-outline" onclick="closeAiModal()" style="margin-top:10px;">DISCARD</button>
+        </div>
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcb_6H7QFJfWq2QsdDGet1q6yKjRWExBT5EvN1T1QInld0Uerd3MsxcqJ1-Xl4hLdv/exec";
 
-        let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV17')) || [];
-        let trashCan = null;
-        let specs = JSON.parse(localStorage.getItem('hvacSpecsV17')) || { RLA: 0, FLA: 0, SUB: 0 };
-        let field = "Herm Volts"; 
-        let isCapturing = false; 
-        let recognition = null;
-        let masterRec = null; // Spec Master recognition
-        let isMicOn = false;
-        let isMasterOn = false;
-        let forceKill = false; 
-        let tolerance = 0.06;
-        let activeRatingTarget = 'herm';
-        let activeSpecTarget = null;
+        let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || [];
+        let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { RLA: 0, FLA: 0, SUB: 0 };
+        let tempAiSpecs = {}; 
+        let field = "Herm Volts"; let isCapturing = false; let recognition = null; let masterRec = null; let isMicOn = false; let isMasterOn = false; let forceKill = false; let tolerance = 0.06; let activeRatingTarget = 'herm';
 
         const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Compressor Amps", "Outdoor Fan Amps"];
 
@@ -371,276 +231,198 @@
             if(specs.SUB) document.getElementById('val-SUB').innerText = specs.SUB;
         }
 
-        function setTol(val) {
-            tolerance = val / 100;
-            document.querySelectorAll('.tolerance-pill').forEach(p => p.classList.remove('active'));
-            document.getElementById('tol' + val).classList.add('active');
-            recalculateField();
-            syncLogToUI();
-        }
+        async function handleMultiPhotos(input) {
+            const files = input.files; if (files.length === 0) return;
+            const status = document.getElementById('photoStatus');
+            status.style.display = 'block'; status.innerText = `Sending ${files.length} Photos to Gemini...`;
 
-        function selectRating(target) {
-            activeRatingTarget = target;
-            document.getElementById('hermWrap').classList.remove('active');
-            document.getElementById('fanWrap').classList.remove('active');
-            document.getElementById(target + 'Wrap').classList.add('active');
-        }
-
-        function dial(val) {
-            document.getElementById(activeRatingTarget + 'Rating').value = val;
-            recalculateField();
-            const wrap = document.getElementById(activeRatingTarget + 'Wrap');
-            wrap.style.background = 'rgba(0, 229, 255, 0.4)';
-            setTimeout(() => wrap.style.background = 'rgba(0, 229, 255, 0.1)', 200);
-            if(buffer.length > 0) syncLogToUI();
-        }
-
-        // v17: SMART INTAKE (HANDS FREE)
-        function toggleSpecMaster() {
-            if (isMasterOn) {
-                isMasterOn = false;
-                if (masterRec) masterRec.stop();
-                document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)';
-                document.getElementById('masterIndicator').style.display = 'none';
-                document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
-                return;
+            for (let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64 = e.target.result.split(',')[1];
+                    const filename = files[i].name;
+                    const mime = files[i].type;
+                    
+                    status.innerText = `Analyzing Nameplate: ${filename}...`;
+                    
+                    const response = await fetch(WEB_APP_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "uploadPhotoAI", data: base64, filename: filename, mimeType: mime }),
+                        // We need CORS here to get the JSON back! I'll update Apps Script to handle it.
+                    });
+                    
+                    const result = await response.json();
+                    if(result && result.extractedData) {
+                        tempAiSpecs = result.extractedData;
+                        openAiModal(result.extractedData);
+                    }
+                };
+                reader.readAsDataURL(files[i]);
             }
+        }
 
+        function openAiModal(data) {
+            const modal = document.getElementById('aiModal');
+            const results = document.getElementById('aiResults');
+            modal.style.display = 'flex';
+            results.innerHTML = Object.entries(data).map(([k, v]) => `
+                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333;">
+                    <b style="color:#aaa;">${k}:</b>
+                    <b style="color:var(--electric-blue); font-size:16px;">${v}</b>
+                </div>
+            `).join('');
+        }
+
+        function confirmAiSpecs() {
+            if(tempAiSpecs.RLA) { specs.RLA = parseFloat(tempAiSpecs.RLA); document.getElementById('val-RLA').innerText = specs.RLA; }
+            if(tempAiSpecs.FLA) { specs.FLA = parseFloat(tempAiSpecs.FLA); document.getElementById('val-FLA').innerText = specs.FLA; }
+            if(tempAiSpecs["Target SC"]) { specs.SUB = parseFloat(tempAiSpecs["Target SC"]); document.getElementById('val-SUB').innerText = specs.SUB; }
+            localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+            closeAiModal();
+        }
+
+        function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; document.getElementById('photoStatus').style.display = 'none'; }
+
+        async function runLibrarianInApp() {
+            const linksDiv = document.getElementById('manualLinks');
+            linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center;">Searching Manuals...</div>';
+            
+            // First trigger the search link logic in sheet
+            await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }) });
+            
+            // Then fetch the links
+            const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchManuals" }) });
+            const links = await response.json();
+            
+            if(links.length === 0) {
+                linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>';
+            } else {
+                linksDiv.innerHTML = links.map(l => `
+                    <a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>
+                `).join('');
+            }
+        }
+
+        function toggleSpecMaster() {
+            if (isMasterOn) { isMasterOn = false; if (masterRec) masterRec.stop(); document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)'; document.getElementById('masterIndicator').style.display = 'none'; document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening')); return; }
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) return alert("Voice not supported.");
-            
-            isMasterOn = true;
-            document.getElementById('masterSpecBtn').style.background = 'var(--emerald-green)';
-            document.getElementById('masterIndicator').style.display = 'block';
-
-            masterRec = new SR();
-            masterRec.continuous = true;
-            masterRec.interimResults = true;
-
+            isMasterOn = true; document.getElementById('masterSpecBtn').style.background = 'var(--emerald-green)'; document.getElementById('masterIndicator').style.display = 'block';
+            masterRec = new SR(); masterRec.continuous = true; masterRec.interimResults = true;
             masterRec.onresult = (e) => {
                 let transcript = e.results[e.results.length-1][0].transcript.toLowerCase();
-                
-                // Keyword mapping
-                if (transcript.includes("rla")) activeSpecTarget = "RLA";
-                if (transcript.includes("fla")) activeSpecTarget = "FLA";
-                if (transcript.includes("sub") || transcript.includes("cool")) activeSpecTarget = "SUB";
-
-                if (activeSpecTarget) {
+                let target = null;
+                if (transcript.includes("rla")) target = "RLA";
+                if (transcript.includes("fla")) target = "FLA";
+                if (transcript.includes("sub") || transcript.includes("cool")) target = "SUB";
+                if (target) {
                     document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
-                    document.getElementById('spec-' + activeSpecTarget).classList.add('listening');
-                    
+                    document.getElementById('spec-' + target).classList.add('listening');
                     let num = transcript.replace(/[^0-9.]/g, '');
                     if (num) {
-                        specs[activeSpecTarget] = parseFloat(num);
-                        document.getElementById('val-' + activeSpecTarget).innerText = num;
-                        localStorage.setItem('hvacSpecsV17', JSON.stringify(specs));
-                        
-                        // Small success flash
-                        const cell = document.getElementById('spec-' + activeSpecTarget);
+                        specs[target] = parseFloat(num); document.getElementById('val-' + target).innerText = num;
+                        localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+                        const cell = document.getElementById('spec-' + target);
                         cell.style.boxShadow = '0 0 30px var(--emerald-green)';
                         setTimeout(() => cell.style.boxShadow = 'none', 300);
                     }
                 }
             };
-
-            masterRec.onend = () => { if (isMasterOn) masterRec.start(); };
-            masterRec.start();
+            masterRec.onend = () => { if (isMasterOn) masterRec.start(); }; masterRec.start();
         }
 
-        function openSpecVoice(target) {
-            // One-off capture if they click a specific box
-            activeSpecTarget = target;
-            toggleSpecMaster(); 
-        }
+        function openSpecVoice(target) { toggleSpecMaster(); }
 
         function openVoiceConsole() { 
-            if(isMasterOn) toggleSpecMaster(); // turn off spec master
+            if(isMasterOn) toggleSpecMaster(); 
             document.getElementById('mainDashboard').style.display = 'none';
             document.getElementById('voiceModal').style.display = 'flex';
             syncLogToUI(); recalculateField();
         }
 
-        function recalculateField() {
-            const index = buffer.length % FIELD_CYCLE.length;
-            field = FIELD_CYCLE[index];
-            document.getElementById('modalLabel').innerText = field.toUpperCase();
-            
-            let lastVolt = 0;
-            for(let i = buffer.length-1; i >= 0; i--) {
-                if(buffer[i].field.includes("Volts")) { lastVolt = buffer[i].val; break; }
-            }
+        function setTol(val) { tolerance = val / 100; document.querySelectorAll('.tolerance-pill').forEach(p => p.classList.remove('active')); document.getElementById('tol' + val).classList.add('active'); syncLogToUI(); }
 
-            if (field.includes("Amps") && field !== "Compressor Amps" && field !== "Outdoor Fan Amps") {
-                const ratingId = field === "Herm Amps" ? "hermRating" : "fanRating";
-                const rating = parseFloat(document.getElementById(ratingId).value);
+        function selectRating(target) { activeRatingTarget = target; document.getElementById('hermWrap').classList.remove('active'); document.getElementById('fanWrap').classList.remove('active'); document.getElementById(target + 'Wrap').classList.add('active'); }
+
+        function dial(val) { document.getElementById(activeRatingTarget + 'Rating').value = val; recalculateField(); if(buffer.length > 0) syncLogToUI(); }
+
+        function recalculateField() {
+            const index = buffer.length % FIELD_CYCLE.length; field = FIELD_CYCLE[index];
+            document.getElementById('modalLabel').innerText = field.toUpperCase();
+            let lastVolt = 0;
+            for(let i = buffer.length-1; i >= 0; i--) { if(buffer[i].field.includes("Volts")) { lastVolt = buffer[i].val; break; } }
+            if (field.includes("Amps") && !field.includes("Compressor") && !field.includes("Outdoor")) {
+                const rating = parseFloat(document.getElementById(field === "Herm Amps" ? "hermRating" : "fanRating").value);
                 if(lastVolt > 0 && rating) {
                     const target = (rating * lastVolt) / 2652;
                     document.getElementById('targetRange').innerText = "RANGE: "+(target*(1-tolerance)).toFixed(2)+" - "+(target*(1+tolerance)).toFixed(2);
                 }
-            } else if (field === "Compressor Amps") {
-                document.getElementById('targetRange').innerText = specs.RLA ? "RLA: " + specs.RLA : "READY";
-            } else if (field === "Outdoor Fan Amps") {
-                document.getElementById('targetRange').innerText = specs.FLA ? "FLA: " + specs.FLA : "READY";
-            } else {
-                document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
-            }
-        }
-
-        function undoLast() { deleteLogItem(buffer.length - 1); }
-
-        function deleteLogItem(index) {
-            if(index < 0) return;
-            buffer.splice(index, 1);
-            localStorage.setItem('hvacStagingBufferV17', JSON.stringify(buffer));
-            syncLogToUI();
-            recalculateField();
-        }
-
-        function clearBuffer() {
-            if(!confirm("WIPE ALL READINGS?")) return;
-            trashCan = [...buffer];
-            buffer = [];
-            localStorage.removeItem('hvacStagingBufferV17');
-            syncLogToUI();
-            recalculateField();
-            document.getElementById('restoreBox').style.display = 'block';
-            setTimeout(() => document.getElementById('restoreBox').style.display = 'none', 30000);
-        }
-
-        function restoreBuffer() {
-            if(!trashCan) return;
-            buffer = [...trashCan];
-            trashCan = null;
-            localStorage.setItem('hvacStagingBufferV17', JSON.stringify(buffer));
-            syncLogToUI();
-            recalculateField();
-            document.getElementById('restoreBox').style.display = 'none';
+            } else { document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase(); }
         }
 
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
-            if (buffer.length === 0) {
-                log.innerHTML = '<div style="color:#444; text-align:center; height:60px; display:flex; align-items:center; justify-content:center;">Log is empty</div>';
-                return;
-            }
+            if (buffer.length === 0) { log.innerHTML = '<div style="color:#444; text-align:center;">Log is empty</div>'; return; }
             log.innerHTML = buffer.map((item, idx) => {
                 let badge = ""; let details = "";
                 if (item.field.includes("Amps") && !item.field.includes("Compressor") && !item.field.includes("Outdoor") && item.volts > 0) {
                     const rating = parseFloat(document.getElementById(item.field === "Herm Amps" ? "hermRating" : "fanRating").value);
                     const uF = (item.val * 2652) / item.volts;
-                    const variance = ((uF / rating) - 1) * 100;
-                    const isPass = Math.abs(variance/100) <= (tolerance + 0.0001);
-                    details = ` (${uF.toFixed(1)}µF | ${variance > 0 ? "+" : ""}${variance.toFixed(1)}%)`;
+                    const varPct = ((uF / rating) - 1) * 100;
+                    const isPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
+                    details = ` (${uF.toFixed(2)}µF | ${varPct.toFixed(2)}%)`;
                     badge = `<span class="badge-small ${isPass ? 'pass-small' : 'fail-small'}">${isPass ? 'PASS' : 'FAIL'}</span>`;
                 } else if (item.field === "Compressor Amps" && specs.RLA) {
-                    const pct = (item.val / specs.RLA) * 100;
-                    details = ` (${pct.toFixed(0)}% RLA)`;
-                    badge = `<span class="badge-small ${pct <= 100 ? 'pass-small' : 'fail-small'}">${pct <= 100 ? 'PASS' : 'FAIL'}</span>`;
-                } else if (item.field === "Outdoor Fan Amps" && specs.FLA) {
-                    const pct = (item.val / specs.FLA) * 100;
-                    details = ` (${pct.toFixed(0)}% FLA)`;
+                    const pct = (item.val / specs.RLA) * 100; details = ` (${pct.toFixed(2)}% RLA)`;
                     badge = `<span class="badge-small ${pct <= 100 ? 'pass-small' : 'fail-small'}">${pct <= 100 ? 'PASS' : 'FAIL'}</span>`;
                 }
                 return `<div class="log-item"><div class="item-text"><b>${item.field}:</b> ${item.val}${details}${badge}</div><button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button></div>`;
-            }).join('');
-            log.scrollTop = log.scrollHeight;
+            }).join(''); log.scrollTop = log.scrollHeight;
         }
 
         function toggleMic() { if (isMicOn) stopMic(); else startListening(); }
 
         async function startListening() {
-            forceKill = false;
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            forceKill = false; const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) return alert("Mic not supported.");
             try {
                 if (recognition) recognition.stop();
-                recognition = new SR();
-                recognition.continuous = true;
-                recognition.onstart = () => { isMicOn = true; document.getElementById('micTrigger').innerText = "STOP MIC"; document.getElementById('micTrigger').className = "btn btn-stop"; document.getElementById('pwrIndicator').style.display = "block"; };
+                recognition = new SR(); recognition.continuous = true;
+                recognition.onstart = () => { isMicOn = true; document.getElementById('micTrigger').innerText = "STOP MIC"; document.getElementById('pwrIndicator').style.display = "block"; };
                 recognition.onresult = (e) => {
                     if (isCapturing) return;
                     let transcript = e.results[e.results.length-1][0].transcript.toLowerCase();
                     if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("save")) { confirmReading(); return; }
-                    if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
                     let num = transcript.replace(/[^0-9.]/g, '');
                     if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
                 };
-                recognition.onresult = (e) => {
-                    if (isCapturing) return;
-                    let result = e.results[e.results.length-1];
-                    let transcript = result[0].transcript.toLowerCase();
-                    if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("yes") || transcript.includes("save")) { confirmReading(); return; }
-                    if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
-                    let num = transcript.replace(/[^0-9.]/g, '');
-                    if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
-                };
-                recognition.onend = () => { if (isMicOn && !forceKill) recognition.start(); };
-                recognition.start();
+                recognition.onend = () => { if (isMicOn && !forceKill) recognition.start(); }; recognition.start();
             } catch (e) {}
         }
 
-        function stopMic() {
-            isMicOn = false; forceKill = true;
-            if (recognition) { recognition.onend = null; recognition.stop(); recognition = null; }
-            document.getElementById('micTrigger').innerText = "START MIC";
-            document.getElementById('micTrigger').className = "btn btn-primary";
-            document.getElementById('pwrIndicator').style.display = "none";
-        }
+        function stopMic() { isMicOn = false; forceKill = true; if (recognition) { recognition.onend = null; recognition.stop(); recognition = null; } document.getElementById('micTrigger').innerText = "START MIC"; document.getElementById('pwrIndicator').style.display = "none"; }
 
         function confirmReading() {
-            if (isCapturing) return;
-            let val = parseFloat(document.getElementById('bigDisplay').innerText);
-            if (val === 0) return;
-            isCapturing = true; 
-            let lastVolt = 0;
+            if (isCapturing) return; let val = parseFloat(document.getElementById('bigDisplay').innerText); if (val === 0) return;
+            isCapturing = true; let lastVolt = 0;
             for(let i = buffer.length-1; i >= 0; i--) { if(buffer[i].field.includes("Volts")) { lastVolt = buffer[i].val; break; } }
             buffer.push({ field: field, val: val, volts: lastVolt });
-            localStorage.setItem('hvacStagingBufferV17', JSON.stringify(buffer));
-            syncLogToUI();
-            const display = document.getElementById('bigDisplay');
-            display.style.color = "var(--emerald-green)";
-            setTimeout(() => {
-                display.style.color = "var(--text-primary)";
-                display.innerText = "0.0";
-                recalculateField(); isCapturing = false;
-                if (buffer.length % FIELD_CYCLE.length === 0) {
-                    document.getElementById('targetRange').innerText = "UNIT COMPLETE";
-                    stopMic();
-                }
-            }, 1000);
+            localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); syncLogToUI();
+            document.getElementById('bigDisplay').style.color = "var(--emerald-green)";
+            setTimeout(() => { document.getElementById('bigDisplay').style.color = "var(--text-primary)"; document.getElementById('bigDisplay').innerText = "0.0"; recalculateField(); isCapturing = false; }, 1000);
         }
 
         function sendFinalBlock() {
             if (buffer.length === 0) return alert("Log empty.");
-            stopMic();
-            const syncBtn = document.getElementById('syncBtn');
-            syncBtn.innerText = "SYNCING...";
-            const lump = buffer.map(item => {
-                let badge = ""; let extra = "";
-                if (item.field.includes("Amps") && !item.field.includes("Compressor") && !item.field.includes("Outdoor") && item.volts > 0) {
-                    const rating = parseFloat(document.getElementById(item.field === "Herm Amps" ? "hermRating" : "fanRating").value);
-                    const uF = (item.val * 2652) / item.volts;
-                    const varPct = ((uF / rating) - 1) * 100;
-                    badge = Math.abs(varPct/100) <= (tolerance + 0.0001) ? " [PASS]" : " [FAIL]";
-                    extra = ` (${uF.toFixed(1)}µF | ${varPct.toFixed(1)}%)`;
-                } else if (item.field === "Compressor Amps" && specs.RLA) {
-                    const pct = (item.val / specs.RLA) * 100;
-                    badge = pct <= 100 ? " [PASS]" : " [FAIL]";
-                    extra = ` (${pct.toFixed(0)}% RLA)`;
-                }
-                return item.field + " ◘ " + item.val + extra + badge;
-            }).join(" | ");
-            fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "syncVoice", payload: lump }), mode: "no-cors" })
-            .then(() => {
-                alert("Success!");
-                buffer = []; localStorage.removeItem('hvacStagingBufferV17');
-                syncLogToUI(); syncBtn.innerText = "SEAL & SYNC DATA"; recalculateField();
-            });
+            stopMic(); document.getElementById('syncBtn').innerText = "SYNCING...";
+            let specParts = []; if(specs.RLA) specParts.push(`RLA (Measured) ◘ ${specs.RLA}`); if(specs.FLA) specParts.push(`Fan FLA ◘ ${specs.FLA}`); if(specs.SUB) specParts.push(`Target SC ◘ ${specs.SUB}`);
+            let diagParts = buffer.map(item => `${item.field} ◘ ${item.val}`);
+            const fullLump = [...specParts, ...diagParts].join(" | ");
+            fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "syncVoice", payload: fullLump }), mode: "no-cors" }).then(() => { alert("Report Sealed!"); buffer = []; localStorage.removeItem('hvacStagingBufferV20'); syncLogToUI(); document.getElementById('syncBtn').innerText = "SEAL & SYNC REPORT"; });
         }
 
         function closeVoiceModal() { stopMic(); document.getElementById('voiceModal').style.display = 'none'; document.getElementById('mainDashboard').style.display = 'block'; }
-        function startJob() { const name = document.getElementById('custName').value; fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name }), mode: "no-cors" }).then(() => { document.getElementById('pipelineSection').style.display='block'; alert("Job Queued."); }); }
-        function runPipeline() { fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }), mode: "no-cors" }).then(() => alert("Pipeline Triggered.")); }
+        function startJob() { const name = document.getElementById('custName').value; fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] }), mode: "no-cors" }).then(() => alert("Job Created.")); }
     </script>
 </body>
 </html>
