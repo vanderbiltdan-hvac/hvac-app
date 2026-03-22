@@ -442,7 +442,8 @@
                             const cell = document.getElementById('spec-' + masterTarget);
                             cell.style.boxShadow = '0 0 30px var(--emerald-green)';
                             setTimeout(() => cell.style.boxShadow = 'none', 500);
-                            masterTarget = null; // reset after successful capture
+                            // masterTarget stays set — user can say another number to update same field
+                            // Say a new keyword (RLA/FLA/SUB) to switch fields
                         }
                     }
                 };
@@ -492,14 +493,15 @@
                     const target = (rating * lastVolt) / 2652;
                     const lowDisplay  = (Math.ceil(target * (1 - tolerance) * 100) / 100).toFixed(2);
                     const highDisplay = (Math.floor(target * (1 + tolerance) * 100) / 100).toFixed(2);
-                    document.getElementById('targetRange').innerText = "RANGE: " + lowDisplay + " - " + highDisplay;
-                } else { document.getElementById('targetRange').innerText = "WAITING FOR VOLTS..."; }
+                    document.getElementById('targetRange').innerHTML = "RANGE: " + lowDisplay + " - " + highDisplay;
+                } else { document.getElementById('targetRange').innerHTML = "WAITING FOR VOLTS..."; }
             } else if (field === "Comp Amps") {
-                document.getElementById('targetRange').innerText = specs.RLA ? `⚡ RLA: ${specs.RLA} A` : "READY FOR COMP AMPS";
+                document.getElementById('targetRange').innerHTML = specs.RLA ? `&#9889; RLA: ${specs.RLA} A` : "READY FOR COMP AMPS";
             } else if (field === "ODF Amps") {
-                document.getElementById('targetRange').innerText = specs.FLA ? `🌀 FLA: ${specs.FLA} A` : "READY FOR ODF AMPS";
+                const fanSVG = `<svg width="20" height="20" viewBox="0 0 20 20" style="vertical-align:middle;margin-right:5px;filter:drop-shadow(0 0 4px #00e5ff)" xmlns="http://www.w3.org/2000/svg"><g transform="translate(10,10)"><path d="M0,0 Q2.5,-3 1.5,-8.5 Q-0.5,-9 -2,-4 Z" fill="#b0c4de" transform="rotate(0)"/><path d="M0,0 Q2.5,-3 1.5,-8.5 Q-0.5,-9 -2,-4 Z" fill="#b0c4de" transform="rotate(120)"/><path d="M0,0 Q2.5,-3 1.5,-8.5 Q-0.5,-9 -2,-4 Z" fill="#b0c4de" transform="rotate(240)"/><circle r="2" fill="#555" stroke="#00e5ff" stroke-width="0.5"/><circle r="0.8" fill="#222"/></g></svg>`;
+                document.getElementById('targetRange').innerHTML = specs.FLA ? `${fanSVG}FLA: ${specs.FLA} A` : "READY FOR ODF AMPS";
             } else {
-                document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
+                document.getElementById('targetRange').innerHTML = "READY FOR " + field.toUpperCase();
             }
         }
 
@@ -508,7 +510,7 @@
             if (buffer.length === 0) { log.innerHTML = '<div style="color:#444; text-align:center;">Log is empty</div>'; return; }
             log.innerHTML = buffer.map((item, idx) => {
                 let badge = ""; let details = "";
-                if (item.field.includes("Amps") && !item.field.includes("Comp") && !item.field.includes("Outdoor") && item.volts > 0) {
+                if (item.field.includes("Amps") && !item.field.includes("Comp") && !item.field.includes("ODF") && item.volts > 0) {
                     const ratingStr = item.field === "Herm Amps" ? "hermRating" : "fanRating";
                     const rating = parseFloat(document.getElementById(ratingStr).value);
                     const uF = (item.val * 2652) / item.volts;
@@ -601,9 +603,21 @@
                 if (fieldIndex < FIELD_CYCLE.length - 1) {
                     fieldIndex++; updateStepNav(); recalculateField(); isCapturing = false;
                 } else {
-                    stopMic();
-                    alert("Sequence Complete. Report Staged.");
                     isCapturing = false;
+                    // Sequence complete — 5-second mic countdown then auto-stop
+                    let secsLeft = 5;
+                    document.getElementById('targetRange').innerHTML = `SEQUENCE COMPLETE &#10003; &mdash; mic off in ${secsLeft}s`;
+                    if (window._seqTimer) clearInterval(window._seqTimer);
+                    window._seqTimer = setInterval(() => {
+                        secsLeft--;
+                        if (secsLeft <= 0) {
+                            clearInterval(window._seqTimer);
+                            stopMic();
+                            document.getElementById('targetRange').innerHTML = 'LOG SEALED &#10003; &mdash; Review &amp; SYNC when ready';
+                        } else {
+                            document.getElementById('targetRange').innerHTML = `SEQUENCE COMPLETE &#10003; &mdash; mic off in ${secsLeft}s`;
+                        }
+                    }, 1000);
                 }
             }, 1000);
         }
