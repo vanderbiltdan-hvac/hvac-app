@@ -394,7 +394,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.27";
+        const APP_VERSION = "20.28";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -556,20 +556,22 @@
         }
 
         // ── Change #1: Smart Intake — Fixed for iOS Safari ───────────────
-        // ── GLOBAL AUDIO ENGINE (v20.27) ─────────────────────────────────
+        // ── GLOBAL AUDIO ENGINE (v20.28) ─────────────────────────────────
         function processIntakeLogic(transcript) {
+            let kwRegex = null;
+
             // Keyword Detection
-            if (/\bbrand\b/.test(transcript))                             masterTarget = "BRAND";
-            else if (/\b(model|mod|modular)\b/.test(transcript))          masterTarget = "MDL";
-            else if (/\b(serial|sir)\b/.test(transcript))                 masterTarget = "SER";
-            else if (/\byear\b/.test(transcript))                         masterTarget = "YEAR";
-            else if (/\brla\b/.test(transcript))                          masterTarget = "RLA";
-            else if (/\blra\b/.test(transcript))                          masterTarget = "LRA";
-            else if (/\bfla\b/.test(transcript))                          masterTarget = "FLA";
-            else if (/\b(voltage|volts)\b/.test(transcript))              masterTarget = "VOLT";
-            else if (/\b(sub|subcool|suction|target|sup\s?cool)\b/.test(transcript)) masterTarget = "SUB";
-            else if (/\b(ref|refrigerant)\b/.test(transcript))            masterTarget = "REF";
-            else if (/\b(meter|metering)\b/.test(transcript))             masterTarget = "METER";
+            if (/\b(brand|make)\b/.test(transcript))                             { masterTarget = "BRAND"; kwRegex = /\b(brand|make)\b/; }
+            else if (/\b(model|mod|modular)\b/.test(transcript))                 { masterTarget = "MDL"; kwRegex = /\b(model|mod|modular)\b/; }
+            else if (/\b(serial|sir)\b/.test(transcript))                        { masterTarget = "SER"; kwRegex = /\b(serial|sir)\b/; }
+            else if (/\byear\b/.test(transcript))                                { masterTarget = "YEAR"; kwRegex = /\byear\b/; }
+            else if (/\brla\b/.test(transcript))                                 { masterTarget = "RLA"; kwRegex = /\brla\b/; }
+            else if (/\blra\b/.test(transcript))                                 { masterTarget = "LRA"; kwRegex = /\blra\b/; }
+            else if (/\bfla\b/.test(transcript))                                 { masterTarget = "FLA"; kwRegex = /\bfla\b/; }
+            else if (/\b(voltage|volts)\b/.test(transcript))                     { masterTarget = "VOLT"; kwRegex = /\b(voltage|volts)\b/; }
+            else if (/\b(sub|subcool|suction|target|sup\s?cool)\b/.test(transcript)) { masterTarget = "SUB"; kwRegex = /\b(sub|subcool|suction|target|sup\s?cool)\b/; }
+            else if (/\b(ref|refrigerant)\b/.test(transcript))                   { masterTarget = "REF"; kwRegex = /\b(ref|refrigerant)\b/; }
+            else if (/\b(meter|metering)\b/.test(transcript))                    { masterTarget = "METER"; kwRegex = /\b(meter|metering)\b/; }
 
             if (masterTarget) {
                 document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
@@ -577,7 +579,7 @@
                 if (targetEl) targetEl.classList.add('listening');
 
                 let input = transcript;
-                const kwMatch = transcript.match(new RegExp(`\\b${masterTarget.toLowerCase()}\\b`));
+                const kwMatch = transcript.match(kwRegex);
                 if (!kwMatch && masterTarget === "SUB") {
                     const subMatch = transcript.match(/\b(sub\s?cool|sup\s?cool|target|suction|sc)\b/);
                     if (subMatch) input = transcript.replace(subMatch[0], "").trim();
@@ -896,16 +898,54 @@
                         // 2. Process Final Commands universally
                         if (/\b(stop|mic off|done)\b/.test(transcript)) { stopGlobalMic(); return; }
 
-                        // 3. Dispatch to Navigation Brain (intercepts "home", "diag", "yes", etc.)
+                        // 3. Invisible Dictionary Append
+                        const addMatch = transcript.match(/\badd\s+(brand|make|refrigerant|ref)\s+(.+)/);
+                        if (addMatch) {
+                            const type = addMatch[1];
+                            const newWord = addMatch[2].trim();
+                            if (newWord) {
+                                if (type === "brand" || type === "make") {
+                                    userDict.brands += ", " + newWord;
+                                } else {
+                                    userDict.refs += ", " + newWord;
+                                }
+                                localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
+                                updateSettingsUI();
+                                
+                                const feedback = `<b style="color:var(--emerald-green); text-shadow:0 0 10px var(--emerald-green);">${newWord.toUpperCase()} ADDED</b>`;
+                                const disp = document.getElementById('bigDisplay');
+                                const spl = document.getElementById('splashVer');
+                                if (isSequenceMode && disp) {
+                                    const orig = disp.innerHTML;
+                                    disp.innerHTML = feedback;
+                                    setTimeout(() => disp.innerHTML = orig, 2500);
+                                } else if (spl) {
+                                    const orig = spl.innerHTML;
+                                    spl.innerHTML = feedback;
+                                    setTimeout(() => spl.innerHTML = orig, 2500);
+                                }
+                            }
+                            return;
+                        }
+
+                        // 4. Dispatch to Navigation Brain
                         if (voiceDispatcher(transcript)) return;
 
-                        // 4. Contextual Routing
+                        // 5. Contextual Routing
                         if (isSequenceMode) {
                             if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
                             
                             const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
                             const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
                             if (confirmArr.some(w => transcript.includes(w))) { confirmReading(); return; }
+
+                            // Capacitor Field Voice Jump
+                            if (/(herm volts|home volts|term volts)/.test(transcript)) { jumpToStep(0); return; }
+                            if (/(herm amps|home amps)/.test(transcript)) { jumpToStep(1); return; }
+                            if (/(fan volts)/.test(transcript)) { jumpToStep(2); return; }
+                            if (/(fan amps)/.test(transcript)) { jumpToStep(3); return; }
+                            if (/(comp amps|compressor amps)/.test(transcript)) { jumpToStep(4); return; }
+                            if (/(odf amps|outdoor fan|condenser fan)/.test(transcript)) { jumpToStep(5); return; }
                             
                             const finalNum = transcript.match(/\b(\d+\.?\d*)\b/);
                             if (finalNum && !isCapturing) {
