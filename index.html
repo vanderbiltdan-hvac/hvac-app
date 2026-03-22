@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v20</title>
+    <title>HVAC Master Pro</title>
     
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -171,10 +171,7 @@
     </nav>
 
     <div class="container" id="mainDashboard" style="padding-bottom:100px;">
-        <div id="splashVer">
-            <span>v20.25 Pro</span>
-            <button class="report-btn" onclick="openReport()">📋 REPORT</button>
-        </div>
+        <div id="splashVer"></div>
         <h2>⚡ HVAC Diag</h2>
 
         <!-- UNIT SPECS RIG -->
@@ -223,7 +220,7 @@
                 <span class="spec-label">METERING</span>
                 <span id="val-METER" class="spec-val">--</span>
             </div>
-            <div class="spec-cell" id="masterSpecBtn" onclick="toggleSpecMaster()" style="background:var(--amber-orange); color:black;">
+            <div class="spec-cell" id="masterSpecBtn" onclick="toggleGlobalMic()" style="background:var(--amber-orange); color:black;">
                 <span class="spec-label" style="color:black;">INTAKE</span>
                 <span style="font-size:12px; font-weight:900;">AUTO</span>
             </div>
@@ -294,7 +291,7 @@
             <!-- Row 1: START MIC (left) | MANUAL (right) -->
             <!-- Row 2: SCRUB/UNDO (left) | COMMIT/green (right) -->
             <div class="btn-main-grid">
-                <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()">🎙 START MIC</button>
+                <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()">🎙 START MIC</button>
                 <button onclick="toggleManualEntry()" class="btn btn-outline">⌨️ MANUAL</button>
                 <button onclick="undoLast()" class="btn btn-stop">SCRUB / UNDO</button>
                 <button onclick="confirmReading()" class="btn btn-green">✔ COMMIT / COPY</button>
@@ -382,11 +379,12 @@
                 <b style="color:var(--electric-blue);">Dictionary / Commands (CSV)</b>
                 <div style="margin-top:10px;">
                     <label style="color:#aaa; font-size:10px;">CONFIRM WORDS</label>
-                    <input type="text" id="dict-confirms" style="font-size:12px; padding:8px; margin-bottom:8px;" onchange="saveDict()">
+                    <input type="text" id="dict-confirms" style="font-size:12px; padding:8px; margin-bottom:8px;">
                     <label style="color:#aaa; font-size:10px;">BRANDS</label>
-                    <input type="text" id="dict-brands" style="font-size:12px; padding:8px; margin-bottom:8px;" onchange="saveDict()">
+                    <input type="text" id="dict-brands" style="font-size:12px; padding:8px; margin-bottom:8px;">
                     <label style="color:#aaa; font-size:10px;">REFRIGERANTS</label>
-                    <input type="text" id="dict-refs" style="font-size:12px; padding:8px;" onchange="saveDict()">
+                    <input type="text" id="dict-refs" style="font-size:12px; padding:8px; margin-bottom:12px;">
+                    <button class="btn btn-green" onclick="saveDict()" style="padding:12px; font-size:14px;">💾 SAVE DICTIONARY</button>
                 </div>
             </div>
         </div>
@@ -396,7 +394,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.25";
+        const APP_VERSION = "20.26";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -414,8 +412,8 @@
         
         let tempAiSpecs = {}; 
         let fieldIndex = 0;
-        let isCapturing = false; let recognition = null; let masterRec = null; let isMicOn = false;
-        let isMasterOn = false; let forceKill = false; let tolerance = 0.06; let activeRatingTarget = 'herm';
+        let isCapturing = false; let globalMic = null; let isMicOn = false; let forceKill = false;
+        let tolerance = 0.06; let activeRatingTarget = 'herm';
         let _lastBuffer = {}; let masterTarget = null;
         let navStaging = null; // Stores target section for confirmation
 
@@ -436,6 +434,8 @@
         }
 
         function initSplash() {
+            document.title = "HVAC Master Pro v" + APP_VERSION;
+            document.getElementById('splashVer').innerHTML = `<span>v${APP_VERSION} Pro</span><button class="report-btn" onclick="openReport()">📋 REPORT</button>`;
             Object.keys(specs).forEach(k => {
                 const el = document.getElementById('val-' + k);
                 if (el) {
@@ -521,13 +521,14 @@
             else { linksDiv.innerHTML = links.map(l => `<a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>`).join(''); }
         }
 
-        // ── Change #6: Tap cell → speak only that cell's value ──────────
+        // ── Single Cell Tap Local Mic (Isolated from Global) ──────────
         function openSpecVoice(target) {
+            if (isMicOn) stopGlobalMic();
             document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
             document.getElementById('spec-' + target).classList.add('listening');
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) { alert("Voice not supported."); return; }
-            if (isMasterOn) { isMasterOn = false; if (masterRec) { masterRec.onend = null; masterRec.stop(); } document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)'; document.getElementById('masterIndicator').style.display = 'none'; }
+            
             const cellRec = new SR();
             cellRec.continuous = false; cellRec.interimResults = true; cellRec.lang = 'en-US';
             document.getElementById('masterIndicator').style.display = 'block';
@@ -673,7 +674,7 @@
         // openSpecVoice now defined above (tap-cell listener)
 
         function openVoiceConsole() { 
-            if(isMasterOn) toggleSpecMaster(); 
+
             document.getElementById('mainDashboard').style.display = 'none';
             document.getElementById('voiceModal').style.display = 'flex';
             
@@ -890,58 +891,93 @@
             log.scrollTop = log.scrollHeight;
         }
 
-        function toggleMic() { if (isMicOn) stopMic(); else startListening(); }
+        function toggleGlobalMic() { if (isMicOn) stopGlobalMic(); else startGlobalMic(); }
 
-        // ── iOS-safe mic: continuous:false + restart on onend ─────────────
-        function startListening() {
+        // ── iOS-safe Global Mic: routes contextually based on visible screen
+        function startGlobalMic() {
             forceKill = false;
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) return alert("Mic not supported.");
             isMicOn = true;
+            
+            // Visual Indicators (Light up both potential trigger locations)
             document.getElementById('micTrigger').innerText = "⏹ STOP MIC";
+            document.getElementById('micTrigger').style.background = "var(--crimson-red)";
+            document.getElementById('masterSpecBtn').style.background = 'var(--emerald-green)';
+            
             document.getElementById('pwrIndicator').style.display = "block";
+            document.getElementById('masterIndicator').style.display = "block";
+
             function startRec() {
                 if (!isMicOn || forceKill) return;
                 try {
-                    recognition = new SR();
-                    recognition.continuous = false;
-                    recognition.interimResults = true;  // iOS needs true to reliably fire onresult
-                    recognition.lang = 'en-US';
-                    recognition.onresult = (e) => {
-                        if (isCapturing) return;
-                        const res = e.results[e.results.length - 1];
-                        // Update display live on interim; only trigger actions on final
-                        const transcript = res[0].transcript.toLowerCase().trim();
-                        const numMatch = transcript.match(/\b(\d+\.?\d*)\b/);
-                        if (numMatch && !isCapturing) {
-                            document.getElementById('bigDisplay').innerText = numMatch[1];
-                            updateLiveCheck();
-                        }
-                        if (!res.isFinal) return;
+                    globalMic = new SR();
+                    globalMic.continuous = false;
+                    globalMic.interimResults = true;
+                    globalMic.lang = 'en-US';
 
-                        // 3. Dispatch to Global Brain
+                    globalMic.onresult = (e) => {
+                        const res = e.results[e.results.length - 1];
+                        const transcript = res[0].transcript.toLowerCase().trim();
+                        
+                        const isSequenceMode = document.getElementById('voiceModal').style.display === 'flex';
+                        const isIntakeMode = document.getElementById('mainDashboard').style.display !== 'none';
+
+                        // 1. Process Interim purely for Sequence Live-Number display
+                        if (!res.isFinal) {
+                            if (isSequenceMode && !isCapturing) {
+                                const numMatch = transcript.match(/\b(\d+\.?\d*)\b/);
+                                if (numMatch) {
+                                    document.getElementById('bigDisplay').innerText = numMatch[1];
+                                    updateLiveCheck();
+                                }
+                            }
+                            return;
+                        }
+
+                        // 2. Process Final Commands universally
+                        if (/\b(stop|mic off|done)\b/.test(transcript)) { stopGlobalMic(); return; }
+
+                        // 3. Dispatch to Navigation Brain (intercepts "home", "diag", "yes", etc.)
                         if (voiceDispatcher(transcript)) return;
 
-                        if (transcript.includes("stop") || transcript.includes("mic off") || transcript.includes("done")) { stopMic(); return; }
-                        if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
-                        
-                        const confirmArr = userDict.confirms.toLowerCase().split(',').map(s=>s.trim());
-                        if (confirmArr.some(w => transcript.includes(w))) { confirmReading(); return; }
+                        // 4. Contextual Routing
+                        if (isSequenceMode) {
+                            if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
+                            
+                            const confirmArr = userDict.confirms.toLowerCase().split(',').map(s=>s.trim());
+                            if (confirmArr.some(w => transcript.includes(w))) { confirmReading(); return; }
+                            
+                            const finalNum = transcript.match(/\b(\d+\.?\d*)\b/);
+                            if (finalNum && !isCapturing) {
+                                document.getElementById('bigDisplay').innerText = finalNum[1];
+                                updateLiveCheck();
+                            }
+                        } else if (isIntakeMode) {
+                            processIntakeLogic(transcript);
+                        }
                     };
-                    recognition.onend = () => { if (isMicOn && !forceKill) startRec(); };
-                    recognition.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('Mic:', e.error); };
-                    recognition.start();
+
+                    globalMic.onend = () => { if (isMicOn && !forceKill) startRec(); };
+                    globalMic.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('Global Mic:', e.error); };
+                    globalMic.start();
                 } catch(e) {}
             }
             startRec();
         }
 
-        function stopMic() {
+        function stopGlobalMic() {
             isMicOn = false; forceKill = true;
             if (window._seqTimer) { clearInterval(window._seqTimer); window._seqTimer = null; }
-            if (recognition) { recognition.onend = null; try { recognition.abort(); } catch(e){} recognition = null; }
+            if (globalMic) { globalMic.onend = null; try { globalMic.abort(); } catch(e){} globalMic = null; }
+            
             document.getElementById('micTrigger').innerText = "🎙 START MIC";
+            document.getElementById('micTrigger').style.background = "#0056b3";
+            document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)';
+            
             document.getElementById('pwrIndicator').style.display = "none";
+            document.getElementById('masterIndicator').style.display = "none";
+            document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
         }
 
         // ── Change #7: Manual Entry ───────────────────────────────────────
@@ -966,38 +1002,46 @@
             isCapturing = true; let lastVolt = 0;
             const currentField = FIELD_CYCLE[fieldIndex];
             
-            // Fix: Sort keys to find most recent Volts
-            const sortedKeys = Object.keys(buffer).sort((a,b) => parseInt(a) - parseInt(b));
-            for(let i = sortedKeys.length-1; i >= 0; i--) { 
-                const item = buffer[sortedKeys[i]];
-                if(item.field.includes("Volts")) { lastVolt = item.val; break; } 
-            }
-            
-            buffer[fieldIndex] = { field: currentField, val: val, volts: lastVolt };
-            localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); syncLogToUI();
-            
-            document.getElementById('bigDisplay').style.color = "white";
-            document.getElementById('bigDisplay').style.textShadow = "0 0 40px var(--emerald-green)";
-            
-            setTimeout(() => { 
-                document.getElementById('bigDisplay').style.color = "var(--text-primary)";
-                document.getElementById('bigDisplay').style.textShadow = "0 0 30px rgba(255, 255, 255, 0.15)";
-                document.getElementById('bigDisplay').innerText = "0.0"; 
-                // Auto-advance to next EMPTY step
-                let nextIdx = -1;
-                for (let i = 1; i < FIELD_CYCLE.length; i++) {
-                    let check = (fieldIndex + i) % FIELD_CYCLE.length;
-                    if (!buffer[check]) { nextIdx = check; break; }
+            try {
+                // Fix: Sort keys to find most recent Volts
+                const sortedKeys = Object.keys(buffer).sort((a,b) => parseInt(a) - parseInt(b));
+                for(let i = sortedKeys.length-1; i >= 0; i--) { 
+                    const item = buffer[sortedKeys[i]];
+                    if(item && item.field && item.field.includes("Volts")) { lastVolt = item.val; break; } 
                 }
+                
+                buffer[fieldIndex] = { field: currentField, val: val, volts: lastVolt };
+                localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); 
+                syncLogToUI();
+                
+                document.getElementById('bigDisplay').style.color = "white";
+                document.getElementById('bigDisplay').style.textShadow = "0 0 40px var(--emerald-green)";
+                
+                setTimeout(() => { 
+                    document.getElementById('bigDisplay').style.color = "var(--text-primary)";
+                    document.getElementById('bigDisplay').style.textShadow = "0 0 30px rgba(255, 255, 255, 0.15)";
+                    document.getElementById('bigDisplay').innerText = "0.0"; 
+                    
+                    let nextIdx = -1;
+                    for (let i = 1; i < FIELD_CYCLE.length; i++) {
+                        let check = (fieldIndex + i) % FIELD_CYCLE.length;
+                        if (!buffer[check]) { nextIdx = check; break; }
+                    }
 
-                if (nextIdx !== -1) {
-                    fieldIndex = nextIdx; updateStepNav(); recalculateField(); isCapturing = false;
-                } else {
-                    isCapturing = false;
-                    if (window._seqTimer) { clearInterval(window._seqTimer); window._seqTimer = null; }
-                    document.getElementById('targetRange').innerHTML = 'SEQUENCE COMPLETE &#10003; &mdash; say <b style="color:var(--crimson-red)">STOP MIC</b> or tap &#9209;️ to end';
-                }
-            }, 800);
+                    if (nextIdx !== -1) {
+                        fieldIndex = nextIdx; updateStepNav(); recalculateField(); isCapturing = false;
+                    } else {
+                        isCapturing = false;
+                        if (window._seqTimer) { clearInterval(window._seqTimer); window._seqTimer = null; }
+                        document.getElementById('targetRange').innerHTML = 'SEQUENCE COMPLETE &#10003; &mdash; say <b style="color:var(--crimson-red)">STOP MIC</b> or tap &#9209;️ to end';
+                    }
+                }, 800);
+            } catch(e) {
+                console.error("COMMIT ERROR:", e);
+                isCapturing = false; // Deadlock Failsafe release
+                document.getElementById('bigDisplay').style.color = "var(--crimson-red)";
+                setTimeout(() => document.getElementById('bigDisplay').style.color = "var(--text-primary)", 1000);
+            }
         }
 
         function undoLast() { 
@@ -1032,7 +1076,7 @@
 
         function sendFinalBlock() {
             if (Object.keys(buffer).length === 0) return alert("Log empty.");
-            stopMic(); closeManualEntry();
+            stopGlobalMic(); closeManualEntry();
             openReport();
         }
 
@@ -1085,7 +1129,7 @@
             });
         }
 
-        function closeVoiceModal() { stopMic(); closeManualEntry(); document.getElementById('voiceModal').style.display = 'none'; document.getElementById('mainDashboard').style.display = 'block'; }
+        function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); document.getElementById('voiceModal').style.display = 'none'; document.getElementById('mainDashboard').style.display = 'block'; }
         function startJob() { const name = document.getElementById('custName').value; fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] }), mode: "no-cors" }).then(() => alert("Job Created.")); }
     </script>
 </body>
