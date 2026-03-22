@@ -227,7 +227,7 @@
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()">🎙 START MIC</button>
                 <button onclick="toggleManualEntry()" class="btn btn-outline">⌨️ MANUAL</button>
                 <button onclick="undoLast()" class="btn btn-stop">SCRUB / UNDO</button>
-                <button onclick="confirmReading()" class="btn btn-green">✔ COMMIT</button>
+                <button onclick="confirmReading()" class="btn btn-green">✔ COMMIT / COPY</button>
             </div>
         </div>
 
@@ -268,18 +268,20 @@
         let isMasterOn = false; let forceKill = false; let tolerance = 0.06; let activeRatingTarget = 'herm';
         let _lastBuffer = [];
 
-        const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Volts", "Comp Amps"];
+        const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Amps"];
         const CAP_SIZES = [2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90];
 
         initSplash();
         initV2Controls();
         updateShellButton();
 
-        // ── Change #2: Date on CREATE SHELL ──────────────────────────────
+        // ── Change #2: Date on CREATE SHELL (yyyy-mm-dd) ─────────────────
         function updateShellButton() {
             const d = new Date();
-            const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
-            document.getElementById('shellBtn').innerText = `CREATE SHELL  ${label}`;
+            const yyyy = d.getFullYear();
+            const mm   = String(d.getMonth() + 1).padStart(2, '0');
+            const dd   = String(d.getDate()).padStart(2, '0');
+            document.getElementById('shellBtn').innerText = `CREATE SHELL  ${yyyy}-${mm}-${dd}`;
         }
 
         function initSplash() {
@@ -364,6 +366,35 @@
             else { linksDiv.innerHTML = links.map(l => `<a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>`).join(''); }
         }
 
+        // ── Change #6: Tap cell → speak only that cell's value ──────────
+        function openSpecVoice(target) {
+            document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
+            document.getElementById('spec-' + target).classList.add('listening');
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) { alert("Voice not supported."); return; }
+            if (isMasterOn) { isMasterOn = false; if (masterRec) { masterRec.onend = null; masterRec.stop(); } document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)'; document.getElementById('masterIndicator').style.display = 'none'; }
+            const cellRec = new SR();
+            cellRec.continuous = false; cellRec.interimResults = false; cellRec.lang = 'en-US';
+            document.getElementById('masterIndicator').style.display = 'block';
+            cellRec.onresult = (e) => {
+                const res = e.results[e.results.length - 1];
+                if (!res.isFinal) return;
+                const numMatch = res[0].transcript.match(/\b(\d+\.?\d*)\b/);
+                if (numMatch) {
+                    const num = parseFloat(numMatch[1]);
+                    specs[target] = num;
+                    document.getElementById('val-' + target).innerText = num;
+                    localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+                    const cell = document.getElementById('spec-' + target);
+                    cell.style.boxShadow = '0 0 30px var(--emerald-green)';
+                    setTimeout(() => { cell.style.boxShadow = 'none'; cell.classList.remove('listening'); document.getElementById('masterIndicator').style.display = 'none'; }, 800);
+                }
+            };
+            const cleanup = () => { document.getElementById('spec-' + target).classList.remove('listening'); document.getElementById('masterIndicator').style.display = 'none'; };
+            cellRec.onend = cleanup; cellRec.onerror = cleanup;
+            try { cellRec.start(); } catch(e) {}
+        }
+
         // ── Change #1: Smart Intake — Fixed for iOS Safari ───────────────
         function toggleSpecMaster() {
             if (isMasterOn) {
@@ -421,11 +452,7 @@
             startMasterRec();
         }
 
-        function openSpecVoice(target) {
-            if (!isMasterOn) toggleSpecMaster();
-            document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
-            document.getElementById('spec-' + target).classList.add('listening');
-        }
+        // openSpecVoice now defined above (tap-cell listener)
 
         function openVoiceConsole() { 
             if(isMasterOn) toggleSpecMaster(); 
@@ -461,7 +488,10 @@
                 const rating = parseFloat(document.getElementById(field === "Herm Amps" ? "hermRating" : "fanRating").value);
                 if(lastVolt > 0 && rating) {
                     const target = (rating * lastVolt) / 2652;
-                    document.getElementById('targetRange').innerText = "RANGE: " + (target * (1 - tolerance)).toFixed(2) + " - " + (target * (1 + tolerance)).toFixed(2);
+                    // ── Fix: ceil low bound, floor high bound so display matches true pass zone
+                    const lowDisplay  = (Math.ceil(target * (1 - tolerance) * 100) / 100).toFixed(2);
+                    const highDisplay = (Math.floor(target * (1 + tolerance) * 100) / 100).toFixed(2);
+                    document.getElementById('targetRange').innerText = "RANGE: " + lowDisplay + " - " + highDisplay;
                 } else { document.getElementById('targetRange').innerText = "WAITING FOR VOLTS..."; }
             } else { document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase(); }
         }
@@ -491,24 +521,36 @@
 
         function toggleMic() { if (isMicOn) stopMic(); else startListening(); }
 
-        async function startListening() {
+        // ── iOS-safe mic: continuous:false + restart on onend ─────────────
+        function startListening() {
             forceKill = false;
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) return alert("Mic not supported.");
-            try {
-                if (recognition) recognition.stop();
-                recognition = new SR(); recognition.continuous = true;
-                recognition.onstart = () => { isMicOn = true; document.getElementById('micTrigger').innerText = "⏹ STOP MIC"; document.getElementById('pwrIndicator').style.display = "block"; };
-                recognition.onresult = (e) => {
-                    if (isCapturing) return;
-                    let transcript = e.results[e.results.length-1][0].transcript.toLowerCase();
-                    if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("save") || transcript.includes("stage")) { confirmReading(); return; }
-                    let num = transcript.replace(/[^0-9.]/g, '');
-                    if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
-                };
-                recognition.onend = () => { if (isMicOn && !forceKill) recognition.start(); }; 
-                recognition.start();
-            } catch (e) {}
+            isMicOn = true;
+            document.getElementById('micTrigger').innerText = "⏹ STOP MIC";
+            document.getElementById('pwrIndicator').style.display = "block";
+            function startRec() {
+                if (!isMicOn || forceKill) return;
+                try {
+                    recognition = new SR();
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    recognition.lang = 'en-US';
+                    recognition.onresult = (e) => {
+                        if (isCapturing) return;
+                        const res = e.results[e.results.length - 1];
+                        if (!res.isFinal) return;
+                        const transcript = res[0].transcript.toLowerCase().trim();
+                        if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("stage")) { confirmReading(); return; }
+                        const numMatch = transcript.match(/\b(\d+\.?\d*)\b/);
+                        if (numMatch && !isCapturing) document.getElementById('bigDisplay').innerText = numMatch[1];
+                    };
+                    recognition.onend = () => { if (isMicOn && !forceKill) startRec(); };
+                    recognition.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('Mic:', e.error); };
+                    recognition.start();
+                } catch(e) {}
+            }
+            startRec();
         }
 
         function stopMic() {
