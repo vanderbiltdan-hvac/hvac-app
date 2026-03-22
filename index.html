@@ -102,6 +102,12 @@
         .progress-box { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 10px; overflow: hidden; display: none; }
         .progress-bar { height: 100%; width: 0%; background: var(--electric-blue); transition: width 0.3s; box-shadow: 0 0 10px var(--electric-blue); }
 
+        /* AI TRAY UI FIXES */
+        .ai-results-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; margin: 10px 0; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; }
+        .ai-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); width: 100%; }
+        .ai-label { color: #888; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .ai-val { color: var(--electric-blue); font-size: 15px; font-weight: 900; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
         /* EQUIPMENT CARDS (DEEP LIBRARIAN) */
         .equipment-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
@@ -112,14 +118,19 @@
         .mini-link:active { background: rgba(0, 229, 255, 0.2); }
 
         /* DRAFT REPORT DRAWER */
-        .report-drawer { position: fixed; bottom: -80vh; left: 0; width: 100%; height: 80vh; background: var(--bg-dark); border-top: 2px solid var(--electric-blue); z-index: 11000; transition: bottom 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        .report-drawer { position: fixed; bottom: -85vh; left: 0; width: 100%; height: 85vh; background: var(--bg-dark); border-top: 2px solid var(--electric-blue); z-index: 11000; transition: bottom 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
         .report-drawer.open { bottom: 0; }
         .drawer-handle { width: 50px; height: 5px; background: #333; border-radius: 10px; margin: -10px auto 15px auto; }
         .drawer-content { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; }
         
+        /* STAGED ITEM ROW */
+        .staged-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); margin-bottom: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.02); }
+        .staged-text { font-size: 14px; font-weight: 500; }
+        .btn-del-item { background: rgba(255,0,0,0.1); color: #ff1744; border: 1px solid rgba(255,0,0,0.2); border-radius: 6px; padding: 4px 10px; font-size: 10px; font-weight: 900; }
+
         /* FOOTER TAB */
-        .report-tab { position: fixed; bottom: 0; left: 0; width: 100%; height: 50px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 10999; }
-        .tab-btn { color: var(--electric-blue); font-weight: 900; font-size: 13px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .report-tab { position: fixed; bottom: 0; left: 0; width: 100%; height: 55px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 10999; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        .tab-btn { color: var(--electric-blue); font-weight: 900; font-size: 13px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; cursor: pointer; }
     </style>
 </head>
 <body id="masterBody">
@@ -221,15 +232,15 @@
 
     <!-- AI TRAY (NON-BLOCKING) -->
     <div id="aiTray" class="modal-overlay" style="background:rgba(0,0,0,0.95); justify-content:flex-end; display:none; height:auto; top:auto; bottom:0; padding:0; border-top:2px solid var(--electric-blue);">
-        <div class="container" style="background:#1a1a1a; border-radius: 20px 20px 0 0; border:none; max-width:100%;">
+        <div class="container" style="background:#1a1a1a; border-radius: 20px 20px 0 0; border:none; max-width:100%; box-sizing:border-box; padding:20px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2 style="font-size:18px; color:var(--electric-blue); margin:0;">AI TAG RESULTS</h2>
-                <button onclick="closeAiModal()" style="background:none; border:none; color:white; font-size:24px;">&times;</button>
+                <button onclick="closeAiModal()" style="background:none; border:none; color:white; font-size:24px; padding:0 10px;">&times;</button>
             </div>
-            <div id="aiResults" style="font-size:14px; max-height:200px; overflow-y:auto; margin:10px 0; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px;"></div>
+            <div id="aiResults" class="ai-results-grid"></div>
             <div style="display:flex; gap:10px;">
-                <button class="btn btn-primary" onclick="confirmAiSpecs()" style="font-size:14px; padding:12px;">MERGE & SEARCH MANUALS</button>
-                <button class="btn btn-outline" onclick="closeAiModal()" style="font-size:14px; padding:12px;">DISCARD</button>
+                <button class="btn btn-primary" onclick="confirmAiSpecs()" style="font-size:14px; padding:15px; flex:2;">STAGE & SEARCH MANUALS</button>
+                <button class="btn btn-outline" onclick="closeAiModal()" style="font-size:14px; padding:15px; flex:1;">DISCARD</button>
             </div>
         </div>
     </div>
@@ -316,9 +327,9 @@
             const results = document.getElementById('aiResults');
             tray.style.display = 'flex';
             results.innerHTML = Object.entries(data).map(([k, v]) => `
-                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <b style="color:#aaa; font-size:12px;">${k}:</b>
-                    <b style="color:var(--electric-blue); font-size:14px;">${v}</b>
+                <div class="ai-row">
+                    <span class="ai-label">${k}</span>
+                    <span class="ai-val">${v}</span>
                 </div>
             `).join('');
         }
@@ -462,22 +473,40 @@
 
             // Sync Drawer (Draft Report)
             let specHtml = `<div style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">
-                <h3 style="font-size:12px; color:var(--amber-orange);">UNIT SPECS</h3>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div>RLA: <b>${specs.RLA || '--'}</b></div>
-                    <div>FLA: <b>${specs.FLA || '--'}</b></div>
-                    <div>Target SC: <b>${specs.SUB || '--'}</b></div>
-                </div>
+                <h3 style="font-size:11px; color:var(--amber-orange); margin-bottom:10px;">UNIT SPECS (STAGED)</h3>
+                ${['RLA', 'FLA', 'SUB'].map(key => specs[key] ? `
+                    <div class="staged-item">
+                        <span class="staged-text">${key === 'SUB' ? 'Target SC' : key}: <b>${specs[key]}</b></span>
+                        <button class="btn-del-item" onclick="deleteSpec('${key}')">REMOVE</button>
+                    </div>
+                ` : '').join('')}
             </div>`;
 
-            let logHtml = `<h3 style="font-size:12px; color:var(--amber-orange);">DIAGNOSTIC LOG</h3>` + 
-                buffer.map(i => `<div style="font-size:13px; margin:4px 0;">• ${i.field}: <b>${i.val.toFixed(2)}</b></div>`).join('');
+            let diagnosticTitle = `<h3 style="font-size:11px; color:var(--amber-orange); margin-bottom:10px;">DIAGNOSTIC LOG (STAGED)</h3>`;
+            let logHtml = buffer.map((i, idx) => `
+                <div class="staged-item">
+                    <span class="staged-text">${i.field}: <b>${i.val.toFixed(2)}</b></span>
+                    <button class="btn-del-item" onclick="deleteLogItem(${idx})">REMOVE</button>
+                </div>
+            `).join('');
 
-            drawerContent.innerHTML = specHtml + logHtml;
+            drawerContent.innerHTML = specHtml + (buffer.length > 0 ? diagnosticTitle + logHtml : "");
             statusLabel.innerText = `${buffer.length + (specs.RLA?1:0) + (specs.FLA?1:0) + (specs.SUB?1:0)} ITEMS STAGED`;
         }
 
+        function deleteSpec(key) {
+            delete specs[key];
+            localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+            initSplash();
+            syncLogToUI();
+        }
+
         function toggleDrawer() { document.getElementById('reportDrawer').classList.toggle('open'); }
+        function deleteLogItem(idx) { 
+            buffer.splice(idx, 1); 
+            localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); 
+            syncLogToUI(); 
+        }
 
         function toggleMic() { if (isMicOn) stopMic(); else startListening(); }
 
