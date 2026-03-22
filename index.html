@@ -79,11 +79,15 @@
 
         input { width: 100%; padding: 12px; margin: 4px 0; border-radius: 12px; box-sizing: border-box; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 16px; }
 
-        .rig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-        .spec-cell { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.3s; }
+        .rig-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+        .spec-cell { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
         .spec-cell.listening { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.2); transform: scale(1.05); }
-        .spec-label { font-size: 10px; color: #777; font-weight: 900; margin-bottom: 4px; }
-        .spec-val { font-size: 20px; font-weight: 900; color: var(--text-primary); }
+        .spec-label { font-size: 8px; color: #777; font-weight: 900; margin-bottom: 2px; text-transform: uppercase; }
+        .spec-val { font-size: 14px; font-weight: 900; color: var(--text-primary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+        #liveCheck { font-size: 14px; font-weight: 900; margin-top: 4px; min-height: 20px; transition: all 0.3s; }
+        .live-pass { color: var(--emerald-green); }
+        .live-fail { color: var(--crimson-red); }
 
         .dual-inputs { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px; }
         .cap-cell { display:flex; flex-direction:column; align-items:center; border: 2px solid transparent; border-radius: 12px; padding: 6px; cursor: pointer; width: 80px; }
@@ -142,21 +146,53 @@
 
         <!-- UNIT SPECS RIG -->
         <div class="rig-grid">
+            <div class="spec-cell" id="spec-BRAND" onclick="openSpecVoice('BRAND')">
+                <span class="spec-label">BRAND</span>
+                <span id="val-BRAND" class="spec-val">--</span>
+            </div>
+            <div class="spec-cell" id="spec-MDL" onclick="openSpecVoice('MDL')">
+                <span class="spec-label">MODEL #</span>
+                <span id="val-MDL" class="spec-val">--</span>
+            </div>
+            <div class="spec-cell" id="spec-SER" onclick="openSpecVoice('SER')">
+                <span class="spec-label">SERIAL #</span>
+                <span id="val-SER" class="spec-val">--</span>
+            </div>
+            <div class="spec-cell" id="spec-YEAR" onclick="openSpecVoice('YEAR')">
+                <span class="spec-label">YEAR</span>
+                <span id="val-YEAR" class="spec-val">--</span>
+            </div>
             <div class="spec-cell" id="spec-RLA" onclick="openSpecVoice('RLA')">
                 <span class="spec-label">COMP RLA</span>
                 <span id="val-RLA" class="spec-val">--</span>
+            </div>
+            <div class="spec-cell" id="spec-LRA" onclick="openSpecVoice('LRA')">
+                <span class="spec-label">LRA</span>
+                <span id="val-LRA" class="spec-val">--</span>
             </div>
             <div class="spec-cell" id="spec-FLA" onclick="openSpecVoice('FLA')">
                 <span class="spec-label">FAN FLA</span>
                 <span id="val-FLA" class="spec-val">--</span>
             </div>
+            <div class="spec-cell" id="spec-VOLT" onclick="openSpecVoice('VOLT')">
+                <span class="spec-label">VOLTAGE</span>
+                <span id="val-VOLT" class="spec-val">--</span>
+            </div>
             <div class="spec-cell" id="spec-SUB" onclick="openSpecVoice('SUB')">
-                <span class="spec-label">TARGET SUB</span>
+                <span class="spec-label">TARGET SC</span>
                 <span id="val-SUB" class="spec-val">--</span>
             </div>
+            <div class="spec-cell" id="spec-REF" onclick="openSpecVoice('REF')">
+                <span class="spec-label">REF</span>
+                <span id="val-REF" class="spec-val">--</span>
+            </div>
+            <div class="spec-cell" id="spec-METER" onclick="openSpecVoice('METER')">
+                <span class="spec-label">METERING</span>
+                <span id="val-METER" class="spec-val">--</span>
+            </div>
             <div class="spec-cell" id="masterSpecBtn" onclick="toggleSpecMaster()" style="background:var(--amber-orange); color:black;">
-                <span class="spec-label" style="color:black;">SMART INTAKE</span>
-                <span style="font-size:14px; font-weight:900;">⚡ AUTO</span>
+                <span class="spec-label" style="color:black;">INTAKE</span>
+                <span style="font-size:12px; font-weight:900;">AUTO</span>
             </div>
         </div>
 
@@ -200,6 +236,7 @@
             <div id="pwrIndicator" class="recording-pulse"></div>
             <div id="targetRange">READY...</div>
             <div id="bigDisplay" class="big-display">0.0</div>
+            <div id="liveCheck"></div>
             
             <div class="dual-inputs">
                 <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
@@ -261,7 +298,9 @@
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || [];
-        let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { RLA: 0, FLA: 0, SUB: 0 };
+        let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { 
+            BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--'
+        };
         let tempAiSpecs = {}; 
         let fieldIndex = 0;
         let isCapturing = false; let recognition = null; let masterRec = null; let isMicOn = false;
@@ -285,9 +324,10 @@
         }
 
         function initSplash() {
-            if(specs.RLA) document.getElementById('val-RLA').innerText = specs.RLA;
-            if(specs.FLA) document.getElementById('val-FLA').innerText = specs.FLA;
-            if(specs.SUB) document.getElementById('val-SUB').innerText = specs.SUB;
+            Object.keys(specs).forEach(k => {
+                const el = document.getElementById('val-' + k);
+                if (el) el.innerText = specs[k] || '--';
+            });
         }
 
         function initV2Controls() {
@@ -422,28 +462,66 @@
 
                 masterRec.onresult = (e) => {
                     const lastResult = e.results[e.results.length - 1];
-                    if (!lastResult.isFinal) return; // only act on final results
+                    if (!lastResult.isFinal) return;
                     const transcript = lastResult[0].transcript.toLowerCase().trim();
 
-                    // Check for keyword — persists across separate utterances
-                    if (/\brla\b/.test(transcript))                             masterTarget = "RLA";
-                    else if (/\bfla\b/.test(transcript))                        masterTarget = "FLA";
-                    else if (/\b(sub|subcool|suction|cool)\b/.test(transcript)) masterTarget = "SUB";
+                    // Stop Mic Command
+                    if (/\b(stop|mic off|done)\b/.test(transcript)) { toggleSpecMaster(); return; }
+
+                    // Keyword Detection
+                    if (/\bbrand\b/.test(transcript))                             masterTarget = "BRAND";
+                    else if (/\b(model|mod|modular)\b/.test(transcript))          masterTarget = "MDL";
+                    else if (/\b(serial|sir)\b/.test(transcript))                 masterTarget = "SER";
+                    else if (/\byear\b/.test(transcript))                         masterTarget = "YEAR";
+                    else if (/\brla\b/.test(transcript))                          masterTarget = "RLA";
+                    else if (/\blra\b/.test(transcript))                          masterTarget = "LRA";
+                    else if (/\bfla\b/.test(transcript))                          masterTarget = "FLA";
+                    else if (/\b(voltage|volts)\b/.test(transcript))              masterTarget = "VOLT";
+                    else if (/\b(sub|subcool|suction|target)\b/.test(transcript)) masterTarget = "SUB";
+                    else if (/\b(ref|refrigerant)\b/.test(transcript))            masterTarget = "REF";
+                    else if (/\b(meter|metering)\b/.test(transcript))             masterTarget = "METER";
 
                     if (masterTarget) {
                         document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
-                        document.getElementById('spec-' + masterTarget).classList.add('listening');
-                        const numMatch = transcript.match(/\b(\d+\.?\d*)\b/);
-                        if (numMatch) {
-                            const num = parseFloat(numMatch[1]);
-                            specs[masterTarget] = num;
-                            document.getElementById('val-' + masterTarget).innerText = num;
+                        const targetEl = document.getElementById('spec-' + masterTarget);
+                        if (targetEl) targetEl.classList.add('listening');
+
+                        let input = transcript;
+                        // Clean up input by removing the keyword if it was just identifying the field
+                        const kwMatch = transcript.match(new RegExp(`\\b${masterTarget.toLowerCase()}\\b`));
+                        if (kwMatch) input = transcript.replace(kwMatch[0], "").trim();
+
+                        if (input.length > 0) {
+                            let val = input.toUpperCase();
+                            
+                            // Normalization: Refrigerant
+                            if (masterTarget === "REF") {
+                                if (/\b4[:.]?1?0\b/.test(input)) val = "R-410A";
+                                else if (/\b22\b/.test(input)) val = "R-22";
+                                else if (/\b407\b/.test(input)) val = "R-407C";
+                                else if (/\b134\b/.test(input)) val = "R-134a";
+                                else if (/\b438\b/.test(input)) val = "R-438A (MO99)";
+                                else if (/\b422\b/.test(input)) val = "R-422D";
+                            }
+                            // Normalization: Metering
+                            if (masterTarget === "METER") {
+                                if (/\bt\s?xv\b/.test(input)) val = "TXV";
+                                else if (/\be\s?xv\b/.test(input)) val = "EXV";
+                                else if (/\be\s?ev\b/.test(input)) val = "EEV";
+                                else if (/\bpiston\b/.test(input)) val = "Piston";
+                                else if (/\bcap\b/.test(input)) val = "Cap Tube";
+                            }
+
+                            specs[masterTarget] = val;
+                            const valEl = document.getElementById('val-' + masterTarget);
+                            if (valEl) valEl.innerText = val;
                             localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+                            
                             const cell = document.getElementById('spec-' + masterTarget);
-                            cell.style.boxShadow = '0 0 30px var(--emerald-green)';
-                            setTimeout(() => cell.style.boxShadow = 'none', 500);
-                            // masterTarget stays set — user can say another number to update same field
-                            // Say a new keyword (RLA/FLA/SUB) to switch fields
+                            if (cell) {
+                                cell.style.boxShadow = '0 0 30px var(--emerald-green)';
+                                setTimeout(() => cell.style.boxShadow = 'none', 500);
+                            }
                         }
                     }
                 };
@@ -503,6 +581,45 @@
             } else {
                 document.getElementById('targetRange').innerHTML = "READY FOR " + field.toUpperCase();
             }
+            updateLiveCheck();
+        }
+
+        function updateLiveCheck() {
+            const field = FIELD_CYCLE[fieldIndex];
+            const display = document.getElementById('bigDisplay');
+            const live = document.getElementById('liveCheck');
+            const val = parseFloat(display.innerText);
+            
+            if (!val || val === 0) { live.innerHTML = ""; return; }
+
+            let lastVolt = 0;
+            for(let i = buffer.length-1; i >= 0; i--) { if(buffer[i].field.includes("Volts")) { lastVolt = buffer[i].val; break; } }
+
+            let status = ""; let color = "";
+            if (field === "Herm Amps" || field === "Fan Amps") {
+                const rating = parseFloat(document.getElementById(field === "Herm Amps" ? "hermRating" : "fanRating").value);
+                if (lastVolt > 0 && rating) {
+                    const target = (rating * lastVolt) / 2652;
+                    const uF = (val * 2652) / lastVolt;
+                    const varPct = ((uF / rating) - 1) * 100;
+                    const isPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
+                    status = (isPass ? "&#10003; PASS " : "&#10007; FAIL ") + (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
+                    color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
+                }
+            } else if (field === "Comp Amps" && specs.RLA && specs.RLA !== "--") {
+                const pct = (val / parseFloat(specs.RLA)) * 100;
+                const isPass = pct <= 100;
+                status = (isPass ? "&#10003; PASS " : "&#10007; FAIL ") + pct.toFixed(2) + "% RLA";
+                color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
+            } else if (field === "ODF Amps" && specs.FLA && specs.FLA !== "--") {
+                const pct = (val / parseFloat(specs.FLA)) * 100;
+                const isPass = pct <= 100;
+                status = (isPass ? "&#10003; PASS " : "&#10007; FAIL ") + pct.toFixed(2) + "% FLA";
+                color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
+            }
+
+            live.innerHTML = status;
+            live.style.color = color;
         }
 
         function syncLogToUI() {
@@ -555,7 +672,10 @@
                         // Update display live on interim; only trigger actions on final
                         const transcript = res[0].transcript.toLowerCase().trim();
                         const numMatch = transcript.match(/\b(\d+\.?\d*)\b/);
-                        if (numMatch && !isCapturing) document.getElementById('bigDisplay').innerText = numMatch[1];
+                        if (numMatch && !isCapturing) {
+                            document.getElementById('bigDisplay').innerText = numMatch[1];
+                            updateLiveCheck();
+                        }
                         if (!res.isFinal) return;
                         if (transcript.includes("stop") || transcript.includes("mic off") || transcript.includes("done")) { stopMic(); return; }
                         if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
@@ -585,7 +705,10 @@
         }
         function confirmManualEntry() {
             const val = parseFloat(document.getElementById('manualInput').value);
-            if (!isNaN(val) && val > 0) { document.getElementById('bigDisplay').innerText = val.toFixed(2); }
+            if (!isNaN(val) && val > 0) { 
+                document.getElementById('bigDisplay').innerText = val.toFixed(2);
+                updateLiveCheck();
+            }
             closeManualEntry();
         }
         function closeManualEntry() { document.getElementById('manualOverlay').classList.remove('visible'); }
