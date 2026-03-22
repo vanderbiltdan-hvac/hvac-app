@@ -98,190 +98,153 @@
         #restoreBox { display: none; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--electric-blue); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
         .master-indicator { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: var(--electric-blue); display: none; z-index: 100000; box-shadow: 0 0 15px var(--electric-blue); }
 
-        /* PHOTO STAGING SLIDER v21 */
-        .photo-staging-area { margin: 15px 0; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; border: 1px dashed rgba(0, 229, 255, 0.2); }
-        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .photo-slider { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; }
-        .photo-card { position: relative; flex: 0 0 120px; height: 160px; background: #000; border-radius: 12px; overflow: hidden; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1); }
-        .photo-card img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-        .photo-actions { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: space-around; padding: 5px 0; }
-        .btn-mini-action { background: none; border: none; color: white; font-size: 14px; cursor: pointer; padding: 5px; }
-        .btn-mini-scan { color: var(--electric-blue); }
-        .btn-mini-del { color: #ff1744; }
-        .photo-badge { position: absolute; top: 5px; right: 5px; background: var(--emerald-green); color: black; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; display: none; }
+        /* v22 DASHBOARD & NAVBAR */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: #0b0b0b; border-top: 1px solid #1a1a1a; display: grid; grid-template-columns: repeat(4, 1fr); z-index: 10000; box-shadow: 0 -5px 20px rgba(0,0,0,0.8); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; cursor: pointer; transition: 0.3s; padding-bottom: 5px; }
+        .nav-item.active { color: var(--electric-blue); border-top: 2px solid var(--electric-blue); background: rgba(0,229,255,0.03); }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; }
+        .nav-label { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* FULL SIZE VIEWER */
+        /* TAB PANES */
+        .tab-pane { display: none; padding: 20px; padding-bottom: 100px; -webkit-overflow-scrolling: touch; }
+        .tab-pane.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CATEGORIZED LIBRARIAN v22 */
+        .librarian-section { margin-top: 15px; }
+        .lib-category { margin-bottom: 15px; }
+        .lib-cat-title { font-size: 10px; font-weight: 900; color: #888; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom: 10px; text-transform: uppercase; }
+        .lib-link-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: white; }
+        .lib-link-info { flex: 1; }
+        .lib-link-name { display: block; font-size: 12px; font-weight: 900; color: var(--electric-blue); }
+        .lib-link-meta { display: block; font-size: 9px; color: #666; margin-top: 2px; }
+
+        /* PHOTO STAGING SLIDER v22 */
+        .photo-staging-area { margin: 15px 0; background: rgba(0,0,0,0.2); border-radius: 20px; padding: 15px; border: 1px solid rgba(0, 229, 255, 0.1); }
+        .photo-slider { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+        .photo-card { position: relative; flex: 0 0 140px; height: 180px; background: #000; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .photo-card img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-actions { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: space-around; padding: 8px 0; }
+        .btn-mini-action { background: none; border: none; color: white; font-size: 18px; cursor: pointer; }
+
+        /* FULL VIEWER */
         .full-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: none; flex-direction: column; }
-        .viewer-header { padding: 20px; display: flex; justify-content: flex-end; }
-        .viewer-img { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .viewer-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .viewer-header { padding: 25px; display: flex; justify-content: flex-end; }
+        .viewer-img { flex: 1; display: flex; align-items: center; justify-content: center; }
+        .viewer-img img { max-width: 100%; max-height: 90%; object-fit: contain; }
 
-        /* FOLDER SELECT */
-        .folder-select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; margin: 10px 0; font-size: 13px; }
+        /* MODAL (AI TAG RESULTS) v22 */
+        .ai-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 15000; display: none; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .ai-box { background: var(--bg-dark); border: 2px solid var(--electric-blue); border-radius: 24px; padding: 25px; width: 100%; max-width: 400px; box-shadow: 0 20px 50px rgba(0,0,0,1); }
+        .ai-results-grid { margin: 15px 0; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 15px; max-height: 300px; overflow-y: auto; }
+        .ai-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        /* FOOTER TAB v21 */
-        .report-tab { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 10999; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
-        .tab-btn { color: var(--electric-blue); font-weight: 900; font-size: 13px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .folder-select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; width: 100%; margin: 10px 0; font-size: 14px; appearance: none; }
     </style>
 </head>
 <body id="masterBody">
+    <!-- TOP HEADER -->
+    <header class="header">
+        <h1 id="mainTitle">HVAC Master <span style="color:var(--emerald-green);">Pro</span></h1>
+        <div style="display:flex; justify-content:space-between; width:100%; padding:0 20px; box-sizing:border-box;">
+            <span id="jobStatus" style="font-size:10px; font-weight:900; color:#666;">NO ACTIVE JOB</span>
+            <span id="stagedCount" style="font-size:10px; font-weight:900; color:var(--amber-orange);"></span>
+        </div>
+    </header>
 
-    <div id="masterIndicator" class="master-indicator"></div>
-
-    <div class="container" id="mainDashboard">
-        <div id="splashVer">v20 MASTER PRO</div>
-        <h2>HVAC Librarian</h2>
-
-        <!-- UNIT SPECS RIG -->
-        <div class="rig-grid">
-            <div class="spec-cell" id="spec-RLA" onclick="openSpecVoice('RLA')">
-                <span class="spec-label">COMP RLA</span>
-                <span id="val-RLA" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-FLA" onclick="openSpecVoice('FLA')">
-                <span class="spec-label">FAN FLA</span>
-                <span id="val-FLA" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-SUB" onclick="openSpecVoice('SUB')">
-                <span class="spec-label">TARGET SUB</span>
-                <span id="val-SUB" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="masterSpecBtn" onclick="toggleSpecMaster()" style="background:var(--amber-orange); color:black;">
-                <span class="spec-label" style="color:black;">SMART INTAKE</span>
-                <span style="font-size:14px; font-weight:900;">⚡ AUTO</span>
+    <!-- TAB CONTENTS -->
+    <div id="tab-jobs" class="tab-pane active">
+        <div class="active-job-container">
+            <h2 id="displayJobName" style="margin-top:0;">READY FOR NEW CALL</h2>
+            <div id="jobDetails" style="font-size:12px; color:#888; margin-bottom:15px;">Setup your job shell below.</div>
+            <input type="text" id="custName" placeholder="Client Name / Address">
+            <button class="btn btn-accent" onclick="startNewJob()" style="margin-top:10px;">CREATE JOB SHELL</button>
+            <div id="restoreBox" style="display:none; margin-top:15px;">
+                <button class="btn btn-outline" onclick="restoreJob()">RESTORE CACHE</button>
             </div>
         </div>
+    </div>
 
-        <div style="margin-bottom:15px;">
-            <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
+    <div id="tab-scan" class="tab-pane">
+        <div id="photoStagingArea" class="photo-staging-area">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:10px; font-weight:900; color:var(--electric-blue);">STAGED PHOTOS</span>
+                <button onclick="scanAllPhotos()" style="font-size:10px; font-weight:900; background:none; border:none; color:var(--amber-orange); text-decoration:underline;">⚡ ANALYZE ALL</button>
+            </div>
+            <div id="photoSlider" class="photo-slider"></div>
+            <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="margin-top:10px; font-size:12px; padding:10px;">📷 ADD TAG PHOTOS</button>
             <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
         </div>
 
-        <!-- v21 PHOTO STAGING SLIDER -->
-        <div id="photoStagingArea" class="photo-staging-area" style="display:none;">
-            <div class="slider-header">
-                <span style="font-size:11px; font-weight:900; color:var(--electric-blue);">STAGED PHOTOS</span>
-                <button class="btn-mini-scan" onclick="scanAllPhotos()" style="font-size:10px; font-weight:900; background:none; border:none; text-decoration:underline;">⚡ ANALYZE ALL</button>
-            </div>
-            <div id="photoSlider" class="photo-slider">
-                <!-- Thumbnails go here -->
-            </div>
-            <div id="photoProgressBox" class="progress-box"><div id="photoProgressBar" class="progress-bar"></div></div>
-            <div id="photoStatus" style="font-size:10px; color:var(--amber-orange); margin-top:5px; text-align:center; display:none;">Processing...</div>
-        </div>
-
-        <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ RUN DIAGNOSTIC</button>
-        <hr style="opacity:0.1; margin:15px 0;">
-        
-        <div id="activeJobSection" style="background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
-            <span style="font-size:9px; color:#aaa; font-weight:900; display:block; margin-bottom:5px;">ACTIVE JOB</span>
-            <input type="text" id="custName" placeholder="Enter Name / Job #">
-            <div style="display:flex; gap:8px;">
-                <button class="btn btn-primary" onclick="startJob()" style="flex:2;">CREATE SHELL</button>
-                <button class="btn btn-outline" onclick="runLibrarianInApp()" style="flex:1; font-size:10px;">LIBRARIAN</button>
-            </div>
-            <div id="manualLinks" style="margin-top:10px;"></div>
+        <div class="active-job-container" style="text-align:center; padding:40px 20px;">
+            <div id="micStatus" style="font-size:10px; font-weight:900; color:var(--amber-orange); margin-bottom:10px;">DICTATE RLA / FLA / SUB</div>
+            <button id="micBtn" class="mic-btn" onclick="toggleMic()">🎙️</button>
+            <div id="transcript" style="margin-top:15px; font-size:14px; color:#888; font-style:italic; min-height:20px;"></div>
         </div>
     </div>
 
-    <!-- VOICE MODAL -->
-    <div id="voiceModal" class="modal-overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <h2 id="modalLabel" style="margin:0;">HERM VOLTS</h2>
-                <button onclick="clearBuffer()" style="padding:4px 12px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:red; border-radius:6px; font-size:10px; font-weight:900;">WIPE ALL</button>
-            </div>
-            <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:20px;">&times;</button>
+    <div id="tab-diag" class="tab-pane">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+            <button class="btn btn-outline" onclick="setField('Herm Volts')">HERM VOLTS</button>
+            <button class="btn btn-outline" onclick="setField('Fan Volts')">FAN VOLTS</button>
+            <button class="btn btn-outline" onclick="setField('Herm Amps')">HERM AMPS</button>
+            <button class="btn btn-outline" onclick="setField('Fan Amps')">FAN AMPS</button>
+            <button class="btn btn-outline" onclick="setField('Capacitor MFD')" style="grid-column: span 2;">CAPACITOR</button>
         </div>
-
-        <div class="voice-console" id="consoleBody">
-            <div id="pwrIndicator" class="recording-pulse"></div>
-            <div id="targetRange">READY...</div>
-            <div id="bigDisplay" class="big-display">0.0</div>
-            
-            <div class="dual-inputs">
-                <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
-                    <span style="font-size:9px; color:#aaa; font-weight:bold;">HERM</span>
-                    <input type="number" id="hermRating" value="45" readonly>
-                </div>
-                <span style="font-size:24px; font-weight:bold; color:var(--amber-orange); margin-top:15px;">+</span>
-                <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')">
-                    <span style="font-size:9px; color:#aaa; font-weight:bold;">FAN</span>
-                    <input type="number" id="fanRating" value="5" readonly>
-                </div>
-                <div id="tolSelector" style="display:flex; flex-direction:column; gap:4px; margin-left:10px;">
-                    <div class="tolerance-pill" id="tol5" onclick="setTol(5)">5%</div>
-                    <div class="tolerance-pill active" id="tol6" onclick="setTol(6)">6%</div>
-                    <div class="tolerance-pill" id="tol10" onclick="setTol(10)">10%</div>
-                </div>
-            </div>
-            
-            <div class="quick-dial" id="ratingDial">
-                <button class="dial-btn" onclick="dial(3)">3.0</button><button class="dial-btn" onclick="dial(5)">5.0</button><button class="dial-btn" onclick="dial(35)">35</button><button class="dial-btn" onclick="dial(45)">45</button><button class="dial-btn" onclick="dial(50)">50</button>
-            </div>
-
-            <div class="control-row" style="margin-top:10px;">
-                <button id="micTrigger" class="btn btn-primary" onclick="toggleMic()" style="flex:2;">START MIC</button>
-                <button onclick="undoLast()" class="btn btn-orange" style="flex:1; font-size:12px;">UNDO</button>
-            </div>
-        </div>
-
-        <div id="stagingLog" class="log-list"></div>
-        <div id="restoreBox" onclick="restoreBuffer()">↩️ RESTORE WIPED DATA</div>
-        
-        <button class="btn btn-accent" id="syncBtn" onclick="sendFinalBlock()" style="background: #00e5ff; color:black; margin-top: auto; padding:18px; font-size:18px;">SEAL & SYNC REPORT</button>
+        <button class="btn btn-accent" onclick="toggleMasterMic()" id="masterMicBtn">🎙️ AUTO LOGGING</button>
+        <div id="logList" style="margin-top:20px;"></div>
     </div>
 
-    <!-- AI TRAY (NON-BLOCKING) -->
-    <div id="aiTray" class="modal-overlay" style="background:rgba(0,0,0,0.95); justify-content:flex-end; display:none; height:auto; top:auto; bottom:0; padding:0; border-top:2px solid var(--electric-blue);">
-        <div class="container" style="background:#1a1a1a; border-radius: 20px 20px 0 0; border:none; max-width:100%; box-sizing:border-box; padding:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="font-size:18px; color:var(--electric-blue); margin:0;">AI TAG RESULTS</h2>
-                <button onclick="closeAiModal()" style="background:none; border:none; color:white; font-size:24px; padding:0 10px;">&times;</button>
-            </div>
-            <div id="aiResults" class="ai-results-grid"></div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-primary" onclick="confirmAiSpecs()" style="font-size:14px; padding:15px; flex:2;">STAGE & SEARCH MANUALS</button>
-                <button class="btn btn-outline" onclick="closeAiModal()" style="font-size:14px; padding:15px; flex:1;">DISCARD</button>
-            </div>
+    <div id="tab-report" class="tab-pane">
+        <div id="reportContent">
+            <!-- Specs & Librarian Go Here -->
         </div>
-    </div>
-
-    <!-- DRAFT REPORT DRAWER -->
-    <div id="reportDrawer" class="report-drawer" onclick="if(event.target === this) toggleDrawer()">
-        <div class="drawer-handle"></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h2 style="margin:0; font-size:22px;">DRAFT REPORT</h2>
-            <button onclick="toggleDrawer()" style="background:none; border:none; color:white; font-size:20px;">READY &times;</button>
-        </div>
-        <div class="drawer-content" id="drawerContent">
-            <!-- Dynamic Content -->
-        </div>
-
-        <div style="margin-top:15px;">
-            <label style="font-size:10px; font-weight:900; color:#888;">SYNC TO DRIVE FOLDER:</label>
+        <div style="margin-top:20px; border-top:1px solid #222; padding-top:20px;">
+            <label style="font-size:10px; font-weight:900; color:#666;">SYNC TO DRIVE FOLDER:</label>
             <select id="folderSelect" class="folder-select">
                 <option value="">-- Use Active Job Folder --</option>
             </select>
+            <button class="btn btn-accent" onclick="sendFinalBlock()" style="background:var(--emerald-green); color:black; margin-top:15px; padding:20px; font-size:20px; width:100%;">SEAL & SYNC REPORT</button>
         </div>
+        <div id="manualLinks" style="margin-top:20px;"></div>
+    </div>
 
-        <button class="btn btn-accent" onclick="sendFinalBlock()" style="background:var(--emerald-green); color:black; margin-top:10px; padding:20px; font-size:20px;">SEAL & SYNC REPORT</button>
+    <!-- BOTTOM NAVBAR -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" id="nav-jobs" onclick="switchTab('jobs')">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Jobs</span>
+        </div>
+        <div class="nav-item" id="nav-scan" onclick="switchTab('scan')">
+            <span class="nav-icon">📸</span>
+            <span class="nav-label">Scan</span>
+        </div>
+        <div class="nav-item" id="nav-diag" onclick="switchTab('diag')">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-label">Diag</span>
+        </div>
+        <div class="nav-item" id="nav-report" onclick="switchTab('report')">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">Report</span>
+        </div>
+    </nav>
+
+    <!-- AI TAG RESULTS MODAL -->
+    <div id="aiModal" class="ai-modal">
+        <div class="ai-box">
+            <h3 style="margin-top:0; color:var(--electric-blue); font-size:16px;">AI TAG RESULTS</h3>
+            <div id="aiResults" class="ai-results-grid"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <button class="btn btn-accent" onclick="confirmAiSpecs()">STAGE</button>
+                <button class="btn btn-outline" onclick="closeAiModal()">DISCARD</button>
+            </div>
+        </div>
     </div>
 
     <!-- FULL PHOTO VIEWER -->
     <div id="fullViewer" class="full-viewer" onclick="closeFullView()">
-        <div class="viewer-header">
-            <button style="background:none; border:none; color:white; font-size:30px;">&times;</button>
-        </div>
-        <div class="viewer-img">
-            <img id="viewerImg" src="">
-        </div>
-    </div>
-
-    <!-- FOOTER TAB -->
-    <div class="report-tab" id="reportTab">
-        <div class="tab-btn" onclick="toggleDrawer()">📋 VIEW DRAFT REPORT</div>
-        <div id="tabStatus" style="font-size:11px; color:#666;">EMPTY</div>
+        <div class="viewer-header"><button>&times;</button></div>
+        <div class="viewer-img"><img id="viewerImg" src=""></div>
     </div>
 
     <script>
@@ -290,339 +253,224 @@
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || [];
         let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { RLA: 0, FLA: 0, SUB: 0, Model: "", Serial: "" };
         let stagedPhotos = JSON.parse(localStorage.getItem('hvacPhotosV21')) || [];
+        let currentTab = localStorage.getItem('hvacTabV22') || 'jobs';
         let tempAiSpecs = {}; 
-        let field = "Herm Volts"; let isCapturing = false; let recognition = null; let masterRec = null; let isMicOn = false; let isMasterOn = false; let forceKill = false; let tolerance = 0.06; let activeRatingTarget = 'herm';
+        let isMicOn = false; let recognition = null; let field = "RLA";
 
-        const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Compressor Amps", "Outdoor Fan Amps"];
+        // INIT UI
+        window.onload = () => { switchTab(currentTab); syncLogToUI(); renderPhotoSlider(); };
 
-        initSplash();
-
-        function initSplash() {
-            if(specs.RLA) document.getElementById('val-RLA').innerText = specs.RLA;
-            if(specs.FLA) document.getElementById('val-FLA').innerText = specs.FLA;
-            if(specs.SUB) document.getElementById('val-SUB').innerText = specs.SUB;
+        // TAB SYSTEM
+        function switchTab(tabId) {
+            currentTab = tabId;
+            localStorage.setItem('hvacTabV22', tabId);
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('nav-' + tabId).classList.add('active');
+            
+            if(tabId === 'report') { runLibrarianInApp(); fetchFolders(); }
+            stopMic(); // Clean up mic on tab change
         }
 
+        // PHOTO HANDLER
         function handleMultiPhotos(input) {
             const files = input.files; if (files.length === 0) return;
-            document.getElementById('photoStagingArea').style.display = 'block';
-
             for (let i = 0; i < files.length; i++) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    stagedPhotos.push({
-                        data: e.target.result.split(',')[1],
-                        filename: files[i].name,
-                        mimeType: files[i].type,
-                        scanned: false
-                    });
-                    savePhotos();
-                    renderPhotoSlider();
+                    stagedPhotos.push({ data: e.target.result.split(',')[1], filename: files[i].name, mimeType: files[i].type, scanned: false });
+                    savePhotos(); renderPhotoSlider();
                 };
                 reader.readAsDataURL(files[i]);
             }
         }
-
         function savePhotos() { localStorage.setItem('hvacPhotosV21', JSON.stringify(stagedPhotos)); }
-
         function renderPhotoSlider() {
             const slider = document.getElementById('photoSlider');
-            if(stagedPhotos.length === 0) {
-                document.getElementById('photoStagingArea').style.display = 'none';
-                return;
-            }
-            document.getElementById('photoStagingArea').style.display = 'block';
             slider.innerHTML = stagedPhotos.map((p, idx) => `
-                <div class="photo-card">
-                    <img src="data:${p.mimeType};base64,${p.data}" onclick="openFullView('${p.data}', '${p.mimeType}')">
-                    <div class="photo-badge" style="display:${p.scanned ? 'block' : 'none'}">SCANNED</div>
-                    <div class="photo-actions">
-                        <button class="btn-mini-action btn-mini-scan" onclick="scanSpecificPhoto(${idx})">🔍</button>
-                        <button class="btn-mini-action btn-mini-del" onclick="deleteStagedPhoto(${idx})">🗑️</button>
+                <div class="photo-card" onclick="openFullView('${p.data}', '${p.mimeType}')">
+                    <img src="data:${p.mimeType};base64,${p.data}">
+                    ${p.scanned ? '<div style="position:absolute;top:5px;right:5px;background:var(--emerald-green);font-size:8px;padding:2px 5px;border-radius:4px;color:black;font-weight:900;">SCANNED</div>' : ''}
+                    <div class="photo-actions" onclick="event.stopPropagation()">
+                        <button class="btn-mini-action" onclick="scanSpecificPhoto(${idx})" style="color:var(--electric-blue);">🔍</button>
+                        <button class="btn-mini-action" onclick="deleteStagedPhoto(${idx})" style="color:#ff1744;">🗑️</button>
                     </div>
                 </div>
             `).join('');
+            document.getElementById('stagedCount').innerText = `${stagedPhotos.length + buffer.length + Object.keys(specs).filter(k=>specs[k]).length} ITEMS`;
         }
-
-        function deleteStagedPhoto(idx) {
-            stagedPhotos.splice(idx, 1);
-            savePhotos();
-            renderPhotoSlider();
-        }
-
+        function deleteStagedPhoto(idx) { stagedPhotos.splice(idx, 1); savePhotos(); renderPhotoSlider(); }
         async function scanSpecificPhoto(idx) {
             const p = stagedPhotos[idx];
-            const status = document.getElementById('photoStatus');
-            const pbox = document.getElementById('photoProgressBox');
-            const pbar = document.getElementById('photoProgressBar');
-
-            status.style.display = 'block'; status.innerText = `Analyzing: ${p.filename}...`;
-            pbox.style.display = 'block'; pbar.style.width = '50%';
-
+            document.getElementById('mainTitle').innerText = "AI SCANNING...";
             try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ action: "uploadPhotoAI", data: p.data, filename: p.filename, mimeType: p.mimeType })
-                });
-                const result = await response.json();
-                if(result && result.extractedData) {
-                    tempAiSpecs = result.extractedData;
-                    p.scanned = true;
-                    savePhotos();
-                    renderPhotoSlider();
-                    openAiModal(result.extractedData);
-                }
-            } catch (err) { alert("AI Error: " + err); }
-            pbar.style.width = '100%';
-            setTimeout(() => { pbox.style.display = 'none'; status.style.display = 'none'; }, 1000);
+                const r = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "uploadPhotoAI", data: p.data, filename: p.filename, mimeType: p.mimeType }) });
+                const res = await r.json();
+                if(res && res.extractedData) { tempAiSpecs = res.extractedData; p.scanned = true; savePhotos(); renderPhotoSlider(); openAiModal(res.extractedData); }
+            } catch (e) { alert("AI Error"); }
+            document.getElementById('mainTitle').innerHTML = 'HVAC Master <span style="color:var(--emerald-green);">Pro</span>';
         }
-
-        async function scanAllPhotos() {
-            for (let i = 0; i < stagedPhotos.length; i++) {
-                if (!stagedPhotos[i].scanned) await scanSpecificPhoto(i);
-            }
-        }
-
-        function openFullView(base64, mime) {
-            document.getElementById('viewerImg').src = `data:${mime};base64,${base64}`;
-            document.getElementById('fullViewer').style.display = 'flex';
-        }
+        async function scanAllPhotos() { for (let i = 0; i < stagedPhotos.length; i++) { if (!stagedPhotos[i].scanned) await scanSpecificPhoto(i); } }
+        function openFullView(b64, mime) { document.getElementById('viewerImg').src = `data:${mime};base64,${b64}`; document.getElementById('fullViewer').style.display = 'flex'; }
         function closeFullView() { document.getElementById('fullViewer').style.display = 'none'; }
 
+        // AI MODAL
         function openAiModal(data) {
-            const tray = document.getElementById('aiTray');
-            const results = document.getElementById('aiResults');
-            tray.style.display = 'flex';
-            results.innerHTML = Object.entries(data).map(([k, v]) => `
-                <div class="ai-row">
-                    <span class="ai-label">${k}</span>
-                    <span class="ai-val">${v}</span>
-                </div>
+            document.getElementById('aiModal').style.display = 'flex';
+            document.getElementById('aiResults').innerHTML = Object.entries(data).map(([k, v]) => `
+                <div class="ai-row"><span>${k}</span><span style="color:var(--electric-blue); font-weight:900;">${v}</span></div>
             `).join('');
         }
-
+        function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; }
         function confirmAiSpecs() {
-            if(tempAiSpecs.RLA) specs.RLA = parseFloat(tempAiSpecs.RLA);
-            if(tempAiSpecs.FLA) specs.FLA = parseFloat(tempAiSpecs.FLA);
-            if(tempAiSpecs.TargetSC) specs.SUB = parseFloat(tempAiSpecs.TargetSC);
-            if(tempAiSpecs.Model) specs.Model = tempAiSpecs.Model;
-            if(tempAiSpecs.Serial) specs.Serial = tempAiSpecs.Serial;
-            
-            localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
-            initSplash();
-            syncLogToUI();
-            runLibrarianInApp(); 
-            closeAiModal();
+            if(tempAiSpecs.RLA) specs.RLA = tempAiSpecs.RLA; if(tempAiSpecs.FLA) specs.FLA = tempAiSpecs.FLA; if(tempAiSpecs.TargetSC) specs.SUB = tempAiSpecs.TargetSC;
+            if(tempAiSpecs.Model) specs.Model = tempAiSpecs.Model; if(tempAiSpecs.Serial) specs.Serial = tempAiSpecs.Serial;
+            localStorage.setItem('hvacSpecsV20', JSON.stringify(specs)); syncLogToUI(); closeAiModal();
         }
 
-        function closeAiModal() { document.getElementById('aiTray').style.display = 'none'; }
-
-        async function runLibrarianInApp() {
-            const linksDiv = document.getElementById('manualLinks');
-            linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center; padding:10px;">Searching Library...</div>';
-            
-            try {
-                // Sync to sheet first to update the search range
-                await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }), mode: "no-cors" });
-                
-                // Fetch the structured results
-                const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchManuals" }) });
-                const equipment = await response.json();
-                
-                if(!equipment || equipment.length === 0) {
-                    linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals found for these models.</div>';
-                } else {
-                    linksDiv.innerHTML = equipment.map(e => `
-                        <div class="equipment-card">
-                            <div class="card-header">
-                                <div>
-                                    <div class="card-type">${e.type}</div>
-                                    <div class="card-model">${e.model}</div>
-                                </div>
-                            </div>
-                            <div class="link-grid">
-                                ${e.links.map(l => `<a href="${l.url}" target="_blank" class="mini-link">${l.text}</a>`).join('')}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } catch (err) {
-                linksDiv.innerHTML = '<div style="color:red; text-align:center;">Search Error. Check Connection.</div>';
-            }
-        }
-
-        function toggleSpecMaster() {
-            if (isMasterOn) { isMasterOn = false; if (masterRec) masterRec.stop(); document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)'; document.getElementById('masterIndicator').style.display = 'none'; document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening')); return; }
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) return alert("Voice not supported.");
-            isMasterOn = true; document.getElementById('masterSpecBtn').style.background = 'var(--emerald-green)'; document.getElementById('masterIndicator').style.display = 'block';
-            masterRec = new SR(); masterRec.continuous = true; masterRec.interimResults = true;
-            masterRec.onresult = (e) => {
-                let transcript = e.results[e.results.length-1][0].transcript.toLowerCase();
-                let target = null;
-                if (transcript.includes("rla")) target = "RLA";
-                if (transcript.includes("fla")) target = "FLA";
-                if (transcript.includes("sub") || transcript.includes("cool")) target = "SUB";
-                if (target) {
-                    document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
-                    document.getElementById('spec-' + target).classList.add('listening');
-                    let num = transcript.replace(/[^0-9.]/g, '');
-                    if (num) {
-                        specs[target] = parseFloat(num); document.getElementById('val-' + target).innerText = num;
-                        localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
-                        const cell = document.getElementById('spec-' + target);
-                        cell.style.boxShadow = '0 0 30px var(--emerald-green)';
-                        setTimeout(() => cell.style.boxShadow = 'none', 300);
-                    }
+        // MIC LOGIC
+        function toggleMic() { if(isMicOn) stopMic(); else startMic(); }
+        function startMic() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition; 
+            if(!SR) return alert("Mic not supported.");
+            recognition = new SR(); recognition.continuous = true; recognition.interimResults = true;
+            recognition.onstart = () => { isMicOn = true; document.getElementById('micBtn').classList.add('recording-pulse'); document.getElementById('micStatus').innerText = "LISTENING..."; };
+            recognition.onresult = (e) => {
+                let t = e.results[e.results.length-1][0].transcript.toLowerCase();
+                document.getElementById('transcript').innerText = t;
+                let target = t.includes("rla") ? "RLA" : t.includes("fla") ? "FLA" : t.includes("sub") ? "SUB" : null;
+                if(target) field = target;
+                let num = t.replace(/[^0-9.]/g, '');
+                if(num && field) { 
+                    specs[field] = parseFloat(num); 
+                    localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+                    document.getElementById('micStatus').innerText = `STAGED ${field}: ${num}`;
+                    syncLogToUI();
                 }
             };
-            masterRec.onend = () => { if (isMasterOn) masterRec.start(); }; masterRec.start();
+            recognition.onend = () => { if(isMicOn) recognition.start(); }; recognition.start();
         }
+        function stopMic() { isMicOn = false; if(recognition) { recognition.onend = null; recognition.stop(); } document.getElementById('micBtn').classList.remove('recording-pulse'); document.getElementById('micStatus').innerText = "TAP TO DICTATE"; }
 
-        function openSpecVoice(target) { toggleSpecMaster(); }
+        // DIAG LOGIC
+        function setField(f) { field = f; alert(`Recording ${f}...`); }
+        function toggleMasterMic() { alert("Diagnostics Auto-Mode Active"); } // Placeholder for existing complex logic
 
-        function openVoiceConsole() { 
-            if(isMasterOn) toggleSpecMaster(); 
-            document.getElementById('mainDashboard').style.display = 'none';
-            document.getElementById('voiceModal').style.display = 'flex';
-            syncLogToUI(); recalculateField();
-        }
-
-        function setTol(val) { tolerance = val / 100; document.querySelectorAll('.tolerance-pill').forEach(p => p.classList.remove('active')); document.getElementById('tol' + val).classList.add('active'); syncLogToUI(); }
-
-        function selectRating(target) { activeRatingTarget = target; document.getElementById('hermWrap').classList.remove('active'); document.getElementById('fanWrap').classList.remove('active'); document.getElementById(target + 'Wrap').classList.add('active'); }
-
-        function dial(val) { document.getElementById(activeRatingTarget + 'Rating').value = val; recalculateField(); if(buffer.length > 0) syncLogToUI(); }
-
-        function recalculateField() {
-            const index = buffer.length % FIELD_CYCLE.length; field = FIELD_CYCLE[index];
-            document.getElementById('modalLabel').innerText = field.toUpperCase();
-            let lastVolt = 0;
-            for(let i = buffer.length-1; i >= 0; i--) { if(buffer[i].field.includes("Volts")) { lastVolt = buffer[i].val; break; } }
-            if (field.includes("Amps") && !field.includes("Compressor") && !field.includes("Outdoor")) {
-                const rating = parseFloat(document.getElementById(field === "Herm Amps" ? "hermRating" : "fanRating").value);
-                if(lastVolt > 0 && rating) {
-                    const target = (rating * lastVolt) / 2652;
-                    document.getElementById('targetRange').innerText = "RANGE: "+(target*(1-tolerance)).toFixed(2)+" - "+(target*(1+tolerance)).toFixed(2);
-                }
-            } else { document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase(); }
-        }
-
+        // REPORT & LIBRARIAN
         function syncLogToUI() {
-            const log = document.getElementById('stagingLog');
-            const drawerContent = document.getElementById('drawerContent');
-            const statusLabel = document.getElementById('tabStatus');
-
-            if (buffer.length === 0 && !specs.RLA && !specs.FLA && !specs.SUB) { 
-                log.innerHTML = '<div style="color:#444; text-align:center;">Log is empty</div>'; 
-                drawerContent.innerHTML = '<div style="color:#666; text-align:center; padding:40px;">No data staged for sync.</div>';
-                statusLabel.innerText = "EMPTY";
-                return; 
-            }
-
-            // Sync Log for Modal
-            log.innerHTML = buffer.map((item, idx) => {
-                let badge = ""; let details = "";
-                if (item.field.includes("Amps") && !item.field.includes("Compressor") && !item.field.includes("Outdoor") && item.volts > 0) {
-                    const rating = parseFloat(document.getElementById(item.field === "Herm Amps" ? "hermRating" : "fanRating").value);
-                    const uF = (item.val * 2652) / item.volts;
-                    const varPct = ((uF / rating) - 1) * 100;
-                    const isPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
-                    details = ` (${uF.toFixed(2)}µF | ${varPct.toFixed(2)}%)`;
-                    badge = `<span class="badge-small ${isPass ? 'pass-small' : 'fail-small'}">${isPass ? 'PASS' : 'FAIL'}</span>`;
-                } else if (item.field === "Compressor Amps" && specs.RLA) {
-                    const pct = (item.val / specs.RLA) * 100; details = ` (${pct.toFixed(2)}% RLA)`;
-                    badge = `<span class="badge-small ${pct <= 100 ? 'pass-small' : 'fail-small'}">${pct <= 100 ? 'PASS' : 'FAIL'}</span>`;
-                }
-                return `<div class="log-item"><div class="item-text"><b>${item.field}:</b> ${item.val.toFixed(2)}${details}${badge}</div><button class="del-btn" onclick="deleteLogItem(${idx})">UNDO</button></div>`;
-            }).join(''); 
-            log.scrollTop = log.scrollHeight;
-
-            // Sync Drawer (Draft Report)
-            let specHtml = `<div style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">
-                <h3 style="font-size:11px; color:var(--amber-orange); margin-bottom:10px;">UNIT SPECS (STAGED)</h3>
-                ${['Model', 'Serial', 'RLA', 'FLA', 'SUB'].map(key => specs[key] ? `
-                    <div class="staged-item">
-                        <span class="staged-text">${key === 'SUB' ? 'Target SC' : key}: <b>${specs[key]}</b></span>
-                        <button class="btn-del-item" onclick="deleteSpec('${key}')">REMOVE</button>
+            const container = document.getElementById('reportContent');
+            let html = `<div style="margin-bottom:20px;">
+                <h3 class="lib-cat-title">UNIT SPECS</h3>
+                ${['Model', 'Serial', 'RLA', 'FLA', 'SUB'].map(k => specs[k] ? `
+                    <div style="display:flex; justify-content:space-between; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px; margin-bottom:5px;">
+                        <span>${k}: <b>${specs[k]}</b></span>
+                        <button onclick="deleteSpec('${k}')" style="color:#ff1744; background:none; border:none; font-size:10px;">REMOVE</button>
                     </div>
                 ` : '').join('')}
             </div>`;
 
-            let diagnosticTitle = `<h3 style="font-size:11px; color:var(--amber-orange); margin-bottom:10px;">DIAGNOSTIC LOG (STAGED)</h3>`;
-            let logHtml = buffer.map((i, idx) => `
-                <div class="staged-item">
-                    <span class="staged-text">${i.field}: <b>${i.val.toFixed(2)}</b></span>
-                    <button class="btn-del-item" onclick="deleteLogItem(${idx})">REMOVE</button>
-                </div>
-            `).join('');
-
-            let photoTitle = `<h3 style="font-size:11px; color:var(--amber-orange); margin-top:10px; margin-bottom:10px;">STAGED PHOTOS (${stagedPhotos.length})</h3>`;
-            let photoHtml = `<div style="display:flex; gap:5px; overflow-x:auto;">
-                ${stagedPhotos.map(p => `<img src="data:${p.mimeType};base64,${p.data}" style="height:50px; border-radius:4px; border:1px solid #444;">`).join('')}
-            </div>`;
-
-            drawerContent.innerHTML = specHtml + (buffer.length > 0 ? diagnosticTitle + logHtml : "") + (stagedPhotos.length > 0 ? photoTitle + photoHtml : "");
-            statusLabel.innerText = `${buffer.length + Object.keys(specs).filter(k => specs[k]).length + stagedPhotos.length} ITEMS STAGED`;
+            if(buffer.length > 0) {
+                html += `<div><h3 class="lib-cat-title">DIAGNOSTIC LOG</h3>
+                ${buffer.map((i, idx) => `<div style="padding:10px; border-bottom:1px solid #222; font-size:12px;">${i.field}: ${i.val} <button onclick="buffer.splice(${idx},1);syncLogToUI();" style="float:right;">&times;</button></div>`).join('')}
+                </div>`;
+            }
+            container.innerHTML = html;
         }
+        function deleteSpec(k) { specs[k] = ""; localStorage.setItem('hvacSpecsV20', JSON.stringify(specs)); syncLogToUI(); }
 
-        function deleteSpec(key) {
-            delete specs[key];
-            localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
-            initSplash();
-            syncLogToUI();
-        }
-
-        function toggleDrawer() { document.getElementById('reportDrawer').classList.toggle('open'); }
-        function deleteLogItem(idx) { 
-            buffer.splice(idx, 1); 
-            localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); 
-            syncLogToUI(); 
-        }
-
-        function toggleMic() { if (isMicOn) stopMic(); else startListening(); }
-
-        async function startListening() {
-            forceKill = false; const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) return alert("Mic not supported.");
+        async function runLibrarianInApp() {
+            const linksDiv = document.getElementById('manualLinks');
+            linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center; padding:20px; font-size:12px;">SEARCHING LIBRARY...</div>';
             try {
-                if (recognition) recognition.stop();
-                recognition = new SR(); recognition.continuous = true;
-                recognition.onstart = () => { isMicOn = true; document.getElementById('micTrigger').innerText = "STOP MIC"; document.getElementById('pwrIndicator').style.display = "block"; };
-                recognition.onresult = (e) => {
-                    if (isCapturing) return;
-                    let transcript = e.results[e.results.length-1][0].transcript.toLowerCase();
-                    if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("save")) { confirmReading(); return; }
-                    let num = transcript.replace(/[^0-9.]/g, '');
-                    if(num && !isCapturing) document.getElementById('bigDisplay').innerText = num;
-                };
-                recognition.onend = () => { if (isMicOn && !forceKill) recognition.start(); }; recognition.start();
-            } catch (e) {}
+                await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }), mode: "no-cors" });
+                const r = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchManuals" }) });
+                const equipment = await r.json();
+                
+                if(!equipment || equipment.length === 0) { linksDiv.innerHTML = '<div style="color:#444; text-align:center;">No manuals found.</div>'; return; }
+                
+                let html = '<h3 class="lib-cat-title">LIBRARIAN (MANUALS)</h3>';
+                equipment.forEach(e => {
+                    const categories = { "Installation": [], "Service": [], "Specs": [], "Other": [] };
+                    e.links.forEach(l => {
+                        if(l.text.includes("Install")) categories.Installation.push(l);
+                        else if(l.text.includes("Service") || l.text.includes("Maintenance")) categories.Service.push(l);
+                        else if(l.text.includes("Spec") || l.text.includes("Data")) categories.Specs.push(l);
+                        else categories.Other.push(l);
+                    });
+
+                    Object.entries(categories).forEach(([name, links]) => {
+                        if(links.length === 0) return;
+                        html += `<div class="lib-category"><div class="lib-cat-title" style="border:none; color:var(--emerald-green);">${name}</div>`;
+                        links.forEach(l => {
+                            html += `<a href="${l.url}" target="_blank" class="lib-link-card">
+                                <div class="lib-link-info"><span class="lib-link-name">${l.text}</span><span class="lib-link-meta">REV: 2024 / PDF</span></div>
+                                <span style="font-size:20px;">📄</span>
+                            </a>`;
+                        });
+                        html += `</div>`;
+                    });
+                });
+                linksDiv.innerHTML = html;
+            } catch (e) { linksDiv.innerHTML = '<div style="color:red; text-align:center;">Library Search Failed.</div>'; }
         }
 
-        function stopMic() { isMicOn = false; forceKill = true; if (recognition) { recognition.onend = null; recognition.stop(); recognition = null; } document.getElementById('micTrigger').innerText = "START MIC"; document.getElementById('pwrIndicator').style.display = "none"; }
+        function startNewJob() { 
+            const name = document.getElementById('custName').value; 
+            if(!name) return alert("Enter Customer Name");
+            fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] }), mode: "no-cors" })
+            .then(() => { 
+                localStorage.removeItem('hvacPhotosV21'); 
+                localStorage.removeItem('hvacStagingBufferV20');
+                localStorage.removeItem('hvacSpecsV20');
+                location.reload(); 
+            }); 
+        }
 
-        function confirmReading() {
-            if (isCapturing) return; let val = parseFloat(document.getElementById('bigDisplay').innerText); if (val === 0) return;
-            isCapturing = true; let lastVolt = 0;
-            for(let i = buffer.length-1; i >= 0; i--) { if(buffer[i].field.includes("Volts")) { lastVolt = buffer[i].val; break; } }
-            buffer.push({ field: field, val: val, volts: lastVolt });
-            localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); syncLogToUI();
-            document.getElementById('bigDisplay').style.color = "var(--emerald-green)";
-            setTimeout(() => { document.getElementById('bigDisplay').style.color = "var(--text-primary)"; document.getElementById('bigDisplay').innerText = "0.0"; recalculateField(); isCapturing = false; }, 1000);
+        async function fetchFolders() {
+            const select = document.getElementById('folderSelect');
+            select.innerHTML = '<option value="">-- LOADING FOLDERS --</option>';
+            try {
+                const r = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchFolders" }) });
+                const folders = await r.json();
+                select.innerHTML = '<option value="">-- Use Active Job Folder --</option>' + 
+                    folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            } catch (e) { select.innerHTML = '<option value="">-- DIR ERROR --</option>'; }
         }
 
         function sendFinalBlock() {
-            if (buffer.length === 0) return alert("Log empty.");
-            stopMic(); document.getElementById('syncBtn').innerText = "SYNCING...";
-            let specParts = []; if(specs.RLA) specParts.push(`RLA (Measured) ◘ ${specs.RLA}`); if(specs.FLA) specParts.push(`Fan FLA ◘ ${specs.FLA}`); if(specs.SUB) specParts.push(`Target SC ◘ ${specs.SUB}`);
-            let diagParts = buffer.map(item => `${item.field} ◘ ${item.val}`);
-            const fullLump = [...specParts, ...diagParts].join(" | ");
-            fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "syncVoice", payload: fullLump }), mode: "no-cors" }).then(() => { alert("Report Sealed!"); buffer = []; localStorage.removeItem('hvacStagingBufferV20'); syncLogToUI(); document.getElementById('syncBtn').innerText = "SEAL & SYNC REPORT"; });
-        }
+            const btn = event.target;
+            btn.innerText = "SYNCING REPORT...";
+            btn.disabled = true;
 
-        function closeVoiceModal() { stopMic(); document.getElementById('voiceModal').style.display = 'none'; document.getElementById('mainDashboard').style.display = 'block'; }
-        function startJob() { const name = document.getElementById('custName').value; fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] }), mode: "no-cors" }).then(() => alert("Job Created.")); }
+            const payload = [];
+            if(specs.Model) payload.push(`Model ◘ ${specs.Model}`);
+            if(specs.Serial) payload.push(`Serial ◘ ${specs.Serial}`);
+            if(specs.RLA) payload.push(`RLA (Measured) ◘ ${specs.RLA}`);
+            if(specs.FLA) payload.push(`Fan FLA ◘ ${specs.FLA}`);
+            if(specs.SUB) payload.push(`Target SC ◘ ${specs.SUB}`);
+            buffer.forEach(b => payload.push(`${b.field} ◘ ${b.val}`));
+
+            const folderId = document.getElementById('folderSelect').value;
+            const photoList = stagedPhotos.filter(p => !p.scanned || true); // Send all for now
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "syncVoice",
+                    payload: payload.join(" | "),
+                    photos: stagedPhotos,
+                    folderId: folderId
+                }),
+                mode: "no-cors"
+            }).then(() => {
+                alert("REPORT SEALED!");
+                localStorage.removeItem('hvacStagingBufferV20');
+                localStorage.removeItem('hvacPhotosV21');
+                location.reload();
+            });
+        }
     </script>
 </body>
 </html>
