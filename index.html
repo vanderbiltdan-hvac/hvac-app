@@ -557,6 +557,7 @@
                         const numMatch = transcript.match(/\b(\d+\.?\d*)\b/);
                         if (numMatch && !isCapturing) document.getElementById('bigDisplay').innerText = numMatch[1];
                         if (!res.isFinal) return;
+                        if (transcript.includes("stop") || transcript.includes("mic off") || transcript.includes("done")) { stopMic(); return; }
                         if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
                         if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("stage")) { confirmReading(); return; }
                     };
@@ -570,6 +571,7 @@
 
         function stopMic() {
             isMicOn = false; forceKill = true;
+            if (window._seqTimer) { clearInterval(window._seqTimer); window._seqTimer = null; }
             if (recognition) { recognition.onend = null; recognition.stop(); recognition = null; }
             document.getElementById('micTrigger').innerText = "🎙 START MIC";
             document.getElementById('pwrIndicator').style.display = "none";
@@ -604,20 +606,9 @@
                     fieldIndex++; updateStepNav(); recalculateField(); isCapturing = false;
                 } else {
                     isCapturing = false;
-                    // Sequence complete — 5-second mic countdown then auto-stop
-                    let secsLeft = 5;
-                    document.getElementById('targetRange').innerHTML = `SEQUENCE COMPLETE &#10003; &mdash; mic off in ${secsLeft}s`;
-                    if (window._seqTimer) clearInterval(window._seqTimer);
-                    window._seqTimer = setInterval(() => {
-                        secsLeft--;
-                        if (secsLeft <= 0) {
-                            clearInterval(window._seqTimer);
-                            stopMic();
-                            document.getElementById('targetRange').innerHTML = 'LOG SEALED &#10003; &mdash; Review &amp; SYNC when ready';
-                        } else {
-                            document.getElementById('targetRange').innerHTML = `SEQUENCE COMPLETE &#10003; &mdash; mic off in ${secsLeft}s`;
-                        }
-                    }, 1000);
+                    // Sequence complete — mic stays on until user says "stop mic"
+                    if (window._seqTimer) { clearInterval(window._seqTimer); window._seqTimer = null; }
+                    document.getElementById('targetRange').innerHTML = 'SEQUENCE COMPLETE &#10003; &mdash; say <b style="color:var(--crimson-red)">STOP MIC</b> or tap &#9209;️ to end';
                 }
             }, 1000);
         }
