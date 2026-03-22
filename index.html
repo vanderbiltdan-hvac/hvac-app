@@ -360,41 +360,41 @@
             <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
             <button onclick="closeSettings()" style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
         </div>
-        <div style="padding:20px;">
-            <div class="settings-row">
-                <div>
-                    <div style="font-weight:900; font-size:14px;">Voice Navigation Safety</div>
-                    <div style="font-size:11px; color:#777;">Wait for confirmation (YES/GO) before switching pages</div>
-                </div>
-                <div id="toggle-navConfirm" class="toggle-switch on" onclick="toggleSetting('navConfirm')"></div>
-            </div>
-            <div class="settings-row">
-                <div>
-                    <div style="font-weight:900; font-size:14px;">Direct Voice Entry</div>
-                    <div style="font-size:11px; color:#777;">Skip "Copy" command for numbers (Use with caution)</div>
-                </div>
-                <div id="toggle-autoCommit" class="toggle-switch" onclick="toggleSetting('autoCommit')"></div>
-            </div>
-            <div style="margin-top:20px; background:#1a1a1a; padding:15px; border-radius:12px; font-size:12px;">
-                <b style="color:var(--electric-blue);">Dictionary / Commands (CSV)</b>
-                <div style="margin-top:10px;">
-                    <label style="color:#aaa; font-size:10px;">CONFIRM WORDS</label>
-                    <input type="text" id="dict-confirms" style="font-size:12px; padding:8px; margin-bottom:8px;">
-                    <label style="color:#aaa; font-size:10px;">BRANDS</label>
-                    <input type="text" id="dict-brands" style="font-size:12px; padding:8px; margin-bottom:8px;">
-                    <label style="color:#aaa; font-size:10px;">REFRIGERANTS</label>
-                    <input type="text" id="dict-refs" style="font-size:12px; padding:8px; margin-bottom:12px;">
-                    <button class="btn btn-green" onclick="saveDict()" style="padding:12px; font-size:14px;">💾 SAVE DICTIONARY</button>
-                </div>
+        <div class="step-nav" id="dictNav" style="margin:10px;">
+            <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')" style="flex:1;">BRANDS</button>
+            <button class="step-btn" id="dict-btn-refs" onclick="switchDictType('refs')" style="flex:1;">REF</button>
+            <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')" style="flex:1;">WORDS</button>
+        </div>
+
+        <div class="voice-console" style="margin:0 10px;">
+            <div id="dictTargetLabel" style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
+            <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY ENTRY...</div>
+            <div class="btn-main-grid">
+                <button id="dictMicBtn" class="btn btn-primary" onclick="toggleGlobalMic()">🎙 START MIC</button>
+                <button onclick="undoDictStaged()" class="btn btn-stop">SCRUB</button>
+                <button onclick="confirmDictWord()" class="btn btn-green" style="grid-column: span 2;">✔ CONFIRM & SAVE</button>
             </div>
         </div>
-        <div style="padding:15px; margin-top:auto;">
-            <button class="btn btn-primary" onclick="closeSettings()">CLOSE</button>
+
+        <div style="padding:0 10px;">
+            <div class="settings-row" style="padding:8px 0; border:none;">
+                <div><div style="font-weight:900; font-size:12px;">Voice Navigation Safety</div></div>
+                <div id="toggle-navConfirm" class="toggle-switch on" onclick="toggleSetting('navConfirm')"></div>
+            </div>
+            <div class="settings-row" style="padding:8px 0; border-bottom:1px solid #333;">
+                <div><div style="font-weight:900; font-size:12px;">Direct Voice Entry</div></div>
+                <div id="toggle-autoCommit" class="toggle-switch" onclick="toggleSetting('autoCommit')"></div>
+            </div>
+        </div>
+
+        <div id="dictLogList" class="log-list" style="margin:10px;"></div>
+        <div style="padding:10px; margin-top:auto;">
+            <button class="btn btn-outline" onclick="closeSettings()">CLOSE SETTINGS</button>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "20.28";
+        const APP_VERSION = "20.29";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -416,6 +416,7 @@
         let tolerance = 0.06; let activeRatingTarget = 'herm';
         let _lastBuffer = {}; let masterTarget = null;
         let navStaging = null; // Stores target section for confirmation
+        let isSettingsMode = false; let activeDictType = 'brands'; let dictStagedRaw = null;
 
         const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Amps", "ODF Amps"];
         const CAP_SIZES = [2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90];
@@ -447,7 +448,7 @@
 
         function initV2Controls() {
             const nav = document.getElementById('stepNav');
-            nav.innerHTML = FIELD_CYCLE.map((f, i) => `<button class="step-btn" id="step-${i}" onclick="jumpToStep(${i})">${f}</button>`).join('');
+            nav.innerHTML = FIELD_CYCLE.map((f, i) => `<button class="step-btn" id="step-${i}" onclick="jumpToStep(${i})">${f}<br><span id="glance-${i}" style="color:#888; font-size:10px;">--</span></button>`).join('');
             
             const reel = document.getElementById('capReel');
             reel.innerHTML = CAP_SIZES.map(s => `<button class="dial-btn" id="cap-${s}" onclick="dial(${s})">${s.toFixed(1)}</button>`).join('');
@@ -713,30 +714,65 @@
 
         function openSettings() {
             closeAllModals();
+            isSettingsMode = true;
             updateNavUI('nav-settings');
             document.getElementById('settingsOverlay').style.display = 'flex';
             updateSettingsUI();
+            switchDictType('brands');
         }
-        function closeSettings() { closeAllModals(); showSection('mainDashboard'); }
+        function closeSettings() { isSettingsMode = false; closeAllModals(); showSection('mainDashboard'); }
         function toggleSetting(key) {
             appSettings[key] = !appSettings[key];
             localStorage.setItem('hvacSettingsV20', JSON.stringify(appSettings));
             updateSettingsUI();
-        }
-        function saveDict() {
-            userDict.confirms = document.getElementById('dict-confirms').value;
-            userDict.brands = document.getElementById('dict-brands').value;
-            userDict.refs = document.getElementById('dict-refs').value;
-            localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
         }
         function updateSettingsUI() {
             Object.keys(appSettings).forEach(k => {
                 const el = document.getElementById('toggle-' + k);
                 if (el) el.classList.toggle('on', appSettings[k]);
             });
-            document.getElementById('dict-confirms').value = userDict.confirms;
-            document.getElementById('dict-brands').value = userDict.brands;
-            document.getElementById('dict-refs').value = userDict.refs;
+        }
+        
+        function switchDictType(type) {
+            activeDictType = type;
+            document.querySelectorAll('.step-nav#dictNav .step-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`dict-btn-${type}`).classList.add('active');
+            const labels = { 'brands': 'BRANDS', 'refs': 'REFRIGERANTS', 'confirms': 'CONFIRM WORDS' };
+            document.getElementById('dictTargetLabel').innerText = labels[type];
+            undoDictStaged();
+            renderDictLog();
+        }
+        function undoDictStaged() {
+            dictStagedRaw = null;
+            document.getElementById('dictStagedWord').innerText = "SAY ENTRY...";
+            document.getElementById('dictStagedWord').style.color = "#777";
+        }
+        function confirmDictWord() {
+            if(!dictStagedRaw) return;
+            const currentObj = userDict[activeDictType] ? userDict[activeDictType].trim() : "";
+            userDict[activeDictType] = currentObj ? (currentObj + ", " + dictStagedRaw) : dictStagedRaw;
+            localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
+            
+            document.getElementById('dictStagedWord').style.color = "var(--emerald-green)";
+            document.getElementById('dictStagedWord').style.textShadow = "0 0 20px var(--emerald-green)";
+            setTimeout(() => { undoDictStaged(); renderDictLog(); }, 800);
+        }
+        function renderDictLog() {
+            const list = document.getElementById('dictLogList');
+            const arr = (userDict[activeDictType]||"").split(',').map(s=>s.trim()).filter(x=>x);
+            list.innerHTML = arr.map((item, i) => `
+                <div class="log-item">
+                    <span style="font-weight:900; font-size:14px; color:white;">${item}</span>
+                    <button onclick="deleteDictWord(${i})" class="btn-utility danger">DELETE</button>
+                </div>
+            `).join('');
+        }
+        function deleteDictWord(idx) {
+            let arr = (userDict[activeDictType]||"").split(',').map(s=>s.trim()).filter(x=>x);
+            arr.splice(idx, 1);
+            userDict[activeDictType] = arr.join(', ');
+            localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
+            renderDictLog();
         }
 
         function setTol(val) {
@@ -820,33 +856,58 @@
             live.style.color = color;
         }
 
+        function getTolData(item, localTolerance) {
+            if (!item || !item.field) return null;
+            let rating = null;
+            if (item.field === "Herm Amps") rating = parseFloat(document.getElementById("hermRating").value);
+            if (item.field === "Fan Amps") rating = parseFloat(document.getElementById("fanRating").value);
+            
+            if (rating && item.volts > 0) {
+                const uF = (item.val * 2652) / item.volts;
+                const varPct = ((uF / rating) - 1) * 100;
+                const isPass = Math.abs(varPct/100) <= (localTolerance + 0.0001);
+                return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${uF.toFixed(2)}µF | ${varPct > 0 ? '+':''}${varPct.toFixed(2)}%)` };
+            } else if (item.field === "Comp Amps" && specs.RLA && specs.RLA !== "--") {
+                const pct = (item.val / parseFloat(specs.RLA)) * 100;
+                const isPass = pct <= 100;
+                return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${pct.toFixed(2)}% RLA)` };
+            } else if (item.field === "ODF Amps" && specs.FLA && specs.FLA !== "--") {
+                const pct = (item.val / parseFloat(specs.FLA)) * 100;
+                const isPass = pct <= 100;
+                return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${pct.toFixed(2)}% FLA)` };
+            }
+            return null;
+        }
+
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
             const entries = Object.keys(buffer).sort((a,b) => a-b);
             if (entries.length === 0) { log.innerHTML = '<div style="color:#444; text-align:center;">Log is empty</div>'; return; }
             
+            // Clear all glances
+            for(let i=0; i<FIELD_CYCLE.length; i++) {
+                const bg = document.getElementById('glance-'+i);
+                if(bg) { bg.innerText = "--"; bg.style.color = "#888"; }
+            }
+
             log.innerHTML = entries.map(idx => {
                 const item = buffer[idx];
-                let badge = ""; let details = "";
                 if (!item || !item.field) return "";
-                if (item.field.includes("Amps") && !item.field.includes("Comp") && !item.field.includes("ODF") && item.volts > 0) {
-                    const ratingStr = item.field === "Herm Amps" ? "hermRating" : "fanRating";
-                    const rating = parseFloat(document.getElementById(ratingStr).value);
-                    const uF = (item.val * 2652) / item.volts;
-                    const varPct = ((uF / rating) - 1) * 100;
-                    const isPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
-                    details = ` (${uF.toFixed(2)}µF | ${varPct.toFixed(2)}%)`;
-                    badge = `<span class="badge-small ${isPass ? 'pass-small' : 'fail-small'}">${isPass ? 'PASS' : 'FAIL'}</span>`;
-                } else if (item.field === "Comp Amps" && specs.RLA) {
-                    const pct = (item.val / specs.RLA) * 100;
-                    details = ` (${pct.toFixed(2)}% RLA)`;
-                    badge = `<span class="badge-small ${pct <= 100 ? 'pass-small' : 'fail-small'}">${pct <= 100 ? 'PASS' : 'FAIL'}</span>`;
-                } else if (item.field === "ODF Amps" && specs.FLA) {
-                    const pct = (item.val / specs.FLA) * 100;
-                    details = ` (${pct.toFixed(2)}% FLA)`;
-                    badge = `<span class="badge-small ${pct <= 100 ? 'pass-small' : 'fail-small'}">${pct <= 100 ? 'PASS' : 'FAIL'}</span>`;
+                const t = getTolData(item, tolerance);
+
+                // Update Glance Note
+                const gEl = document.getElementById('glance-' + idx);
+                if(gEl) {
+                    gEl.innerText = item.val.toFixed(2);
+                    gEl.style.color = t ? t.color : "white";
                 }
-                return `<div class="log-item"><div><b>${item.field}:</b> ${item.val.toFixed(2)}${details}${badge}</div><button onclick="undoAt(${idx})" style="background:transparent; border:none; color:#777; font-size:9px; cursor:pointer;">UNDO</button></div>`;
+                
+                if (t) {
+                    const badge = `<span class="badge-small" style="color:${t.color}; border:1px solid ${t.color}">${t.isPass ? 'PASS' : 'FAIL'}</span>`;
+                    return `<div class="log-item"><div><b>${item.field}:</b> ${item.val.toFixed(2)} ${t.txt}${badge}</div><button onclick="undoAt(${idx})" style="background:transparent; border:none; color:#777; font-size:9px; cursor:pointer;">UNDO</button></div>`;
+                } else {
+                    return `<div class="log-item"><div><b>${item.field}:</b> ${item.val.toFixed(2)}</div><button onclick="undoAt(${idx})" style="background:transparent; border:none; color:#777; font-size:9px; cursor:pointer;">UNDO</button></div>`;
+                }
             }).join('');
             log.scrollTop = log.scrollHeight;
         }
@@ -931,8 +992,23 @@
                         // 4. Dispatch to Navigation Brain
                         if (voiceDispatcher(transcript)) return;
 
-                        // 5. Contextual Routing
-                        if (isSequenceMode) {
+                        if (isSettingsMode) {
+                            if (/\b(brands?)\b/.test(transcript)) { switchDictType('brands'); return; }
+                            if (/\b(refs?|refrigerants?)\b/.test(transcript)) { switchDictType('refs'); return; }
+                            if (/\b(words?|confirms?)\b/.test(transcript)) { switchDictType('confirms'); return; }
+                            
+                            const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
+                            const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
+                            if (confirmArr.some(w => transcript.includes(w))) { confirmDictWord(); return; }
+
+                            if (transcript.includes("undo") || transcript.includes("scrub")) { undoDictStaged(); return; }
+
+                            // Otherwise stage text
+                            dictStagedRaw = transcript.toUpperCase().trim();
+                            document.getElementById('dictStagedWord').innerText = dictStagedRaw;
+                            document.getElementById('dictStagedWord').style.color = "white";
+                            return;
+                        } else if (isSequenceMode) {
                             if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
                             
                             const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
@@ -1095,7 +1171,12 @@
             txt += `<table style="width:100%;">`;
             Object.keys(buffer).sort((a,b)=>a-b).forEach(idx => {
                 const item = buffer[idx];
-                txt += `<tr><td style="color:#aaa; padding:4px 0;">${item.field}:</td><td style="text-align:right; font-weight:bold;">${item.val.toFixed(2)}</td></tr>`;
+                const t = getTolData(item, tolerance);
+                if (t) {
+                    txt += `<tr><td style="color:#aaa; padding:6px 0;">${item.field}:</td><td style="text-align:right;"><b style="color:white; font-size:15px;">${item.val.toFixed(2)}</b> <span style="font-size:10px; color:#aaa;">${t.txt}</span> <span style="font-size:10px; font-weight:900; color:${t.color}; border:1px solid ${t.color}; padding:2px 4px; border-radius:4px; margin-left:4px;">${t.isPass ? 'PASS' : 'FAIL'}</span></td></tr>`;
+                } else {
+                    txt += `<tr><td style="color:#aaa; padding:6px 0;">${item.field}:</td><td style="text-align:right; font-weight:bold; font-size:15px;">${item.val.toFixed(2)}</td></tr>`;
+                }
             });
             txt += `</table>`;
 
@@ -1119,7 +1200,12 @@
             block += `\n[DIAGNOSTICS]\n`;
             Object.keys(buffer).sort((a,b)=>a-b).forEach(idx => {
                 const item = buffer[idx];
-                block += `${item.field}: ${item.val.toFixed(2)}\n`;
+                const t = getTolData(item, tolerance);
+                if (t) {
+                    block += `${item.field}: ${item.val.toFixed(2)} ${t.txt} [${t.isPass ? 'PASS' : 'FAIL'}]\n`;
+                } else {
+                    block += `${item.field}: ${item.val.toFixed(2)}\n`;
+                }
             });
             block += `\n----------------------`;
             
