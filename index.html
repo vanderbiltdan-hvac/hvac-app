@@ -98,38 +98,29 @@
         #restoreBox { display: none; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--electric-blue); padding: 15px; border-radius: 12px; text-align: center; margin-top: 10px; }
         .master-indicator { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: var(--electric-blue); display: none; z-index: 100000; box-shadow: 0 0 15px var(--electric-blue); }
 
-        /* MULTI PHOTO PROGRESS BAR */
-        .progress-box { width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 10px; overflow: hidden; display: none; }
-        .progress-bar { height: 100%; width: 0%; background: var(--electric-blue); transition: width 0.3s; box-shadow: 0 0 10px var(--electric-blue); }
+        /* PHOTO STAGING SLIDER v21 */
+        .photo-staging-area { margin: 15px 0; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; border: 1px dashed rgba(0, 229, 255, 0.2); }
+        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .photo-slider { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; }
+        .photo-card { position: relative; flex: 0 0 120px; height: 160px; background: #000; border-radius: 12px; overflow: hidden; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1); }
+        .photo-card img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+        .photo-actions { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: space-around; padding: 5px 0; }
+        .btn-mini-action { background: none; border: none; color: white; font-size: 14px; cursor: pointer; padding: 5px; }
+        .btn-mini-scan { color: var(--electric-blue); }
+        .btn-mini-del { color: #ff1744; }
+        .photo-badge { position: absolute; top: 5px; right: 5px; background: var(--emerald-green); color: black; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; display: none; }
 
-        /* AI TRAY UI FIXES */
-        .ai-results-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; margin: 10px 0; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; }
-        .ai-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); width: 100%; }
-        .ai-label { color: #888; font-size: 11px; font-weight: 900; text-transform: uppercase; }
-        .ai-val { color: var(--electric-blue); font-size: 15px; font-weight: 900; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        /* FULL SIZE VIEWER */
+        .full-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: none; flex-direction: column; }
+        .viewer-header { padding: 20px; display: flex; justify-content: flex-end; }
+        .viewer-img { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .viewer-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* EQUIPMENT CARDS (DEEP LIBRARIAN) */
-        .equipment-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .card-type { font-size: 10px; font-weight: 900; color: var(--amber-orange); text-transform: uppercase; letter-spacing: 1px; }
-        .card-model { font-size: 16px; font-weight: 900; color: var(--text-primary); }
-        .link-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .mini-link { background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.1); color: var(--electric-blue); padding: 8px; border-radius: 8px; text-decoration: none; font-size: 11px; font-weight: 700; text-align: center; }
-        .mini-link:active { background: rgba(0, 229, 255, 0.2); }
+        /* FOLDER SELECT */
+        .folder-select { background: #1a1a1a; border: 1px solid #333; color: white; padding: 12px; border-radius: 10px; width: 100%; margin: 10px 0; font-size: 13px; }
 
-        /* DRAFT REPORT DRAWER */
-        .report-drawer { position: fixed; bottom: -85vh; left: 0; width: 100%; height: 85vh; background: var(--bg-dark); border-top: 2px solid var(--electric-blue); z-index: 11000; transition: bottom 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
-        .report-drawer.open { bottom: 0; }
-        .drawer-handle { width: 50px; height: 5px; background: #333; border-radius: 10px; margin: -10px auto 15px auto; }
-        .drawer-content { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; }
-        
-        /* STAGED ITEM ROW */
-        .staged-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); margin-bottom: 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.02); }
-        .staged-text { font-size: 14px; font-weight: 500; }
-        .btn-del-item { background: rgba(255,0,0,0.1); color: #ff1744; border: 1px solid rgba(255,0,0,0.2); border-radius: 6px; padding: 4px 10px; font-size: 10px; font-weight: 900; }
-
-        /* FOOTER TAB */
-        .report-tab { position: fixed; bottom: 0; left: 0; width: 100%; height: 55px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 10999; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        /* FOOTER TAB v21 */
+        .report-tab { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #1a1a1a; border-top: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 10999; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
         .tab-btn { color: var(--electric-blue); font-weight: 900; font-size: 13px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; cursor: pointer; }
     </style>
 </head>
@@ -164,6 +155,17 @@
         <div style="margin-bottom:15px;">
             <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
             <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+        </div>
+
+        <!-- v21 PHOTO STAGING SLIDER -->
+        <div id="photoStagingArea" class="photo-staging-area" style="display:none;">
+            <div class="slider-header">
+                <span style="font-size:11px; font-weight:900; color:var(--electric-blue);">STAGED PHOTOS</span>
+                <button class="btn-mini-scan" onclick="scanAllPhotos()" style="font-size:10px; font-weight:900; background:none; border:none; text-decoration:underline;">⚡ ANALYZE ALL</button>
+            </div>
+            <div id="photoSlider" class="photo-slider">
+                <!-- Thumbnails go here -->
+            </div>
             <div id="photoProgressBox" class="progress-box"><div id="photoProgressBar" class="progress-bar"></div></div>
             <div id="photoStatus" style="font-size:10px; color:var(--amber-orange); margin-top:5px; text-align:center; display:none;">Processing...</div>
         </div>
@@ -255,7 +257,25 @@
         <div class="drawer-content" id="drawerContent">
             <!-- Dynamic Content -->
         </div>
-        <button class="btn btn-accent" onclick="sendFinalBlock()" style="background:var(--emerald-green); color:black; margin-top:15px; padding:20px; font-size:20px;">SEAL & SYNC REPORT</button>
+
+        <div style="margin-top:15px;">
+            <label style="font-size:10px; font-weight:900; color:#888;">SYNC TO DRIVE FOLDER:</label>
+            <select id="folderSelect" class="folder-select">
+                <option value="">-- Use Active Job Folder --</option>
+            </select>
+        </div>
+
+        <button class="btn btn-accent" onclick="sendFinalBlock()" style="background:var(--emerald-green); color:black; margin-top:10px; padding:20px; font-size:20px;">SEAL & SYNC REPORT</button>
+    </div>
+
+    <!-- FULL PHOTO VIEWER -->
+    <div id="fullViewer" class="full-viewer" onclick="closeFullView()">
+        <div class="viewer-header">
+            <button style="background:none; border:none; color:white; font-size:30px;">&times;</button>
+        </div>
+        <div class="viewer-img">
+            <img id="viewerImg" src="">
+        </div>
     </div>
 
     <!-- FOOTER TAB -->
@@ -268,7 +288,8 @@
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlH-ta2DPWcVES8Kj49jbD3tWpbqdPm4Of0CAsvD6m1ZlVFhhAH0Fij33mwBP_wv2z/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || [];
-        let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { RLA: 0, FLA: 0, SUB: 0 };
+        let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { RLA: 0, FLA: 0, SUB: 0, Model: "", Serial: "" };
+        let stagedPhotos = JSON.parse(localStorage.getItem('hvacPhotosV21')) || [];
         let tempAiSpecs = {}; 
         let field = "Herm Volts"; let isCapturing = false; let recognition = null; let masterRec = null; let isMicOn = false; let isMasterOn = false; let forceKill = false; let tolerance = 0.06; let activeRatingTarget = 'herm';
 
@@ -282,45 +303,91 @@
             if(specs.SUB) document.getElementById('val-SUB').innerText = specs.SUB;
         }
 
-        async function handleMultiPhotos(input) {
+        function handleMultiPhotos(input) {
             const files = input.files; if (files.length === 0) return;
-            const status = document.getElementById('photoStatus');
-            const pbox = document.getElementById('photoProgressBox');
-            const pbar = document.getElementById('photoProgressBar');
-            
-            status.style.display = 'block'; 
-            pbox.style.display = 'block';
-            pbar.style.width = '0%';
+            document.getElementById('photoStagingArea').style.display = 'block';
 
             for (let i = 0; i < files.length; i++) {
                 const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const base64 = e.target.result.split(',')[1];
-                    const filename = files[i].name;
-                    const mime = files[i].type;
-                    
-                    status.innerText = `Analyzing: ${filename}...`;
-                    pbar.style.width = `${((i + 1) / files.length) * 100}%`;
-                    
-                    try {
-                        const response = await fetch(WEB_APP_URL, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "uploadPhotoAI", data: base64, filename: filename, mimeType: mime })
-                        });
-                        const result = await response.json();
-                        if(result && result.extractedData) {
-                            tempAiSpecs = result.extractedData;
-                            openAiModal(result.extractedData);
-                        }
-                    } catch (err) { console.error(err); }
-
-                    if (i === files.length - 1) {
-                        setTimeout(() => { pbox.style.display = 'none'; status.style.display = 'none'; }, 2000);
-                    }
+                reader.onload = (e) => {
+                    stagedPhotos.push({
+                        data: e.target.result.split(',')[1],
+                        filename: files[i].name,
+                        mimeType: files[i].type,
+                        scanned: false
+                    });
+                    savePhotos();
+                    renderPhotoSlider();
                 };
                 reader.readAsDataURL(files[i]);
             }
         }
+
+        function savePhotos() { localStorage.setItem('hvacPhotosV21', JSON.stringify(stagedPhotos)); }
+
+        function renderPhotoSlider() {
+            const slider = document.getElementById('photoSlider');
+            if(stagedPhotos.length === 0) {
+                document.getElementById('photoStagingArea').style.display = 'none';
+                return;
+            }
+            document.getElementById('photoStagingArea').style.display = 'block';
+            slider.innerHTML = stagedPhotos.map((p, idx) => `
+                <div class="photo-card">
+                    <img src="data:${p.mimeType};base64,${p.data}" onclick="openFullView('${p.data}', '${p.mimeType}')">
+                    <div class="photo-badge" style="display:${p.scanned ? 'block' : 'none'}">SCANNED</div>
+                    <div class="photo-actions">
+                        <button class="btn-mini-action btn-mini-scan" onclick="scanSpecificPhoto(${idx})">🔍</button>
+                        <button class="btn-mini-action btn-mini-del" onclick="deleteStagedPhoto(${idx})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteStagedPhoto(idx) {
+            stagedPhotos.splice(idx, 1);
+            savePhotos();
+            renderPhotoSlider();
+        }
+
+        async function scanSpecificPhoto(idx) {
+            const p = stagedPhotos[idx];
+            const status = document.getElementById('photoStatus');
+            const pbox = document.getElementById('photoProgressBox');
+            const pbar = document.getElementById('photoProgressBar');
+
+            status.style.display = 'block'; status.innerText = `Analyzing: ${p.filename}...`;
+            pbox.style.display = 'block'; pbar.style.width = '50%';
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "uploadPhotoAI", data: p.data, filename: p.filename, mimeType: p.mimeType })
+                });
+                const result = await response.json();
+                if(result && result.extractedData) {
+                    tempAiSpecs = result.extractedData;
+                    p.scanned = true;
+                    savePhotos();
+                    renderPhotoSlider();
+                    openAiModal(result.extractedData);
+                }
+            } catch (err) { alert("AI Error: " + err); }
+            pbar.style.width = '100%';
+            setTimeout(() => { pbox.style.display = 'none'; status.style.display = 'none'; }, 1000);
+        }
+
+        async function scanAllPhotos() {
+            for (let i = 0; i < stagedPhotos.length; i++) {
+                if (!stagedPhotos[i].scanned) await scanSpecificPhoto(i);
+            }
+        }
+
+        function openFullView(base64, mime) {
+            document.getElementById('viewerImg').src = `data:${mime};base64,${base64}`;
+            document.getElementById('fullViewer').style.display = 'flex';
+        }
+        function closeFullView() { document.getElementById('fullViewer').style.display = 'none'; }
 
         function openAiModal(data) {
             const tray = document.getElementById('aiTray');
@@ -338,13 +405,13 @@
             if(tempAiSpecs.RLA) specs.RLA = parseFloat(tempAiSpecs.RLA);
             if(tempAiSpecs.FLA) specs.FLA = parseFloat(tempAiSpecs.FLA);
             if(tempAiSpecs.TargetSC) specs.SUB = parseFloat(tempAiSpecs.TargetSC);
-            if(tempAiSpecs.Model) {
-                // Future: add to persistent equipment list
-            }
+            if(tempAiSpecs.Model) specs.Model = tempAiSpecs.Model;
+            if(tempAiSpecs.Serial) specs.Serial = tempAiSpecs.Serial;
+            
             localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
             initSplash();
             syncLogToUI();
-            runLibrarianInApp(); // Auto-search after confirmation
+            runLibrarianInApp(); 
             closeAiModal();
         }
 
@@ -474,7 +541,7 @@
             // Sync Drawer (Draft Report)
             let specHtml = `<div style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">
                 <h3 style="font-size:11px; color:var(--amber-orange); margin-bottom:10px;">UNIT SPECS (STAGED)</h3>
-                ${['RLA', 'FLA', 'SUB'].map(key => specs[key] ? `
+                ${['Model', 'Serial', 'RLA', 'FLA', 'SUB'].map(key => specs[key] ? `
                     <div class="staged-item">
                         <span class="staged-text">${key === 'SUB' ? 'Target SC' : key}: <b>${specs[key]}</b></span>
                         <button class="btn-del-item" onclick="deleteSpec('${key}')">REMOVE</button>
@@ -490,8 +557,13 @@
                 </div>
             `).join('');
 
-            drawerContent.innerHTML = specHtml + (buffer.length > 0 ? diagnosticTitle + logHtml : "");
-            statusLabel.innerText = `${buffer.length + (specs.RLA?1:0) + (specs.FLA?1:0) + (specs.SUB?1:0)} ITEMS STAGED`;
+            let photoTitle = `<h3 style="font-size:11px; color:var(--amber-orange); margin-top:10px; margin-bottom:10px;">STAGED PHOTOS (${stagedPhotos.length})</h3>`;
+            let photoHtml = `<div style="display:flex; gap:5px; overflow-x:auto;">
+                ${stagedPhotos.map(p => `<img src="data:${p.mimeType};base64,${p.data}" style="height:50px; border-radius:4px; border:1px solid #444;">`).join('')}
+            </div>`;
+
+            drawerContent.innerHTML = specHtml + (buffer.length > 0 ? diagnosticTitle + logHtml : "") + (stagedPhotos.length > 0 ? photoTitle + photoHtml : "");
+            statusLabel.innerText = `${buffer.length + Object.keys(specs).filter(k => specs[k]).length + stagedPhotos.length} ITEMS STAGED`;
         }
 
         function deleteSpec(key) {
