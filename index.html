@@ -109,14 +109,24 @@
         #splashVer { position: absolute; top: 10px; right: 10px; font-size: 9px; color: #fff; font-weight: 900; padding: 3px 6px; background: #333; border-radius: 4px; display: flex; align-items: center; gap: 5px; }
         .report-btn { background: var(--amber-orange); color: black; padding: 2px 4px; border-radius: 3px; font-size: 8px; cursor: pointer; border: none; font-weight: 900; }
         
-        /* APP NAV BAR */
-        .app-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: rgba(18,18,18,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 9999; }
-        .nav-btn { background: transparent; border: none; color: #777; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 9px; font-weight: 900; transition: all 0.3s; }
-        .nav-btn.active { color: var(--electric-blue); transform: translateY(-3px); }
+        /* APP NAV BAR - Truly Universal */
+        .app-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(18,18,18,0.98); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 10005; padding-bottom:env(safe-area-inset-bottom); }
+        .nav-btn { background: transparent; border: none; color: #777; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 8px; font-weight: 900; transition: all 0.3s; flex:1; border-radius: 12px; height: 100%; padding-top:10px; }
+        .nav-btn.active { color: var(--electric-blue); font-size: 9px; }
+        .nav-btn.staging { background: rgba(0,229,255,0.1); color: var(--electric-blue); animation: pulse-glow 1s infinite alternate; }
         .nav-btn i { font-size: 18px; margin-bottom: 2px; }
+
+        @keyframes pulse-glow { from { box-shadow: 0 0 5px var(--electric-blue); } to { box-shadow: 0 0 20px var(--electric-blue); } }
 
         .spec-val { font-size: 13px; font-weight: 900; color: var(--text-primary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
         .spec-val.shrink { font-size: 10px; }
+        
+        /* SETTINGS STYLES */
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #333; }
+        .toggle-switch { width: 44px; height: 24px; background: #333; border-radius: 12px; position: relative; cursor: pointer; border: 1px solid #444; }
+        .toggle-switch.on { background: var(--emerald-green); }
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: 0.2s; }
+        .toggle-switch.on::after { left: calc(100% - 20px); }
         
         .tolerance-pill { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 900; color: #888; }
         .tolerance-pill.active { background: #444; color: var(--electric-blue); border-color: var(--electric-blue); }
@@ -151,17 +161,18 @@
 
     <div id="masterIndicator" class="master-indicator"></div>
 
-    <!-- APP NAVIGATION BAR -->
+    <!-- PERSISTENT NAVIGATION BAR -->
     <nav class="app-nav">
         <button class="nav-btn active" onclick="showSection('mainDashboard')" id="nav-home"><span>🏠</span> HOME</button>
         <button class="nav-btn" onclick="openVoiceConsole()" id="nav-diag"><span>⚡</span> DIAG</button>
         <button class="nav-btn" onclick="openReport()" id="nav-report"><span>📋</span> REPORT</button>
         <button class="nav-btn" onclick="openManuals()" id="nav-manuals"><span>📄</span> MANUALS</button>
+        <button class="nav-btn" onclick="openSettings()" id="nav-settings"><span>⚙️</span> SETTINGS</button>
     </nav>
 
-    <div class="container" id="mainDashboard" style="padding-bottom:80px;">
+    <div class="container" id="mainDashboard" style="padding-bottom:100px;">
         <div id="splashVer">
-            <span>v20.23 Pro</span>
+            <span>v20.24 Pro</span>
             <button class="report-btn" onclick="openReport()">📋 REPORT</button>
         </div>
         <h2>⚡ HVAC Diag</h2>
@@ -346,6 +357,37 @@
         </div>
     </div>
 
+    <!-- SETTINGS MODAL -->
+    <div id="settingsOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+            <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
+            <button onclick="closeSettings()" style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
+        </div>
+        <div style="padding:20px;">
+            <div class="settings-row">
+                <div>
+                    <div style="font-weight:900; font-size:14px;">Voice Navigation Safety</div>
+                    <div style="font-size:11px; color:#777;">Wait for confirmation (YES/GO) before switching pages</div>
+                </div>
+                <div id="toggle-navConfirm" class="toggle-switch on" onclick="toggleSetting('navConfirm')"></div>
+            </div>
+            <div class="settings-row">
+                <div>
+                    <div style="font-weight:900; font-size:14px;">Direct Voice Entry</div>
+                    <div style="font-size:11px; color:#777;">Skip "Copy" command for numbers (Use with caution)</div>
+                </div>
+                <div id="toggle-autoCommit" class="toggle-switch" onclick="toggleSetting('autoCommit')"></div>
+            </div>
+            <div style="margin-top:30px; background:#1a1a1a; padding:15px; border-radius:12px; font-size:12px; color:#aaa;">
+                <b>Confirmation Words:</b><br>
+                "YES", "GO", "OK", "COPY", "CONFIRM"
+            </div>
+        </div>
+        <div style="padding:15px; margin-top:auto;">
+            <button class="btn btn-primary" onclick="closeSettings()">CLOSE</button>
+        </div>
+    </div>
+
     <script>
         const APP_VERSION = "20.23";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
@@ -354,11 +396,16 @@
         let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { 
             BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--'
         };
+        let appSettings = JSON.parse(localStorage.getItem('hvacSettingsV20')) || {
+            navConfirm: true, autoCommit: false
+        };
         let tempAiSpecs = {}; 
         let fieldIndex = 0;
         let isCapturing = false; let recognition = null; let masterRec = null; let isMicOn = false;
         let isMasterOn = false; let forceKill = false; let tolerance = 0.06; let activeRatingTarget = 'herm';
         let _lastBuffer = {}; let masterTarget = null;
+        let navStaging = null; // Stores target section for confirmation
+        const CONFIRM_WORDS = ["yes", "go", "copy", "confirm", "ok", "stage"];
 
         const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Amps", "ODF Amps"];
         const CAP_SIZES = [2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90];
@@ -552,6 +599,9 @@
                         if (kwMatch) input = transcript.replace(kwMatch[0], "").trim();
 
                         if (input.length > 0) {
+                            // First, check for Global Commands
+                            if (voiceDispatcher(input, true)) return;
+
                             let val = input.toUpperCase();
                             
                             // Normalization: Brand
@@ -576,6 +626,12 @@
                                 else if (/\b454\b/.test(input)) val = "R-454B";
                                 else if (/\b438\b/.test(input)) val = "R-438A (MO99)";
                                 else if (/\b422\b/.test(input)) val = "R-422D";
+                            }
+                            // Normalization: Subcool
+                            if (masterTarget === "SUB" || (/\b(sub\s?cool|target\s?sc)\b/.test(input))) {
+                                masterTarget = "SUB";
+                                const num = input.match(/\d+\.?\d*/);
+                                if (num) val = num[0];
                             }
 
                             specs[masterTarget] = val;
@@ -634,7 +690,69 @@
             document.getElementById('voiceModal').style.display = 'none';
             document.getElementById('reportOverlay').style.display = 'none';
             document.getElementById('manualsOverlay').style.display = 'none';
+            document.getElementById('settingsOverlay').style.display = 'none';
             stopMic();
+        }
+
+        // ── UNIFIED VOICE DISPATCHER ───────────────────────────────────
+        function voiceDispatcher(transcript, isIntake) {
+            transcript = transcript.toLowerCase();
+            
+            // 1. Navigation Commands
+            if (/\b(home|dashboard|splash)\b/.test(transcript)) { return stageNav('mainDashboard', 'nav-home'); }
+            if (/\b(diag|diagnostic|capacitor)\b/.test(transcript)) { return stageNav('voiceModal', 'nav-diag'); }
+            if (/\b(report|summary)\b/.test(transcript)) { return stageNav('reportOverlay', 'nav-report'); }
+            if (/\b(manual|manuals|library)\b/.test(transcript)) { return stageNav('manualsOverlay', 'nav-manuals'); }
+            if (/\b(setting|settings)\b/.test(transcript)) { return stageNav('settingsOverlay', 'nav-settings'); }
+
+            // 2. Handshake / Confirmation
+            if (navStaging && CONFIRM_WORDS.some(w => transcript.includes(w))) {
+                const target = navStaging; navStaging = null;
+                if (target.id === 'mainDashboard') showSection('mainDashboard');
+                else if (target.id === 'voiceModal') openVoiceConsole();
+                else if (target.id === 'reportOverlay') openReport();
+                else if (target.id === 'manualsOverlay') openManuals();
+                else if (target.id === 'settingsOverlay') openSettings();
+                return true;
+            }
+
+            return false;
+        }
+
+        function stageNav(id, btnId) {
+            if (!appSettings.navConfirm) {
+                if (id === 'mainDashboard') showSection('mainDashboard');
+                else if (id === 'voiceModal') openVoiceConsole();
+                else if (id === 'reportOverlay') openReport();
+                else if (id === 'manualsOverlay') openManuals();
+                else if (id === 'settingsOverlay') openSettings();
+                return true;
+            }
+            navStaging = { id, btnId };
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging'));
+            document.getElementById(btnId).classList.add('staging');
+            // iOS Haptic
+            if (navigator.vibrate) navigator.vibrate(50);
+            return true;
+        }
+
+        function openSettings() {
+            closeAllModals();
+            updateNavUI('nav-settings');
+            document.getElementById('settingsOverlay').style.display = 'flex';
+            updateSettingsUI();
+        }
+        function closeSettings() { closeAllModals(); showSection('mainDashboard'); }
+        function toggleSetting(key) {
+            appSettings[key] = !appSettings[key];
+            localStorage.setItem('hvacSettingsV20', JSON.stringify(appSettings));
+            updateSettingsUI();
+        }
+        function updateSettingsUI() {
+            Object.keys(appSettings).forEach(k => {
+                const el = document.getElementById('toggle-' + k);
+                if (el) el.classList.toggle('on', appSettings[k]);
+            });
         }
 
         function setTol(val) {
@@ -776,6 +894,10 @@
                             updateLiveCheck();
                         }
                         if (!res.isFinal) return;
+
+                        // 3. Dispatch to Global Brain
+                        if (voiceDispatcher(transcript)) return;
+
                         if (transcript.includes("stop") || transcript.includes("mic off") || transcript.includes("done")) { stopMic(); return; }
                         if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
                         if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("stage")) { confirmReading(); return; }
@@ -817,8 +939,13 @@
             let val = parseFloat(document.getElementById('bigDisplay').innerText); if (val === 0) return;
             isCapturing = true; let lastVolt = 0;
             const currentField = FIELD_CYCLE[fieldIndex];
-            const bArr = Object.values(buffer);
-            for(let i = bArr.length-1; i >= 0; i--) { if(bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
+            
+            // Fix: Sort keys to find most recent Volts
+            const sortedKeys = Object.keys(buffer).sort((a,b) => parseInt(a) - parseInt(b));
+            for(let i = sortedKeys.length-1; i >= 0; i--) { 
+                const item = buffer[sortedKeys[i]];
+                if(item.field.includes("Volts")) { lastVolt = item.val; break; } 
+            }
             
             buffer[fieldIndex] = { field: currentField, val: val, volts: lastVolt };
             localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); syncLogToUI();
