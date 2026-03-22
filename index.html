@@ -381,9 +381,16 @@
                 <div><div style="font-weight:900; font-size:12px;">Voice Navigation Safety</div></div>
                 <div id="toggle-navConfirm" class="toggle-switch on" onclick="toggleSetting('navConfirm')"></div>
             </div>
-            <div class="settings-row" style="padding:8px 0; border-bottom:1px solid #333;">
+            <div class="settings-row" style="padding:8px 0; border-bottom:none;">
                 <div><div style="font-weight:900; font-size:12px;">Direct Voice Entry</div></div>
                 <div id="toggle-autoCommit" class="toggle-switch" onclick="toggleSetting('autoCommit')"></div>
+            </div>
+            <div class="settings-row" style="padding:8px 0; border-bottom:1px solid #333;">
+                <div>
+                    <div style="font-weight:900; font-size:12px;">Strict Dictionary Validation</div>
+                    <div style="font-size:10px; color:#777;">Reject unknown Brands/Refs — shows tap-to-override popup</div>
+                </div>
+                <div id="toggle-strictDict" class="toggle-switch" onclick="toggleSetting('strictDict')"></div>
             </div>
         </div>
 
@@ -394,7 +401,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.29";
+        const APP_VERSION = "20.30";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -402,7 +409,7 @@
             BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--'
         };
         let appSettings = JSON.parse(localStorage.getItem('hvacSettingsV20')) || {
-            navConfirm: true, autoCommit: false
+            navConfirm: true, autoCommit: false, strictDict: false
         };
         let userDict = JSON.parse(localStorage.getItem('hvacDictV20')) || {
             brands: "Trane, Carrier, Lennox, Goodman, Rheem, Ruud, Daikin, Amana, Bryant, Comfortmaker",
@@ -522,7 +529,52 @@
             else { linksDiv.innerHTML = links.map(l => `<a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>`).join(''); }
         }
 
-        // ── Single Cell Tap Local Mic (Isolated from Global) ──────────
+        // ── Single Cell Tap Local Mic + Inline Override ───────────────
+        let _overrideTarget = null;
+        function showSpecOverride(target, preVal) {
+            _overrideTarget = target;
+            const cell = document.getElementById('spec-' + target);
+            if (!cell) return;
+            // Inject an inline input popup
+            const existingPop = document.getElementById('specOverridePop');
+            if (existingPop) existingPop.remove();
+            const pop = document.createElement('div');
+            pop.id = 'specOverridePop';
+            pop.style.cssText = 'position:fixed; bottom:90px; left:50%; transform:translateX(-50%); width:92%; background:#252525; border:1px solid var(--electric-blue); border-radius:16px; padding:14px; z-index:20000; box-shadow:0 0 30px rgba(0,229,255,0.3);';
+            pop.innerHTML = `
+                <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:6px;">${target} — NOT IN DICTIONARY. EDIT OR ALLOW:</div>
+                <input id="specOverrideInput" type="text" value="${preVal||''}" style="font-size:20px; text-align:center; font-weight:900; padding:10px; margin-bottom:8px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
+                    <button onclick="commitSpecOverride(true)" style="background:var(--emerald-green); color:black; border:none; padding:10px; border-radius:10px; font-weight:900; font-size:12px;">✔ ALLOW</button>
+                    <button onclick="addOverrideToDict()" style="background:#0056b3; color:white; border:none; padding:10px; border-radius:10px; font-weight:900; font-size:12px;">+ ADD TO DICT</button>
+                    <button onclick="commitSpecOverride(false)" style="background:var(--crimson-red); color:white; border:none; padding:10px; border-radius:10px; font-weight:900; font-size:12px;">✗ DISCARD</button>
+                </div>
+            `;
+            document.body.appendChild(pop);
+            document.getElementById('specOverrideInput').focus();
+        }
+        function commitSpecOverride(allow) {
+            const pop = document.getElementById('specOverridePop');
+            if (allow && _overrideTarget) {
+                const val = document.getElementById('specOverrideInput').value.trim().toUpperCase();
+                if (val) {
+                    specs[_overrideTarget] = val;
+                    const el = document.getElementById('val-' + _overrideTarget);
+                    if (el) { el.innerText = val; el.classList.toggle('shrink', val.length > 10); }
+                    localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+                }
+            }
+            if (pop) pop.remove();
+            _overrideTarget = null;
+        }
+        function addOverrideToDict() {
+            const val = document.getElementById('specOverrideInput').value.trim();
+            if (!val) return;
+            const dictKey = _overrideTarget === 'REF' ? 'refs' : 'brands';
+            userDict[dictKey] = (userDict[dictKey] ? userDict[dictKey] + ', ' : '') + val.toUpperCase();
+            localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
+            commitSpecOverride(true);
+        }
         function openSpecVoice(target) {
             if (isMicOn) stopGlobalMic();
             document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
@@ -595,13 +647,24 @@
                         const brandsStr = userDict && userDict.brands ? userDict.brands : "Trane, Carrier, Lennox, Goodman, Rheem, Ruud, Daikin, Amana, Bryant, Comfortmaker";
                         const bArr = brandsStr.split(',').map(s=>s.trim().toUpperCase());
                         const match = bArr.find(b => val.includes(b));
-                        if (match) val = match;
+                        if (match) {
+                            val = match;
+                        } else if (appSettings.strictDict) {
+                            // Strict Mode: reject and show inline override prompt
+                            showSpecOverride('BRAND', val);
+                            return;
+                        }
                     }
                     else if (masterTarget === "REF") {
                         const refsStr = userDict && userDict.refs ? userDict.refs : "R-410A, R-22, R-407C, R-134a, R-454B, R-438A";
                         const rArr = refsStr.split(',').map(s=>s.trim().toUpperCase());
                         const match = rArr.find(r => val.includes(r.replace('-','')));
-                        if (match) val = match;
+                        if (match) {
+                            val = match;
+                        } else if (appSettings.strictDict) {
+                            showSpecOverride('REF', val);
+                            return;
+                        }
                     }
                     else if (masterTarget === "SUB" || /\b(sub\s?cool|target\s?sc|sup\s?cool)\b/.test(input)) {
                         masterTarget = "SUB";
@@ -659,6 +722,7 @@
         }
 
         function closeAllModals() {
+            isSettingsMode = false; // BUG FIX: always clear settings ghost
             document.getElementById('voiceModal').style.display = 'none';
             document.getElementById('reportOverlay').style.display = 'none';
             document.getElementById('manualsOverlay').style.display = 'none';
@@ -677,18 +741,20 @@
             if (/\b(manual|manuals|library)\b/.test(transcript)) { return stageNav('manualsOverlay', 'nav-manuals'); }
             if (/\b(setting|settings)\b/.test(transcript)) { return stageNav('settingsOverlay', 'nav-settings'); }
 
-            // 2. Handshake / Confirmation
-            const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
-            const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
-            if (navStaging && confirmArr.some(w => transcript.includes(w))) {
-                const target = navStaging; navStaging = null;
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging')); // BUG FIX
-                if (target.id === 'mainDashboard') showSection('mainDashboard');
-                else if (target.id === 'voiceModal') openVoiceConsole();
-                else if (target.id === 'reportOverlay') openReport();
-                else if (target.id === 'manualsOverlay') openManuals();
-                else if (target.id === 'settingsOverlay') openSettings();
-                return true;
+            // 2. Handshake / Confirmation — ONLY fires when a destination is already staged
+            if (navStaging) {
+                const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
+                const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
+                if (confirmArr.some(w => transcript.includes(w))) {
+                    const target = navStaging; navStaging = null;
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging'));
+                    if (target.id === 'mainDashboard') showSection('mainDashboard');
+                    else if (target.id === 'voiceModal') openVoiceConsole();
+                    else if (target.id === 'reportOverlay') openReport();
+                    else if (target.id === 'manualsOverlay') openManuals();
+                    else if (target.id === 'settingsOverlay') openSettings();
+                    return true;
+                }
             }
 
             return false;
@@ -989,31 +1055,34 @@
                             return;
                         }
 
-                        // 4. Dispatch to Navigation Brain
-                        if (voiceDispatcher(transcript)) return;
-
+                        // 4. Settings is FIRST — hard-isolated pipeline
                         if (isSettingsMode) {
                             if (/\b(brands?)\b/.test(transcript)) { switchDictType('brands'); return; }
                             if (/\b(refs?|refrigerants?)\b/.test(transcript)) { switchDictType('refs'); return; }
                             if (/\b(words?|confirms?)\b/.test(transcript)) { switchDictType('confirms'); return; }
                             
-                            const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
-                            const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
-                            if (confirmArr.some(w => transcript.includes(w))) { confirmDictWord(); return; }
+                            const sConfirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
+                            const sConfirmArr = sConfirmStr.toLowerCase().split(',').map(s=>s.trim());
+                            if (sConfirmArr.some(w => transcript.includes(w))) { confirmDictWord(); return; }
 
                             if (transcript.includes("undo") || transcript.includes("scrub")) { undoDictStaged(); return; }
 
-                            // Otherwise stage text
+                            // Stage text in Settings
                             dictStagedRaw = transcript.toUpperCase().trim();
                             document.getElementById('dictStagedWord').innerText = dictStagedRaw;
                             document.getElementById('dictStagedWord').style.color = "white";
                             return;
-                        } else if (isSequenceMode) {
+                        }
+
+                        // 4. Dispatch to Navigation Brain (AFTER settings, never steals confirms)
+                        if (voiceDispatcher(transcript)) return;
+
+                        if (isSequenceMode) {
+                            // Utility voice commands
+                            if (/\b(wipe|wipe all|clear all)\b/.test(transcript)) { clearBuffer(); return; }
+                            if (/\b(sync|send|upload)\b/.test(transcript)) { sendFinalBlock(); return; }
+                            if (/\b(stage|commit|copy|confirm|yes|ok|go)\b/.test(transcript)) { confirmReading(); return; }
                             if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
-                            
-                            const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
-                            const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
-                            if (confirmArr.some(w => transcript.includes(w))) { confirmReading(); return; }
 
                             // Capacitor Field Voice Jump
                             if (/(herm volts|home volts|term volts)/.test(transcript)) { jumpToStep(0); return; }
