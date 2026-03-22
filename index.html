@@ -378,9 +378,16 @@
                 </div>
                 <div id="toggle-autoCommit" class="toggle-switch" onclick="toggleSetting('autoCommit')"></div>
             </div>
-            <div style="margin-top:30px; background:#1a1a1a; padding:15px; border-radius:12px; font-size:12px; color:#aaa;">
-                <b>Confirmation Words:</b><br>
-                "YES", "GO", "OK", "COPY", "CONFIRM"
+            <div style="margin-top:20px; background:#1a1a1a; padding:15px; border-radius:12px; font-size:12px;">
+                <b style="color:var(--electric-blue);">Dictionary / Commands (CSV)</b>
+                <div style="margin-top:10px;">
+                    <label style="color:#aaa; font-size:10px;">CONFIRM WORDS</label>
+                    <input type="text" id="dict-confirms" style="font-size:12px; padding:8px; margin-bottom:8px;" onchange="saveDict()">
+                    <label style="color:#aaa; font-size:10px;">BRANDS</label>
+                    <input type="text" id="dict-brands" style="font-size:12px; padding:8px; margin-bottom:8px;" onchange="saveDict()">
+                    <label style="color:#aaa; font-size:10px;">REFRIGERANTS</label>
+                    <input type="text" id="dict-refs" style="font-size:12px; padding:8px;" onchange="saveDict()">
+                </div>
             </div>
         </div>
         <div style="padding:15px; margin-top:auto;">
@@ -389,7 +396,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.23";
+        const APP_VERSION = "20.25";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -399,13 +406,18 @@
         let appSettings = JSON.parse(localStorage.getItem('hvacSettingsV20')) || {
             navConfirm: true, autoCommit: false
         };
+        let userDict = JSON.parse(localStorage.getItem('hvacDictV20')) || {
+            brands: "Trane, Carrier, Lennox, Goodman, Rheem, Ruud, Daikin, Amana, Bryant, Comfortmaker",
+            refs: "R-410A, R-22, R-407C, R-134a, R-454B, R-438A",
+            confirms: "yes, go, copy, confirm, ok, stage"
+        };
+        
         let tempAiSpecs = {}; 
         let fieldIndex = 0;
         let isCapturing = false; let recognition = null; let masterRec = null; let isMicOn = false;
         let isMasterOn = false; let forceKill = false; let tolerance = 0.06; let activeRatingTarget = 'herm';
         let _lastBuffer = {}; let masterTarget = null;
         let navStaging = null; // Stores target section for confirmation
-        const CONFIRM_WORDS = ["yes", "go", "copy", "confirm", "ok", "stage"];
 
         const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Amps", "ODF Amps"];
         const CAP_SIZES = [2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90];
@@ -584,7 +596,7 @@
                     else if (/\blra\b/.test(transcript))                          masterTarget = "LRA";
                     else if (/\bfla\b/.test(transcript))                          masterTarget = "FLA";
                     else if (/\b(voltage|volts)\b/.test(transcript))              masterTarget = "VOLT";
-                    else if (/\b(sub|subcool|suction|target)\b/.test(transcript)) masterTarget = "SUB";
+                    else if (/\b(sub|subcool|suction|target|sup\s?cool)\b/.test(transcript)) masterTarget = "SUB";
                     else if (/\b(ref|refrigerant)\b/.test(transcript))            masterTarget = "REF";
                     else if (/\b(meter|metering)\b/.test(transcript))             masterTarget = "METER";
 
@@ -596,7 +608,13 @@
                         let input = transcript;
                         // Clean up input by removing the keyword if it was just identifying the field
                         const kwMatch = transcript.match(new RegExp(`\\b${masterTarget.toLowerCase()}\\b`));
-                        if (kwMatch) input = transcript.replace(kwMatch[0], "").trim();
+                        // Additional filter for subcool false positives
+                        if (!kwMatch && masterTarget === "SUB") {
+                            const subMatch = transcript.match(/\b(sub\s?cool|sup\s?cool|target|suction|sc)\b/);
+                            if (subMatch) input = transcript.replace(subMatch[0], "").trim();
+                        } else if (kwMatch) {
+                            input = transcript.replace(kwMatch[0], "").trim();
+                        }
 
                         if (input.length > 0) {
                             // First, check for Global Commands
@@ -606,32 +624,26 @@
                             
                             // Normalization: Brand
                             if (masterTarget === "BRAND") {
-                                if (/\b(train|tranes)\b/.test(input)) val = "Trane";
-                                else if (/\b(comfort\s?maker)\b/.test(input)) val = "Comfortmaker";
-                                else if (/\b(carrier)\b/.test(input)) val = "Carrier";
-                                else if (/\b(bryant)\b/.test(input)) val = "Bryant";
-                                else if (/\b(rheem)\b/.test(input)) val = "Rheem";
-                                else if (/\b(ruud)\b/.test(input)) val = "Ruud";
-                                else if (/\b(lennox)\b/.test(input)) val = "Lennox";
-                                else if (/\b(daikin)\b/.test(input)) val = "Daikin";
-                                else if (/\b(goodman)\b/.test(input)) val = "Goodman";
-                                else if (/\b(amana)\b/.test(input)) val = "Amana";
+                                const bArr = userDict.brands.split(',').map(s=>s.trim().toUpperCase());
+                                const match = bArr.find(b => val.includes(b));
+                                if (match) val = match;
                             }
                             // Normalization: Refrigerant
-                            if (masterTarget === "REF") {
-                                if (/\b4[:.]?1?0\b/.test(input)) val = "R-410A";
-                                else if (/\b22\b/.test(input)) val = "R-22";
-                                else if (/\b407\b/.test(input)) val = "R-407C";
-                                else if (/\b134\b/.test(input)) val = "R-134a";
-                                else if (/\b454\b/.test(input)) val = "R-454B";
-                                else if (/\b438\b/.test(input)) val = "R-438A (MO99)";
-                                else if (/\b422\b/.test(input)) val = "R-422D";
+                            else if (masterTarget === "REF") {
+                                const rArr = userDict.refs.split(',').map(s=>s.trim().toUpperCase());
+                                const match = rArr.find(r => val.includes(r.replace('-','')));
+                                if (match) val = match;
                             }
                             // Normalization: Subcool
-                            if (masterTarget === "SUB" || (/\b(sub\s?cool|target\s?sc)\b/.test(input))) {
+                            else if (masterTarget === "SUB" || /\b(sub\s?cool|target\s?sc|sup\s?cool)\b/.test(input)) {
                                 masterTarget = "SUB";
                                 const num = input.match(/\d+\.?\d*/);
                                 if (num) val = num[0];
+                            }
+
+                            // Strict Number Guard
+                            if (["RLA", "LRA", "FLA", "VOLT", "SUB", "YEAR"].includes(masterTarget)) {
+                                if (isNaN(parseFloat(val))) return; // Return silently, do not overwrite field with alphabetic text
                             }
 
                             specs[masterTarget] = val;
@@ -691,7 +703,7 @@
             document.getElementById('reportOverlay').style.display = 'none';
             document.getElementById('manualsOverlay').style.display = 'none';
             document.getElementById('settingsOverlay').style.display = 'none';
-            stopMic();
+            // Removed stopMic() so persistent transitions work!
         }
 
         // ── UNIFIED VOICE DISPATCHER ───────────────────────────────────
@@ -706,8 +718,10 @@
             if (/\b(setting|settings)\b/.test(transcript)) { return stageNav('settingsOverlay', 'nav-settings'); }
 
             // 2. Handshake / Confirmation
-            if (navStaging && CONFIRM_WORDS.some(w => transcript.includes(w))) {
+            const confirmArr = userDict.confirms.toLowerCase().split(',').map(s=>s.trim());
+            if (navStaging && confirmArr.some(w => transcript.includes(w))) {
                 const target = navStaging; navStaging = null;
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging')); // BUG FIX
                 if (target.id === 'mainDashboard') showSection('mainDashboard');
                 else if (target.id === 'voiceModal') openVoiceConsole();
                 else if (target.id === 'reportOverlay') openReport();
@@ -721,6 +735,7 @@
 
         function stageNav(id, btnId) {
             if (!appSettings.navConfirm) {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging')); // BUG FIX
                 if (id === 'mainDashboard') showSection('mainDashboard');
                 else if (id === 'voiceModal') openVoiceConsole();
                 else if (id === 'reportOverlay') openReport();
@@ -748,11 +763,20 @@
             localStorage.setItem('hvacSettingsV20', JSON.stringify(appSettings));
             updateSettingsUI();
         }
+        function saveDict() {
+            userDict.confirms = document.getElementById('dict-confirms').value;
+            userDict.brands = document.getElementById('dict-brands').value;
+            userDict.refs = document.getElementById('dict-refs').value;
+            localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
+        }
         function updateSettingsUI() {
             Object.keys(appSettings).forEach(k => {
                 const el = document.getElementById('toggle-' + k);
                 if (el) el.classList.toggle('on', appSettings[k]);
             });
+            document.getElementById('dict-confirms').value = userDict.confirms;
+            document.getElementById('dict-brands').value = userDict.brands;
+            document.getElementById('dict-refs').value = userDict.refs;
         }
 
         function setTol(val) {
@@ -900,7 +924,9 @@
 
                         if (transcript.includes("stop") || transcript.includes("mic off") || transcript.includes("done")) { stopMic(); return; }
                         if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
-                        if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("stage")) { confirmReading(); return; }
+                        
+                        const confirmArr = userDict.confirms.toLowerCase().split(',').map(s=>s.trim());
+                        if (confirmArr.some(w => transcript.includes(w))) { confirmReading(); return; }
                     };
                     recognition.onend = () => { if (isMicOn && !forceKill) startRec(); };
                     recognition.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('Mic:', e.error); };
@@ -913,7 +939,7 @@
         function stopMic() {
             isMicOn = false; forceKill = true;
             if (window._seqTimer) { clearInterval(window._seqTimer); window._seqTimer = null; }
-            if (recognition) { recognition.onend = null; recognition.stop(); recognition = null; }
+            if (recognition) { recognition.onend = null; try { recognition.abort(); } catch(e){} recognition = null; }
             document.getElementById('micTrigger').innerText = "🎙 START MIC";
             document.getElementById('pwrIndicator').style.display = "none";
         }
@@ -936,7 +962,7 @@
 
         function confirmReading() {
             if (isCapturing) return;
-            let val = parseFloat(document.getElementById('bigDisplay').innerText); if (val === 0) return;
+            let val = parseFloat(document.getElementById('bigDisplay').innerText); if (val === 0 || isNaN(val)) return;
             isCapturing = true; let lastVolt = 0;
             const currentField = FIELD_CYCLE[fieldIndex];
             
@@ -950,9 +976,12 @@
             buffer[fieldIndex] = { field: currentField, val: val, volts: lastVolt };
             localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); syncLogToUI();
             
-            document.getElementById('bigDisplay').style.color = "var(--emerald-green)";
+            document.getElementById('bigDisplay').style.color = "white";
+            document.getElementById('bigDisplay').style.textShadow = "0 0 40px var(--emerald-green)";
+            
             setTimeout(() => { 
-                document.getElementById('bigDisplay').style.color = "var(--text-primary)"; 
+                document.getElementById('bigDisplay').style.color = "var(--text-primary)";
+                document.getElementById('bigDisplay').style.textShadow = "0 0 30px rgba(255, 255, 255, 0.15)";
                 document.getElementById('bigDisplay').innerText = "0.0"; 
                 // Auto-advance to next EMPTY step
                 let nextIdx = -1;
