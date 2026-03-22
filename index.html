@@ -266,9 +266,9 @@
         let fieldIndex = 0;
         let isCapturing = false; let recognition = null; let masterRec = null; let isMicOn = false;
         let isMasterOn = false; let forceKill = false; let tolerance = 0.06; let activeRatingTarget = 'herm';
-        let _lastBuffer = [];
+        let _lastBuffer = []; let masterTarget = null;
 
-        const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Amps"];
+        const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Amps", "ODF Amps"];
         const CAP_SIZES = [2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90];
 
         initSplash();
@@ -374,11 +374,11 @@
             if (!SR) { alert("Voice not supported."); return; }
             if (isMasterOn) { isMasterOn = false; if (masterRec) { masterRec.onend = null; masterRec.stop(); } document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)'; document.getElementById('masterIndicator').style.display = 'none'; }
             const cellRec = new SR();
-            cellRec.continuous = false; cellRec.interimResults = false; cellRec.lang = 'en-US';
+            cellRec.continuous = false; cellRec.interimResults = true; cellRec.lang = 'en-US';
             document.getElementById('masterIndicator').style.display = 'block';
             cellRec.onresult = (e) => {
                 const res = e.results[e.results.length - 1];
-                if (!res.isFinal) return;
+                if (!res.isFinal) return; // wait for final result
                 const numMatch = res[0].transcript.match(/\b(\d+\.?\d*)\b/);
                 if (numMatch) {
                     const num = parseFloat(numMatch[1]);
@@ -414,33 +414,35 @@
 
             function startMasterRec() {
                 if (!isMasterOn) return;
+                if (masterRec) { masterRec.onend = null; try { masterRec.stop(); } catch(e) {} }
                 masterRec = new SR();
-                masterRec.continuous = false;      // iOS: false is more reliable
-                masterRec.interimResults = false;  // iOS: final results only
+                masterRec.continuous = false;
+                masterRec.interimResults = true;  // iOS needs this for onresult to fire
                 masterRec.lang = 'en-US';
 
                 masterRec.onresult = (e) => {
-                    const result = e.results[e.results.length - 1];
-                    if (!result.isFinal) return;
-                    const transcript = result[0].transcript.toLowerCase().trim();
+                    const lastResult = e.results[e.results.length - 1];
+                    if (!lastResult.isFinal) return; // only act on final results
+                    const transcript = lastResult[0].transcript.toLowerCase().trim();
 
-                    let target = null;
-                    if (/\brla\b/.test(transcript))                          target = "RLA";
-                    else if (/\bfla\b/.test(transcript))                     target = "FLA";
-                    else if (/\b(sub|subcool|suction|cool)\b/.test(transcript)) target = "SUB";
+                    // Check for keyword — persists across separate utterances
+                    if (/\brla\b/.test(transcript))                             masterTarget = "RLA";
+                    else if (/\bfla\b/.test(transcript))                        masterTarget = "FLA";
+                    else if (/\b(sub|subcool|suction|cool)\b/.test(transcript)) masterTarget = "SUB";
 
-                    if (target) {
+                    if (masterTarget) {
                         document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
-                        document.getElementById('spec-' + target).classList.add('listening');
+                        document.getElementById('spec-' + masterTarget).classList.add('listening');
                         const numMatch = transcript.match(/\b(\d+\.?\d*)\b/);
                         if (numMatch) {
                             const num = parseFloat(numMatch[1]);
-                            specs[target] = num;
-                            document.getElementById('val-' + target).innerText = num;
+                            specs[masterTarget] = num;
+                            document.getElementById('val-' + masterTarget).innerText = num;
                             localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
-                            const cell = document.getElementById('spec-' + target);
+                            const cell = document.getElementById('spec-' + masterTarget);
                             cell.style.boxShadow = '0 0 30px var(--emerald-green)';
                             setTimeout(() => cell.style.boxShadow = 'none', 500);
+                            masterTarget = null; // reset after successful capture
                         }
                     }
                 };
@@ -484,16 +486,21 @@
             document.getElementById('modalLabel').innerText = field.toUpperCase();
             let lastVolt = 0;
             for(let i = buffer.length-1; i >= 0; i--) { if(buffer[i].field.includes("Volts")) { lastVolt = buffer[i].val; break; } }
-            if (field.includes("Amps") && !field.includes("Comp") && !field.includes("Outdoor")) {
+            if (field === "Herm Amps" || field === "Fan Amps") {
                 const rating = parseFloat(document.getElementById(field === "Herm Amps" ? "hermRating" : "fanRating").value);
                 if(lastVolt > 0 && rating) {
                     const target = (rating * lastVolt) / 2652;
-                    // ── Fix: ceil low bound, floor high bound so display matches true pass zone
                     const lowDisplay  = (Math.ceil(target * (1 - tolerance) * 100) / 100).toFixed(2);
                     const highDisplay = (Math.floor(target * (1 + tolerance) * 100) / 100).toFixed(2);
                     document.getElementById('targetRange').innerText = "RANGE: " + lowDisplay + " - " + highDisplay;
                 } else { document.getElementById('targetRange').innerText = "WAITING FOR VOLTS..."; }
-            } else { document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase(); }
+            } else if (field === "Comp Amps") {
+                document.getElementById('targetRange').innerText = specs.RLA ? `⚡ RLA: ${specs.RLA} A` : "READY FOR COMP AMPS";
+            } else if (field === "ODF Amps") {
+                document.getElementById('targetRange').innerText = specs.FLA ? `🌀 FLA: ${specs.FLA} A` : "READY FOR ODF AMPS";
+            } else {
+                document.getElementById('targetRange').innerText = "READY FOR " + field.toUpperCase();
+            }
         }
 
         function syncLogToUI() {
@@ -512,6 +519,10 @@
                 } else if (item.field === "Comp Amps" && specs.RLA) {
                     const pct = (item.val / specs.RLA) * 100;
                     details = ` (${pct.toFixed(2)}% RLA)`;
+                    badge = `<span class="badge-small ${pct <= 100 ? 'pass-small' : 'fail-small'}">${pct <= 100 ? 'PASS' : 'FAIL'}</span>`;
+                } else if (item.field === "ODF Amps" && specs.FLA) {
+                    const pct = (item.val / specs.FLA) * 100;
+                    details = ` (${pct.toFixed(2)}% FLA)`;
                     badge = `<span class="badge-small ${pct <= 100 ? 'pass-small' : 'fail-small'}">${pct <= 100 ? 'PASS' : 'FAIL'}</span>`;
                 }
                 return `<div class="log-item"><div><b>${item.field}:</b> ${item.val.toFixed(2)}${details}${badge}</div><button onclick="undoAt(${idx})" style="background:transparent; border:none; color:#777; font-size:9px; cursor:pointer;">UNDO</button></div>`;
@@ -534,16 +545,18 @@
                 try {
                     recognition = new SR();
                     recognition.continuous = false;
-                    recognition.interimResults = false;
+                    recognition.interimResults = true;  // iOS needs true to reliably fire onresult
                     recognition.lang = 'en-US';
                     recognition.onresult = (e) => {
                         if (isCapturing) return;
                         const res = e.results[e.results.length - 1];
-                        if (!res.isFinal) return;
+                        // Update display live on interim; only trigger actions on final
                         const transcript = res[0].transcript.toLowerCase().trim();
-                        if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("stage")) { confirmReading(); return; }
                         const numMatch = transcript.match(/\b(\d+\.?\d*)\b/);
                         if (numMatch && !isCapturing) document.getElementById('bigDisplay').innerText = numMatch[1];
+                        if (!res.isFinal) return;
+                        if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
+                        if (transcript.includes("copy") || transcript.includes("confirm") || transcript.includes("stage")) { confirmReading(); return; }
                     };
                     recognition.onend = () => { if (isMicOn && !forceKill) startRec(); };
                     recognition.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('Mic:', e.error); };
