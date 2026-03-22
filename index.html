@@ -401,7 +401,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.30";
+        const APP_VERSION = "20.31";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -1057,6 +1057,13 @@
 
                         // 4. Settings is FIRST — hard-isolated pipeline
                         if (isSettingsMode) {
+                            // NAV ESCAPE HATCH: nav words exit Settings cleanly before being staged
+                            if (/\b(home|dashboard|splash|diag|diagnostic|capacitor|report|summary|manual|manuals|library)\b/.test(transcript)) {
+                                isSettingsMode = false;
+                                if (voiceDispatcher(transcript)) return;
+                            }
+                            if (/\b(stop|mic off|done)\b/.test(transcript)) { stopGlobalMic(); return; }
+
                             if (/\b(brands?)\b/.test(transcript)) { switchDictType('brands'); return; }
                             if (/\b(refs?|refrigerants?)\b/.test(transcript)) { switchDictType('refs'); return; }
                             if (/\b(words?|confirms?)\b/.test(transcript)) { switchDictType('confirms'); return; }
@@ -1200,12 +1207,11 @@
         }
 
         function clearBuffer() {
-            if(confirm("Clear all staged data?")) {
-                _lastBuffer = {...buffer};
-                buffer = {}; localStorage.removeItem('hvacStagingBufferV20'); fieldIndex = 0;
-                syncLogToUI(); updateStepNav(); recalculateField();
-                document.getElementById('restoreBox').style.display = 'block';
-            }
+            // Silent wipe — no confirm() dialog (kills mic on iOS). RESTORE banner acts as safety net.
+            _lastBuffer = {...buffer};
+            buffer = {}; localStorage.removeItem('hvacStagingBufferV20'); fieldIndex = 0;
+            syncLogToUI(); updateStepNav(); recalculateField();
+            document.getElementById('restoreBox').style.display = 'block';
         }
         function restoreBuffer() {
             if(Object.keys(_lastBuffer).length > 0) {
