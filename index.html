@@ -394,7 +394,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.26";
+        const APP_VERSION = "20.27";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -556,125 +556,81 @@
         }
 
         // ── Change #1: Smart Intake — Fixed for iOS Safari ───────────────
-        function toggleSpecMaster() {
-            if (isMasterOn) {
-                isMasterOn = false;
-                if (masterRec) { masterRec.onend = null; masterRec.stop(); }
-                document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)';
-                document.getElementById('masterIndicator').style.display = 'none';
+        // ── GLOBAL AUDIO ENGINE (v20.27) ─────────────────────────────────
+        function processIntakeLogic(transcript) {
+            // Keyword Detection
+            if (/\bbrand\b/.test(transcript))                             masterTarget = "BRAND";
+            else if (/\b(model|mod|modular)\b/.test(transcript))          masterTarget = "MDL";
+            else if (/\b(serial|sir)\b/.test(transcript))                 masterTarget = "SER";
+            else if (/\byear\b/.test(transcript))                         masterTarget = "YEAR";
+            else if (/\brla\b/.test(transcript))                          masterTarget = "RLA";
+            else if (/\blra\b/.test(transcript))                          masterTarget = "LRA";
+            else if (/\bfla\b/.test(transcript))                          masterTarget = "FLA";
+            else if (/\b(voltage|volts)\b/.test(transcript))              masterTarget = "VOLT";
+            else if (/\b(sub|subcool|suction|target|sup\s?cool)\b/.test(transcript)) masterTarget = "SUB";
+            else if (/\b(ref|refrigerant)\b/.test(transcript))            masterTarget = "REF";
+            else if (/\b(meter|metering)\b/.test(transcript))             masterTarget = "METER";
+
+            if (masterTarget) {
                 document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
-                return;
-            }
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) return alert("Voice not supported on this device.");
+                const targetEl = document.getElementById('spec-' + masterTarget);
+                if (targetEl) targetEl.classList.add('listening');
 
-            isMasterOn = true;
-            document.getElementById('masterSpecBtn').style.background = 'var(--emerald-green)';
-            document.getElementById('masterIndicator').style.display = 'block';
+                let input = transcript;
+                const kwMatch = transcript.match(new RegExp(`\\b${masterTarget.toLowerCase()}\\b`));
+                if (!kwMatch && masterTarget === "SUB") {
+                    const subMatch = transcript.match(/\b(sub\s?cool|sup\s?cool|target|suction|sc)\b/);
+                    if (subMatch) input = transcript.replace(subMatch[0], "").trim();
+                } else if (kwMatch) {
+                    input = transcript.replace(kwMatch[0], "").trim();
+                }
 
-            function startMasterRec() {
-                if (!isMasterOn) return;
-                if (masterRec) { masterRec.onend = null; try { masterRec.stop(); } catch(e) {} }
-                masterRec = new SR();
-                masterRec.continuous = false;
-                masterRec.interimResults = true;  // iOS needs this for onresult to fire
-                masterRec.lang = 'en-US';
-
-                masterRec.onresult = (e) => {
-                    const lastResult = e.results[e.results.length - 1];
-                    if (!lastResult.isFinal) return;
-                    const transcript = lastResult[0].transcript.toLowerCase().trim();
-
-                    // Stop Mic Command
-                    if (/\b(stop|mic off|done)\b/.test(transcript)) { toggleSpecMaster(); return; }
-
-                    // Keyword Detection
-                    if (/\bbrand\b/.test(transcript))                             masterTarget = "BRAND";
-                    else if (/\b(model|mod|modular)\b/.test(transcript))          masterTarget = "MDL";
-                    else if (/\b(serial|sir)\b/.test(transcript))                 masterTarget = "SER";
-                    else if (/\byear\b/.test(transcript))                         masterTarget = "YEAR";
-                    else if (/\brla\b/.test(transcript))                          masterTarget = "RLA";
-                    else if (/\blra\b/.test(transcript))                          masterTarget = "LRA";
-                    else if (/\bfla\b/.test(transcript))                          masterTarget = "FLA";
-                    else if (/\b(voltage|volts)\b/.test(transcript))              masterTarget = "VOLT";
-                    else if (/\b(sub|subcool|suction|target|sup\s?cool)\b/.test(transcript)) masterTarget = "SUB";
-                    else if (/\b(ref|refrigerant)\b/.test(transcript))            masterTarget = "REF";
-                    else if (/\b(meter|metering)\b/.test(transcript))             masterTarget = "METER";
-
-                    if (masterTarget) {
-                        document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
-                        const targetEl = document.getElementById('spec-' + masterTarget);
-                        if (targetEl) targetEl.classList.add('listening');
-
-                        let input = transcript;
-                        // Clean up input by removing the keyword if it was just identifying the field
-                        const kwMatch = transcript.match(new RegExp(`\\b${masterTarget.toLowerCase()}\\b`));
-                        // Additional filter for subcool false positives
-                        if (!kwMatch && masterTarget === "SUB") {
-                            const subMatch = transcript.match(/\b(sub\s?cool|sup\s?cool|target|suction|sc)\b/);
-                            if (subMatch) input = transcript.replace(subMatch[0], "").trim();
-                        } else if (kwMatch) {
-                            input = transcript.replace(kwMatch[0], "").trim();
-                        }
-
-                        if (input.length > 0) {
-                            // First, check for Global Commands
-                            if (voiceDispatcher(input, true)) return;
-
-                            let val = input.toUpperCase();
-                            
-                            // Normalization: Brand
-                            if (masterTarget === "BRAND") {
-                                const bArr = userDict.brands.split(',').map(s=>s.trim().toUpperCase());
-                                const match = bArr.find(b => val.includes(b));
-                                if (match) val = match;
-                            }
-                            // Normalization: Refrigerant
-                            else if (masterTarget === "REF") {
-                                const rArr = userDict.refs.split(',').map(s=>s.trim().toUpperCase());
-                                const match = rArr.find(r => val.includes(r.replace('-','')));
-                                if (match) val = match;
-                            }
-                            // Normalization: Subcool
-                            else if (masterTarget === "SUB" || /\b(sub\s?cool|target\s?sc|sup\s?cool)\b/.test(input)) {
-                                masterTarget = "SUB";
-                                const num = input.match(/\d+\.?\d*/);
-                                if (num) val = num[0];
-                            }
-
-                            // Strict Number Guard
-                            if (["RLA", "LRA", "FLA", "VOLT", "SUB", "YEAR"].includes(masterTarget)) {
-                                if (isNaN(parseFloat(val))) return; // Return silently, do not overwrite field with alphabetic text
-                            }
-
-                            specs[masterTarget] = val;
-                            const valEl = document.getElementById('val-' + masterTarget);
-                            if (valEl) {
-                                valEl.innerText = val;
-                                valEl.classList.toggle('shrink', val.length > 10);
-                            }
-                            localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
-                            
-                            const cell = document.getElementById('spec-' + masterTarget);
-                            if (cell) {
-                                cell.style.boxShadow = '0 0 30px var(--emerald-green)';
-                                setTimeout(() => cell.style.boxShadow = 'none', 500);
-                            }
-                        }
+                if (input.length > 0) {
+                    let val = input.toUpperCase().trim();
+                    
+                    if (masterTarget === "BRAND") {
+                        const brandsStr = userDict && userDict.brands ? userDict.brands : "Trane, Carrier, Lennox, Goodman, Rheem, Ruud, Daikin, Amana, Bryant, Comfortmaker";
+                        const bArr = brandsStr.split(',').map(s=>s.trim().toUpperCase());
+                        const match = bArr.find(b => val.includes(b));
+                        if (match) val = match;
                     }
-                };
+                    else if (masterTarget === "REF") {
+                        const refsStr = userDict && userDict.refs ? userDict.refs : "R-410A, R-22, R-407C, R-134a, R-454B, R-438A";
+                        const rArr = refsStr.split(',').map(s=>s.trim().toUpperCase());
+                        const match = rArr.find(r => val.includes(r.replace('-','')));
+                        if (match) val = match;
+                    }
+                    else if (masterTarget === "SUB" || /\b(sub\s?cool|target\s?sc|sup\s?cool)\b/.test(input)) {
+                        masterTarget = "SUB";
+                        const num = input.match(/\d+\.?\d*/);
+                        if (num) val = num[0];
+                    }
 
-                masterRec.onend = () => { if (isMasterOn) startMasterRec(); };
-                masterRec.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('Smart Intake:', e.error); };
-                try { masterRec.start(); } catch(e) {}
+                    if (["RLA", "LRA", "FLA", "VOLT", "SUB", "YEAR"].includes(masterTarget)) {
+                        if (isNaN(parseFloat(val))) return; 
+                    }
+
+                    specs[masterTarget] = val;
+                    const valEl = document.getElementById('val-' + masterTarget);
+                    if (valEl) {
+                        valEl.innerText = val;
+                        valEl.classList.toggle('shrink', val.length > 10);
+                    }
+                    localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+                    
+                    const cell = document.getElementById('spec-' + masterTarget);
+                    if (cell) {
+                        cell.style.boxShadow = '0 0 30px var(--emerald-green)';
+                        setTimeout(() => cell.style.boxShadow = 'none', 500);
+                    }
+                }
             }
-            startMasterRec();
         }
 
         // openSpecVoice now defined above (tap-cell listener)
 
         function openVoiceConsole() { 
-
+            closeAllModals();
             document.getElementById('mainDashboard').style.display = 'none';
             document.getElementById('voiceModal').style.display = 'flex';
             
@@ -719,7 +675,8 @@
             if (/\b(setting|settings)\b/.test(transcript)) { return stageNav('settingsOverlay', 'nav-settings'); }
 
             // 2. Handshake / Confirmation
-            const confirmArr = userDict.confirms.toLowerCase().split(',').map(s=>s.trim());
+            const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
+            const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
             if (navStaging && confirmArr.some(w => transcript.includes(w))) {
                 const target = navStaging; navStaging = null;
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging')); // BUG FIX
@@ -802,7 +759,7 @@
             document.getElementById('modalLabel').innerText = field.toUpperCase();
             let lastVolt = 0;
             const bArr = Object.values(buffer);
-            for(let i = bArr.length-1; i >= 0; i--) { if(bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
+            for(let i = bArr.length-1; i >= 0; i--) { if(bArr[i] && bArr[i].field && bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
             if (field === "Herm Amps" || field === "Fan Amps") {
                 const rating = parseFloat(document.getElementById(field === "Herm Amps" ? "hermRating" : "fanRating").value);
                 if(lastVolt > 0 && rating) {
@@ -832,7 +789,7 @@
 
             let lastVolt = 0;
             const bArr = Object.values(buffer);
-            for(let i = bArr.length-1; i >= 0; i--) { if(bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
+            for(let i = bArr.length-1; i >= 0; i--) { if(bArr[i] && bArr[i].field && bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
 
             let status = ""; let color = "";
             if (field === "Herm Amps" || field === "Fan Amps") {
@@ -869,6 +826,7 @@
             log.innerHTML = entries.map(idx => {
                 const item = buffer[idx];
                 let badge = ""; let details = "";
+                if (!item || !item.field) return "";
                 if (item.field.includes("Amps") && !item.field.includes("Comp") && !item.field.includes("ODF") && item.volts > 0) {
                     const ratingStr = item.field === "Herm Amps" ? "hermRating" : "fanRating";
                     const rating = parseFloat(document.getElementById(ratingStr).value);
@@ -945,7 +903,8 @@
                         if (isSequenceMode) {
                             if (transcript.includes("undo") || transcript.includes("scrub")) { undoLast(); return; }
                             
-                            const confirmArr = userDict.confirms.toLowerCase().split(',').map(s=>s.trim());
+                            const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
+                            const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
                             if (confirmArr.some(w => transcript.includes(w))) { confirmReading(); return; }
                             
                             const finalNum = transcript.match(/\b(\d+\.?\d*)\b/);
