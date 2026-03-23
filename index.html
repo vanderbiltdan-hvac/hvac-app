@@ -1404,11 +1404,12 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s safety
 
-                    console.log("AI: POSTing to", WEB_APP_URL);
+                    console.log("AI: POSTing (Simple Mode) to", WEB_APP_URL);
+                    // Use 'no-cors' only as a last resort diagnostic, but first try 
+                    // a 'simple' POST (no custom headers) which avoids the preflight check.
                     const response = await fetch(WEB_APP_URL, { 
                         method: "POST", 
-                        mode: "cors", // Explicitly set CORS
-                        headers: { "Content-Type": "text/plain" }, // GAS prefers text/plain for CORS simplicity
+                        // Removing custom headers makes this a 'simple request'
                         body: JSON.stringify({ action: "uploadPhotoAI", data: ph.data, filename: ph.filename, mimeType: ph.mime }),
                         signal: controller.signal
                     });
