@@ -1217,21 +1217,39 @@
         let currentShelf = 'ALL';
 
         async function initIndexedDB() {
+            console.log("DB: Init Called");
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, 2);
-                request.onblocked = () => {
-                    alert("Database blocked! Please close other Service Pro tabs.");
-                    reject("Blocked");
-                };
-                request.onupgradeneeded = (e) => {
-                    const dbInstance = e.target.result;
-                    if (!dbInstance.objectStoreNames.contains(OS_NAME)) {
-                        const store = dbInstance.createObjectStore(OS_NAME, { keyPath: "id", autoIncrement: true });
-                        store.createIndex("shelf", "shelf", { unique: false });
-                    }
-                };
-                request.onsuccess = (e) => resolve(e.target.result);
-                request.onerror = (e) => reject(e);
+                try {
+                    console.log("DB: Opening Request...");
+                    const request = indexedDB.open(DB_NAME, 2);
+                    
+                    request.onblocked = () => {
+                        alert("DIAGNOSTIC: DB BLOCKED. Close all other tabs/windows of Service Pro.");
+                        reject("Blocked");
+                    };
+                    
+                    request.onupgradeneeded = (e) => {
+                        console.log("DB: Upgrade Needed");
+                        const dbInstance = e.target.result;
+                        if (!dbInstance.objectStoreNames.contains(OS_NAME)) {
+                            const store = dbInstance.createObjectStore(OS_NAME, { keyPath: "id", autoIncrement: true });
+                            store.createIndex("shelf", "shelf", { unique: false });
+                        }
+                    };
+                    
+                    request.onsuccess = (e) => {
+                        console.log("DB: Success");
+                        resolve(e.target.result);
+                    };
+                    
+                    request.onerror = (e) => {
+                        alert("DIAGNOSTIC: DB Error: " + e.target.error);
+                        reject(e.target.error);
+                    };
+                } catch (err) {
+                    alert("DIAGNOSTIC: DB Catch: " + err);
+                    reject(err);
+                }
             });
         }
 
@@ -1640,26 +1658,48 @@
 
             let dbInstance = null;
             try {
+                console.log("BATCH: Starting...");
                 dbInstance = await initIndexedDB();
+                console.log("BATCH: DB Ready");
+
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     status.innerText = `Saving [${i + 1}/${files.length}]: ${file.name}`;
+                    console.log("BATCH: Reading", file.name);
                     
                     await new Promise((resolve, reject) => {
-                        const timeout = setTimeout(() => reject("File Read Timeout"), 8000);
+                        const timeout = setTimeout(() => {
+                            alert("DIAGNOSTIC: File read timed out at 8 seconds.");
+                            reject("File Read Timeout");
+                        }, 8000);
+                        
                         const reader = new FileReader();
                         reader.onload = async (e) => {
                             clearTimeout(timeout);
                             try {
+                                console.log("BATCH: Transacting...");
                                 const base64 = e.target.result.split(',')[1];
                                 const transaction = dbInstance.transaction([OS_NAME], "readwrite");
                                 const store = transaction.objectStore(OS_NAME);
                                 store.add({ data: base64, filename: file.name, mime: file.type, shelf: "UNSORTED", timestamp: Date.now() });
-                                transaction.oncomplete = () => resolve();
-                                transaction.onerror = (err) => reject(err);
-                            } catch (err) { reject(err); }
+                                transaction.oncomplete = () => {
+                                    console.log("BATCH: Save Complete");
+                                    resolve();
+                                };
+                                transaction.onerror = (err) => {
+                                    alert("DIAGNOSTIC: Store Error: " + err);
+                                    reject(err);
+                                };
+                            } catch (err) { 
+                                alert("DIAGNOSTIC: Transact Catch: " + err);
+                                reject(err); 
+                            }
                         };
-                        reader.onerror = () => { clearTimeout(timeout); reject("Read Error"); };
+                        reader.onerror = () => { 
+                            clearTimeout(timeout); 
+                            alert("DIAGNOSTIC: Reader Error");
+                            reject("Read Error"); 
+                        };
                         reader.readAsDataURL(file);
                     });
                 }
@@ -1673,7 +1713,7 @@
                 if (dbInstance) dbInstance.close();
                 console.error("Hoarding Error:", err);
                 status.innerText = "Error: " + (err.message || "Failed to save");
-                alert("STORAGE ERROR: " + JSON.stringify(err) + "\n\nTry checking 'Storage' settings on your phone or use 'Clean Storage' in Settings.");
+                alert("STORAGE ERROR: " + JSON.stringify(err) + "\n\nCRITICAL: If you have ANY other Service Pro tabs open (v20, v21), the database will freeze here. Close ALL TABS and try again.");
             }
         }
 
