@@ -1404,11 +1404,15 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s safety
 
+                    console.log("AI: POSTing to", WEB_APP_URL);
                     const response = await fetch(WEB_APP_URL, { 
                         method: "POST", 
+                        mode: "cors", // Explicitly set CORS
+                        headers: { "Content-Type": "text/plain" }, // GAS prefers text/plain for CORS simplicity
                         body: JSON.stringify({ action: "uploadPhotoAI", data: ph.data, filename: ph.filename, mimeType: ph.mime }),
                         signal: controller.signal
                     });
+                    console.log("AI Response Status:", response.status, response.statusText);
                     
                     clearTimeout(timeoutId);
                     const result = await response.json();
