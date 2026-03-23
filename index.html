@@ -836,22 +836,29 @@
     </nav>
 
     <div class="container" id="mainDashboard" style="padding-bottom:100px;">
-        <!-- GLOBAL HEADER (V21.0) -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px;">
+        <!-- GLOBAL HEADER (V21.1) -->
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px;">
             <div>
-                <h1 style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">SERVICE PRO</h1>
-                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.0</div>
+                <h1
+                    style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
+                    SERVICE PRO</h1>
+                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.1
+                </div>
             </div>
-            <button id="headerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
+            <button id="headerMicBtn" onclick="toggleGlobalMic()"
+                style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
                 <span style="font-size:18px;">🎙</span> INTAKE AUTO
             </button>
         </div>
 
         <!-- EQUIPMENT TABS -->
         <div class="step-nav" id="equipNav" style="margin-bottom:8px;">
-            <button class="step-btn active" id="tab-outdoor" onclick="switchEquipTab('outdoor')" style="flex:1;">OUTDOOR</button>
+            <button class="step-btn active" id="tab-outdoor" onclick="switchEquipTab('outdoor')"
+                style="flex:1;">OUTDOOR</button>
             <button class="step-btn" id="tab-indoor" onclick="switchEquipTab('indoor')" style="flex:1;">INDOOR</button>
-            <button class="step-btn" id="tab-thermostat" onclick="switchEquipTab('thermostat')" style="flex:1;">THERMOSTAT</button>
+            <button class="step-btn" id="tab-thermostat" onclick="switchEquipTab('thermostat')"
+                style="flex:1;">THERMOSTAT</button>
         </div>
         <div style="margin-bottom:12px; text-align:center;">
             <select id="equipTypeDrop" onchange="updateEquipType(this.value)"
@@ -865,7 +872,9 @@
         </div>
 
         <!-- NESTED COIL SUBGRID -->
-        <div id="subSpecHeader" style="font-size:10px; color:var(--amber-orange); font-weight:900; letter-spacing:2px; margin:16px 0 8px 0; text-align:center; display:none;">--- EVAP COIL COMPONENT ---</div>
+        <div id="subSpecHeader"
+            style="font-size:10px; color:var(--amber-orange); font-weight:900; letter-spacing:2px; margin:16px 0 8px 0; text-align:center; display:none;">
+            --- EVAP COIL COMPONENT ---</div>
         <div class="rig-grid" id="subSpecGrid" style="display:none;"></div>
 
         <div style="margin-bottom:12px;">
@@ -941,8 +950,10 @@
             <div class="rating-reel" id="capReel"></div>
 
             <div class="btn-main-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:16px;">
-                <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()" style="padding:16px; font-size:18px;">🎙 START MIC</button>
-                <button onclick="confirmReading()" class="btn btn-green" style="padding:16px; font-size:18px;">✔ COMMIT</button>
+                <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()"
+                    style="padding:16px; font-size:18px;">🎙 START MIC</button>
+                <button onclick="confirmReading()" class="btn btn-green" style="padding:16px; font-size:18px;">✔
+                    COMMIT</button>
             </div>
         </div>
 
@@ -986,13 +997,16 @@
 
     <!-- REPORT COMPILER (v20.32) -->
     <div id="reportOverlay" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📋 COMPILER</h2>
             <div style="display:flex; gap:12px; align-items:center;">
-                <button id="compilerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
+                <button id="compilerMicBtn" onclick="toggleGlobalMic()"
+                    style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
                     <span style="font-size:18px;">🎙</span> INTAKE AUTO
                 </button>
-                <button onclick="closeReport()" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                <button onclick="closeReport()"
+                    style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
             </div>
         </div>
 
@@ -1068,19 +1082,25 @@
     </div>
 
     <!-- AI PREVIEW MODAL -->
-    <div id="aiModal" class="modal-overlay" style="background:rgba(0,0,0,0.95); justify-content:center; display:none; z-index:9000;">
-        <div class="container" style="background:#222; border:1px solid var(--electric-blue); max-width:400px; padding:20px; text-align:center;">
+    <div id="aiModal" class="modal-overlay"
+        style="background:rgba(0,0,0,0.95); justify-content:center; display:none; z-index:9000;">
+        <div class="container"
+            style="background:#222; border:1px solid var(--electric-blue); max-width:400px; padding:20px; text-align:center;">
             <h2 style="font-size:20px; color:var(--electric-blue); margin-top:0;">⚡ AI VISION DATA</h2>
-            <div style="margin-bottom:12px; background:#1a1a1a; padding:10px; border-radius:8px; border:1px solid #333; text-align:center;">
-                <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:6px;">SAVE TO:</div>
-                <select id="aiRouteTarget" style="background:#000; color:white; border:1px solid #555; padding:8px; width:100%; border-radius:6px; font-weight:900; font-size:14px;">
+            <div
+                style="margin-bottom:12px; background:#1a1a1a; padding:10px; border-radius:8px; border:1px solid #333; text-align:center;">
+                <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:6px;">SAVE TO:
+                </div>
+                <select id="aiRouteTarget"
+                    style="background:#000; color:white; border:1px solid #555; padding:8px; width:100%; border-radius:6px; font-weight:900; font-size:14px;">
                     <option value="outdoor">OUTDOOR</option>
                     <option value="indoor">INDOOR</option>
                     <option value="coil">EVAP COIL (Nested in Indoor)</option>
                     <option value="thermostat">THERMOSTAT</option>
                 </select>
             </div>
-            <div id="aiResults" style="font-size:14px; max-height:250px; overflow-y:auto; margin-bottom:20px; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; text-align:left;">
+            <div id="aiResults"
+                style="font-size:14px; max-height:250px; overflow-y:auto; margin-bottom:20px; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; text-align:left;">
                 <div style="text-align:center; padding:20px;">Analyzing Tag...</div>
             </div>
             <div style="display:flex; gap:10px;">
@@ -1092,27 +1112,36 @@
 
     <!-- SETTINGS MODAL -->
     <div id="settingsOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
             <div style="display:flex; gap:12px; align-items:center;">
-                <button id="dictMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
+                <button id="dictMicBtn" onclick="toggleGlobalMic()"
+                    style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
                     <span style="font-size:18px;">🎙</span> INTAKE AUTO
                 </button>
-                <button onclick="closeSettings()" style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
+                <button onclick="closeSettings()"
+                    style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
             </div>
         </div>
         <div class="step-nav" id="dictNav" style="margin:10px;">
-            <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')" style="flex:1;">BRANDS</button>
+            <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')"
+                style="flex:1;">BRANDS</button>
             <button class="step-btn" id="dict-btn-refs" onclick="switchDictType('refs')" style="flex:1;">REF</button>
-            <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')" style="flex:1;">WORDS</button>
-            <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')" style="flex:1;">NOTES</button>
+            <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')"
+                style="flex:1;">WORDS</button>
+            <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')"
+                style="flex:1;">NOTES</button>
         </div>
 
         <div class="voice-console" style="margin:0 10px;">
-            <div id="dictTargetLabel" style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
-            <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY ENTRY...</div>
+            <div id="dictTargetLabel"
+                style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
+            <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY ENTRY...
+            </div>
             <div class="btn-main-grid" style="grid-template-columns: 1fr;">
-                <button onclick="confirmDictWord()" class="btn btn-green" style="padding:16px; font-size:18px;">✔ CONFIRM & SAVE</button>
+                <button onclick="confirmDictWord()" class="btn btn-green" style="padding:16px; font-size:18px;">✔
+                    CONFIRM & SAVE</button>
             </div>
         </div>
 
@@ -1146,14 +1175,14 @@
     </div>
 
     <script>
-        const APP_VERSION = "21.0";
+        const APP_VERSION = "21.1";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
         let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV21_0')) || {
             activeTab: 'outdoor',
             outdoor: { TYPE: 'Condenser', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--', TON: '--' },
-            indoor: { 
+            indoor: {
                 TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--',
                 C_BRAND: '--', C_MDL: '--', C_SER: '--', C_YEAR: '--', C_TON: '--', C_METER: '--', C_TRAY: '--', C_AIR_DIR: '--'
             },
@@ -1387,7 +1416,7 @@
                 let mappedKey = prefix + (fieldMap[cleanKey] || cleanKey);
                 // Only save if target bucket accepts this property
                 if (systemSpecs[t][mappedKey] !== undefined) {
-                    systemSpecs[t][mappedKey] = mappedKey === (prefix+'RLA') || mappedKey === (prefix+'FLA') || mappedKey === (prefix+'SUB') ? parseFloat(val) : val;
+                    systemSpecs[t][mappedKey] = mappedKey === (prefix + 'RLA') || mappedKey === (prefix + 'FLA') || mappedKey === (prefix + 'SUB') ? parseFloat(val) : val;
                 }
             }
 
@@ -1493,13 +1522,13 @@
 
             // --- PHASE 3 UI VERBAL ROUTING ---
             const tLower = transcript.toLowerCase();
-            
+
             // Tab Jump Core
             if (tLower.includes('outdoor')) { switchEquipTab('outdoor'); return; }
             if (tLower.includes('indoor')) { switchEquipTab('indoor'); return; }
             if (tLower.includes('thermostat')) { switchEquipTab('thermostat'); return; }
             if (tLower.includes('manuals')) { openManuals(); return; }
-            
+
             // Compiler Context Jumps
             if (tLower.includes('refrigeration data') || tLower.includes('refrigeration view')) { switchCompilerView('refrig'); return; }
             if (tLower.includes('tech notes') || tLower.includes('tech note')) { switchCompilerView('notes'); return; }
@@ -1523,7 +1552,25 @@
             else if (/\blra\b/.test(transcript)) { masterTarget = "LRA"; kwRegex = /\blra\b/; }
             else if (/\bfla\b/.test(transcript)) { masterTarget = "FLA"; kwRegex = /\bfla\b/; }
             else if (/\b(voltage|volts)\b/.test(transcript)) { masterTarget = "VOLT"; kwRegex = /\b(voltage|volts)\b/; }
-            else if (/\b(sub|subcool|suction|target|sup\s?cool)\b/.test(transcript)) { masterTarget = "SUB"; kwRegex = /\b(sub|subcool|suction|target|sup\s?cool)\b/; }
+            else if (/\b(sub|subcool|target|sup\s?cool)\b/.test(transcript)) { masterTarget = "SUB"; kwRegex = /\b(sub|subcool|target|sup\s?cool)\b/; }
+            else if (/\b(k d t u|kbtu|gas|gas heat)\b/.test(transcript)) { masterTarget = "KBTU"; kwRegex = /\b(k d t u|kbtu|gas|gas heat)\b/; }
+            else if (/\b(kw|electric heat|heat strips)\b/.test(transcript)) { masterTarget = "KW"; kwRegex = /\b(kw|electric heat|heat strips)\b/; }
+            else if (/\b(blower|blower motor|hp)\b/.test(transcript)) { masterTarget = "BLOWER"; kwRegex = /\b(blower|blower motor|hp)\b/; }
+            else if (/\b(inducer|draft inducer)\b/.test(transcript)) { masterTarget = "INDUCER"; kwRegex = /\b(inducer|draft inducer)\b/; }
+            else if (/\b(filter|air filter)\b/.test(transcript)) { masterTarget = "FILTER"; kwRegex = /\b(filter|air filter)\b/; }
+            else if (/\b(gas valve)\b/.test(transcript)) { masterTarget = "GAS_V"; kwRegex = /\b(gas valve)\b/; }
+            // Evap Coil (Nested)
+            else if (/\b(coil brand|coil make)\b/.test(transcript)) { masterTarget = "C_BRAND"; kwRegex = /\b(coil brand|coil make)\b/; }
+            else if (/\b(coil model)\b/.test(transcript)) { masterTarget = "C_MDL"; kwRegex = /\b(coil model)\b/; }
+            else if (/\b(coil serial)\b/.test(transcript)) { masterTarget = "C_SER"; kwRegex = /\b(coil serial)\b/; }
+            else if (/\b(coil ton|coil tonnage)\b/.test(transcript)) { masterTarget = "C_TON"; kwRegex = /\b(coil ton|coil tonnage)\b/; }
+            else if (/\b(coil meter|metering device)\b/.test(transcript)) { masterTarget = "C_METER"; kwRegex = /\b(coil meter|metering device)\b/; }
+            else if (/\b(drain pan|drain tray)\b/.test(transcript)) { masterTarget = "C_TRAY"; kwRegex = /\b(drain pan|drain tray)\b/; }
+            else if (/\b(air flow|air direction)\b/.test(transcript)) { masterTarget = "C_AIR_DIR"; kwRegex = /\b(air flow|air direction)\b/; }
+            // Thermostat
+            else if (/\b(wiring|stat wire)\b/.test(transcript)) { masterTarget = "WIRE"; kwRegex = /\b(wiring|stat wire)\b/; }
+            else if (/\b(batteries|stat batteries)\b/.test(transcript)) { masterTarget = "BATT"; kwRegex = /\b(batteries|stat batteries)\b/; }
+            else if (/\b(schedule|programming)\b/.test(transcript)) { masterTarget = "SCHED"; kwRegex = /\b(schedule|programming)\b/; }
             // Refrigerant Extensions (v20.32)
             else if (/\b(suction|low side)\b/.test(transcript)) { masterTarget = "SUCT_P"; kwRegex = /\b(suction|low side)\b/; }
             else if (/\b(liquid|high side)\b/.test(transcript)) { masterTarget = "LIQ_P"; kwRegex = /\b(liquid|high side)\b/; }
@@ -1543,7 +1590,7 @@
                 let input = transcript;
                 const kwMatch = transcript.match(kwRegex);
                 if (!kwMatch && masterTarget === "SUB") {
-                    const subMatch = transcript.match(/\b(sub\s?cool|sup\s?cool|target|suction|sc)\b/);
+                    const subMatch = transcript.match(/\b(sub\s?cool|sup\s?cool|target|sc)\b/);
                     if (subMatch) input = transcript.replace(subMatch[0], "").trim();
                 } else if (kwMatch) {
                     input = transcript.replace(kwMatch[0], "").trim();
