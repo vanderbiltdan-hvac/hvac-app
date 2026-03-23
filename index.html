@@ -1404,15 +1404,14 @@
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s safety
 
-                    console.log("AI: POSTing (Simple Mode) to", WEB_APP_URL);
-                    // Use 'no-cors' only as a last resort diagnostic, but first try 
-                    // a 'simple' POST (no custom headers) which avoids the preflight check.
+                    console.log("AI: POSTing to", WEB_APP_URL);
                     const response = await fetch(WEB_APP_URL, { 
                         method: "POST", 
-                        // Removing custom headers makes this a 'simple request'
+                        // Simplified 'Simple POST' - bypasses preflight on mobile
                         body: JSON.stringify({ action: "uploadPhotoAI", data: ph.data, filename: ph.filename, mimeType: ph.mime }),
                         signal: controller.signal
                     });
+                    console.log("AI Response Status:", response.status);
                     console.log("AI Response Status:", response.status, response.statusText);
                     
                     clearTimeout(timeoutId);
@@ -1477,8 +1476,8 @@
     </style>
 
     <script>
-        const APP_VERSION = "21.6";
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
+        const APP_VERSION = "21.7";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD7yqSJ1ay0boj8qbmRSTfkzenWbDEjafoS12NA4BK_tXaaAefWhNAFDry1Zm3SnpB/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
         let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV21_0')) || {
