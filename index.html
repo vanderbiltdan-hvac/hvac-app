@@ -155,6 +155,25 @@
         .manual-overlay.visible { display: block; }
         .manual-overlay input { font-size: 28px; text-align: center; font-weight: 900; color: white; background: rgba(255,255,255,0.08); border: 1px solid rgba(0,229,255,0.3); border-radius: 10px; padding: 10px; }
         .manual-entry-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+
+        /* --- COMPILER STYLES --- */
+        .compiler-preview { flex:1; background: #000; padding: 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 900; color: white; overflow-y: auto; text-align: left; }
+        .compiler-line { margin: 4px 0; display: flex; align-items: flex-start; gap: 6px; cursor: pointer; transition: 0.2s; }
+        .compiler-line:active { opacity: 0.5; }
+        .c-bullet { color: var(--electric-blue); user-select: none; }
+        .c-text { flex: 1; word-wrap: break-word; }
+        .c-flag { background: var(--crimson-red); color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-left: 6px; flex-shrink:0; display:inline-block; vertical-align:middle; }
+        .c-warn { background: var(--amber-orange); color: black; font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-left: 6px; flex-shrink:0; display:inline-block; vertical-align:middle; }
+
+        .compiler-tabs { display: flex; background: rgba(0,0,0,0.4); border-radius: 12px; padding: 4px; margin: 10px 0; }
+        .c-tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; font-size: 12px; font-weight: 900; color: #777; transition: 0.3s; cursor:pointer; }
+        .c-tab.active { background: rgba(255,255,255,0.1); color: var(--amber-orange); }
+
+        .chip-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
+        .note-chip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 16px; font-size: 11px; font-weight: 900; color: #bbb; cursor: pointer; transition: 0.2s; }
+        .note-chip.selected { background: rgba(0,229,255,0.15); border-color: var(--electric-blue); color: var(--electric-blue); }
+        .field-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .field-row input { width: 80px; text-align: center; margin: 0; padding: 6px; font-size: 14px; font-weight: 900; background: rgba(0,0,0,0.5); border: 1px solid #444; border-radius: 8px; color: white; }
     </style>
 </head>
 <body id="masterBody">
@@ -329,15 +348,63 @@
         </div>
     </div>
 
-    <!-- REPORT OVERLAY -->
-    <div id="reportOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
-            <h2 style="margin:0; font-size:18px;">📋 SYSTEM REPORT</h2>
-            <button onclick="closeReport()" style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
+    <!-- REPORT COMPILER (v20.32) -->
+    <div id="reportOverlay" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
+            <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📋 COMPILER</h2>
+            <button onclick="closeReport()" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
         </div>
-        <div id="reportContent" style="flex:1; overflow-y:auto; padding:15px; font-family:'Courier New', monospace; font-size:13px; line-height:1.4;"></div>
-        <div style="padding:15px; border-top:1px solid #333; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <button class="btn btn-green" onclick="copyReport()">📝 COPY SUMMARY</button>
+
+        <!-- Template Tabs -->
+        <div class="compiler-tabs" style="flex-shrink:0;">
+            <div id="tab-full" class="c-tab active" onclick="switchTemplate('full')">FULL PM</div>
+            <div id="tab-refrig" class="c-tab" onclick="switchTemplate('refrig')">REFRIG</div>
+            <div id="tab-heat" class="c-tab" onclick="switchTemplate('heat')">HEAT</div>
+        </div>
+
+        <!-- Live Preview Pane -->
+        <div id="compilerPreview" class="compiler-preview">
+            <!-- Populated via renderCompiler() -->
+        </div>
+        <div style="text-align:center; font-size:9px; color:#555; margin:4px 0; flex-shrink:0;">TAP ANY LINE TO REMOVE IT</div>
+
+        <!-- Control Switcher -->
+        <div style="display:flex; gap:8px; margin: 10px 0; flex-shrink:0;">
+            <button id="btn-show-notes" class="btn btn-outline" style="flex:1; border-color:var(--electric-blue); color:var(--electric-blue);" onclick="switchCompilerView('notes')">📝 TECH NOTES</button>
+            <button id="btn-show-refrig" class="btn btn-outline" style="flex:1;" onclick="switchCompilerView('refrig')">❄️ REFRIG DATA</button>
+        </div>
+
+        <!-- Tech Notes View -->
+        <div id="view-tech-notes" style="display:block; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
+            <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:8px;">AIR HANDLER / INDOOR</div>
+            <div id="chipContainerAH" class="chip-grid"></div>
+            
+            <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:8px; margin-top:10px;">CONDENSER / OUTDOOR</div>
+            <div id="chipContainerCond" class="chip-grid"></div>
+
+            <div style="display:flex; gap:6px; margin-top:10px;">
+                <input type="text" id="newNoteInput" placeholder="Type new note..." style="flex:1; margin:0;">
+                <button onclick="addNewTechNote()" class="btn btn-primary" style="width:auto; padding:0 20px;">ADD</button>
+            </div>
+        </div>
+
+        <!-- Refrig Manual Data View -->
+        <div id="view-refrig-data" style="display:none; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
+            <div class="field-row"><span>Suction Pressure</span><input type="number" id="in-suct" onchange="saveRef('SUCT_P', this.value)"></div>
+            <div class="field-row"><span>Liquid Pressure</span><input type="number" id="in-liq" onchange="saveRef('LIQ_P', this.value)"></div>
+            <div class="field-row"><span>Vapor Saturation</span><input type="number" id="in-vsat" onchange="saveRef('VAPOR_SAT', this.value)"></div>
+            <div class="field-row"><span>Liquid Saturation</span><input type="number" id="in-lsat" onchange="saveRef('LIQ_SAT', this.value)"></div>
+            <div class="field-row"><span>Superheat (SH)</span><input type="number" id="in-sh" onchange="saveRef('SH', this.value)"></div>
+            <div class="field-row"><span>Subcool (SC)</span><input type="number" id="in-sc" onchange="saveRef('SC', this.value)"></div>
+            <div class="field-row"><span>ODAT</span><input type="number" id="in-odat" onchange="saveRef('ODAT', this.value)"></div>
+            <div class="field-row"><span>Return Temp</span><input type="number" id="in-ret" onchange="saveRef('RETURN', this.value)"></div>
+            <div class="field-row"><span>Return Humidity %</span><input type="number" id="in-rh" onchange="saveRef('RH', this.value)"></div>
+            <div class="field-row"><span>Supply Temp</span><input type="number" id="in-sup" onchange="saveRef('SUPPLY', this.value)"></div>
+            <div class="field-row"><span>Delta T (ΔT)</span><input type="number" id="in-dt" onchange="saveRef('DELTA_T', this.value)"></div>
+        </div>
+
+        <div style="padding-top:15px; border-top:1px solid #333; flex-shrink:0; display:flex; gap:10px;">
+            <button class="btn btn-green" onclick="copyCompilerReport()">📝 COPY INVOICE</button>
             <button class="btn btn-outline" onclick="closeReport()">CLOSE</button>
         </div>
     </div>
@@ -401,7 +468,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.31";
+        const APP_VERSION = "20.32";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -416,6 +483,15 @@
             refs: "R-410A, R-22, R-407C, R-134a, R-454B, R-438A",
             confirms: "yes, go, copy, confirm, ok, stage"
         };
+        
+        let refData = JSON.parse(localStorage.getItem('hvacRefDataV20')) || {};
+        let techNotes = JSON.parse(localStorage.getItem('hvacTechNotesV20')) || [];
+        let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV20')) || {
+            ah: ["Filter → Clean", "Filter → Dirty / Changed", "Evap Coil → Clean", "Evap Coil → Minor buildup", "Blower Visual → Clean", "Blower Visual → Minor buildup", "Blower Mech → Spinning freely", "Drain/Pan → Cleared + algae tabs", "UV lights → Operational", "UV lights → Not operational", "Float Switch → Operational", "Heater → Heat mode operational"],
+            cond: ["Typical deterioration noted", "Contactor → Good", "Contactor → Pitted"]
+        };
+        
+        let activeTemplate = 'full';
         
         let tempAiSpecs = {}; 
         let fieldIndex = 0;
@@ -623,8 +699,16 @@
             else if (/\bfla\b/.test(transcript))                                 { masterTarget = "FLA"; kwRegex = /\bfla\b/; }
             else if (/\b(voltage|volts)\b/.test(transcript))                     { masterTarget = "VOLT"; kwRegex = /\b(voltage|volts)\b/; }
             else if (/\b(sub|subcool|suction|target|sup\s?cool)\b/.test(transcript)) { masterTarget = "SUB"; kwRegex = /\b(sub|subcool|suction|target|sup\s?cool)\b/; }
-            else if (/\b(ref|refrigerant)\b/.test(transcript))                   { masterTarget = "REF"; kwRegex = /\b(ref|refrigerant)\b/; }
-            else if (/\b(meter|metering)\b/.test(transcript))                    { masterTarget = "METER"; kwRegex = /\b(meter|metering)\b/; }
+            // Refrigerant Extensions (v20.32)
+            else if (/\b(suction|low side)\b/.test(transcript)) { masterTarget = "SUCT_P"; kwRegex = /\b(suction|low side)\b/; }
+            else if (/\b(liquid|high side)\b/.test(transcript)) { masterTarget = "LIQ_P"; kwRegex = /\b(liquid|high side)\b/; }
+            else if (/\bsuperheat\b/.test(transcript)) { masterTarget = "SH"; kwRegex = /\bsuperheat\b/; }
+            else if (/\bsubcool\b/.test(transcript)) { masterTarget = "SC"; kwRegex = /\bsubcool\b/; }
+            else if (/\b(return|return temp)\b/.test(transcript)) { masterTarget = "RETURN"; kwRegex = /\b(return|return temp)\b/; }
+            else if (/\b(supply|supply temp)\b/.test(transcript)) { masterTarget = "SUPPLY"; kwRegex = /\b(supply|supply temp)\b/; }
+            else if (/\b(humidity)\b/.test(transcript)) { masterTarget = "RH"; kwRegex = /\b(humidity)\b/; }
+            else if (/\b(delta|delta t)\b/.test(transcript)) { masterTarget = "DELTA_T"; kwRegex = /\b(delta|delta t)\b/; }
+            else if (/\b(outdoor temp|o d a t|odat)\b/.test(transcript)) { masterTarget = "ODAT"; kwRegex = /\b(outdoor temp|o d a t|odat)\b/; }
 
             if (masterTarget) {
                 document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
@@ -670,6 +754,23 @@
                         masterTarget = "SUB";
                         const num = input.match(/\d+\.?\d*/);
                         if (num) val = num[0];
+                    }
+                    else if (["SUCT_P", "LIQ_P", "SH", "SC", "RETURN", "SUPPLY", "RH", "DELTA_T", "ODAT"].includes(masterTarget)) {
+                        const num = input.match(/\d+\.?\d*/);
+                        if (num) {
+                            refData[masterTarget] = parseFloat(num[0]);
+                            localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+                            renderCompiler();
+                            
+                            // Visual flash to confirm intake without switching screens
+                            const btn = document.getElementById('btn-show-refrig');
+                            if (btn) {
+                                btn.style.boxShadow = "0 0 20px var(--emerald-green)";
+                                btn.style.color = "var(--emerald-green)";
+                                setTimeout(() => { btn.style.boxShadow = "none"; btn.style.color = "white"; }, 800);
+                            }
+                        }
+                        return; // Exit early, handled
                     }
 
                     if (["RLA", "LRA", "FLA", "VOLT", "SUB", "YEAR"].includes(masterTarget)) {
@@ -1230,62 +1331,196 @@
             openReport();
         }
 
+        // ── TECH NOTES SYSTEM ───────────────────────────────────
+        function initTechNotes() {
+            renderNoteChips('chipContainerAH', techNotesMaster.ah);
+            renderNoteChips('chipContainerCond', techNotesMaster.cond);
+        }
+        function renderNoteChips(containerId, masterArray) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = masterArray.map(note => {
+                const isSelected = techNotes.includes(note);
+                return `<div class="note-chip ${isSelected ? 'selected' : ''}" onclick="toggleTechNote('${note.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">${note}</div>`;
+            }).join('');
+        }
+        function toggleTechNote(note) {
+            const idx = techNotes.indexOf(note);
+            if (idx > -1) techNotes.splice(idx, 1); else techNotes.push(note);
+            localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+            initTechNotes(); renderCompiler();
+        }
+        function addNewTechNote() {
+            const input = document.getElementById('newNoteInput');
+            const val = input.value.trim();
+            if (!val) return;
+            techNotesMaster.ah.push(val); // default to AH group for custom notes
+            techNotes.push(val);
+            localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
+            localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+            input.value = '';
+            initTechNotes(); renderCompiler();
+        }
+
+        // ── REFRIG DATA MANAGMENT ───────────────────────────────
+        function saveRef(key, val) {
+            if (val === "") delete refData[key];
+            else refData[key] = parseFloat(val);
+            localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+            renderCompiler();
+        }
+        function loadRefInputs() {
+            document.getElementById('in-suct').value = refData['SUCT_P'] || '';
+            document.getElementById('in-liq').value = refData['LIQ_P'] || '';
+            document.getElementById('in-vsat').value = refData['VAPOR_SAT'] || '';
+            document.getElementById('in-lsat').value = refData['LIQ_SAT'] || '';
+            document.getElementById('in-sh').value = refData['SH'] || '';
+            document.getElementById('in-sc').value = refData['SC'] || '';
+            document.getElementById('in-odat').value = refData['ODAT'] || '';
+            document.getElementById('in-ret').value = refData['RETURN'] || '';
+            document.getElementById('in-rh').value = refData['RH'] || '';
+            document.getElementById('in-sup').value = refData['SUPPLY'] || '';
+            document.getElementById('in-dt').value = refData['DELTA_T'] || '';
+        }
+
+        // ── COMPILER ENGINE ─────────────────────────────────────
+        function switchTemplate(tmpl) {
+            activeTemplate = tmpl;
+            document.querySelectorAll('.c-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tmpl).classList.add('active');
+            renderCompiler();
+        }
+        function switchCompilerView(view) {
+            document.getElementById('view-tech-notes').style.display = view === 'notes' ? 'block' : 'none';
+            document.getElementById('view-refrig-data').style.display = view === 'refrig' ? 'block' : 'none';
+            document.getElementById('btn-show-notes').style.borderColor = view === 'notes' ? 'var(--electric-blue)' : 'rgba(255,255,255,0.2)';
+            document.getElementById('btn-show-notes').style.color = view === 'notes' ? 'var(--electric-blue)' : 'white';
+            document.getElementById('btn-show-refrig').style.borderColor = view === 'refrig' ? 'var(--electric-blue)' : 'rgba(255,255,255,0.2)';
+            document.getElementById('btn-show-refrig').style.color = view === 'refrig' ? 'var(--electric-blue)' : 'white';
+        }
+
+        function removeReportLine(id) {
+            // Temporary removal from current view (not permanent delete)
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'none';
+        }
+
+        function getDeltaFlagHtml(dt, rh) {
+            if (!dt || !rh) return '';
+            let targetLow = 16, targetHigh = 22;
+            if (rh >= 50 && rh <= 60) { targetLow = 16; targetHigh = 20; }
+            else if (rh >= 40 && rh < 50) { targetLow = 18; targetHigh = 22; }
+            if (dt < targetLow || dt > targetHigh) return '<span class="c-warn">⚠️ OUT OF RANGE</span>';
+            return '';
+        }
+
         function openReport() {
             closeAllModals();
             updateNavUI('nav-report');
-            const content = document.getElementById('reportContent');
-            let txt = `<div style="color:var(--amber-orange); border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;"><b>SYSTEM PROFILE</b></div>`;
-            
-            txt += `<table style="width:100%; border-collapse:collapse;">`;
-            Object.entries(specs).forEach(([k, v]) => {
-                txt += `<tr><td style="color:#aaa; padding:4px 0;">${k}:</td><td style="text-align:right; font-weight:bold;">${v}</td></tr>`;
-            });
-            txt += `</table>`;
-
-            txt += `<div style="color:var(--amber-orange); border-bottom:1px solid #333; padding:10px 0; margin:10px 0;"><b>DIAGNOSTIC READINGS</b></div>`;
-            txt += `<table style="width:100%;">`;
-            Object.keys(buffer).sort((a,b)=>a-b).forEach(idx => {
-                const item = buffer[idx];
-                const t = getTolData(item, tolerance);
-                if (t) {
-                    txt += `<tr><td style="color:#aaa; padding:6px 0;">${item.field}:</td><td style="text-align:right;"><b style="color:white; font-size:15px;">${item.val.toFixed(2)}</b> <span style="font-size:10px; color:#aaa;">${t.txt}</span> <span style="font-size:10px; font-weight:900; color:${t.color}; border:1px solid ${t.color}; padding:2px 4px; border-radius:4px; margin-left:4px;">${t.isPass ? 'PASS' : 'FAIL'}</span></td></tr>`;
-                } else {
-                    txt += `<tr><td style="color:#aaa; padding:6px 0;">${item.field}:</td><td style="text-align:right; font-weight:bold; font-size:15px;">${item.val.toFixed(2)}</td></tr>`;
-                }
-            });
-            txt += `</table>`;
-
-            content.innerHTML = txt;
+            initTechNotes();
+            loadRefInputs();
+            renderCompiler();
             document.getElementById('reportOverlay').style.display = 'flex';
+        }
+
+        function renderCompiler() {
+            const preview = document.getElementById('compilerPreview');
+            let lines = [];
+            let i = 0;
+
+            const pushLine = (text, htmlFlag = '') => {
+                lines.push(`<div class="compiler-line" id="cline-${i}" onclick="removeReportLine('cline-${i}')"><span class="c-bullet">►</span><span class="c-text">${text}</span>${htmlFlag}</div>`);
+                i++;
+            };
+
+            // NOTES (Full PM only)
+            if (activeTemplate === 'full') {
+                techNotes.forEach(note => pushLine(note));
+            }
+
+            // CAPACITOR (Full PM only)
+            if (activeTemplate === 'full' && Object.keys(buffer).length > 0) {
+                // Find Comp Amps to check vs RLA
+                let cAmps = null;
+                Object.values(buffer).forEach(item => {
+                    if (item.field === 'Comp Amps') cAmps = item;
+                });
+                
+                // Capacitor evaluation
+                let hVolts = 0, hAmps = 0, hRating = parseFloat(document.getElementById('hermRating').value);
+                const bArr = Object.values(buffer);
+                bArr.forEach(item => {
+                    if(item.field.includes("Volts")) hVolts = item.val;
+                    if(item.field === "Herm Amps") hAmps = item.val;
+                });
+                if (hVolts > 0 && hAmps > 0) {
+                    const uF = (hAmps * 2652) / hVolts;
+                    const varPct = ((uF / hRating) - 1) * 100;
+                    const isPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
+                    const flagHtml = !isPass ? '<span class="c-flag">🔴 FAIL</span>' : '';
+                    pushLine(`Capacitor Results → ${hRating} MFD ± ${tolerance*100}% Capacitor ${isPass?'passed':'failed'} with ${hVolts}v & ${hAmps}a → ${uF.toFixed(2)} MFD (${varPct>0?'+':''}${varPct.toFixed(1)}%)`, flagHtml);
+                }
+
+                if (cAmps && specs.RLA && specs.RLA !== "--") {
+                    const pct = (cAmps.val / parseFloat(specs.RLA)) * 100;
+                    const flagHtml = pct > 100 ? '<span class="c-flag">🔴 HIGH AMPS</span>' : '';
+                    pushLine(`Compressor Amps → ${cAmps.val.toFixed(2)} A (${pct.toFixed(1)}% RLA)`, flagHtml);
+                }
+            }
+
+            // REFRIGERANT PAIRS
+            if (activeTemplate === 'full' || activeTemplate === 'refrig') {
+                if (refData['ODAT']) pushLine(`ODAT → ${refData['ODAT']}°`);
+                if (refData['SUCT_P'] && refData['LIQ_P']) pushLine(`Suction / Liquid Pressure → ${refData['SUCT_P']} / ${refData['LIQ_P']}`);
+                else if (refData['SUCT_P']) pushLine(`Suction Pressure → ${refData['SUCT_P']}`);
+                else if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${refData['LIQ_P']}`);
+
+                if (refData['VAPOR_SAT'] && refData['LIQ_SAT']) pushLine(`Vapor Sat / Liquid Sat → ${refData['VAPOR_SAT']}° / ${refData['LIQ_SAT']}°`);
+
+                if (refData['SH'] && refData['SC']) {
+                    let flag = '';
+                    if (refData['SH'] < 5 || refData['SH'] > 25 || refData['SC'] < 5 || refData['SC'] > 20) flag = '<span class="c-flag">🔴</span>';
+                    pushLine(`SH / SC → ${refData['SH']}° / ${refData['SC']}°`, flag);
+                } else if (refData['SH']) {
+                    const flag = (refData['SH'] < 5 || refData['SH'] > 25) ? '<span class="c-flag">🔴</span>' : '';
+                    pushLine(`SH → ${refData['SH']}°`, flag);
+                } else if (refData['SC']) {
+                    const flag = (refData['SC'] < 5 || refData['SC'] > 20) ? '<span class="c-flag">🔴</span>' : '';
+                    pushLine(`SC → ${refData['SC']}°`, flag);
+                }
+            }
+
+            // TEMP PAIRS
+            if (activeTemplate === 'full' || activeTemplate === 'refrig' || activeTemplate === 'heat') {
+                if (refData['RETURN'] && refData['SUPPLY']) pushLine(`Return / Supply Temp → ${refData['RETURN']}° / ${refData['SUPPLY']}°`);
+                else if (refData['RETURN']) pushLine(`Return Temp → ${refData['RETURN']}°`);
+                else if (refData['SUPPLY']) pushLine(`Supply Temp → ${refData['SUPPLY']}°`);
+
+                if (refData['RH']) pushLine(`Return Humidity → ${refData['RH']}%`);
+                if (refData['DELTA_T']) pushLine(`ΔT → ${refData['DELTA_T']}°`, getDeltaFlagHtml(refData['DELTA_T'], refData['RH']));
+            }
+
+            preview.innerHTML = lines.join('');
+            if(lines.length === 0) preview.innerHTML = '<div style="color:#555; text-align:center; padding:20px;">No fields selected.</div>';
         }
 
         function closeReport() { closeAllModals(); showSection('mainDashboard'); }
 
-        function openManuals() {
-            closeAllModals();
-            updateNavUI('nav-manuals');
-            document.getElementById('manualsOverlay').style.display = 'flex';
-        }
-        function closeManuals() { closeAllModals(); showSection('mainDashboard'); }
-
-        function copyReport() {
-            let block = `--- HVAC MASTER PRO v${APP_VERSION} REPORT ---\n\n`;
-            block += `[SYSTEM SPECS]\n`;
-            Object.entries(specs).forEach(([k,v]) => { block += `${k}: ${v}\n`; });
-            block += `\n[DIAGNOSTICS]\n`;
-            Object.keys(buffer).sort((a,b)=>a-b).forEach(idx => {
-                const item = buffer[idx];
-                const t = getTolData(item, tolerance);
-                if (t) {
-                    block += `${item.field}: ${item.val.toFixed(2)} ${t.txt} [${t.isPass ? 'PASS' : 'FAIL'}]\n`;
-                } else {
-                    block += `${item.field}: ${item.val.toFixed(2)}\n`;
+        function copyCompilerReport() {
+            const lines = document.querySelectorAll('#compilerPreview .compiler-line');
+            if (lines.length === 0) return alert("Nothing to copy!");
+            
+            let block = "";
+            lines.forEach(line => {
+                if (line.style.display !== 'none') {
+                    // Extract just the bullet and text, ignoring HTML flags
+                    const bullet = line.querySelector('.c-bullet').innerText;
+                    const text = line.querySelector('.c-text').innerText;
+                    block += `${bullet} ${text}\n`;
                 }
             });
-            block += `\n----------------------`;
             
             navigator.clipboard.writeText(block).then(() => {
-                alert("Report Copied to Clipboard!");
+                alert("Invoice Block Copied!");
             });
         }
 
