@@ -173,7 +173,7 @@
         .note-chip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 16px; font-size: 11px; font-weight: 900; color: #bbb; cursor: pointer; transition: 0.2s; }
         .note-chip.selected { background: rgba(0,229,255,0.15); border-color: var(--electric-blue); color: var(--electric-blue); }
         .field-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .field-row input { width: 80px; text-align: center; margin: 0; padding: 6px; font-size: 14px; font-weight: 900; background: rgba(0,0,0,0.5); border: 1px solid #444; border-radius: 8px; color: white; }
+        .field-row input { width: 80px; text-align: center; margin: 0; padding: 6px; font-size: 14px; font-weight: 900; background: rgba(255,255,255,0.08); border: 1px solid rgba(0,229,255,0.4); border-radius: 8px; color: white; }
     </style>
 </head>
 <body id="masterBody">
@@ -352,7 +352,10 @@
     <div id="reportOverlay" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📋 COMPILER</h2>
-            <button onclick="closeReport()" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <button id="compilerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); border:none; border-radius:50%; width:36px; height:36px; color:black; font-size:16px;">🎙</button>
+                <button onclick="closeReport()" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
         </div>
 
         <!-- Template Tabs -->
@@ -376,15 +379,12 @@
 
         <!-- Tech Notes View -->
         <div id="view-tech-notes" style="display:block; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
-            <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:8px;">AIR HANDLER / INDOOR</div>
-            <div id="chipContainerAH" class="chip-grid"></div>
-            
-            <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:8px; margin-top:10px;">CONDENSER / OUTDOOR</div>
-            <div id="chipContainerCond" class="chip-grid"></div>
+            <div id="view-tech-notes-list"></div>
 
             <div style="display:flex; gap:6px; margin-top:10px;">
-                <input type="text" id="newNoteInput" placeholder="Type new note..." style="flex:1; margin:0;">
-                <button onclick="addNewTechNote()" class="btn btn-primary" style="width:auto; padding:0 20px;">ADD</button>
+                <select id="newNoteCategory" style="background:rgba(0,0,0,0.5); color:white; border:1px solid #444; border-radius:6px; padding:6px; font-weight:bold;"></select>
+                <input type="text" id="newNoteInput" placeholder="Type new note..." style="flex:1; margin:0; font-size:14px; padding:6px; border-radius:6px; background:rgba(255,255,255,0.05); color:white; border:1px solid #444;">
+                <button onclick="addNewTechNote()" class="btn btn-primary" style="width:auto; padding:0 15px;">ADD</button>
             </div>
         </div>
 
@@ -468,7 +468,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.32";
+        const APP_VERSION = "20.33 *";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -486,10 +486,21 @@
         
         let refData = JSON.parse(localStorage.getItem('hvacRefDataV20')) || {};
         let techNotes = JSON.parse(localStorage.getItem('hvacTechNotesV20')) || [];
-        let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV20')) || {
-            ah: ["Filter → Clean", "Filter → Dirty / Changed", "Evap Coil → Clean", "Evap Coil → Minor buildup", "Blower Visual → Clean", "Blower Visual → Minor buildup", "Blower Mech → Spinning freely", "Drain/Pan → Cleared + algae tabs", "UV lights → Operational", "UV lights → Not operational", "Float Switch → Operational", "Heater → Heat mode operational"],
-            cond: ["Typical deterioration noted", "Contactor → Good", "Contactor → Pitted"]
-        };
+        let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV20'));
+        if (!techNotesMaster || techNotesMaster.ah) { // Migration check
+            techNotesMaster = {
+                "Filter": ["Clean", "Dirty / Changed"],
+                "Evap Coil": ["Clean", "Minor buildup", "Needs Pull & Clean"],
+                "Blower Visual": ["Clean", "Minor buildup"],
+                "Blower Mech": ["Spinning freely", "Bearings tight"],
+                "Drain/Pan": ["Cleared + algae tabs", "Flushed drain line with water", "Cleared with vacuum"],
+                "UV": ["Operational", "Not operational"],
+                "Float Switch": ["Operational", "Not operational"],
+                "Heater": ["Heat mode operational", "Strips verified"],
+                "Condenser": ["Typical deterioration", "Coil washed", "Contactor Good", "Contactor Pitted"]
+            };
+            localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
+        }
         
         let activeTemplate = 'full';
         
@@ -761,13 +772,24 @@
                             refData[masterTarget] = parseFloat(num[0]);
                             localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
                             renderCompiler();
+                            loadRefInputs();
                             
                             // Visual flash to confirm intake without switching screens
                             const btn = document.getElementById('btn-show-refrig');
-                            if (btn) {
+                            if (btn && document.getElementById('reportOverlay').style.display === 'flex') {
                                 btn.style.boxShadow = "0 0 20px var(--emerald-green)";
                                 btn.style.color = "var(--emerald-green)";
                                 setTimeout(() => { btn.style.boxShadow = "none"; btn.style.color = "white"; }, 800);
+                            }
+                        } else {
+                            // Focus field if no number was spoken
+                            let elMap = { 'SUCT_P': 'in-suct', 'LIQ_P': 'in-liq', 'SH': 'in-sh', 'SC': 'in-sc', 'RETURN': 'in-ret', 'SUPPLY': 'in-sup', 'RH': 'in-rh', 'DELTA_T': 'in-dt', 'ODAT': 'in-odat' };
+                            const inTarget = document.getElementById(elMap[masterTarget]);
+                            if (inTarget && document.getElementById('reportOverlay').style.display === 'flex') {
+                                switchCompilerView('refrig'); 
+                                inTarget.focus();
+                                inTarget.style.border = "2px solid var(--electric-blue)";
+                                setTimeout(() => inTarget.style.border = "1px solid rgba(0,229,255,0.4)", 2000);
                             }
                         }
                         return; // Exit early, handled
@@ -1065,7 +1087,19 @@
                 // Update Glance Note
                 const gEl = document.getElementById('glance-' + idx);
                 if(gEl) {
-                    gEl.innerText = item.val.toFixed(2);
+                    if (t) {
+                        let pctStr = "";
+                        if (item.field === "Herm Amps" || item.field === "Fan Amps") {
+                            const pctMatch = t.txt.match(/([+-]?\d+\.\d+%)/);
+                            if (pctMatch) pctStr = `<br><span style="font-size:9px;">${pctMatch[1]}</span>`;
+                        } else if (item.field.includes("Amps")) {
+                            const pctMatch = t.txt.match(/(\d+\.\d+% [A-Z]+)/);
+                            if (pctMatch) pctStr = `<br><span style="font-size:9px;">${pctMatch[1]}</span>`;
+                        }
+                        gEl.innerHTML = item.val.toFixed(2) + pctStr;
+                    } else {
+                        gEl.innerHTML = item.val.toFixed(2);
+                    }
                     gEl.style.color = t ? t.color : "white";
                 }
                 
@@ -1333,15 +1367,21 @@
 
         // ── TECH NOTES SYSTEM ───────────────────────────────────
         function initTechNotes() {
-            renderNoteChips('chipContainerAH', techNotesMaster.ah);
-            renderNoteChips('chipContainerCond', techNotesMaster.cond);
-        }
-        function renderNoteChips(containerId, masterArray) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = masterArray.map(note => {
-                const isSelected = techNotes.includes(note);
-                return `<div class="note-chip ${isSelected ? 'selected' : ''}" onclick="toggleTechNote('${note.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">${note}</div>`;
-            }).join('');
+            const container = document.getElementById('view-tech-notes-list');
+            let html = '';
+            for (const [category, notes] of Object.entries(techNotesMaster)) {
+                html += `<details style="margin-bottom:8px; background:rgba(0,0,0,0.4); padding:8px; border-radius:8px;"><summary style="font-size:12px; color:var(--amber-orange); font-weight:900; cursor:pointer; list-style:none;">${category.toUpperCase()} ⏷</summary><div class="chip-grid" style="padding-top:10px;">`;
+                html += notes.map(note => {
+                    const fullNote = `${category} → ${note}`;
+                    const isSelected = techNotes.includes(fullNote);
+                    return `<div class="note-chip ${isSelected ? 'selected' : ''}" onclick="toggleTechNote('${fullNote.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">${note}</div>`;
+                }).join('');
+                html += `</div></details>`;
+            }
+            container.innerHTML = html;
+
+            const sel = document.getElementById('newNoteCategory');
+            sel.innerHTML = Object.keys(techNotesMaster).map(k => `<option value="${k}">${k}</option>`).join('');
         }
         function toggleTechNote(note) {
             const idx = techNotes.indexOf(note);
@@ -1351,10 +1391,14 @@
         }
         function addNewTechNote() {
             const input = document.getElementById('newNoteInput');
+            const cat = document.getElementById('newNoteCategory').value;
             const val = input.value.trim();
             if (!val) return;
-            techNotesMaster.ah.push(val); // default to AH group for custom notes
-            techNotes.push(val);
+            
+            if(!techNotesMaster[cat]) techNotesMaster[cat] = [];
+            techNotesMaster[cat].push(val); 
+            techNotes.push(`${cat} → ${val}`);
+            
             localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
             localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
             input.value = '';
@@ -1428,9 +1472,31 @@
             let i = 0;
 
             const pushLine = (text, htmlFlag = '') => {
-                lines.push(`<div class="compiler-line" id="cline-${i}" onclick="removeReportLine('cline-${i}')"><span class="c-bullet">►</span><span class="c-text">${text}</span>${htmlFlag}</div>`);
+                lines.push(`
+                <div class="compiler-line" id="cline-${i}">
+                    <div style="display:flex; flex-direction:column; margin-right:8px; gap:4px; flex-shrink:0;">
+                        <button onclick="moveCompilerLine(this, -1)" style="background:transparent; border:1px solid #444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; cursor:pointer;">▲</button>
+                        <button onclick="moveCompilerLine(this, 1)" style="background:transparent; border:1px solid #444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; cursor:pointer;">▼</button>
+                    </div>
+                    <div style="flex:1; display:flex; align-items:flex-start;" onclick="removeReportLine('cline-${i}')">
+                        <span class="c-bullet" style="margin-right:6px;">►</span><span class="c-text">${text}</span>${htmlFlag}
+                    </div>
+                </div>`);
                 i++;
             };
+
+            // SPECS (Full PM only)
+            if (activeTemplate === 'full') {
+                let specParts = [];
+                if (specs.BRAND && specs.BRAND !== "--") specParts.push(`Brand: ${specs.BRAND}`);
+                if (specs.YEAR && specs.YEAR !== "--") specParts.push(`Year: ${specs.YEAR}`);
+                if (specs.REF && specs.REF !== "--") specParts.push(`Refrigerant: ${specs.REF}`);
+                if (specs.RLA && specs.RLA !== "--") specParts.push(`RLA: ${specs.RLA}`);
+                if (specs.FLA && specs.FLA !== "--") specParts.push(`FLA: ${specs.FLA}`);
+                if (specParts.length > 0) {
+                    pushLine(`System Specs → ${specParts.join(' | ')}`);
+                }
+            }
 
             // NOTES (Full PM only)
             if (activeTemplate === 'full') {
@@ -1440,30 +1506,55 @@
             // CAPACITOR (Full PM only)
             if (activeTemplate === 'full' && Object.keys(buffer).length > 0) {
                 // Find Comp Amps to check vs RLA
-                let cAmps = null;
+                let cAmps = null, odfAmps = null;
                 Object.values(buffer).forEach(item => {
                     if (item.field === 'Comp Amps') cAmps = item;
+                    if (item.field === 'ODF Amps') odfAmps = item;
                 });
                 
-                // Capacitor evaluation
-                let hVolts = 0, hAmps = 0, hRating = parseFloat(document.getElementById('hermRating').value);
+                // Capacitor evaluation (Dual Cap Fix)
+                let hVolts = 0, hAmps = 0, fVolts = 0, fAmps = 0, hRating = parseFloat(document.getElementById('hermRating').value), fRating = parseFloat(document.getElementById('fanRating').value);
                 const bArr = Object.values(buffer);
                 bArr.forEach(item => {
-                    if(item.field.includes("Volts")) hVolts = item.val;
+                    if(item.field === "Herm Volts") hVolts = item.val;
                     if(item.field === "Herm Amps") hAmps = item.val;
+                    if(item.field === "Fan Volts") fVolts = item.val;
+                    if(item.field === "Fan Amps") fAmps = item.val;
                 });
-                if (hVolts > 0 && hAmps > 0) {
+
+                let capStrParts = [];
+                let isHermPass = true, isFanPass = true;
+                
+                if (hVolts > 0 && hAmps > 0 && hRating > 0) {
                     const uF = (hAmps * 2652) / hVolts;
                     const varPct = ((uF / hRating) - 1) * 100;
-                    const isPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
+                    isHermPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
+                    capStrParts.push(`HERM: ${uF.toFixed(2)} MFD (${varPct>0?'+':''}${varPct.toFixed(1)}%)`);
+                }
+                if (fVolts > 0 && fAmps > 0 && fRating > 0) {
+                    const uF = (fAmps * 2652) / fVolts;
+                    const varPct = ((uF / fRating) - 1) * 100;
+                    isFanPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
+                    capStrParts.push(`FAN: ${uF.toFixed(2)} MFD (${varPct>0?'+':''}${varPct.toFixed(1)}%)`);
+                }
+
+                if (capStrParts.length > 0) {
+                    const isPass = isHermPass && isFanPass;
                     const flagHtml = !isPass ? '<span class="c-flag">🔴 FAIL</span>' : '';
-                    pushLine(`Capacitor Results → ${hRating} MFD ± ${tolerance*100}% Capacitor ${isPass?'passed':'failed'} with ${hVolts}v & ${hAmps}a → ${uF.toFixed(2)} MFD (${varPct>0?'+':''}${varPct.toFixed(1)}%)`, flagHtml);
+                    let ratingStr = hRating + (fRating ? " + " + fRating : "");
+                    pushLine(`Capacitor Results → ${ratingStr} MFD ± ${tolerance*100}% Capacitor ${isPass?'passed':'failed'}. ${capStrParts.join(' | ')}`, flagHtml);
                 }
 
                 if (cAmps && specs.RLA && specs.RLA !== "--") {
                     const pct = (cAmps.val / parseFloat(specs.RLA)) * 100;
                     const flagHtml = pct > 100 ? '<span class="c-flag">🔴 HIGH AMPS</span>' : '';
                     pushLine(`Compressor Amps → ${cAmps.val.toFixed(2)} A (${pct.toFixed(1)}% RLA)`, flagHtml);
+                }
+                
+                if (odfAmps && specs.FLA && specs.FLA !== "--") {
+                    const pct = (odfAmps.val / parseFloat(specs.FLA)) * 100;
+                    const flagHtml = pct > 100 ? '<span class="c-flag">🔴 HIGH AMPS</span>' : '';
+                    pushLine(`ODF Amps → ${odfAmps.val.toFixed(2)} A (${pct.toFixed(1)}% FLA)`, flagHtml);
                 }
             }
 
@@ -1501,6 +1592,20 @@
 
             preview.innerHTML = lines.join('');
             if(lines.length === 0) preview.innerHTML = '<div style="color:#555; text-align:center; padding:20px;">No fields selected.</div>';
+        }
+
+        function moveCompilerLine(btn, dir) {
+            const line = btn.closest('.compiler-line');
+            if (!line) return;
+            if (dir === -1 && line.previousElementSibling) {
+                line.parentNode.insertBefore(line, line.previousElementSibling);
+            } else if (dir === 1 && line.nextElementSibling) {
+                if (line.nextElementSibling.nextElementSibling) {
+                    line.parentNode.insertBefore(line, line.nextElementSibling.nextElementSibling);
+                } else {
+                    line.parentNode.appendChild(line);
+                }
+            }
         }
 
         function closeReport() { closeAllModals(); showSection('mainDashboard'); }
