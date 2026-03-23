@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HVAC Master Pro</title>
-    
+
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,151 +39,796 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .container { 
+        .container {
             width: 100%;
             max-width: 500px;
             padding: 16px;
             background: var(--card-bg);
             border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.7);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
             position: relative;
         }
 
         /* Tightened title */
-        h2 { font-size: 20px; margin: 4px 0 12px 0; background: linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
+        h2 {
+            font-size: 20px;
+            margin: 4px 0 12px 0;
+            background: linear-gradient(90deg, var(--electric-blue), var(--emerald-green));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+        }
 
-        .btn { width: 100%; padding: 14px; margin: 5px 0; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform 0.2s, background 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn:active { transform: scale(0.97); }
-        .btn-primary { background-color: #0056b3; color: white; }
-        .btn-stop { background-color: var(--crimson-red); color: white; }
-        .btn-orange { background-color: var(--amber-orange); color: black; }
-        .btn-green  { background-color: var(--emerald-green); color: black; }
-        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: white; }
-        .btn-quick { background: linear-gradient(135deg, var(--amber-orange), #ff6d00); color: black; padding: 20px; font-size: 20px; box-shadow: 0 4px 20px rgba(255, 171, 0, 0.2); }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            margin: 5px 0;
+            border-radius: 12px;
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
 
-        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-dark); z-index: 10000; flex-direction:column; padding:10px; box-sizing:border-box; }
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .btn-stop {
+            background-color: var(--crimson-red);
+            color: white;
+        }
+
+        .btn-orange {
+            background-color: var(--amber-orange);
+            color: black;
+        }
+
+        .btn-green {
+            background-color: var(--emerald-green);
+            color: black;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn-quick {
+            background: linear-gradient(135deg, var(--amber-orange), #ff6d00);
+            color: black;
+            padding: 20px;
+            font-size: 20px;
+            box-shadow: 0 4px 20px rgba(255, 171, 0, 0.2);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            z-index: 10000;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+        }
 
         /* STEP NAV */
-        .step-nav { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; margin-bottom: 6px; scrollbar-width: none; -ms-overflow-style: none; }
-        .step-nav::-webkit-scrollbar { display: none; }
-        .step-btn { background: #2a2a2a; border: 1px solid #444; color: #888; padding: 8px 14px; border-radius: 12px; font-size: 11px; font-weight: 900; white-space: nowrap; transition: all 0.3s; flex-shrink: 0; }
-        .step-btn.active { border-color: var(--electric-blue); color: var(--electric-blue); background: rgba(0, 229, 255, 0.1); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+        .step-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0;
+            margin-bottom: 6px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
 
-        .voice-console { background: var(--glass-effect); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 10px; text-align: center; margin: 4px 0; flex-shrink: 0; position: relative; }
+        .step-nav::-webkit-scrollbar {
+            display: none;
+        }
 
-        .big-display { font-size: 100px; line-height: 1; font-weight: 900; color: var(--text-primary); margin: 4px 0; font-variant-numeric: tabular-nums; text-shadow: 0 0 30px rgba(255, 255, 255, 0.15); }
-        #modalLabel { color: var(--amber-orange); letter-spacing: 2px; font-size: 11px; text-transform: uppercase; font-weight: 900; }
-        #targetRange { font-size: 24px; font-weight: 900; color: var(--electric-blue); min-height: 32px; margin-bottom: 4px; text-shadow: 0 0 20px rgba(0, 229, 255, 0.4); }
+        .step-btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #888;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 900;
+            white-space: nowrap;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
 
-        .recording-pulse { width: 14px; height: 14px; background: var(--crimson-red); border-radius: 50%; display: none; position: absolute; top: 16px; right: 16px; box-shadow: 0 0 20px var(--crimson-red); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.3; } 100% { transform: scale(1); opacity: 1; } }
+        .step-btn.active {
+            border-color: var(--electric-blue);
+            color: var(--electric-blue);
+            background: rgba(0, 229, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
 
-        input { width: 100%; padding: 12px; margin: 4px 0; border-radius: 12px; box-sizing: border-box; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 16px; }
+        .voice-console {
+            background: var(--glass-effect);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 10px;
+            text-align: center;
+            margin: 4px 0;
+            flex-shrink: 0;
+            position: relative;
+        }
 
-        .rig-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
-        .spec-cell { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
-        .spec-cell.listening { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.2); transform: scale(1.05); }
-        .spec-label { font-size: 8px; color: #777; font-weight: 900; margin-bottom: 2px; text-transform: uppercase; }
-        .spec-val { font-size: 14px; font-weight: 900; color: var(--text-primary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .big-display {
+            font-size: 100px;
+            line-height: 1;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin: 4px 0;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
+        }
 
-        #liveCheck { font-size: 14px; font-weight: 900; margin-top: 4px; min-height: 20px; transition: all 0.3s; }
-        .live-pass { color: var(--emerald-green); }
-        .live-fail { color: var(--crimson-red); }
+        #modalLabel {
+            color: var(--amber-orange);
+            letter-spacing: 2px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
 
-        .dual-inputs { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px; }
-        .cap-cell { display:flex; flex-direction:column; align-items:center; border: 2px solid transparent; border-radius: 12px; padding: 6px; cursor: pointer; width: 80px; }
-        .cap-cell.active { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.1); }
-        .cap-cell input { max-width: 60px; text-align: center; background: transparent; font-size: 22px; font-weight: bold; border: none; pointer-events: none; }
+        #targetRange {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--electric-blue);
+            min-height: 32px;
+            margin-bottom: 4px;
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+        }
+
+        .recording-pulse {
+            width: 14px;
+            height: 14px;
+            background: var(--crimson-red);
+            border-radius: 50%;
+            display: none;
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            box-shadow: 0 0 20px var(--crimson-red);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.5);
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 4px 0;
+            border-radius: 12px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+
+        .rig-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .spec-cell {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spec-cell.listening {
+            border-color: var(--electric-blue);
+            background: rgba(0, 229, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .spec-label {
+            font-size: 8px;
+            color: #777;
+            font-weight: 900;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .spec-val {
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        #liveCheck {
+            font-size: 14px;
+            font-weight: 900;
+            margin-top: 4px;
+            min-height: 20px;
+            transition: all 0.3s;
+        }
+
+        .live-pass {
+            color: var(--emerald-green);
+        }
+
+        .live-fail {
+            color: var(--crimson-red);
+        }
+
+        .dual-inputs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .cap-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 6px;
+            cursor: pointer;
+            width: 80px;
+        }
+
+        .cap-cell.active {
+            border-color: var(--electric-blue);
+            background: rgba(0, 229, 255, 0.1);
+        }
+
+        .cap-cell input {
+            max-width: 60px;
+            text-align: center;
+            background: transparent;
+            font-size: 22px;
+            font-weight: bold;
+            border: none;
+            pointer-events: none;
+        }
 
         /* RATING REEL */
-        .rating-reel { display: flex; gap: 6px; overflow-x: auto; padding: 8px; margin-top: 4px; background: rgba(0,0,0,0.3); border-radius: 14px; scrollbar-width: none; }
-        .rating-reel::-webkit-scrollbar { display: none; }
-        .dial-btn { background: #2a2a2a; border: 1px solid #444; color: #eee; padding: 8px 14px; border-radius: 10px; font-size: 14px; font-weight: 900; flex-shrink: 0; transition: all 0.2s; }
-        .dial-btn.selected { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.1); color: var(--electric-blue); }
+        .rating-reel {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 8px;
+            margin-top: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 14px;
+            scrollbar-width: none;
+        }
 
-        .log-list { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 16px; padding: 10px; margin: 6px 0; font-size: 11px; }
-        .log-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .badge-small { padding: 2px 6px; border-radius: 4px; font-weight: 900; font-size: 9px; margin-left: 6px; }
-        .pass-small { color: var(--emerald-green); border: 1px solid var(--emerald-green); }
-        .fail-small { color: var(--crimson-red); border: 1px solid var(--crimson-red); }
+        .rating-reel::-webkit-scrollbar {
+            display: none;
+        }
 
-        #splashVer { position: absolute; top: 10px; right: 10px; font-size: 9px; color: #fff; font-weight: 900; padding: 3px 6px; background: #333; border-radius: 4px; display: flex; align-items: center; gap: 5px; }
-        .report-btn { background: var(--amber-orange); color: black; padding: 2px 4px; border-radius: 3px; font-size: 8px; cursor: pointer; border: none; font-weight: 900; }
-        
+        .dial-btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #eee;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 900;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .dial-btn.selected {
+            border-color: var(--electric-blue);
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--electric-blue);
+        }
+
+        .log-list {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            padding: 10px;
+            margin: 6px 0;
+            font-size: 11px;
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .badge-small {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 900;
+            font-size: 9px;
+            margin-left: 6px;
+        }
+
+        .pass-small {
+            color: var(--emerald-green);
+            border: 1px solid var(--emerald-green);
+        }
+
+        .fail-small {
+            color: var(--crimson-red);
+            border: 1px solid var(--crimson-red);
+        }
+
+        #splashVer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 9px;
+            color: #fff;
+            font-weight: 900;
+            padding: 3px 6px;
+            background: #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .report-btn {
+            background: var(--amber-orange);
+            color: black;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 8px;
+            cursor: pointer;
+            border: none;
+            font-weight: 900;
+        }
+
         /* APP NAV BAR - Truly Universal */
-        .app-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: rgba(18,18,18,0.98); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); z-index: 10005; padding-bottom:env(safe-area-inset-bottom); }
-        .nav-btn { background: transparent; border: none; color: #777; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; font-size: 8px; font-weight: 900; transition: all 0.3s; flex:1; border-radius: 12px; height: 100%; padding-top:10px; }
-        .nav-btn.active { color: var(--electric-blue); font-size: 9px; }
-        .nav-btn.staging { background: rgba(0,229,255,0.1); color: var(--electric-blue); animation: pulse-glow 1s infinite alternate; }
-        .nav-btn i { font-size: 18px; margin-bottom: 2px; }
+        .app-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 75px;
+            background: rgba(18, 18, 18, 0.98);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10005;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
 
-        @keyframes pulse-glow { from { box-shadow: 0 0 5px var(--electric-blue); } to { box-shadow: 0 0 20px var(--electric-blue); } }
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #777;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            font-size: 8px;
+            font-weight: 900;
+            transition: all 0.3s;
+            flex: 1;
+            border-radius: 12px;
+            height: 100%;
+            padding-top: 10px;
+        }
 
-        .spec-val { font-size: 13px; font-weight: 900; color: var(--text-primary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .spec-val.shrink { font-size: 10px; }
-        
+        .nav-btn.active {
+            color: var(--electric-blue);
+            font-size: 9px;
+        }
+
+        .nav-btn.staging {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--electric-blue);
+            animation: pulse-glow 1s infinite alternate;
+        }
+
+        .nav-btn i {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        @keyframes pulse-glow {
+            from {
+                box-shadow: 0 0 5px var(--electric-blue);
+            }
+
+            to {
+                box-shadow: 0 0 20px var(--electric-blue);
+            }
+        }
+
+        .spec-val {
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .spec-val.shrink {
+            font-size: 10px;
+        }
+
         /* SETTINGS STYLES */
-        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #333; }
-        .toggle-switch { width: 44px; height: 24px; background: #333; border-radius: 12px; position: relative; cursor: pointer; border: 1px solid #444; }
-        .toggle-switch.on { background: var(--emerald-green); }
-        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: 0.2s; }
-        .toggle-switch.on::after { left: calc(100% - 20px); }
-        
-        .tolerance-pill { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 900; color: #888; }
-        .tolerance-pill.active { background: #444; color: var(--electric-blue); border-color: var(--electric-blue); }
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
 
-        #restoreBox { display: none; background: rgba(0, 229, 255, 0.1); border: 1px dashed var(--electric-blue); padding: 12px; border-radius: 12px; text-align: center; margin-top: 8px; cursor: pointer; }
-        .master-indicator { position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: var(--electric-blue); display: none; z-index: 100000; box-shadow: 0 0 15px var(--electric-blue); }
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: #333;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid #444;
+        }
+
+        .toggle-switch.on {
+            background: var(--emerald-green);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .toggle-switch.on::after {
+            left: calc(100% - 20px);
+        }
+
+        .tolerance-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 900;
+            color: #888;
+        }
+
+        .tolerance-pill.active {
+            background: #444;
+            color: var(--electric-blue);
+            border-color: var(--electric-blue);
+        }
+
+        #restoreBox {
+            display: none;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px dashed var(--electric-blue);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .master-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--electric-blue);
+            display: none;
+            z-index: 100000;
+            box-shadow: 0 0 15px var(--electric-blue);
+        }
 
         /* REWORKED BUTTON GRID */
-        .btn-main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .btn-main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
 
         /* MULTI PHOTO PROGRESS */
-        #photoStatus { font-size: 10px; color: var(--amber-orange); margin-top: 5px; text-align: center; display: none; }
-        
+        #photoStatus {
+            font-size: 10px;
+            color: var(--amber-orange);
+            margin-top: 5px;
+            text-align: center;
+            display: none;
+        }
+
         /* MANUALS LIST */
-        .manual-link { display: block; background: rgba(255,255,255,0.05); color: var(--electric-blue); padding: 12px; border-radius: 8px; margin-bottom: 6px; text-decoration: none; font-weight: 900; border: 1px solid rgba(0, 229, 255, 0.2); }
+        .manual-link {
+            display: block;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--electric-blue);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            text-decoration: none;
+            font-weight: 900;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
 
         /* UTILITY BUTTONS (top of modal) */
-        .btn-utility { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: #ccc; padding: 6px 11px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-        .btn-utility:active { transform: scale(0.95); }
-        .btn-utility.danger  { color: var(--crimson-red);    border-color: rgba(255,23,68,0.3);   background: rgba(255,23,68,0.08); }
-        .btn-utility.stage   { color: var(--amber-orange);   border-color: rgba(255,171,0,0.3);  background: rgba(255,171,0,0.08); }
-        .btn-utility.sync    { color: var(--electric-blue);  border-color: rgba(0,229,255,0.3);  background: rgba(0,229,255,0.08); }
+        .btn-utility {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ccc;
+            padding: 6px 11px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 900;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-utility:active {
+            transform: scale(0.95);
+        }
+
+        .btn-utility.danger {
+            color: var(--crimson-red);
+            border-color: rgba(255, 23, 68, 0.3);
+            background: rgba(255, 23, 68, 0.08);
+        }
+
+        .btn-utility.stage {
+            color: var(--amber-orange);
+            border-color: rgba(255, 171, 0, 0.3);
+            background: rgba(255, 171, 0, 0.08);
+        }
+
+        .btn-utility.sync {
+            color: var(--electric-blue);
+            border-color: rgba(0, 229, 255, 0.3);
+            background: rgba(0, 229, 255, 0.08);
+        }
 
         /* MANUAL ENTRY OVERLAY */
-        .manual-overlay { display: none; background: #252525; border: 1px solid var(--electric-blue); border-radius: 16px; padding: 12px; margin: 6px 0; }
-        .manual-overlay.visible { display: block; }
-        .manual-overlay input { font-size: 28px; text-align: center; font-weight: 900; color: white; background: rgba(255,255,255,0.08); border: 1px solid rgba(0,229,255,0.3); border-radius: 10px; padding: 10px; }
-        .manual-entry-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .manual-overlay {
+            display: none;
+            background: #252525;
+            border: 1px solid var(--electric-blue);
+            border-radius: 16px;
+            padding: 12px;
+            margin: 6px 0;
+        }
+
+        .manual-overlay.visible {
+            display: block;
+        }
+
+        .manual-overlay input {
+            font-size: 28px;
+            text-align: center;
+            font-weight: 900;
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .manual-entry-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
 
         /* --- COMPILER STYLES --- */
-        .compiler-preview { flex:1; background: #000; padding: 12px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 900; color: white; overflow-y: auto; text-align: left; }
-        .compiler-line { margin: 4px 0; display: flex; align-items: flex-start; gap: 6px; cursor: pointer; transition: 0.2s; }
-        .compiler-line:active { opacity: 0.5; }
-        .c-bullet { color: var(--electric-blue); user-select: none; }
-        .c-text { flex: 1; word-wrap: break-word; }
-        .c-flag { background: var(--crimson-red); color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-left: 6px; flex-shrink:0; display:inline-block; vertical-align:middle; }
-        .c-warn { background: var(--amber-orange); color: black; font-size: 10px; padding: 2px 5px; border-radius: 4px; margin-left: 6px; flex-shrink:0; display:inline-block; vertical-align:middle; }
+        .compiler-preview {
+            flex: 1;
+            background: #000;
+            padding: 12px;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 900;
+            color: white;
+            overflow-y: auto;
+            text-align: left;
+        }
 
-        .compiler-tabs { display: flex; background: rgba(0,0,0,0.4); border-radius: 12px; padding: 4px; margin: 10px 0; }
-        .c-tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; font-size: 12px; font-weight: 900; color: #777; transition: 0.3s; cursor:pointer; }
-        .c-tab.active { background: rgba(255,255,255,0.1); color: var(--amber-orange); }
+        .compiler-line {
+            margin: 4px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-        .chip-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
-        .note-chip { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 16px; font-size: 11px; font-weight: 900; color: #bbb; cursor: pointer; transition: 0.2s; }
-        .note-chip.selected { background: rgba(0,229,255,0.15); border-color: var(--electric-blue); color: var(--electric-blue); }
-        .field-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .field-row input { width: 80px; text-align: center; margin: 0; padding: 6px; font-size: 14px; font-weight: 900; background: rgba(255,255,255,0.08); border: 1px solid rgba(0,229,255,0.4); border-radius: 8px; color: white; }
+        .compiler-line:active {
+            opacity: 0.5;
+        }
+
+        .c-bullet {
+            color: var(--electric-blue);
+            user-select: none;
+        }
+
+        .c-text {
+            flex: 1;
+            word-wrap: break-word;
+        }
+
+        .c-flag {
+            background: var(--crimson-red);
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-left: 6px;
+            flex-shrink: 0;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .c-warn {
+            background: var(--amber-orange);
+            color: black;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-left: 6px;
+            flex-shrink: 0;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .compiler-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 4px;
+            margin: 10px 0;
+        }
+
+        .c-tab {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 900;
+            color: #777;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .c-tab.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--amber-orange);
+        }
+
+        .chip-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .note-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 900;
+            color: #bbb;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .note-chip.selected {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: var(--electric-blue);
+            color: var(--electric-blue);
+        }
+
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .field-row input {
+            width: 80px;
+            text-align: center;
+            margin: 0;
+            padding: 6px;
+            font-size: 14px;
+            font-weight: 900;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            border-radius: 8px;
+            color: white;
+        }
     </style>
 </head>
+
 <body id="masterBody">
 
     <div id="masterIndicator" class="master-indicator"></div>
 
     <!-- PERSISTENT NAVIGATION BAR -->
     <nav class="app-nav">
-        <button class="nav-btn active" onclick="showSection('mainDashboard')" id="nav-home"><span>🏠</span> HOME</button>
+        <button class="nav-btn active" onclick="showSection('mainDashboard')" id="nav-home"><span>🏠</span>
+            HOME</button>
         <button class="nav-btn" onclick="openVoiceConsole()" id="nav-diag"><span>⚡</span> DIAG</button>
         <button class="nav-btn" onclick="openReport()" id="nav-report"><span>📋</span> REPORT</button>
         <button class="nav-btn" onclick="openManuals()" id="nav-manuals"><span>📄</span> MANUALS</button>
@@ -190,76 +836,53 @@
     </nav>
 
     <div class="container" id="mainDashboard" style="padding-bottom:100px;">
-        <div id="splashVer"></div>
-        <h2>⚡ HVAC Diag</h2>
+        <!-- GLOBAL HEADER (V20.34) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px;">
+            <div>
+                <h1 style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">SERVICE PRO</h1>
+                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v20.34</div>
+            </div>
+            <button id="headerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
+                <span style="font-size:18px;">🎙</span> INTAKE AUTO
+            </button>
+        </div>
+
+        <!-- EQUIPMENT TABS -->
+        <div class="step-nav" id="equipNav" style="margin-bottom:8px;">
+            <button class="step-btn active" id="tab-outdoor" onclick="switchEquipTab('outdoor')" style="flex:1;">OUTDOOR</button>
+            <button class="step-btn" id="tab-furnace" onclick="switchEquipTab('furnace')" style="flex:1;">FURNACE / AHU</button>
+            <button class="step-btn" id="tab-coil" onclick="switchEquipTab('coil')" style="flex:1;">EVAP COIL</button>
+        </div>
+        <div style="margin-bottom:12px; text-align:center;">
+            <select id="equipTypeDrop" onchange="updateEquipType(this.value)" style="background:rgba(255,255,255,0.05); color:var(--text-primary); border:1px solid rgba(0,229,255,0.3); padding:8px 12px; border-radius:8px; width:100%; font-weight:900; font-size:14px; text-transform:uppercase;">
+            </select>
+        </div>
 
         <!-- UNIT SPECS RIG -->
-        <div class="rig-grid">
-            <div class="spec-cell" id="spec-BRAND" onclick="openSpecVoice('BRAND')">
-                <span class="spec-label">BRAND</span>
-                <span id="val-BRAND" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-MDL" onclick="openSpecVoice('MDL')">
-                <span class="spec-label">MODEL #</span>
-                <span id="val-MDL" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-SER" onclick="openSpecVoice('SER')">
-                <span class="spec-label">SERIAL #</span>
-                <span id="val-SER" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-YEAR" onclick="openSpecVoice('YEAR')">
-                <span class="spec-label">YEAR</span>
-                <span id="val-YEAR" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-RLA" onclick="openSpecVoice('RLA')">
-                <span class="spec-label">COMP RLA</span>
-                <span id="val-RLA" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-LRA" onclick="openSpecVoice('LRA')">
-                <span class="spec-label">LRA</span>
-                <span id="val-LRA" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-FLA" onclick="openSpecVoice('FLA')">
-                <span class="spec-label">FAN FLA</span>
-                <span id="val-FLA" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-VOLT" onclick="openSpecVoice('VOLT')">
-                <span class="spec-label">VOLTAGE</span>
-                <span id="val-VOLT" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-SUB" onclick="openSpecVoice('SUB')">
-                <span class="spec-label">TARGET SC</span>
-                <span id="val-SUB" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-REF" onclick="openSpecVoice('REF')">
-                <span class="spec-label">REF</span>
-                <span id="val-REF" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="spec-METER" onclick="openSpecVoice('METER')">
-                <span class="spec-label">METERING</span>
-                <span id="val-METER" class="spec-val">--</span>
-            </div>
-            <div class="spec-cell" id="masterSpecBtn" onclick="toggleGlobalMic()" style="background:var(--amber-orange); color:black;">
-                <span class="spec-label" style="color:black;">INTAKE</span>
-                <span style="font-size:12px; font-weight:900;">AUTO</span>
-            </div>
+        <div class="rig-grid" id="mainSpecGrid">
+            <!-- Dynamically Rendered by renderSystemSpecs() -->
         </div>
 
         <div style="margin-bottom:12px;">
-            <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline" style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
-            <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+            <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline"
+                style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
+            <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple
+                onchange="handleMultiPhotos(this)">
             <div id="photoStatus">Processing Photos...</div>
         </div>
 
-        <button class="btn btn-quick" onclick="openVoiceConsole()">⚡ RUN DIAGNOSTIC</button>
+        <!-- RUN DIAGNOSTIC REMOVED FOR REAL ESTATE -->
         <hr style="opacity:0.1; margin:12px 0;">
-        
-        <div id="activeJobSection" style="background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
-            <span style="font-size:9px; color:#aaa; font-weight:900; display:block; margin-bottom:5px;">ACTIVE JOB</span>
+
+        <div id="activeJobSection"
+            style="background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+            <span style="font-size:9px; color:#aaa; font-weight:900; display:block; margin-bottom:5px;">ACTIVE
+                JOB</span>
             <input type="text" id="custName" placeholder="Enter Name / Job #">
             <div style="display:flex; gap:8px;">
                 <button class="btn btn-primary" id="shellBtn" onclick="startJob()" style="flex:2;">CREATE SHELL</button>
-                <button class="btn btn-outline" onclick="runLibrarianInApp()" style="flex:1; font-size:10px;">LIBRARIAN</button>
+                <button class="btn btn-outline" onclick="runLibrarianInApp()"
+                    style="flex:1; font-size:10px;">LIBRARIAN</button>
             </div>
             <div id="manualLinks" style="margin-top:10px;"></div>
         </div>
@@ -272,21 +895,25 @@
 
         <!-- LABEL + UTILITY ROW (top of modal) -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-            <h2 id="modalLabel" style="margin:0; font-size:13px; background:none; -webkit-text-fill-color:var(--amber-orange); color:var(--amber-orange);">HERM VOLTS</h2>
+            <h2 id="modalLabel"
+                style="margin:0; font-size:13px; background:none; -webkit-text-fill-color:var(--amber-orange); color:var(--amber-orange);">
+                HERM VOLTS</h2>
             <div style="display:flex; gap:5px; align-items:center;">
                 <button onclick="clearBuffer()" class="btn-utility danger">WIPE ALL</button>
                 <button onclick="confirmReading()" class="btn-utility stage">STAGE</button>
                 <button onclick="sendFinalBlock()" class="btn-utility sync">⚡ SYNC</button>
-                <button onclick="closeVoiceModal()" style="background:rgba(255,255,255,0.1); width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:18px; cursor:pointer; flex-shrink:0;">&times;</button>
+                <button onclick="closeVoiceModal()"
+                    style="background:rgba(255,255,255,0.1); width:34px; height:34px; border-radius:50%; border:1px solid rgba(255,255,255,0.2); color:white; font-size:18px; cursor:pointer; flex-shrink:0;">&times;</button>
             </div>
         </div>
 
         <div class="voice-console" id="consoleBody">
             <div id="pwrIndicator" class="recording-pulse"></div>
             <div id="targetRange">READY...</div>
-            <div id="bigDisplay" class="big-display">0.0</div>
+            <div id="bigDisplay" class="big-display" onclick="toggleManualEntry()" style="cursor:pointer; display:inline-block;">0.0</div>
+            <div style="font-size:9px; color:#555; font-weight:900; letter-spacing:1px; margin-top:-5px;">TAP NUMBER TO TYPE</div>
             <div id="liveCheck"></div>
-            
+
             <div class="dual-inputs">
                 <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
                     <span style="font-size:9px; color:#aaa; font-weight:bold;">HERM</span>
@@ -303,27 +930,26 @@
                     <div class="tolerance-pill" id="tol10" onclick="setTol(10)">10%</div>
                 </div>
             </div>
-            
+
             <div class="rating-reel" id="capReel"></div>
 
-            <!-- REWORKED BUTTON GRID -->
-            <!-- Row 1: START MIC (left) | MANUAL (right) -->
-            <!-- Row 2: SCRUB/UNDO (left) | COMMIT/green (right) -->
-            <div class="btn-main-grid">
-                <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()">🎙 START MIC</button>
-                <button onclick="toggleManualEntry()" class="btn btn-outline">⌨️ MANUAL</button>
-                <button onclick="undoLast()" class="btn btn-stop">SCRUB / UNDO</button>
-                <button onclick="confirmReading()" class="btn btn-green">✔ COMMIT / COPY</button>
+            <div class="btn-main-grid" style="grid-template-columns: 1fr; gap:8px; margin-top:16px;">
+                <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()" style="padding:16px; font-size:18px;">🎙 START MIC</button>
+                <button onclick="confirmReading()" class="btn btn-green" style="padding:16px; font-size:18px;">✔ COMMIT VALUE</button>
             </div>
         </div>
 
         <!-- MANUAL ENTRY INLINE PANEL -->
         <div class="manual-overlay" id="manualOverlay">
-            <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:6px; letter-spacing:1px;">MANUAL ENTRY — TYPE VALUE BELOW</div>
+            <div
+                style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:6px; letter-spacing:1px;">
+                MANUAL ENTRY — TYPE VALUE BELOW</div>
             <input type="number" id="manualInput" placeholder="0.0" inputmode="decimal" step="0.01">
             <div class="manual-entry-btns">
-                <button onclick="confirmManualEntry()" class="btn btn-green" style="padding:10px; font-size:13px; margin:0;">SET VALUE</button>
-                <button onclick="closeManualEntry()" class="btn btn-outline" style="padding:10px; font-size:13px; margin:0;">CANCEL</button>
+                <button onclick="confirmManualEntry()" class="btn btn-green"
+                    style="padding:10px; font-size:13px; margin:0;">SET VALUE</button>
+                <button onclick="closeManualEntry()" class="btn btn-outline"
+                    style="padding:10px; font-size:13px; margin:0;">CANCEL</button>
             </div>
         </div>
 
@@ -333,13 +959,16 @@
 
     <!-- MANUALS OVERLAY -->
     <div id="manualsOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">📄 SYSTEM MANUALS</h2>
-            <button onclick="closeManuals()" style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
+            <button onclick="closeManuals()"
+                style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
         </div>
         <div id="manualsContent" style="flex:1; overflow-y:auto; padding:15px;">
             <div id="manualLinks" style="display:grid; gap:10px;">
-                <div style="color:#666; text-align:center; padding:40px;">No Manuals Indexed. Tap LIBRARIAN on Home to search.</div>
+                <div style="color:#666; text-align:center; padding:40px;">No Manuals Indexed. Tap LIBRARIAN on Home to
+                    search.</div>
             </div>
         </div>
         <div style="padding:15px; border-top:1px solid #333;">
@@ -350,11 +979,14 @@
 
     <!-- REPORT COMPILER (v20.32) -->
     <div id="reportOverlay" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📋 COMPILER</h2>
             <div style="display:flex; gap:12px; align-items:center;">
-                <button id="compilerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); border:none; border-radius:50%; width:36px; height:36px; color:black; font-size:16px;">🎙</button>
-                <button onclick="closeReport()" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                <button id="compilerMicBtn" onclick="toggleGlobalMic()"
+                    style="background:var(--electric-blue); border:none; border-radius:50%; width:36px; height:36px; color:black; font-size:16px;">🎙</button>
+                <button onclick="closeReport()"
+                    style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
             </div>
         </div>
 
@@ -369,38 +1001,58 @@
         <div id="compilerPreview" class="compiler-preview">
             <!-- Populated via renderCompiler() -->
         </div>
-        <div style="text-align:center; font-size:9px; color:#555; margin:4px 0; flex-shrink:0;">TAP ANY LINE TO REMOVE IT</div>
+        <div style="text-align:center; font-size:9px; color:#555; margin:4px 0; flex-shrink:0;">TAP ANY LINE TO REMOVE
+            IT</div>
 
         <!-- Control Switcher -->
         <div style="display:flex; gap:8px; margin: 10px 0; flex-shrink:0;">
-            <button id="btn-show-notes" class="btn btn-outline" style="flex:1; border-color:var(--electric-blue); color:var(--electric-blue);" onclick="switchCompilerView('notes')">📝 TECH NOTES</button>
-            <button id="btn-show-refrig" class="btn btn-outline" style="flex:1;" onclick="switchCompilerView('refrig')">❄️ REFRIG DATA</button>
+            <button id="btn-show-notes" class="btn btn-outline"
+                style="flex:1; border-color:var(--electric-blue); color:var(--electric-blue);"
+                onclick="switchCompilerView('notes')">📝 TECH NOTES</button>
+            <button id="btn-show-refrig" class="btn btn-outline" style="flex:1;"
+                onclick="switchCompilerView('refrig')">❄️ REFRIG DATA</button>
         </div>
 
         <!-- Tech Notes View -->
-        <div id="view-tech-notes" style="display:block; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
+        <div id="view-tech-notes"
+            style="display:block; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
             <div id="view-tech-notes-list"></div>
 
             <div style="display:flex; gap:6px; margin-top:10px;">
-                <select id="newNoteCategory" style="background:rgba(0,0,0,0.5); color:white; border:1px solid #444; border-radius:6px; padding:6px; font-weight:bold;"></select>
-                <input type="text" id="newNoteInput" placeholder="Type new note..." style="flex:1; margin:0; font-size:14px; padding:6px; border-radius:6px; background:rgba(255,255,255,0.05); color:white; border:1px solid #444;">
-                <button onclick="addNewTechNote()" class="btn btn-primary" style="width:auto; padding:0 15px;">ADD</button>
+                <select id="newNoteCategory"
+                    style="background:rgba(0,0,0,0.5); color:white; border:1px solid #444; border-radius:6px; padding:6px; font-weight:bold;"></select>
+                <input type="text" id="newNoteInput" placeholder="Type new note..."
+                    style="flex:1; margin:0; font-size:14px; padding:6px; border-radius:6px; background:rgba(255,255,255,0.05); color:white; border:1px solid #444;">
+                <button onclick="addNewTechNote()" class="btn btn-primary"
+                    style="width:auto; padding:0 15px;">ADD</button>
             </div>
         </div>
 
         <!-- Refrig Manual Data View -->
-        <div id="view-refrig-data" style="display:none; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
-            <div class="field-row"><span>Suction Pressure</span><input type="number" id="in-suct" onchange="saveRef('SUCT_P', this.value)"></div>
-            <div class="field-row"><span>Liquid Pressure</span><input type="number" id="in-liq" onchange="saveRef('LIQ_P', this.value)"></div>
-            <div class="field-row"><span>Vapor Saturation</span><input type="number" id="in-vsat" onchange="saveRef('VAPOR_SAT', this.value)"></div>
-            <div class="field-row"><span>Liquid Saturation</span><input type="number" id="in-lsat" onchange="saveRef('LIQ_SAT', this.value)"></div>
-            <div class="field-row"><span>Superheat (SH)</span><input type="number" id="in-sh" onchange="saveRef('SH', this.value)"></div>
-            <div class="field-row"><span>Subcool (SC)</span><input type="number" id="in-sc" onchange="saveRef('SC', this.value)"></div>
-            <div class="field-row"><span>ODAT</span><input type="number" id="in-odat" onchange="saveRef('ODAT', this.value)"></div>
-            <div class="field-row"><span>Return Temp</span><input type="number" id="in-ret" onchange="saveRef('RETURN', this.value)"></div>
-            <div class="field-row"><span>Return Humidity %</span><input type="number" id="in-rh" onchange="saveRef('RH', this.value)"></div>
-            <div class="field-row"><span>Supply Temp</span><input type="number" id="in-sup" onchange="saveRef('SUPPLY', this.value)"></div>
-            <div class="field-row"><span>Delta T (ΔT)</span><input type="number" id="in-dt" onchange="saveRef('DELTA_T', this.value)"></div>
+        <div id="view-refrig-data"
+            style="display:none; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
+            <div class="field-row"><span>Suction Pressure</span><input type="number" id="in-suct"
+                    onchange="saveRef('SUCT_P', this.value)"></div>
+            <div class="field-row"><span>Liquid Pressure</span><input type="number" id="in-liq"
+                    onchange="saveRef('LIQ_P', this.value)"></div>
+            <div class="field-row"><span>Vapor Saturation</span><input type="number" id="in-vsat"
+                    onchange="saveRef('VAPOR_SAT', this.value)"></div>
+            <div class="field-row"><span>Liquid Saturation</span><input type="number" id="in-lsat"
+                    onchange="saveRef('LIQ_SAT', this.value)"></div>
+            <div class="field-row"><span>Superheat (SH)</span><input type="number" id="in-sh"
+                    onchange="saveRef('SH', this.value)"></div>
+            <div class="field-row"><span>Subcool (SC)</span><input type="number" id="in-sc"
+                    onchange="saveRef('SC', this.value)"></div>
+            <div class="field-row"><span>ODAT</span><input type="number" id="in-odat"
+                    onchange="saveRef('ODAT', this.value)"></div>
+            <div class="field-row"><span>Return Temp</span><input type="number" id="in-ret"
+                    onchange="saveRef('RETURN', this.value)"></div>
+            <div class="field-row"><span>Return Humidity %</span><input type="number" id="in-rh"
+                    onchange="saveRef('RH', this.value)"></div>
+            <div class="field-row"><span>Supply Temp</span><input type="number" id="in-sup"
+                    onchange="saveRef('SUPPLY', this.value)"></div>
+            <div class="field-row"><span>Delta T (ΔT)</span><input type="number" id="in-dt"
+                    onchange="saveRef('DELTA_T', this.value)"></div>
         </div>
 
         <div style="padding-top:15px; border-top:1px solid #333; flex-shrink:0; display:flex; gap:10px;">
@@ -410,52 +1062,73 @@
     </div>
 
     <!-- AI PREVIEW MODAL -->
-    <div id="aiModal" class="modal-overlay" style="background:rgba(0,0,0,0.95); justify-content:center; display:none;">
-        <div class="container" style="background:#222; border:1px solid var(--electric-blue); max-width:400px;">
-            <h2 style="font-size:20px; color:var(--electric-blue);">AI TAG SCAN RESULTS</h2>
-            <div id="aiResults" style="font-size:14px; max-height:300px; overflow-y:auto; margin-bottom:20px; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px;">
+    <div id="aiModal" class="modal-overlay" style="background:rgba(0,0,0,0.95); justify-content:center; display:none; z-index:9000;">
+        <div class="container" style="background:#222; border:1px solid var(--electric-blue); max-width:400px; padding:20px; text-align:center;">
+            <h2 style="font-size:20px; color:var(--electric-blue); margin-top:0;">⚡ AI VISION DATA</h2>
+            <div style="margin-bottom:12px; background:#1a1a1a; padding:10px; border-radius:8px; border:1px solid #333; text-align:center;">
+                <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:6px;">SAVE TO:</div>
+                <select id="aiRouteTarget" style="background:#000; color:white; border:1px solid #555; padding:8px; width:100%; border-radius:6px; font-weight:900; font-size:14px;">
+                    <option value="outdoor">OUTDOOR</option>
+                    <option value="furnace">FURNACE / AHU</option>
+                    <option value="coil">EVAP COIL</option>
+                </select>
+            </div>
+            <div id="aiResults" style="font-size:14px; max-height:250px; overflow-y:auto; margin-bottom:20px; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; text-align:left;">
                 <div style="text-align:center; padding:20px;">Analyzing Tag...</div>
             </div>
-            <button class="btn btn-primary" onclick="confirmAiSpecs()">CONFIRM &amp; MERGE</button>
-            <button class="btn btn-outline" onclick="closeAiModal()" style="margin-top:10px;">DISCARD</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-green" onclick="confirmAiSpecs()" style="flex:1;">✔ ACCEPT</button>
+                <button class="btn btn-stop" onclick="closeAiModal()" style="flex:1;">✗ REJECT</button>
+            </div>
         </div>
     </div>
 
     <!-- SETTINGS MODAL -->
     <div id="settingsOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
-            <button onclick="closeSettings()" style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
+            <button onclick="closeSettings()"
+                style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
         </div>
         <div class="step-nav" id="dictNav" style="margin:10px;">
             <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')" style="flex:1;">BRANDS</button>
             <button class="step-btn" id="dict-btn-refs" onclick="switchDictType('refs')" style="flex:1;">REF</button>
             <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')" style="flex:1;">WORDS</button>
+            <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')" style="flex:1;">NOTES</button>
         </div>
 
         <div class="voice-console" style="margin:0 10px;">
-            <div id="dictTargetLabel" style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
-            <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY ENTRY...</div>
+            <div id="dictTargetLabel"
+                style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
+            <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY ENTRY...
+            </div>
             <div class="btn-main-grid">
                 <button id="dictMicBtn" class="btn btn-primary" onclick="toggleGlobalMic()">🎙 START MIC</button>
                 <button onclick="undoDictStaged()" class="btn btn-stop">SCRUB</button>
-                <button onclick="confirmDictWord()" class="btn btn-green" style="grid-column: span 2;">✔ CONFIRM & SAVE</button>
+                <button onclick="confirmDictWord()" class="btn btn-green" style="grid-column: span 2;">✔ CONFIRM &
+                    SAVE</button>
             </div>
         </div>
 
         <div style="padding:0 10px;">
             <div class="settings-row" style="padding:8px 0; border:none;">
-                <div><div style="font-weight:900; font-size:12px;">Voice Navigation Safety</div></div>
+                <div>
+                    <div style="font-weight:900; font-size:12px;">Voice Navigation Safety</div>
+                </div>
                 <div id="toggle-navConfirm" class="toggle-switch on" onclick="toggleSetting('navConfirm')"></div>
             </div>
             <div class="settings-row" style="padding:8px 0; border-bottom:none;">
-                <div><div style="font-weight:900; font-size:12px;">Direct Voice Entry</div></div>
+                <div>
+                    <div style="font-weight:900; font-size:12px;">Direct Voice Entry</div>
+                </div>
                 <div id="toggle-autoCommit" class="toggle-switch" onclick="toggleSetting('autoCommit')"></div>
             </div>
             <div class="settings-row" style="padding:8px 0; border-bottom:1px solid #333;">
                 <div>
                     <div style="font-weight:900; font-size:12px;">Strict Dictionary Validation</div>
-                    <div style="font-size:10px; color:#777;">Reject unknown Brands/Refs — shows tap-to-override popup</div>
+                    <div style="font-size:10px; color:#777;">Reject unknown Brands/Refs — shows tap-to-override popup
+                    </div>
                 </div>
                 <div id="toggle-strictDict" class="toggle-switch" onclick="toggleSetting('strictDict')"></div>
             </div>
@@ -468,13 +1141,23 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.33 *";
+        const APP_VERSION = "20.34";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
-        let specs = JSON.parse(localStorage.getItem('hvacSpecsV20')) || { 
-            BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--'
+        let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV20_34')) || {
+            activeTab: 'outdoor',
+            outdoor: { TYPE: 'Condenser', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--', TON: '--' },
+            furnace: { TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--' },
+            coil: { TYPE: 'Evap Coil', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', TON: '--', METER: '--', TRAY: '--', AIR_DIR: '--' }
         };
+        // Backwards compatibility migration
+        let oldSpecs = JSON.parse(localStorage.getItem('hvacSpecsV20'));
+        if (oldSpecs && systemSpecs.outdoor.MDL === '--' && oldSpecs.MDL && oldSpecs.MDL !== '--') {
+            systemSpecs.outdoor = { ...systemSpecs.outdoor, ...oldSpecs };
+            localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
+            localStorage.removeItem('hvacSpecsV20');
+        }
         let appSettings = JSON.parse(localStorage.getItem('hvacSettingsV20')) || {
             navConfirm: true, autoCommit: false, strictDict: false
         };
@@ -483,7 +1166,7 @@
             refs: "R-410A, R-22, R-407C, R-134a, R-454B, R-438A",
             confirms: "yes, go, copy, confirm, ok, stage"
         };
-        
+
         let refData = JSON.parse(localStorage.getItem('hvacRefDataV20')) || {};
         let techNotes = JSON.parse(localStorage.getItem('hvacTechNotesV20')) || [];
         let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV20'));
@@ -501,10 +1184,32 @@
             };
             localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
         }
-        
+
         let activeTemplate = 'full';
-        
-        let tempAiSpecs = {}; 
+
+        const EQUIP_SCHEMA = {
+            outdoor: [
+                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
+                { id: 'RLA', label: 'COMP RLA' }, { id: 'LRA', label: 'LRA' }, { id: 'FLA', label: 'FAN FLA' }, { id: 'VOLT', label: 'VOLTAGE' },
+                { id: 'SUB', label: 'TARGET SC' }, { id: 'REF', label: 'REFRIGERANT' }, { id: 'METER', label: 'METERING' }, { id: 'TON', label: 'TONNAGE' }
+            ],
+            furnace: [
+                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
+                { id: 'KBTU', label: 'GAS KBTU' }, { id: 'KW', label: 'HEAT KW' }, { id: 'BLOWER', label: 'BLOWER HP' }, { id: 'INDUCER', label: 'INDUCER AMPS' },
+                { id: 'VOLT', label: 'VOLTAGE' }, { id: 'FILTER', label: 'FILTER' }, { id: 'GAS_V', label: 'GAS VALVE' }, { id: 'TON', label: 'TONNAGE' }
+            ],
+            coil: [
+                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
+                { id: 'TON', label: 'TONNAGE' }, { id: 'METER', label: 'METERING' }, { id: 'TRAY', label: 'DRAIN TRAY' }, { id: 'AIR_DIR', label: 'AIRFLOW' }
+            ]
+        };
+        const EQUIP_TYPES = {
+            outdoor: ['Condenser', 'Heat Pump', 'Package Unit'],
+            furnace: ['Furnace', 'Air Handler'],
+            coil: ['Evap Coil', 'N/A']
+        };
+
+        let tempAiSpecs = {};
         let fieldIndex = 0;
         let isCapturing = false; let globalMic = null; let isMicOn = false; let forceKill = false;
         let tolerance = 0.06; let activeRatingTarget = 'herm';
@@ -523,30 +1228,60 @@
         function updateShellButton() {
             const d = new Date();
             const yyyy = d.getFullYear();
-            const mm   = String(d.getMonth() + 1).padStart(2, '0');
-            const dd   = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
             document.getElementById('shellBtn').innerText = `CREATE SHELL  ${yyyy}-${mm}-${dd}`;
         }
 
         function initSplash() {
             document.title = "HVAC Master Pro v" + APP_VERSION;
-            document.getElementById('splashVer').innerHTML = `<span>v${APP_VERSION} Pro</span><button class="report-btn" onclick="openReport()">📋 REPORT</button>`;
-            Object.keys(specs).forEach(k => {
-                const el = document.getElementById('val-' + k);
-                if (el) {
-                    el.innerText = specs[k] || '--';
-                    el.classList.toggle('shrink', String(specs[k]).length > 10);
-                }
+            renderSystemSpecs();
+        }
+
+        function switchEquipTab(tabName) {
+            systemSpecs.activeTab = tabName;
+            localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
+            renderSystemSpecs();
+        }
+
+        function updateEquipType(val) {
+            systemSpecs[systemSpecs.activeTab].TYPE = val;
+            localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
+        }
+
+        function renderSystemSpecs() {
+            const tab = systemSpecs.activeTab;
+            
+            // UI Button Active State
+            ['outdoor', 'furnace', 'coil'].forEach(t => {
+                document.getElementById('tab-' + t).classList.toggle('active', t === tab);
             });
+
+            // Populate Dropdown
+            const drop = document.getElementById('equipTypeDrop');
+            drop.innerHTML = EQUIP_TYPES[tab].map(t => `<option value="${t}">${t}</option>`).join('');
+            drop.value = systemSpecs[tab].TYPE || EQUIP_TYPES[tab][0];
+
+            // Render Grid
+            const grid = document.getElementById('mainSpecGrid');
+            grid.innerHTML = EQUIP_SCHEMA[tab].map(f => {
+                const val = systemSpecs[tab][f.id] || '--';
+                const shrinkClass = val.length > 10 ? ' shrink' : '';
+                return `
+                <div class="spec-cell" id="spec-${f.id}" onclick="openSpecVoice('${f.id}')">
+                    <span class="spec-label">${f.label}</span>
+                    <span id="val-${f.id}" class="spec-val${shrinkClass}">${val}</span>
+                </div>`;
+            }).join('');
         }
 
         function initV2Controls() {
             const nav = document.getElementById('stepNav');
             nav.innerHTML = FIELD_CYCLE.map((f, i) => `<button class="step-btn" id="step-${i}" onclick="jumpToStep(${i})">${f}<br><span id="glance-${i}" style="color:#888; font-size:10px;">--</span></button>`).join('');
-            
+
             const reel = document.getElementById('capReel');
             reel.innerHTML = CAP_SIZES.map(s => `<button class="dial-btn" id="cap-${s}" onclick="dial(${s})">${s.toFixed(1)}</button>`).join('');
-            
+
             updateStepNav();
             updateCapSelection();
         }
@@ -583,7 +1318,7 @@
                     status.innerText = `Analyzing Nameplate: ${filename}...`;
                     const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "uploadPhotoAI", data: base64, filename: filename, mimeType: mime }) });
                     const result = await response.json();
-                    if(result && result.extractedData) { tempAiSpecs = result.extractedData; openAiModal(result.extractedData); }
+                    if (result && result.extractedData) { tempAiSpecs = result.extractedData; openAiModal(result.extractedData); }
                 };
                 reader.readAsDataURL(files[i]);
             }
@@ -591,6 +1326,7 @@
 
         function openAiModal(data) {
             document.getElementById('aiModal').style.display = 'flex';
+            document.getElementById('aiRouteTarget').value = systemSpecs.activeTab;
             document.getElementById('aiResults').innerHTML = Object.entries(data).map(([k, v]) => `
                 <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333;">
                     <b style="color:#aaa;">${k}:</b><b style="color:var(--electric-blue); font-size:16px;">${v}</b>
@@ -598,10 +1334,25 @@
         }
 
         function confirmAiSpecs() {
-            if(tempAiSpecs.RLA) { specs.RLA = parseFloat(tempAiSpecs.RLA); document.getElementById('val-RLA').innerText = specs.RLA; }
-            if(tempAiSpecs.FLA) { specs.FLA = parseFloat(tempAiSpecs.FLA); document.getElementById('val-FLA').innerText = specs.FLA; }
-            if(tempAiSpecs["Target SC"]) { specs.SUB = parseFloat(tempAiSpecs["Target SC"]); document.getElementById('val-SUB').innerText = specs.SUB; }
-            localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+            const t = document.getElementById('aiRouteTarget').value;
+            const fieldMap = {
+                'BRAND': 'BRAND', 'MAKE': 'BRAND', 'MODEL': 'MDL', 'MDL': 'MDL', 'SERIAL': 'SER', 'SER': 'SER', 
+                'YEAR': 'YEAR', 'RLA': 'RLA', 'FLA': 'FLA', 'LRA': 'LRA', 'VOLTAGE': 'VOLT', 
+                'VOLTS': 'VOLT', 'VOLT': 'VOLT', 'SUB': 'SUB', 'TARGET SC': 'SUB', 'TONNAGE': 'TON', 'TON': 'TON',
+                'KBTU': 'KBTU', 'KW': 'KW', 'GAS': 'KBTU', 'HP': 'BLOWER'
+            };
+
+            for (const [aiKey, val] of Object.entries(tempAiSpecs)) {
+                let cleanKey = aiKey.toUpperCase();
+                let mappedKey = fieldMap[cleanKey] || cleanKey;
+                // Only save if target bucket accepts this property
+                if (systemSpecs[t][mappedKey] !== undefined) {
+                    systemSpecs[t][mappedKey] = mappedKey === 'RLA' || mappedKey === 'FLA' || mappedKey === 'SUB' ? parseFloat(val) : val;
+                }
+            }
+            
+            localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
+            switchEquipTab(t);
             closeAiModal();
         }
         function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; document.getElementById('photoStatus').style.display = 'none'; }
@@ -612,7 +1363,7 @@
             await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }) });
             const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchManuals" }) });
             const links = await response.json();
-            if(links.length === 0) { linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>'; }
+            if (links.length === 0) { linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>'; }
             else { linksDiv.innerHTML = links.map(l => `<a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>`).join(''); }
         }
 
@@ -630,7 +1381,7 @@
             pop.style.cssText = 'position:fixed; bottom:90px; left:50%; transform:translateX(-50%); width:92%; background:#252525; border:1px solid var(--electric-blue); border-radius:16px; padding:14px; z-index:20000; box-shadow:0 0 30px rgba(0,229,255,0.3);';
             pop.innerHTML = `
                 <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:6px;">${target} — NOT IN DICTIONARY. EDIT OR ALLOW:</div>
-                <input id="specOverrideInput" type="text" value="${preVal||''}" style="font-size:20px; text-align:center; font-weight:900; padding:10px; margin-bottom:8px;">
+                <input id="specOverrideInput" type="text" value="${preVal || ''}" style="font-size:20px; text-align:center; font-weight:900; padding:10px; margin-bottom:8px;">
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px;">
                     <button onclick="commitSpecOverride(true)" style="background:var(--emerald-green); color:black; border:none; padding:10px; border-radius:10px; font-weight:900; font-size:12px;">✔ ALLOW</button>
                     <button onclick="addOverrideToDict()" style="background:#0056b3; color:white; border:none; padding:10px; border-radius:10px; font-weight:900; font-size:12px;">+ ADD TO DICT</button>
@@ -645,10 +1396,10 @@
             if (allow && _overrideTarget) {
                 const val = document.getElementById('specOverrideInput').value.trim().toUpperCase();
                 if (val) {
-                    specs[_overrideTarget] = val;
+                    systemSpecs[systemSpecs.activeTab][_overrideTarget] = val;
                     const el = document.getElementById('val-' + _overrideTarget);
                     if (el) { el.innerText = val; el.classList.toggle('shrink', val.length > 10); }
-                    localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+                    localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
                 }
             }
             if (pop) pop.remove();
@@ -668,7 +1419,7 @@
             document.getElementById('spec-' + target).classList.add('listening');
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) { alert("Voice not supported."); return; }
-            
+
             const cellRec = new SR();
             cellRec.continuous = false; cellRec.interimResults = true; cellRec.lang = 'en-US';
             document.getElementById('masterIndicator').style.display = 'block';
@@ -678,13 +1429,13 @@
                 const numMatch = res[0].transcript.match(/\b(\d+\.?\d*)\b/);
                 if (numMatch) {
                     const num = parseFloat(numMatch[1]);
-                    specs[target] = num;
+                    systemSpecs[systemSpecs.activeTab][target] = num;
                     const valEl = document.getElementById('val-' + target);
                     if (valEl) {
                         valEl.innerText = num;
                         valEl.classList.toggle('shrink', String(num).length > 10);
                     }
-                    localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
+                    localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
                     const cell = document.getElementById('spec-' + target);
                     cell.style.boxShadow = '0 0 30px var(--emerald-green)';
                     setTimeout(() => { cell.style.boxShadow = 'none'; cell.classList.remove('listening'); document.getElementById('masterIndicator').style.display = 'none'; }, 800);
@@ -692,7 +1443,7 @@
             };
             const cleanup = () => { document.getElementById('spec-' + target).classList.remove('listening'); document.getElementById('masterIndicator').style.display = 'none'; };
             cellRec.onend = cleanup; cellRec.onerror = cleanup;
-            try { cellRec.start(); } catch(e) {}
+            try { cellRec.start(); } catch (e) { }
         }
 
         // ── Change #1: Smart Intake — Fixed for iOS Safari ───────────────
@@ -701,14 +1452,14 @@
             let kwRegex = null;
 
             // Keyword Detection
-            if (/\b(brand|make)\b/.test(transcript))                             { masterTarget = "BRAND"; kwRegex = /\b(brand|make)\b/; }
-            else if (/\b(model|mod|modular)\b/.test(transcript))                 { masterTarget = "MDL"; kwRegex = /\b(model|mod|modular)\b/; }
-            else if (/\b(serial|sir)\b/.test(transcript))                        { masterTarget = "SER"; kwRegex = /\b(serial|sir)\b/; }
-            else if (/\byear\b/.test(transcript))                                { masterTarget = "YEAR"; kwRegex = /\byear\b/; }
-            else if (/\brla\b/.test(transcript))                                 { masterTarget = "RLA"; kwRegex = /\brla\b/; }
-            else if (/\blra\b/.test(transcript))                                 { masterTarget = "LRA"; kwRegex = /\blra\b/; }
-            else if (/\bfla\b/.test(transcript))                                 { masterTarget = "FLA"; kwRegex = /\bfla\b/; }
-            else if (/\b(voltage|volts)\b/.test(transcript))                     { masterTarget = "VOLT"; kwRegex = /\b(voltage|volts)\b/; }
+            if (/\b(brand|make)\b/.test(transcript)) { masterTarget = "BRAND"; kwRegex = /\b(brand|make)\b/; }
+            else if (/\b(model|mod|modular)\b/.test(transcript)) { masterTarget = "MDL"; kwRegex = /\b(model|mod|modular)\b/; }
+            else if (/\b(serial|sir)\b/.test(transcript)) { masterTarget = "SER"; kwRegex = /\b(serial|sir)\b/; }
+            else if (/\byear\b/.test(transcript)) { masterTarget = "YEAR"; kwRegex = /\byear\b/; }
+            else if (/\brla\b/.test(transcript)) { masterTarget = "RLA"; kwRegex = /\brla\b/; }
+            else if (/\blra\b/.test(transcript)) { masterTarget = "LRA"; kwRegex = /\blra\b/; }
+            else if (/\bfla\b/.test(transcript)) { masterTarget = "FLA"; kwRegex = /\bfla\b/; }
+            else if (/\b(voltage|volts)\b/.test(transcript)) { masterTarget = "VOLT"; kwRegex = /\b(voltage|volts)\b/; }
             else if (/\b(sub|subcool|suction|target|sup\s?cool)\b/.test(transcript)) { masterTarget = "SUB"; kwRegex = /\b(sub|subcool|suction|target|sup\s?cool)\b/; }
             // Refrigerant Extensions (v20.32)
             else if (/\b(suction|low side)\b/.test(transcript)) { masterTarget = "SUCT_P"; kwRegex = /\b(suction|low side)\b/; }
@@ -737,10 +1488,10 @@
 
                 if (input.length > 0) {
                     let val = input.toUpperCase().trim();
-                    
+
                     if (masterTarget === "BRAND") {
                         const brandsStr = userDict && userDict.brands ? userDict.brands : "Trane, Carrier, Lennox, Goodman, Rheem, Ruud, Daikin, Amana, Bryant, Comfortmaker";
-                        const bArr = brandsStr.split(',').map(s=>s.trim().toUpperCase());
+                        const bArr = brandsStr.split(',').map(s => s.trim().toUpperCase());
                         const match = bArr.find(b => val.includes(b));
                         if (match) {
                             val = match;
@@ -752,8 +1503,8 @@
                     }
                     else if (masterTarget === "REF") {
                         const refsStr = userDict && userDict.refs ? userDict.refs : "R-410A, R-22, R-407C, R-134a, R-454B, R-438A";
-                        const rArr = refsStr.split(',').map(s=>s.trim().toUpperCase());
-                        const match = rArr.find(r => val.includes(r.replace('-','')));
+                        const rArr = refsStr.split(',').map(s => s.trim().toUpperCase());
+                        const match = rArr.find(r => val.includes(r.replace('-', '')));
                         if (match) {
                             val = match;
                         } else if (appSettings.strictDict) {
@@ -773,7 +1524,7 @@
                             localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
                             renderCompiler();
                             loadRefInputs();
-                            
+
                             // Visual flash to confirm intake without switching screens
                             const btn = document.getElementById('btn-show-refrig');
                             if (btn && document.getElementById('reportOverlay').style.display === 'flex') {
@@ -786,7 +1537,7 @@
                             let elMap = { 'SUCT_P': 'in-suct', 'LIQ_P': 'in-liq', 'SH': 'in-sh', 'SC': 'in-sc', 'RETURN': 'in-ret', 'SUPPLY': 'in-sup', 'RH': 'in-rh', 'DELTA_T': 'in-dt', 'ODAT': 'in-odat' };
                             const inTarget = document.getElementById(elMap[masterTarget]);
                             if (inTarget && document.getElementById('reportOverlay').style.display === 'flex') {
-                                switchCompilerView('refrig'); 
+                                switchCompilerView('refrig');
                                 inTarget.focus();
                                 inTarget.style.border = "2px solid var(--electric-blue)";
                                 setTimeout(() => inTarget.style.border = "1px solid rgba(0,229,255,0.4)", 2000);
@@ -796,17 +1547,17 @@
                     }
 
                     if (["RLA", "LRA", "FLA", "VOLT", "SUB", "YEAR"].includes(masterTarget)) {
-                        if (isNaN(parseFloat(val))) return; 
+                        if (isNaN(parseFloat(val))) return;
                     }
 
-                    specs[masterTarget] = val;
+                    systemSpecs[systemSpecs.activeTab][masterTarget] = val;
                     const valEl = document.getElementById('val-' + masterTarget);
                     if (valEl) {
                         valEl.innerText = val;
                         valEl.classList.toggle('shrink', val.length > 10);
                     }
-                    localStorage.setItem('hvacSpecsV20', JSON.stringify(specs));
-                    
+                    localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
+
                     const cell = document.getElementById('spec-' + masterTarget);
                     if (cell) {
                         cell.style.boxShadow = '0 0 30px var(--emerald-green)';
@@ -818,16 +1569,16 @@
 
         // openSpecVoice now defined above (tap-cell listener)
 
-        function openVoiceConsole() { 
+        function openVoiceConsole() {
             closeAllModals();
             document.getElementById('mainDashboard').style.display = 'none';
             document.getElementById('voiceModal').style.display = 'flex';
-            
+
             // Default to first empty step
             let firstEmpty = 0;
-            for(let i=0; i<FIELD_CYCLE.length; i++) { if(!buffer[i]) { firstEmpty = i; break; } }
+            for (let i = 0; i < FIELD_CYCLE.length; i++) { if (!buffer[i]) { firstEmpty = i; break; } }
             fieldIndex = firstEmpty;
-            
+
             updateNavUI('nav-diag');
             syncLogToUI(); updateStepNav(); recalculateField();
         }
@@ -856,7 +1607,7 @@
         // ── UNIFIED VOICE DISPATCHER ───────────────────────────────────
         function voiceDispatcher(transcript, isIntake) {
             transcript = transcript.toLowerCase();
-            
+
             // 1. Navigation Commands
             if (/\b(home|dashboard|splash)\b/.test(transcript)) { return stageNav('mainDashboard', 'nav-home'); }
             if (/\b(diag|diagnostic|capacitor)\b/.test(transcript)) { return stageNav('voiceModal', 'nav-diag'); }
@@ -867,7 +1618,7 @@
             // 2. Handshake / Confirmation — ONLY fires when a destination is already staged
             if (navStaging) {
                 const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
-                const confirmArr = confirmStr.toLowerCase().split(',').map(s=>s.trim());
+                const confirmArr = confirmStr.toLowerCase().split(',').map(s => s.trim());
                 if (confirmArr.some(w => transcript.includes(w))) {
                     const target = navStaging; navStaging = null;
                     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging'));
@@ -921,13 +1672,25 @@
                 if (el) el.classList.toggle('on', appSettings[k]);
             });
         }
-        
+
         function switchDictType(type) {
             activeDictType = type;
             document.querySelectorAll('.step-nav#dictNav .step-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`dict-btn-${type}`).classList.add('active');
-            const labels = { 'brands': 'BRANDS', 'refs': 'REFRIGERANTS', 'confirms': 'CONFIRM WORDS' };
-            document.getElementById('dictTargetLabel').innerText = labels[type];
+            const labels = { 'brands': 'BRANDS', 'refs': 'REFRIGERANTS', 'confirms': 'CONFIRM WORDS', 'notes': 'TECH NOTES' };
+            
+            const tgtLabel = document.getElementById('dictTargetLabel');
+            tgtLabel.innerHTML = labels[type];
+
+            if (type === 'notes') {
+                const drop = document.createElement('select');
+                drop.id = "dictNotesDrop";
+                drop.style.cssText = "background:#222; color:white; border:1px solid #444; padding:2px 5px; margin-left:10px; border-radius:5px; font-weight:bold;";
+                drop.innerHTML = Object.keys(techNotesMaster).map(k => `<option value="${k}">${k}</option>`).join('');
+                drop.onchange = renderDictLog;
+                tgtLabel.appendChild(drop);
+            }
+
             undoDictStaged();
             renderDictLog();
         }
@@ -937,18 +1700,37 @@
             document.getElementById('dictStagedWord').style.color = "#777";
         }
         function confirmDictWord() {
-            if(!dictStagedRaw) return;
-            const currentObj = userDict[activeDictType] ? userDict[activeDictType].trim() : "";
-            userDict[activeDictType] = currentObj ? (currentObj + ", " + dictStagedRaw) : dictStagedRaw;
-            localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
-            
+            if (!dictStagedRaw) return;
+            if (activeDictType === 'notes') {
+                const cat = document.getElementById('dictNotesDrop')?.value;
+                if (!cat) return;
+                techNotesMaster[cat].push(dictStagedRaw);
+                localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
+            } else {
+                const currentObj = userDict[activeDictType] ? userDict[activeDictType].trim() : "";
+                userDict[activeDictType] = currentObj ? (currentObj + ", " + dictStagedRaw) : dictStagedRaw;
+                localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
+            }
+
             document.getElementById('dictStagedWord').style.color = "var(--emerald-green)";
             document.getElementById('dictStagedWord').style.textShadow = "0 0 20px var(--emerald-green)";
-            setTimeout(() => { undoDictStaged(); renderDictLog(); }, 800);
+            setTimeout(() => { undoDictStaged(); renderDictLog(); initTechNotes(); }, 800);
         }
         function renderDictLog() {
             const list = document.getElementById('dictLogList');
-            const arr = (userDict[activeDictType]||"").split(',').map(s=>s.trim()).filter(x=>x);
+            if (activeDictType === 'notes') {
+                const cat = document.getElementById('dictNotesDrop')?.value;
+                if (!cat || !techNotesMaster[cat]) { list.innerHTML = ''; return; }
+                list.innerHTML = techNotesMaster[cat].map((item, i) => `
+                    <div class="log-item">
+                        <span style="font-weight:900; font-size:14px; color:white;">${item}</span>
+                        <button onclick="deleteNoteWord('${cat}', ${i})" class="btn-utility danger">DELETE</button>
+                    </div>
+                `).join('');
+                return;
+            }
+            
+            const arr = (userDict[activeDictType] || "").split(',').map(s => s.trim()).filter(x => x);
             list.innerHTML = arr.map((item, i) => `
                 <div class="log-item">
                     <span style="font-weight:900; font-size:14px; color:white;">${item}</span>
@@ -957,11 +1739,17 @@
             `).join('');
         }
         function deleteDictWord(idx) {
-            let arr = (userDict[activeDictType]||"").split(',').map(s=>s.trim()).filter(x=>x);
+            let arr = (userDict[activeDictType] || "").split(',').map(s => s.trim()).filter(x => x);
             arr.splice(idx, 1);
             userDict[activeDictType] = arr.join(', ');
             localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
             renderDictLog();
+        }
+        function deleteNoteWord(cat, idx) {
+            techNotesMaster[cat].splice(idx, 1);
+            localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
+            renderDictLog();
+            initTechNotes();
         }
 
         function setTol(val) {
@@ -979,27 +1767,27 @@
             updateCapSelection();
         }
 
-        function dial(val) { document.getElementById(activeRatingTarget + 'Rating').value = val; updateCapSelection(); recalculateField(); if(buffer.length > 0) syncLogToUI(); }
+        function dial(val) { document.getElementById(activeRatingTarget + 'Rating').value = val; updateCapSelection(); recalculateField(); if (buffer.length > 0) syncLogToUI(); }
 
         function recalculateField() {
             const field = FIELD_CYCLE[fieldIndex];
             document.getElementById('modalLabel').innerText = field.toUpperCase();
             let lastVolt = 0;
             const bArr = Object.values(buffer);
-            for(let i = bArr.length-1; i >= 0; i--) { if(bArr[i] && bArr[i].field && bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
+            for (let i = bArr.length - 1; i >= 0; i--) { if (bArr[i] && bArr[i].field && bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
             if (field === "Herm Amps" || field === "Fan Amps") {
                 const rating = parseFloat(document.getElementById(field === "Herm Amps" ? "hermRating" : "fanRating").value);
-                if(lastVolt > 0 && rating) {
+                if (lastVolt > 0 && rating) {
                     const target = (rating * lastVolt) / 2652;
-                    const lowDisplay  = (Math.ceil(target * (1 - tolerance) * 100) / 100).toFixed(2);
+                    const lowDisplay = (Math.ceil(target * (1 - tolerance) * 100) / 100).toFixed(2);
                     const highDisplay = (Math.floor(target * (1 + tolerance) * 100) / 100).toFixed(2);
                     document.getElementById('targetRange').innerHTML = "RANGE: " + lowDisplay + " - " + highDisplay;
                 } else { document.getElementById('targetRange').innerHTML = "WAITING FOR VOLTS..."; }
             } else if (field === "Comp Amps") {
-                document.getElementById('targetRange').innerHTML = specs.RLA ? `&#9889; RLA: ${specs.RLA} A` : "READY FOR COMP AMPS";
+                document.getElementById('targetRange').innerHTML = systemSpecs.outdoor.RLA !== '--' ? `&#9889; RLA: ${systemSpecs.outdoor.RLA} A` : "READY FOR COMP AMPS";
             } else if (field === "ODF Amps") {
                 const fanSVG = `<svg width="20" height="20" viewBox="0 0 20 20" style="vertical-align:middle;margin-right:5px;filter:drop-shadow(0 0 4px #00e5ff)" xmlns="http://www.w3.org/2000/svg"><g transform="translate(10,10)"><path d="M0,0 Q2.5,-3 1.5,-8.5 Q-0.5,-9 -2,-4 Z" fill="#b0c4de" transform="rotate(0)"/><path d="M0,0 Q2.5,-3 1.5,-8.5 Q-0.5,-9 -2,-4 Z" fill="#b0c4de" transform="rotate(120)"/><path d="M0,0 Q2.5,-3 1.5,-8.5 Q-0.5,-9 -2,-4 Z" fill="#b0c4de" transform="rotate(240)"/><circle r="2" fill="#555" stroke="#00e5ff" stroke-width="0.5"/><circle r="0.8" fill="#222"/></g></svg>`;
-                document.getElementById('targetRange').innerHTML = specs.FLA ? `${fanSVG}FLA: ${specs.FLA} A` : "READY FOR ODF AMPS";
+                document.getElementById('targetRange').innerHTML = systemSpecs.outdoor.FLA !== '--' ? `${fanSVG}FLA: ${systemSpecs.outdoor.FLA} A` : "READY FOR ODF AMPS";
             } else {
                 document.getElementById('targetRange').innerHTML = "READY FOR " + field.toUpperCase();
             }
@@ -1011,12 +1799,12 @@
             const display = document.getElementById('bigDisplay');
             const live = document.getElementById('liveCheck');
             const val = parseFloat(display.innerText);
-            
+
             if (!val || val === 0) { live.innerHTML = ""; return; }
 
             let lastVolt = 0;
             const bArr = Object.values(buffer);
-            for(let i = bArr.length-1; i >= 0; i--) { if(bArr[i] && bArr[i].field && bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
+            for (let i = bArr.length - 1; i >= 0; i--) { if (bArr[i] && bArr[i].field && bArr[i].field.includes("Volts")) { lastVolt = bArr[i].val; break; } }
 
             let status = ""; let color = "";
             if (field === "Herm Amps" || field === "Fan Amps") {
@@ -1025,17 +1813,17 @@
                     const target = (rating * lastVolt) / 2652;
                     const uF = (val * 2652) / lastVolt;
                     const varPct = ((uF / rating) - 1) * 100;
-                    const isPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
+                    const isPass = Math.abs(varPct / 100) <= (tolerance + 0.0001);
                     status = (isPass ? "&#10003; PASS " : "&#10007; FAIL ") + (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
                     color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
                 }
-            } else if (field === "Comp Amps" && specs.RLA && specs.RLA !== "--") {
-                const pct = (val / parseFloat(specs.RLA)) * 100;
+            } else if (field === "Comp Amps" && systemSpecs.outdoor.RLA && systemSpecs.outdoor.RLA !== "--") {
+                const pct = (val / parseFloat(systemSpecs.outdoor.RLA)) * 100;
                 const isPass = pct <= 100;
                 status = (isPass ? "&#10003; PASS " : "&#10007; FAIL ") + pct.toFixed(2) + "% RLA";
                 color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
-            } else if (field === "ODF Amps" && specs.FLA && specs.FLA !== "--") {
-                const pct = (val / parseFloat(specs.FLA)) * 100;
+            } else if (field === "ODF Amps" && systemSpecs.outdoor.FLA && systemSpecs.outdoor.FLA !== "--") {
+                const pct = (val / parseFloat(systemSpecs.outdoor.FLA)) * 100;
                 const isPass = pct <= 100;
                 status = (isPass ? "&#10003; PASS " : "&#10007; FAIL ") + pct.toFixed(2) + "% FLA";
                 color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
@@ -1050,18 +1838,18 @@
             let rating = null;
             if (item.field === "Herm Amps") rating = parseFloat(document.getElementById("hermRating").value);
             if (item.field === "Fan Amps") rating = parseFloat(document.getElementById("fanRating").value);
-            
+
             if (rating && item.volts > 0) {
                 const uF = (item.val * 2652) / item.volts;
                 const varPct = ((uF / rating) - 1) * 100;
-                const isPass = Math.abs(varPct/100) <= (localTolerance + 0.0001);
-                return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${uF.toFixed(2)}µF | ${varPct > 0 ? '+':''}${varPct.toFixed(2)}%)` };
-            } else if (item.field === "Comp Amps" && specs.RLA && specs.RLA !== "--") {
-                const pct = (item.val / parseFloat(specs.RLA)) * 100;
+                const isPass = Math.abs(varPct / 100) <= (localTolerance + 0.0001);
+                return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${uF.toFixed(2)}µF | ${varPct > 0 ? '+' : ''}${varPct.toFixed(2)}%)` };
+            } else if (item.field === "Comp Amps" && systemSpecs.outdoor.RLA && systemSpecs.outdoor.RLA !== "--") {
+                const pct = (item.val / parseFloat(systemSpecs.outdoor.RLA)) * 100;
                 const isPass = pct <= 100;
                 return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${pct.toFixed(2)}% RLA)` };
-            } else if (item.field === "ODF Amps" && specs.FLA && specs.FLA !== "--") {
-                const pct = (item.val / parseFloat(specs.FLA)) * 100;
+            } else if (item.field === "ODF Amps" && systemSpecs.outdoor.FLA && systemSpecs.outdoor.FLA !== "--") {
+                const pct = (item.val / parseFloat(systemSpecs.outdoor.FLA)) * 100;
                 const isPass = pct <= 100;
                 return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${pct.toFixed(2)}% FLA)` };
             }
@@ -1070,13 +1858,13 @@
 
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
-            const entries = Object.keys(buffer).sort((a,b) => a-b);
+            const entries = Object.keys(buffer).sort((a, b) => a - b);
             if (entries.length === 0) { log.innerHTML = '<div style="color:#444; text-align:center;">Log is empty</div>'; return; }
-            
+
             // Clear all glances
-            for(let i=0; i<FIELD_CYCLE.length; i++) {
-                const bg = document.getElementById('glance-'+i);
-                if(bg) { bg.innerText = "--"; bg.style.color = "#888"; }
+            for (let i = 0; i < FIELD_CYCLE.length; i++) {
+                const bg = document.getElementById('glance-' + i);
+                if (bg) { bg.innerText = "--"; bg.style.color = "#888"; }
             }
 
             log.innerHTML = entries.map(idx => {
@@ -1086,7 +1874,7 @@
 
                 // Update Glance Note
                 const gEl = document.getElementById('glance-' + idx);
-                if(gEl) {
+                if (gEl) {
                     if (t) {
                         let pctStr = "";
                         if (item.field === "Herm Amps" || item.field === "Fan Amps") {
@@ -1102,7 +1890,7 @@
                     }
                     gEl.style.color = t ? t.color : "white";
                 }
-                
+
                 if (t) {
                     const badge = `<span class="badge-small" style="color:${t.color}; border:1px solid ${t.color}">${t.isPass ? 'PASS' : 'FAIL'}</span>`;
                     return `<div class="log-item"><div><b>${item.field}:</b> ${item.val.toFixed(2)} ${t.txt}${badge}</div><button onclick="undoAt(${idx})" style="background:transparent; border:none; color:#777; font-size:9px; cursor:pointer;">UNDO</button></div>`;
@@ -1121,12 +1909,12 @@
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) return alert("Mic not supported.");
             isMicOn = true;
-            
+
             // Visual Indicators (Light up both potential trigger locations)
             document.getElementById('micTrigger').innerText = "⏹ STOP MIC";
             document.getElementById('micTrigger').style.background = "var(--crimson-red)";
             document.getElementById('masterSpecBtn').style.background = 'var(--emerald-green)';
-            
+
             document.getElementById('pwrIndicator').style.display = "block";
             document.getElementById('masterIndicator').style.display = "block";
 
@@ -1141,7 +1929,7 @@
                     globalMic.onresult = (e) => {
                         const res = e.results[e.results.length - 1];
                         const transcript = res[0].transcript.toLowerCase().trim();
-                        
+
                         const isSequenceMode = document.getElementById('voiceModal').style.display === 'flex';
                         const isIntakeMode = document.getElementById('mainDashboard').style.display !== 'none';
 
@@ -1173,7 +1961,7 @@
                                 }
                                 localStorage.setItem('hvacDictV20', JSON.stringify(userDict));
                                 updateSettingsUI();
-                                
+
                                 const feedback = `<b style="color:var(--emerald-green); text-shadow:0 0 10px var(--emerald-green);">${newWord.toUpperCase()} ADDED</b>`;
                                 const disp = document.getElementById('bigDisplay');
                                 const spl = document.getElementById('splashVer');
@@ -1202,9 +1990,9 @@
                             if (/\b(brands?)\b/.test(transcript)) { switchDictType('brands'); return; }
                             if (/\b(refs?|refrigerants?)\b/.test(transcript)) { switchDictType('refs'); return; }
                             if (/\b(words?|confirms?)\b/.test(transcript)) { switchDictType('confirms'); return; }
-                            
+
                             const sConfirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
-                            const sConfirmArr = sConfirmStr.toLowerCase().split(',').map(s=>s.trim());
+                            const sConfirmArr = sConfirmStr.toLowerCase().split(',').map(s => s.trim());
                             if (sConfirmArr.some(w => transcript.includes(w))) { confirmDictWord(); return; }
 
                             if (transcript.includes("undo") || transcript.includes("scrub")) { undoDictStaged(); return; }
@@ -1233,7 +2021,7 @@
                             if (/(fan amps)/.test(transcript)) { jumpToStep(3); return; }
                             if (/(comp amps|compressor amps)/.test(transcript)) { jumpToStep(4); return; }
                             if (/(odf amps|outdoor fan|condenser fan)/.test(transcript)) { jumpToStep(5); return; }
-                            
+
                             const finalNum = transcript.match(/\b(\d+\.?\d*)\b/);
                             if (finalNum && !isCapturing) {
                                 document.getElementById('bigDisplay').innerText = finalNum[1];
@@ -1247,7 +2035,7 @@
                     globalMic.onend = () => { if (isMicOn && !forceKill) startRec(); };
                     globalMic.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn('Global Mic:', e.error); };
                     globalMic.start();
-                } catch(e) {}
+                } catch (e) { }
             }
             startRec();
         }
@@ -1255,12 +2043,12 @@
         function stopGlobalMic() {
             isMicOn = false; forceKill = true;
             if (window._seqTimer) { clearInterval(window._seqTimer); window._seqTimer = null; }
-            if (globalMic) { globalMic.onend = null; try { globalMic.abort(); } catch(e){} globalMic = null; }
-            
+            if (globalMic) { globalMic.onend = null; try { globalMic.abort(); } catch (e) { } globalMic = null; }
+
             document.getElementById('micTrigger').innerText = "🎙 START MIC";
             document.getElementById('micTrigger').style.background = "#0056b3";
             document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)';
-            
+
             document.getElementById('pwrIndicator').style.display = "none";
             document.getElementById('masterIndicator').style.display = "none";
             document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
@@ -1274,7 +2062,7 @@
         }
         function confirmManualEntry() {
             const val = parseFloat(document.getElementById('manualInput').value);
-            if (!isNaN(val) && val > 0) { 
+            if (!isNaN(val) && val > 0) {
                 document.getElementById('bigDisplay').innerText = val.toFixed(2);
                 updateLiveCheck();
             }
@@ -1287,27 +2075,27 @@
             let val = parseFloat(document.getElementById('bigDisplay').innerText); if (val === 0 || isNaN(val)) return;
             isCapturing = true; let lastVolt = 0;
             const currentField = FIELD_CYCLE[fieldIndex];
-            
+
             try {
                 // Fix: Sort keys to find most recent Volts
-                const sortedKeys = Object.keys(buffer).sort((a,b) => parseInt(a) - parseInt(b));
-                for(let i = sortedKeys.length-1; i >= 0; i--) { 
+                const sortedKeys = Object.keys(buffer).sort((a, b) => parseInt(a) - parseInt(b));
+                for (let i = sortedKeys.length - 1; i >= 0; i--) {
                     const item = buffer[sortedKeys[i]];
-                    if(item && item.field && item.field.includes("Volts")) { lastVolt = item.val; break; } 
+                    if (item && item.field && item.field.includes("Volts")) { lastVolt = item.val; break; }
                 }
-                
+
                 buffer[fieldIndex] = { field: currentField, val: val, volts: lastVolt };
-                localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); 
+                localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
                 syncLogToUI();
-                
+
                 document.getElementById('bigDisplay').style.color = "white";
                 document.getElementById('bigDisplay').style.textShadow = "0 0 40px var(--emerald-green)";
-                
-                setTimeout(() => { 
+
+                setTimeout(() => {
                     document.getElementById('bigDisplay').style.color = "var(--text-primary)";
                     document.getElementById('bigDisplay').style.textShadow = "0 0 30px rgba(255, 255, 255, 0.15)";
-                    document.getElementById('bigDisplay').innerText = "0.0"; 
-                    
+                    document.getElementById('bigDisplay').innerText = "0.0";
+
                     let nextIdx = -1;
                     for (let i = 1; i < FIELD_CYCLE.length; i++) {
                         let check = (fieldIndex + i) % FIELD_CYCLE.length;
@@ -1322,7 +2110,7 @@
                         document.getElementById('targetRange').innerHTML = 'SEQUENCE COMPLETE &#10003; &mdash; say <b style="color:var(--crimson-red)">STOP MIC</b> or tap &#9209;️ to end';
                     }
                 }, 800);
-            } catch(e) {
+            } catch (e) {
                 console.error("COMMIT ERROR:", e);
                 isCapturing = false; // Deadlock Failsafe release
                 document.getElementById('bigDisplay').style.color = "var(--crimson-red)";
@@ -1330,30 +2118,30 @@
             }
         }
 
-        function undoLast() { 
-            const entries = Object.keys(buffer).sort((a,b) => b-a);
-            if(entries.length > 0) { undoAt(entries[0]); }
+        function undoLast() {
+            const entries = Object.keys(buffer).sort((a, b) => b - a);
+            if (entries.length > 0) { undoAt(entries[0]); }
         }
-        function undoAt(idx) { 
-            delete buffer[idx]; 
-            localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer)); 
-            fieldIndex = parseInt(idx); 
-            syncLogToUI(); updateStepNav(); recalculateField(); 
+        function undoAt(idx) {
+            delete buffer[idx];
+            localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
+            fieldIndex = parseInt(idx);
+            syncLogToUI(); updateStepNav(); recalculateField();
         }
 
         function clearBuffer() {
             // Silent wipe — no confirm() dialog (kills mic on iOS). RESTORE banner acts as safety net.
-            _lastBuffer = {...buffer};
+            _lastBuffer = { ...buffer };
             buffer = {}; localStorage.removeItem('hvacStagingBufferV20'); fieldIndex = 0;
             syncLogToUI(); updateStepNav(); recalculateField();
             document.getElementById('restoreBox').style.display = 'block';
         }
         function restoreBuffer() {
-            if(Object.keys(_lastBuffer).length > 0) {
-                buffer = {..._lastBuffer};
+            if (Object.keys(_lastBuffer).length > 0) {
+                buffer = { ..._lastBuffer };
                 localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
-                fieldIndex = 0; 
-                for(let i=0; i<FIELD_CYCLE.length; i++) { if(!buffer[i]) { fieldIndex = i; break; } }
+                fieldIndex = 0;
+                for (let i = 0; i < FIELD_CYCLE.length; i++) { if (!buffer[i]) { fieldIndex = i; break; } }
                 syncLogToUI(); updateStepNav(); recalculateField();
                 document.getElementById('restoreBox').style.display = 'none';
             }
@@ -1370,11 +2158,18 @@
             const container = document.getElementById('view-tech-notes-list');
             let html = '';
             for (const [category, notes] of Object.entries(techNotesMaster)) {
-                html += `<details style="margin-bottom:8px; background:rgba(0,0,0,0.4); padding:8px; border-radius:8px;"><summary style="font-size:12px; color:var(--amber-orange); font-weight:900; cursor:pointer; list-style:none;">${category.toUpperCase()} ⏷</summary><div class="chip-grid" style="padding-top:10px;">`;
+                let activeNotesArr = [];
+                notes.forEach(note => {
+                    const fullNote = `${category} → ${note}`;
+                    if (techNotes.includes(fullNote)) activeNotesArr.push(note);
+                });
+                const activeText = activeNotesArr.length > 0 ? `<span style="float:right; color:var(--emerald-green); font-size:10px; opacity:0.9;">${activeNotesArr.join(', ')}</span>` : '';
+
+                html += `<details style="margin-bottom:8px; background:rgba(0,0,0,0.4); padding:8px; border-radius:8px;"><summary style="font-size:12px; color:var(--amber-orange); font-weight:900; cursor:pointer; list-style:none;">${category.toUpperCase()} ⏷ ${activeText}</summary><div class="chip-grid" style="padding-top:10px;">`;
                 html += notes.map(note => {
                     const fullNote = `${category} → ${note}`;
                     const isSelected = techNotes.includes(fullNote);
-                    return `<div class="note-chip ${isSelected ? 'selected' : ''}" onclick="toggleTechNote('${fullNote.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">${note}</div>`;
+                    return `<div class="note-chip ${isSelected ? 'selected' : ''}" onclick="toggleTechNote('${fullNote.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">${note}</div>`;
                 }).join('');
                 html += `</div></details>`;
             }
@@ -1394,11 +2189,11 @@
             const cat = document.getElementById('newNoteCategory').value;
             const val = input.value.trim();
             if (!val) return;
-            
-            if(!techNotesMaster[cat]) techNotesMaster[cat] = [];
-            techNotesMaster[cat].push(val); 
+
+            if (!techNotesMaster[cat]) techNotesMaster[cat] = [];
+            techNotesMaster[cat].push(val);
             techNotes.push(`${cat} → ${val}`);
-            
+
             localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
             localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
             input.value = '';
@@ -1445,7 +2240,7 @@
         function removeReportLine(id) {
             // Temporary removal from current view (not permanent delete)
             const el = document.getElementById(id);
-            if(el) el.style.display = 'none';
+            if (el) el.style.display = 'none';
         }
 
         function getDeltaFlagHtml(dt, rh) {
@@ -1487,15 +2282,23 @@
 
             // SPECS (Full PM only)
             if (activeTemplate === 'full') {
-                let specParts = [];
-                if (specs.BRAND && specs.BRAND !== "--") specParts.push(`Brand: ${specs.BRAND}`);
-                if (specs.YEAR && specs.YEAR !== "--") specParts.push(`Year: ${specs.YEAR}`);
-                if (specs.REF && specs.REF !== "--") specParts.push(`Refrigerant: ${specs.REF}`);
-                if (specs.RLA && specs.RLA !== "--") specParts.push(`RLA: ${specs.RLA}`);
-                if (specs.FLA && specs.FLA !== "--") specParts.push(`FLA: ${specs.FLA}`);
-                if (specParts.length > 0) {
-                    pushLine(`System Specs → ${specParts.join(' | ')}`);
-                }
+                ['outdoor', 'furnace', 'coil'].forEach(tab => {
+                    const obj = systemSpecs[tab];
+                    if (obj.BRAND !== '--' || obj.MDL !== '--' || obj.SER !== '--') {
+                        let parts = [];
+                        if (obj.BRAND !== "--") parts.push(`Brand: ${obj.BRAND}`);
+                        if (obj.MDL !== "--") parts.push(`Model: ${obj.MDL}`);
+                        if (obj.SER !== "--") parts.push(`Serial: ${obj.SER}`);
+                        if (obj.TON !== undefined && obj.TON !== "--") parts.push(`${obj.TON} TON`);
+                        if (tab === 'outdoor') {
+                            if (obj.YEAR !== '--') parts.push(`Year: ${obj.YEAR}`);
+                            if (obj.RLA !== '--') parts.push(`RLA: ${obj.RLA}`);
+                            if (obj.FLA !== '--') parts.push(`FLA: ${obj.FLA}`);
+                            if (obj.REF !== '--') parts.push(`Ref: ${obj.REF}`);
+                        }
+                        pushLine(`[${obj.TYPE.toUpperCase()}] → ${parts.join(' | ')}`);
+                    }
+                });
             }
 
             // NOTES (Full PM only)
@@ -1511,48 +2314,48 @@
                     if (item.field === 'Comp Amps') cAmps = item;
                     if (item.field === 'ODF Amps') odfAmps = item;
                 });
-                
+
                 // Capacitor evaluation (Dual Cap Fix)
                 let hVolts = 0, hAmps = 0, fVolts = 0, fAmps = 0, hRating = parseFloat(document.getElementById('hermRating').value), fRating = parseFloat(document.getElementById('fanRating').value);
                 const bArr = Object.values(buffer);
                 bArr.forEach(item => {
-                    if(item.field === "Herm Volts") hVolts = item.val;
-                    if(item.field === "Herm Amps") hAmps = item.val;
-                    if(item.field === "Fan Volts") fVolts = item.val;
-                    if(item.field === "Fan Amps") fAmps = item.val;
+                    if (item.field === "Herm Volts") hVolts = item.val;
+                    if (item.field === "Herm Amps") hAmps = item.val;
+                    if (item.field === "Fan Volts") fVolts = item.val;
+                    if (item.field === "Fan Amps") fAmps = item.val;
                 });
 
                 let capStrParts = [];
                 let isHermPass = true, isFanPass = true;
-                
+
                 if (hVolts > 0 && hAmps > 0 && hRating > 0) {
                     const uF = (hAmps * 2652) / hVolts;
                     const varPct = ((uF / hRating) - 1) * 100;
-                    isHermPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
-                    capStrParts.push(`HERM: ${uF.toFixed(2)} MFD (${varPct>0?'+':''}${varPct.toFixed(1)}%)`);
+                    isHermPass = Math.abs(varPct / 100) <= (tolerance + 0.0001);
+                    capStrParts.push(`HERM: ${uF.toFixed(2)} MFD (${varPct > 0 ? '+' : ''}${varPct.toFixed(1)}%)`);
                 }
                 if (fVolts > 0 && fAmps > 0 && fRating > 0) {
                     const uF = (fAmps * 2652) / fVolts;
                     const varPct = ((uF / fRating) - 1) * 100;
-                    isFanPass = Math.abs(varPct/100) <= (tolerance + 0.0001);
-                    capStrParts.push(`FAN: ${uF.toFixed(2)} MFD (${varPct>0?'+':''}${varPct.toFixed(1)}%)`);
+                    isFanPass = Math.abs(varPct / 100) <= (tolerance + 0.0001);
+                    capStrParts.push(`FAN: ${uF.toFixed(2)} MFD (${varPct > 0 ? '+' : ''}${varPct.toFixed(1)}%)`);
                 }
 
                 if (capStrParts.length > 0) {
                     const isPass = isHermPass && isFanPass;
                     const flagHtml = !isPass ? '<span class="c-flag">🔴 FAIL</span>' : '';
                     let ratingStr = hRating + (fRating ? " + " + fRating : "");
-                    pushLine(`Capacitor Results → ${ratingStr} MFD ± ${tolerance*100}% Capacitor ${isPass?'passed':'failed'}. ${capStrParts.join(' | ')}`, flagHtml);
+                    pushLine(`Capacitor Results → ${ratingStr} MFD ± ${tolerance * 100}% Capacitor ${isPass ? 'passed' : 'failed'}. ${capStrParts.join(' | ')}`, flagHtml);
                 }
 
-                if (cAmps && specs.RLA && specs.RLA !== "--") {
-                    const pct = (cAmps.val / parseFloat(specs.RLA)) * 100;
+                if (cAmps && systemSpecs.outdoor.RLA && systemSpecs.outdoor.RLA !== "--") {
+                    const pct = (cAmps.val / parseFloat(systemSpecs.outdoor.RLA)) * 100;
                     const flagHtml = pct > 100 ? '<span class="c-flag">🔴 HIGH AMPS</span>' : '';
                     pushLine(`Compressor Amps → ${cAmps.val.toFixed(2)} A (${pct.toFixed(1)}% RLA)`, flagHtml);
                 }
-                
-                if (odfAmps && specs.FLA && specs.FLA !== "--") {
-                    const pct = (odfAmps.val / parseFloat(specs.FLA)) * 100;
+
+                if (odfAmps && systemSpecs.outdoor.FLA && systemSpecs.outdoor.FLA !== "--") {
+                    const pct = (odfAmps.val / parseFloat(systemSpecs.outdoor.FLA)) * 100;
                     const flagHtml = pct > 100 ? '<span class="c-flag">🔴 HIGH AMPS</span>' : '';
                     pushLine(`ODF Amps → ${odfAmps.val.toFixed(2)} A (${pct.toFixed(1)}% FLA)`, flagHtml);
                 }
@@ -1591,7 +2394,7 @@
             }
 
             preview.innerHTML = lines.join('');
-            if(lines.length === 0) preview.innerHTML = '<div style="color:#555; text-align:center; padding:20px;">No fields selected.</div>';
+            if (lines.length === 0) preview.innerHTML = '<div style="color:#555; text-align:center; padding:20px;">No fields selected.</div>';
         }
 
         function moveCompilerLine(btn, dir) {
@@ -1613,7 +2416,7 @@
         function copyCompilerReport() {
             const lines = document.querySelectorAll('#compilerPreview .compiler-line');
             if (lines.length === 0) return alert("Nothing to copy!");
-            
+
             let block = "";
             lines.forEach(line => {
                 if (line.style.display !== 'none') {
@@ -1623,7 +2426,7 @@
                     block += `${bullet} ${text}\n`;
                 }
             });
-            
+
             navigator.clipboard.writeText(block).then(() => {
                 alert("Invoice Block Copied!");
             });
@@ -1633,4 +2436,5 @@
         function startJob() { const name = document.getElementById('custName').value; fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] }), mode: "no-cors" }).then(() => alert("Job Created.")); }
     </script>
 </body>
+
 </html>
