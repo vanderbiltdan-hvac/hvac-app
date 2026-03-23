@@ -1233,10 +1233,14 @@
         initIndexedDB();
 
         async function savePhotoToHoard(data, filename, mime) {
-            if (!db) return;
-            const transaction = db.transaction([OS_NAME], "readwrite");
-            const store = transaction.objectStore(OS_NAME);
-            store.add({ data, filename, mime, shelf: "UNSORTED", timestamp: Date.now() });
+            return new Promise((resolve, reject) => {
+                if (!db) return reject("DB not initialized");
+                const transaction = db.transaction([OS_NAME], "readwrite");
+                const store = transaction.objectStore(OS_NAME);
+                const request = store.add({ data, filename, mime, shelf: "UNSORTED", timestamp: Date.now() });
+                transaction.oncomplete = () => resolve();
+                transaction.onerror = (e) => reject(e);
+            });
         }
 
         async function getAllPhotos() {
@@ -1305,13 +1309,13 @@
             selectedPhotoIds.clear();
 
             // Update Shelf Nav Pills
-            const shelves = [...new Set(photosFull.map(p => p.shelf))].filter(s => s !== 'UNSORTED');
+            const shelves = [...new Set(photosFull.map(p => p.shelf || 'UNSORTED'))].filter(s => s !== 'UNSORTED');
             nav.innerHTML = shelves.map(s => `<button onclick="switchShelf('${s}')" id="shelf-${s}" class="shelf-pill ${currentShelf === s ? 'active' : ''}">${s}</button>`).join('');
             document.querySelectorAll('.shelf-pill').forEach(p => p.classList.remove('active'));
             const activePill = document.getElementById('shelf-' + currentShelf);
             if (activePill) activePill.classList.add('active');
 
-            const photos = currentShelf === 'ALL' ? photosFull : photosFull.filter(p => p.shelf === currentShelf);
+            const photos = currentShelf === 'ALL' ? photosFull : photosFull.filter(p => (p.shelf || 'UNSORTED') === currentShelf);
 
             if (photos.length === 0) {
                 grid.innerHTML = ''; hint.style.display = 'block'; return;
@@ -1321,7 +1325,7 @@
                 <div id="photo-card-${p.id}" class="gallery-card" onclick="togglePhotoSelection(${p.id})">
                     <img src="data:${p.mime};base64,${p.data}">
                     <div class="card-check">✔</div>
-                    <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.6); font-size:8px; color:#aaa; padding:2px; text-align:center;">${p.shelf}</div>
+                    <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.6); font-size:8px; color:#aaa; padding:2px; text-align:center;">${p.shelf || 'UNSORTED'}</div>
                 </div>
             `).join('');
         }
@@ -1610,21 +1614,37 @@
         }
 
         async function handleMultiPhotos(input) {
-            const files = input.files; if (files.length === 0) return;
+            const files = Array.from(input.files);
+            if (files.length === 0) return;
             const status = document.getElementById('photoStatus');
-            status.style.display = 'block'; status.innerText = `Hoarding ${files.length} Photos...`;
-            for (let i = 0; i < files.length; i++) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const base64 = e.target.result.split(',')[1];
-                    const filename = files[i].name; const mime = files[i].type;
-                    await savePhotoToHoard(base64, filename, mime);
-                    if (i === files.length - 1) {
-                        status.innerText = "Photos Hoarded Successfully!";
-                        setTimeout(() => { status.style.display = 'none'; openGallery(); }, 1000);
-                    }
-                };
-                reader.readAsDataURL(files[i]);
+            status.style.display = 'block';
+            status.innerText = `Hoarding ${files.length} Photos...`;
+
+            const savePromises = files.map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        try {
+                            const base64 = e.target.result.split(',')[1];
+                            await savePhotoToHoard(base64, file.name, file.type);
+                            resolve();
+                        } catch (err) { reject(err); }
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            try {
+                await Promise.all(savePromises);
+                status.innerText = "Photos Hoarded Successfully!";
+                setTimeout(() => {
+                    status.style.display = 'none';
+                    openGallery();
+                }, 800);
+            } catch (err) {
+                console.error("Hoarding Error:", err);
+                status.innerText = "Error hoarding photos.";
             }
         }
 
