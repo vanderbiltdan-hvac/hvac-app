@@ -1178,19 +1178,19 @@
         </div>
     </div>
 
-    <!-- PHOTO GALLERY OVERLAY (V21.2) -->
-    <div id="galleryOverlay" class="modal-overlay" style="background:#000; display:none; flex-direction:column;">
+    <!-- PHOTO GALLERY OVERLAY (V21.3) -->
+    <div id="galleryOverlay" class="modal-overlay" style="background:#000; display:none; flex-direction:column; height:88vh; top:0; z-index:10000; padding-bottom:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 PHOTO HOARD</h2>
             <button onclick="closeGallery()" style="background:transparent; border:none; color:white; font-size:28px;">&times;</button>
         </div>
-        <div id="galleryGrid" style="flex:1; overflow-y:auto; padding:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px; align-content:start;">
+        <div id="galleryGrid" style="flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start;">
             <!-- Thumbnails inserted here -->
         </div>
         <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">No photos in hoard. Snap some tags!</div>
-        <div style="padding:15px; border-top:1px solid #333; display:flex; gap:10px; background:#0f0f0f; flex-shrink:0;">
-            <button onclick="processSelectedPhotos()" class="btn btn-primary" style="flex:2;">⚡ PARSE SELECTED</button>
-            <button onclick="deleteSelectedPhotos()" class="btn btn-stop" style="flex:1; background:var(--crimson-red);">DEL</button>
+        <div style="padding:15px; border-top:1px solid #333; display:flex; gap:10px; background:#111; flex-shrink:0; margin-bottom:5px;">
+            <button onclick="processSelectedPhotos()" class="btn btn-primary" style="flex:2; padding:15px; font-size:16px;">⚡ PARSE SELECTED</button>
+            <button onclick="deleteSelectedPhotos()" class="btn btn-stop" style="flex:1; background:var(--crimson-red); padding:15px;">DEL</button>
         </div>
     </div>
 
@@ -1316,7 +1316,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "21.2";
+        const APP_VERSION = "21.3";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
