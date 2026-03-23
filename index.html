@@ -986,14 +986,13 @@
 
     <!-- REPORT COMPILER (v20.32) -->
     <div id="reportOverlay" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
-        <div
-            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📋 COMPILER</h2>
             <div style="display:flex; gap:12px; align-items:center;">
-                <button id="compilerMicBtn" onclick="toggleGlobalMic()"
-                    style="background:var(--electric-blue); border:none; border-radius:50%; width:36px; height:36px; color:black; font-size:16px;">🎙</button>
-                <button onclick="closeReport()"
-                    style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+                <button id="compilerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">🎙</span> INTAKE AUTO
+                </button>
+                <button onclick="closeReport()" style="background:transparent; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
             </div>
         </div>
 
@@ -1093,32 +1092,27 @@
 
     <!-- SETTINGS MODAL -->
     <div id="settingsOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
-        <div
-            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
-            <button onclick="closeSettings()"
-                style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <button id="dictMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">🎙</span> INTAKE AUTO
+                </button>
+                <button onclick="closeSettings()" style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
+            </div>
         </div>
         <div class="step-nav" id="dictNav" style="margin:10px;">
-            <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')"
-                style="flex:1;">BRANDS</button>
+            <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')" style="flex:1;">BRANDS</button>
             <button class="step-btn" id="dict-btn-refs" onclick="switchDictType('refs')" style="flex:1;">REF</button>
-            <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')"
-                style="flex:1;">WORDS</button>
-            <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')"
-                style="flex:1;">NOTES</button>
+            <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')" style="flex:1;">WORDS</button>
+            <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')" style="flex:1;">NOTES</button>
         </div>
 
         <div class="voice-console" style="margin:0 10px;">
-            <div id="dictTargetLabel"
-                style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
-            <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY ENTRY...
-            </div>
-            <div class="btn-main-grid">
-                <button id="dictMicBtn" class="btn btn-primary" onclick="toggleGlobalMic()">🎙 START MIC</button>
-                <button onclick="undoDictStaged()" class="btn btn-stop">SCRUB</button>
-                <button onclick="confirmDictWord()" class="btn btn-green" style="grid-column: span 2;">✔ CONFIRM &
-                    SAVE</button>
+            <div id="dictTargetLabel" style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
+            <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY ENTRY...</div>
+            <div class="btn-main-grid" style="grid-template-columns: 1fr;">
+                <button onclick="confirmDictWord()" class="btn btn-green" style="padding:16px; font-size:18px;">✔ CONFIRM & SAVE</button>
             </div>
         </div>
 
@@ -1232,7 +1226,7 @@
         };
         const EQUIP_TYPES = {
             outdoor: ['Condenser', 'Heat Pump', 'Package Unit'],
-            indoor: ['Furnace', 'Air Handler', 'Mini Split', 'Boiler', 'None'],
+            indoor: ['Air Handler', 'Furnace', 'Mini Split', 'Boiler', 'None'],
             thermostat: ['Smart', 'Programmable', 'Non-Programmable']
         };
 
@@ -1307,7 +1301,7 @@
             grid.innerHTML = buildCells(EQUIP_SCHEMA[tab].filter(f => !f.id.startsWith('C_')));
 
             const subGrid = document.getElementById('subSpecGrid');
-            if (tab === 'indoor' && ['Furnace', 'Air Handler', 'Boiler'].includes(systemSpecs[tab].TYPE)) {
+            if (tab === 'indoor' && ['Furnace', 'Boiler'].includes(systemSpecs[tab].TYPE)) {
                 subGrid.style.display = 'grid';
                 document.getElementById('subSpecHeader').style.display = 'block';
                 subGrid.innerHTML = buildCells(EQUIP_SCHEMA['indoor'].filter(f => f.id.startsWith('C_')));
@@ -1496,6 +1490,29 @@
         // ── GLOBAL AUDIO ENGINE (v20.28) ─────────────────────────────────
         function processIntakeLogic(transcript) {
             let kwRegex = null;
+
+            // --- PHASE 3 UI VERBAL ROUTING ---
+            const tLower = transcript.toLowerCase();
+            
+            // Tab Jump Core
+            if (tLower.includes('outdoor')) { switchEquipTab('outdoor'); return; }
+            if (tLower.includes('indoor')) { switchEquipTab('indoor'); return; }
+            if (tLower.includes('thermostat')) { switchEquipTab('thermostat'); return; }
+            if (tLower.includes('manuals')) { openManuals(); return; }
+            
+            // Compiler Context Jumps
+            if (tLower.includes('refrigeration data') || tLower.includes('refrigeration view')) { switchCompilerView('refrig'); return; }
+            if (tLower.includes('tech notes') || tLower.includes('tech note')) { switchCompilerView('notes'); return; }
+            if (tLower.includes('full p m') || tLower.includes('full pm')) { switchTemplate('full'); return; }
+            if (tLower.includes('refrigeration') && !tLower.includes('data') && !tLower.includes('view') && !refData.SUCT_P) { switchTemplate('refrig'); return; }
+            if (tLower.includes('heat template')) { switchTemplate('heat'); return; }
+
+            // Settings Context Jumps
+            if (tLower.includes('brands') && isSettingsMode) { switchDictType('brands'); return; }
+            if (tLower.includes('refrigerant') && isSettingsMode) { switchDictType('refs'); return; }
+            if (tLower.includes('words') && isSettingsMode) { switchDictType('confirms'); return; }
+            if (tLower.includes('notes') && isSettingsMode && !tLower.includes('tech')) { switchDictType('notes'); return; }
+            // ---------------------------------
 
             // Keyword Detection
             if (/\b(brand|make)\b/.test(transcript)) { masterTarget = "BRAND"; kwRegex = /\b(brand|make)\b/; }
