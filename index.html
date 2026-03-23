@@ -843,7 +843,7 @@
                 <h1
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SERVICE PRO</h1>
-                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.4
+                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.5
                 </div>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
@@ -1289,12 +1289,17 @@
         }
 
         async function openGallery() {
+            localStorage.setItem('galleryOpen', 'true');
             closeAllModals();
             document.getElementById('galleryOverlay').style.display = 'flex';
             currentShelf = 'ALL';
             renderGallery();
         }
-        function closeGallery() { document.getElementById('galleryOverlay').style.display = 'none'; showSection('mainDashboard'); }
+        function closeGallery() { 
+            localStorage.removeItem('galleryOpen');
+            document.getElementById('galleryOverlay').style.display = 'none'; 
+            showSection('mainDashboard'); 
+        }
 
         async function switchShelf(shelfName) {
             currentShelf = shelfName;
@@ -1322,8 +1327,8 @@
             }
             hint.style.display = 'none';
             grid.innerHTML = photos.reverse().map(p => `
-                <div id="photo-card-${p.id}" class="gallery-card" onclick="togglePhotoSelection(${p.id})">
-                    <img src="data:${p.mime};base64,${p.data}">
+                <div id="photo-card-${p.id}" class="gallery-card" onclick="event.stopPropagation(); togglePhotoSelection(${p.id})">
+                    <img src="data:${p.mime};base64,${p.data}" pointer-events="none">
                     <div class="card-check">✔</div>
                     <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.6); font-size:8px; color:#aaa; padding:2px; text-align:center;">${p.shelf || 'UNSORTED'}</div>
                 </div>
@@ -1416,7 +1421,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "21.4";
+        const APP_VERSION = "21.5";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -1514,6 +1519,7 @@
         initSplash();
         initV2Controls();
         updateShellButton();
+        if (localStorage.getItem('galleryOpen') === 'true') openGallery();
 
         // ── Change #2: Date on CREATE SHELL (yyyy-mm-dd) ─────────────────
         function updateShellButton() {
@@ -1953,9 +1959,14 @@
 
         function showSection(id) {
             closeAllModals();
-            document.getElementById('mainDashboard').style.display = 'none';
-            document.getElementById(id).style.display = 'block';
-            updateNavUI('nav-home');
+            if (localStorage.getItem('galleryOpen') === 'true') {
+                document.getElementById('galleryOverlay').style.display = 'flex';
+            }
+            document.getElementById('mainDashboard').style.display = (id === 'mainDashboard') ? 'block' : 'none';
+            if (id !== 'mainDashboard') {
+                document.getElementById(id).style.display = 'block';
+            }
+            updateNavUI(id === 'mainDashboard' ? 'nav-home' : 'nav-' + id.replace('Overlay','').replace('Modal',''));
         }
 
         function updateNavUI(activeId) {
@@ -1964,12 +1975,12 @@
         }
 
         function closeAllModals() {
-            isSettingsMode = false; // BUG FIX: always clear settings ghost
+            isSettingsMode = false;
             document.getElementById('voiceModal').style.display = 'none';
             document.getElementById('reportOverlay').style.display = 'none';
             document.getElementById('manualsOverlay').style.display = 'none';
             document.getElementById('settingsOverlay').style.display = 'none';
-            // Removed stopMic() so persistent transitions work!
+            // Note: galleryOverlay is NOT closed here to prevent "bounce back"
         }
 
         // ── UNIFIED VOICE DISPATCHER ───────────────────────────────────
