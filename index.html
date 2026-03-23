@@ -843,7 +843,7 @@
                 <h1
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SERVICE PRO</h1>
-                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.2
+                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.4
                 </div>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
@@ -1178,33 +1178,54 @@
         </div>
     </div>
 
-    <!-- PHOTO GALLERY OVERLAY (V21.3) -->
+    <!-- PHOTO GALLERY OVERLAY (V21.4 - SHELF EDITION) -->
     <div id="galleryOverlay" class="modal-overlay" style="background:#000; display:none; flex-direction:column; height:88vh; top:0; z-index:10000; padding-bottom:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 PHOTO HOARD</h2>
             <button onclick="closeGallery()" style="background:transparent; border:none; color:white; font-size:28px;">&times;</button>
         </div>
+        
+        <!-- SHELF DRAWER -->
+        <div id="shelfBar" style="background:#111; padding:10px; display:flex; gap:8px; overflow-x:auto; border-bottom:1px solid #333; flex-shrink:0;">
+            <button onclick="switchShelf('ALL')" id="shelf-ALL" class="shelf-pill active">ALL</button>
+            <button onclick="switchShelf('UNSORTED')" id="shelf-UNSORTED" class="shelf-pill">UNSORTED</button>
+            <div id="dynamicShelves" style="display:flex; gap:8px;"></div>
+            <button onclick="createNewShelfPrompt()" class="shelf-pill" style="border:1px dashed #555;">+ NEW</button>
+        </div>
+
         <div id="galleryGrid" style="flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start;">
             <!-- Thumbnails inserted here -->
         </div>
-        <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">No photos in hoard. Snap some tags!</div>
-        <div style="padding:15px; border-top:1px solid #333; display:flex; gap:10px; background:#111; flex-shrink:0; margin-bottom:5px;">
-            <button onclick="processSelectedPhotos()" class="btn btn-primary" style="flex:2; padding:15px; font-size:16px;">⚡ PARSE SELECTED</button>
-            <button onclick="deleteSelectedPhotos()" class="btn btn-stop" style="flex:1; background:var(--crimson-red); padding:15px;">DEL</button>
+        <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">Selected shelf is empty. Hoard some more!</div>
+        
+        <div style="padding:15px; border-top:1px solid #333; display:flex; flex-direction:column; gap:10px; background:#111; flex-shrink:0;">
+            <div style="display:flex; gap:10px;">
+                <button onclick="processSelectedPhotos()" class="btn btn-primary" style="flex:2; padding:12px; font-size:14px;">⚡ PARSE AI</button>
+                <button onclick="deleteSelectedPhotos()" class="btn btn-stop" style="flex:1; background:var(--crimson-red); padding:12px;">DEL</button>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="moveSelectedToShelf()" class="btn btn-outline" style="flex:1; border-color:var(--amber-orange); color:var(--amber-orange);">📁 TO SHELF</button>
+                <button onclick="sendShelfToDrive()" class="btn btn-outline" style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green);">☁️ DRIVE</button>
+            </div>
         </div>
     </div>
 
     <script id="galleryScript">
         let db = null;
+        let currentShelf = 'ALL';
         const DB_NAME = "HVAC_PRO_DB";
         const OS_NAME = "PH_GALLERY";
 
         function initIndexedDB() {
-            const request = indexedDB.open(DB_NAME, 1);
+            const request = indexedDB.open(DB_NAME, 2); // Bumping version for schema change
             request.onupgradeneeded = (e) => {
                 const dbInstance = e.target.result;
                 if (!dbInstance.objectStoreNames.contains(OS_NAME)) {
-                    dbInstance.createObjectStore(OS_NAME, { keyPath: "id", autoIncrement: true });
+                    const store = dbInstance.createObjectStore(OS_NAME, { keyPath: "id", autoIncrement: true });
+                    store.createIndex("shelf", "shelf", { unique: false });
+                } else {
+                    // Update existing records with 'UNSORTED' shelf if missing
+                    // (IndexDB migration logic usually goes here if needed)
                 }
             };
             request.onsuccess = (e) => { db = e.target.result; };
@@ -1215,7 +1236,7 @@
             if (!db) return;
             const transaction = db.transaction([OS_NAME], "readwrite");
             const store = transaction.objectStore(OS_NAME);
-            store.add({ data, filename, mime, timestamp: Date.now() });
+            store.add({ data, filename, mime, shelf: "UNSORTED", timestamp: Date.now() });
         }
 
         async function getAllPhotos() {
@@ -1225,6 +1246,20 @@
                 const store = transaction.objectStore(OS_NAME);
                 const request = store.getAll();
                 request.onsuccess = () => resolve(request.result);
+            });
+        }
+
+        async function updatePhotoShelf(id, shelfName) {
+            return new Promise((resolve) => {
+                const transaction = db.transaction([OS_NAME], "readwrite");
+                const store = transaction.objectStore(OS_NAME);
+                const getReq = store.get(id);
+                getReq.onsuccess = () => {
+                    const data = getReq.result;
+                    data.shelf = shelfName;
+                    store.put(data);
+                    resolve();
+                };
             });
         }
 
@@ -1252,15 +1287,31 @@
         async function openGallery() {
             closeAllModals();
             document.getElementById('galleryOverlay').style.display = 'flex';
+            currentShelf = 'ALL';
             renderGallery();
         }
         function closeGallery() { document.getElementById('galleryOverlay').style.display = 'none'; showSection('mainDashboard'); }
 
+        async function switchShelf(shelfName) {
+            currentShelf = shelfName;
+            renderGallery();
+        }
+
         async function renderGallery() {
             const grid = document.getElementById('galleryGrid');
             const hint = document.getElementById('galleryEmptyHint');
-            const photos = await getAllPhotos();
+            const nav = document.getElementById('dynamicShelves');
+            const photosFull = await getAllPhotos();
             selectedPhotoIds.clear();
+
+            // Update Shelf Nav Pills
+            const shelves = [...new Set(photosFull.map(p => p.shelf))].filter(s => s !== 'UNSORTED');
+            nav.innerHTML = shelves.map(s => `<button onclick="switchShelf('${s}')" id="shelf-${s}" class="shelf-pill ${currentShelf === s ? 'active' : ''}">${s}</button>`).join('');
+            document.querySelectorAll('.shelf-pill').forEach(p => p.classList.remove('active'));
+            const activePill = document.getElementById('shelf-' + currentShelf);
+            if (activePill) activePill.classList.add('active');
+
+            const photos = currentShelf === 'ALL' ? photosFull : photosFull.filter(p => p.shelf === currentShelf);
 
             if (photos.length === 0) {
                 grid.innerHTML = ''; hint.style.display = 'block'; return;
@@ -1270,8 +1321,24 @@
                 <div id="photo-card-${p.id}" class="gallery-card" onclick="togglePhotoSelection(${p.id})">
                     <img src="data:${p.mime};base64,${p.data}">
                     <div class="card-check">✔</div>
+                    <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.6); font-size:8px; color:#aaa; padding:2px; text-align:center;">${p.shelf}</div>
                 </div>
             `).join('');
+        }
+
+        async function createNewShelfPrompt() {
+            const name = prompt("Enter Name for New Shelf:", "Shelf " + (document.querySelectorAll('.shelf-pill').length - 1));
+            if (name) switchShelf(name.toUpperCase());
+        }
+
+        async function moveSelectedToShelf() {
+            if (selectedPhotoIds.size === 0) return;
+            const photos = await getAllPhotos();
+            const existingShelves = [...new Set(photos.map(p => p.shelf))];
+            const target = prompt("Filing To (Enter Name):", currentShelf === 'ALL' ? 'Shelf 1' : currentShelf);
+            if (!target) return;
+            for (let id of selectedPhotoIds) { await updatePhotoShelf(id, target.trim().toUpperCase()); }
+            renderGallery();
         }
 
         async function deleteSelectedPhotos() {
@@ -1285,10 +1352,10 @@
             const photos = await getAllPhotos();
             const toProcess = photos.filter(p => selectedPhotoIds.has(p.id));
             
-            closeGallery();
+            closeGallery(); // FIX: Must close before AI Modal shows
             const status = document.getElementById('photoStatus');
             status.style.display = 'block';
-            status.innerText = `Processing ${toProcess.length} Photos...`;
+            status.innerText = `AI Processing ${toProcess.length} Photos...`;
 
             for (let ph of toProcess) {
                 status.innerText = `Analyzing Tag: ${ph.filename}...`;
@@ -1300,13 +1367,42 @@
                 if (result && result.extractedData) {
                     tempAiSpecs = result.extractedData;
                     openAiModal(result.extractedData);
-                    // To maintain workflow, we show modal for each or last? 
-                    // Usually we do one-by-one or cumulative. Let's do one-by-one.
                 }
             }
         }
+
+        async function sendShelfToDrive() {
+            const photosFull = await getAllPhotos();
+            const photos = currentShelf === 'ALL' ? photosFull : photosFull.filter(p => p.shelf === currentShelf);
+            if (photos.length === 0) return;
+
+            const confirmUpload = confirm(`Send ${photos.length} photos in [${currentShelf}] to Customer's Google Drive?`);
+            if (!confirmUpload) return;
+
+            const status = document.getElementById('photoStatus');
+            status.style.display = 'block';
+            status.innerText = `Syncing [${currentShelf}] to Drive...`;
+
+            for (let ph of photos) {
+                status.innerText = `Uploading: ${ph.filename}...`;
+                await fetch(WEB_APP_URL, { 
+                    method: "POST", 
+                    body: JSON.stringify({ 
+                        action: "uploadPhotoAI", // Reuse vision endpoint or specific for simple move
+                        data: ph.data, 
+                        filename: ph.filename, 
+                        mimeType: ph.mime,
+                        folderName: currentShelf // Pass Shelf Name to Apps Script
+                    }) 
+                });
+            }
+            status.innerText = "Sync Complete.";
+            setTimeout(() => status.style.display = 'none', 2000);
+        }
     </script>
     <style>
+        .shelf-pill { background:#222; color:#777; border:1px solid #333; border-radius:15px; padding:6px 14px; font-weight:900; font-size:10px; cursor:pointer; white-space:nowrap; transition:0.2s; }
+        .shelf-pill.active { background:var(--electric-blue); color:black; border-color:var(--electric-blue); }
         .gallery-card { position:relative; border-radius:12px; overflow:hidden; border:2px solid transparent; aspect-ratio:1/1; background:#111; cursor:pointer; }
         .gallery-card img { width:100%; height:100%; object-fit:cover; opacity:0.8; transition:0.2s; }
         .gallery-card.selected { border-color:var(--electric-blue); }
@@ -1316,7 +1412,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "21.3";
+        const APP_VERSION = "21.4";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
