@@ -843,13 +843,17 @@
                 <h1
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SERVICE PRO</h1>
-                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.1
+                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.2
                 </div>
             </div>
-            <button id="headerMicBtn" onclick="toggleGlobalMic()"
-                style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
-                <span style="font-size:18px;">🎙</span> INTAKE AUTO
-            </button>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button onclick="openGallery()" style="background:#222; color:var(--electric-blue); border:1px solid var(--electric-blue); border-radius:12px; padding:8px 12px; font-weight:900; font-size:12px; display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:16px;">🖼</span> GALLERY
+                </button>
+                <button id="headerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">🎙</span> INTAKE AUTO
+                </button>
+            </div>
         </div>
 
         <!-- EQUIPMENT TABS -->
@@ -1174,8 +1178,145 @@
         </div>
     </div>
 
+    <!-- PHOTO GALLERY OVERLAY (V21.2) -->
+    <div id="galleryOverlay" class="modal-overlay" style="background:#000; display:none; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
+            <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 PHOTO HOARD</h2>
+            <button onclick="closeGallery()" style="background:transparent; border:none; color:white; font-size:28px;">&times;</button>
+        </div>
+        <div id="galleryGrid" style="flex:1; overflow-y:auto; padding:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px; align-content:start;">
+            <!-- Thumbnails inserted here -->
+        </div>
+        <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">No photos in hoard. Snap some tags!</div>
+        <div style="padding:15px; border-top:1px solid #333; display:flex; gap:10px; background:#0f0f0f; flex-shrink:0;">
+            <button onclick="processSelectedPhotos()" class="btn btn-primary" style="flex:2;">⚡ PARSE SELECTED</button>
+            <button onclick="deleteSelectedPhotos()" class="btn btn-stop" style="flex:1; background:var(--crimson-red);">DEL</button>
+        </div>
+    </div>
+
+    <script id="galleryScript">
+        let db = null;
+        const DB_NAME = "HVAC_PRO_DB";
+        const OS_NAME = "PH_GALLERY";
+
+        function initIndexedDB() {
+            const request = indexedDB.open(DB_NAME, 1);
+            request.onupgradeneeded = (e) => {
+                const dbInstance = e.target.result;
+                if (!dbInstance.objectStoreNames.contains(OS_NAME)) {
+                    dbInstance.createObjectStore(OS_NAME, { keyPath: "id", autoIncrement: true });
+                }
+            };
+            request.onsuccess = (e) => { db = e.target.result; };
+        }
+        initIndexedDB();
+
+        async function savePhotoToHoard(data, filename, mime) {
+            if (!db) return;
+            const transaction = db.transaction([OS_NAME], "readwrite");
+            const store = transaction.objectStore(OS_NAME);
+            store.add({ data, filename, mime, timestamp: Date.now() });
+        }
+
+        async function getAllPhotos() {
+            return new Promise((resolve) => {
+                if (!db) return resolve([]);
+                const transaction = db.transaction([OS_NAME], "readonly");
+                const store = transaction.objectStore(OS_NAME);
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+            });
+        }
+
+        async function deletePhoto(id) {
+            return new Promise((resolve) => {
+                const transaction = db.transaction([OS_NAME], "readwrite");
+                const store = transaction.objectStore(OS_NAME);
+                const request = store.delete(id);
+                request.onsuccess = () => resolve();
+            });
+        }
+
+        let selectedPhotoIds = new Set();
+        function togglePhotoSelection(id) {
+            const card = document.getElementById('photo-card-' + id);
+            if (selectedPhotoIds.has(id)) {
+                selectedPhotoIds.delete(id);
+                card.classList.remove('selected');
+            } else {
+                selectedPhotoIds.add(id);
+                card.classList.add('selected');
+            }
+        }
+
+        async function openGallery() {
+            closeAllModals();
+            document.getElementById('galleryOverlay').style.display = 'flex';
+            renderGallery();
+        }
+        function closeGallery() { document.getElementById('galleryOverlay').style.display = 'none'; showSection('mainDashboard'); }
+
+        async function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            const hint = document.getElementById('galleryEmptyHint');
+            const photos = await getAllPhotos();
+            selectedPhotoIds.clear();
+
+            if (photos.length === 0) {
+                grid.innerHTML = ''; hint.style.display = 'block'; return;
+            }
+            hint.style.display = 'none';
+            grid.innerHTML = photos.reverse().map(p => `
+                <div id="photo-card-${p.id}" class="gallery-card" onclick="togglePhotoSelection(${p.id})">
+                    <img src="data:${p.mime};base64,${p.data}">
+                    <div class="card-check">✔</div>
+                </div>
+            `).join('');
+        }
+
+        async function deleteSelectedPhotos() {
+            if (selectedPhotoIds.size === 0) return;
+            for (let id of selectedPhotoIds) { await deletePhoto(id); }
+            renderGallery();
+        }
+
+        async function processSelectedPhotos() {
+            if (selectedPhotoIds.size === 0) return;
+            const photos = await getAllPhotos();
+            const toProcess = photos.filter(p => selectedPhotoIds.has(p.id));
+            
+            closeGallery();
+            const status = document.getElementById('photoStatus');
+            status.style.display = 'block';
+            status.innerText = `Processing ${toProcess.length} Photos...`;
+
+            for (let ph of toProcess) {
+                status.innerText = `Analyzing Tag: ${ph.filename}...`;
+                const response = await fetch(WEB_APP_URL, { 
+                    method: "POST", 
+                    body: JSON.stringify({ action: "uploadPhotoAI", data: ph.data, filename: ph.filename, mimeType: ph.mime }) 
+                });
+                const result = await response.json();
+                if (result && result.extractedData) {
+                    tempAiSpecs = result.extractedData;
+                    openAiModal(result.extractedData);
+                    // To maintain workflow, we show modal for each or last? 
+                    // Usually we do one-by-one or cumulative. Let's do one-by-one.
+                }
+            }
+        }
+    </script>
+    <style>
+        .gallery-card { position:relative; border-radius:12px; overflow:hidden; border:2px solid transparent; aspect-ratio:1/1; background:#111; cursor:pointer; }
+        .gallery-card img { width:100%; height:100%; object-fit:cover; opacity:0.8; transition:0.2s; }
+        .gallery-card.selected { border-color:var(--electric-blue); }
+        .gallery-card.selected img { opacity:1; filter:brightness(1.2); }
+        .card-check { position:absolute; top:8px; right:8px; background:var(--electric-blue); color:black; width:22px; height:22px; border-radius:50%; display:none; justify-content:center; align-items:center; font-weight:900; font-size:12px; }
+        .gallery-card.selected .card-check { display:flex; }
+    </style>
+
     <script>
-        const APP_VERSION = "21.1";
+        const APP_VERSION = "21.2";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -1375,16 +1516,17 @@
         async function handleMultiPhotos(input) {
             const files = input.files; if (files.length === 0) return;
             const status = document.getElementById('photoStatus');
-            status.style.display = 'block'; status.innerText = `Sending ${files.length} Photos to Gemini...`;
+            status.style.display = 'block'; status.innerText = `Hoarding ${files.length} Photos...`;
             for (let i = 0; i < files.length; i++) {
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     const base64 = e.target.result.split(',')[1];
                     const filename = files[i].name; const mime = files[i].type;
-                    status.innerText = `Analyzing Nameplate: ${filename}...`;
-                    const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "uploadPhotoAI", data: base64, filename: filename, mimeType: mime }) });
-                    const result = await response.json();
-                    if (result && result.extractedData) { tempAiSpecs = result.extractedData; openAiModal(result.extractedData); }
+                    await savePhotoToHoard(base64, filename, mime);
+                    if (i === files.length - 1) {
+                        status.innerText = "Photos Hoarded Successfully!";
+                        setTimeout(() => { status.style.display = 'none'; openGallery(); }, 1000);
+                    }
                 };
                 reader.readAsDataURL(files[i]);
             }
