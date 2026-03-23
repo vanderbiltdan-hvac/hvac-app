@@ -836,11 +836,11 @@
     </nav>
 
     <div class="container" id="mainDashboard" style="padding-bottom:100px;">
-        <!-- GLOBAL HEADER (V20.34) -->
+        <!-- GLOBAL HEADER (V21.0) -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px;">
             <div>
-                <h1 style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">SERVICE PRO</h1>
-                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v20.34</div>
+                <h1 style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">SERVICE PRO</h1>
+                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.0</div>
             </div>
             <button id="headerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
                 <span style="font-size:18px;">🎙</span> INTAKE AUTO
@@ -850,11 +850,12 @@
         <!-- EQUIPMENT TABS -->
         <div class="step-nav" id="equipNav" style="margin-bottom:8px;">
             <button class="step-btn active" id="tab-outdoor" onclick="switchEquipTab('outdoor')" style="flex:1;">OUTDOOR</button>
-            <button class="step-btn" id="tab-furnace" onclick="switchEquipTab('furnace')" style="flex:1;">FURNACE / AHU</button>
-            <button class="step-btn" id="tab-coil" onclick="switchEquipTab('coil')" style="flex:1;">EVAP COIL</button>
+            <button class="step-btn" id="tab-indoor" onclick="switchEquipTab('indoor')" style="flex:1;">INDOOR</button>
+            <button class="step-btn" id="tab-thermostat" onclick="switchEquipTab('thermostat')" style="flex:1;">THERMOSTAT</button>
         </div>
         <div style="margin-bottom:12px; text-align:center;">
-            <select id="equipTypeDrop" onchange="updateEquipType(this.value)" style="background:rgba(255,255,255,0.05); color:var(--text-primary); border:1px solid rgba(0,229,255,0.3); padding:8px 12px; border-radius:8px; width:100%; font-weight:900; font-size:14px; text-transform:uppercase;">
+            <select id="equipTypeDrop" onchange="updateEquipType(this.value)"
+                style="background:rgba(255,255,255,0.05); color:var(--text-primary); border:1px solid rgba(0,229,255,0.3); padding:8px 12px; border-radius:8px; width:100%; font-weight:900; font-size:14px; text-transform:uppercase;">
             </select>
         </div>
 
@@ -862,6 +863,10 @@
         <div class="rig-grid" id="mainSpecGrid">
             <!-- Dynamically Rendered by renderSystemSpecs() -->
         </div>
+
+        <!-- NESTED COIL SUBGRID -->
+        <div id="subSpecHeader" style="font-size:10px; color:var(--amber-orange); font-weight:900; letter-spacing:2px; margin:16px 0 8px 0; text-align:center; display:none;">--- EVAP COIL COMPONENT ---</div>
+        <div class="rig-grid" id="subSpecGrid" style="display:none;"></div>
 
         <div style="margin-bottom:12px;">
             <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline"
@@ -910,8 +915,10 @@
         <div class="voice-console" id="consoleBody">
             <div id="pwrIndicator" class="recording-pulse"></div>
             <div id="targetRange">READY...</div>
-            <div id="bigDisplay" class="big-display" onclick="toggleManualEntry()" style="cursor:pointer; display:inline-block;">0.0</div>
-            <div style="font-size:9px; color:#555; font-weight:900; letter-spacing:1px; margin-top:-5px;">TAP NUMBER TO TYPE</div>
+            <div id="bigDisplay" class="big-display" onclick="toggleManualEntry()"
+                style="cursor:pointer; display:inline-block;">0.0</div>
+            <div style="font-size:9px; color:#555; font-weight:900; letter-spacing:1px; margin-top:-5px;">TAP NUMBER TO
+                TYPE</div>
             <div id="liveCheck"></div>
 
             <div class="dual-inputs">
@@ -933,9 +940,9 @@
 
             <div class="rating-reel" id="capReel"></div>
 
-            <div class="btn-main-grid" style="grid-template-columns: 1fr; gap:8px; margin-top:16px;">
+            <div class="btn-main-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:16px;">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()" style="padding:16px; font-size:18px;">🎙 START MIC</button>
-                <button onclick="confirmReading()" class="btn btn-green" style="padding:16px; font-size:18px;">✔ COMMIT VALUE</button>
+                <button onclick="confirmReading()" class="btn btn-green" style="padding:16px; font-size:18px;">✔ COMMIT</button>
             </div>
         </div>
 
@@ -1069,8 +1076,9 @@
                 <div style="font-size:10px; color:var(--amber-orange); font-weight:900; margin-bottom:6px;">SAVE TO:</div>
                 <select id="aiRouteTarget" style="background:#000; color:white; border:1px solid #555; padding:8px; width:100%; border-radius:6px; font-weight:900; font-size:14px;">
                     <option value="outdoor">OUTDOOR</option>
-                    <option value="furnace">FURNACE / AHU</option>
-                    <option value="coil">EVAP COIL</option>
+                    <option value="indoor">INDOOR</option>
+                    <option value="coil">EVAP COIL (Nested in Indoor)</option>
+                    <option value="thermostat">THERMOSTAT</option>
                 </select>
             </div>
             <div id="aiResults" style="font-size:14px; max-height:250px; overflow-y:auto; margin-bottom:20px; background:rgba(0,0,0,0.3); padding:10px; border-radius:10px; text-align:left;">
@@ -1092,10 +1100,13 @@
                 style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
         </div>
         <div class="step-nav" id="dictNav" style="margin:10px;">
-            <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')" style="flex:1;">BRANDS</button>
+            <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')"
+                style="flex:1;">BRANDS</button>
             <button class="step-btn" id="dict-btn-refs" onclick="switchDictType('refs')" style="flex:1;">REF</button>
-            <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')" style="flex:1;">WORDS</button>
-            <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')" style="flex:1;">NOTES</button>
+            <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')"
+                style="flex:1;">WORDS</button>
+            <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')"
+                style="flex:1;">NOTES</button>
         </div>
 
         <div class="voice-console" style="margin:0 10px;">
@@ -1141,22 +1152,36 @@
     </div>
 
     <script>
-        const APP_VERSION = "20.34";
+        const APP_VERSION = "21.0";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxwJaPVJanB9eii0RXcYumvLAo6sgvwTG3OumYsHmams9apkn1wVcfvkzAx2knBseXE/exec";
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
-        let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV20_34')) || {
+        let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV21_0')) || {
             activeTab: 'outdoor',
             outdoor: { TYPE: 'Condenser', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--', TON: '--' },
-            furnace: { TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--' },
-            coil: { TYPE: 'Evap Coil', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', TON: '--', METER: '--', TRAY: '--', AIR_DIR: '--' }
+            indoor: { 
+                TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--',
+                C_BRAND: '--', C_MDL: '--', C_SER: '--', C_YEAR: '--', C_TON: '--', C_METER: '--', C_TRAY: '--', C_AIR_DIR: '--'
+            },
+            thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
         // Backwards compatibility migration
-        let oldSpecs = JSON.parse(localStorage.getItem('hvacSpecsV20'));
-        if (oldSpecs && systemSpecs.outdoor.MDL === '--' && oldSpecs.MDL && oldSpecs.MDL !== '--') {
-            systemSpecs.outdoor = { ...systemSpecs.outdoor, ...oldSpecs };
-            localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
-            localStorage.removeItem('hvacSpecsV20');
+        let oldSystem = JSON.parse(localStorage.getItem('hvacSystemV20_34'));
+        if (oldSystem && systemSpecs.outdoor.MDL === '--' && oldSystem.outdoor && oldSystem.outdoor.MDL !== '--') {
+            systemSpecs.outdoor = oldSystem.outdoor;
+            systemSpecs.indoor = { ...systemSpecs.indoor, ...oldSystem.furnace };
+            if (oldSystem.coil) {
+                systemSpecs.indoor.C_BRAND = oldSystem.coil.BRAND || '--';
+                systemSpecs.indoor.C_MDL = oldSystem.coil.MDL || '--';
+                systemSpecs.indoor.C_SER = oldSystem.coil.SER || '--';
+                systemSpecs.indoor.C_YEAR = oldSystem.coil.YEAR || '--';
+                systemSpecs.indoor.C_TON = oldSystem.coil.TON || '--';
+                systemSpecs.indoor.C_METER = oldSystem.coil.METER || '--';
+                systemSpecs.indoor.C_TRAY = oldSystem.coil.TRAY || '--';
+                systemSpecs.indoor.C_AIR_DIR = oldSystem.coil.AIR_DIR || '--';
+            }
+            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+            localStorage.removeItem('hvacSystemV20_34');
         }
         let appSettings = JSON.parse(localStorage.getItem('hvacSettingsV20')) || {
             navConfirm: true, autoCommit: false, strictDict: false
@@ -1193,20 +1218,22 @@
                 { id: 'RLA', label: 'COMP RLA' }, { id: 'LRA', label: 'LRA' }, { id: 'FLA', label: 'FAN FLA' }, { id: 'VOLT', label: 'VOLTAGE' },
                 { id: 'SUB', label: 'TARGET SC' }, { id: 'REF', label: 'REFRIGERANT' }, { id: 'METER', label: 'METERING' }, { id: 'TON', label: 'TONNAGE' }
             ],
-            furnace: [
+            indoor: [
                 { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
                 { id: 'KBTU', label: 'GAS KBTU' }, { id: 'KW', label: 'HEAT KW' }, { id: 'BLOWER', label: 'BLOWER HP' }, { id: 'INDUCER', label: 'INDUCER AMPS' },
-                { id: 'VOLT', label: 'VOLTAGE' }, { id: 'FILTER', label: 'FILTER' }, { id: 'GAS_V', label: 'GAS VALVE' }, { id: 'TON', label: 'TONNAGE' }
+                { id: 'VOLT', label: 'VOLTAGE' }, { id: 'FILTER', label: 'FILTER' }, { id: 'GAS_V', label: 'GAS VALVE' }, { id: 'TON', label: 'TONNAGE' },
+                { id: 'C_BRAND', label: 'COIL BRAND' }, { id: 'C_MDL', label: 'COIL MDL #' }, { id: 'C_SER', label: 'COIL SER #' }, { id: 'C_YEAR', label: 'COIL YEAR' },
+                { id: 'C_TON', label: 'COIL TONNAGE' }, { id: 'C_METER', label: 'COIL METER' }, { id: 'C_TRAY', label: 'DRAIN TRAY' }, { id: 'C_AIR_DIR', label: 'AIRFLOW' }
             ],
-            coil: [
-                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
-                { id: 'TON', label: 'TONNAGE' }, { id: 'METER', label: 'METERING' }, { id: 'TRAY', label: 'DRAIN TRAY' }, { id: 'AIR_DIR', label: 'AIRFLOW' }
+            thermostat: [
+                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'YEAR', label: 'YEAR' },
+                { id: 'WIRE', label: 'WIRING' }, { id: 'BATT', label: 'BATTERIES' }, { id: 'SCHED', label: 'SCHEDULE' }
             ]
         };
         const EQUIP_TYPES = {
             outdoor: ['Condenser', 'Heat Pump', 'Package Unit'],
-            furnace: ['Furnace', 'Air Handler'],
-            coil: ['Evap Coil', 'N/A']
+            indoor: ['Furnace', 'Air Handler', 'Mini Split', 'Boiler', 'None'],
+            thermostat: ['Smart', 'Programmable', 'Non-Programmable']
         };
 
         let tempAiSpecs = {};
@@ -1240,20 +1267,21 @@
 
         function switchEquipTab(tabName) {
             systemSpecs.activeTab = tabName;
-            localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
+            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
             renderSystemSpecs();
         }
 
         function updateEquipType(val) {
             systemSpecs[systemSpecs.activeTab].TYPE = val;
-            localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
+            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+            renderSystemSpecs();
         }
 
         function renderSystemSpecs() {
             const tab = systemSpecs.activeTab;
-            
+
             // UI Button Active State
-            ['outdoor', 'furnace', 'coil'].forEach(t => {
+            ['outdoor', 'indoor', 'thermostat'].forEach(t => {
                 document.getElementById('tab-' + t).classList.toggle('active', t === tab);
             });
 
@@ -1262,17 +1290,32 @@
             drop.innerHTML = EQUIP_TYPES[tab].map(t => `<option value="${t}">${t}</option>`).join('');
             drop.value = systemSpecs[tab].TYPE || EQUIP_TYPES[tab][0];
 
+            function buildCells(schemaList) {
+                return schemaList.map(f => {
+                    const val = systemSpecs[tab][f.id] || '--';
+                    const shrinkClass = String(val).length > 10 ? ' shrink' : '';
+                    return `
+                    <div class="spec-cell" id="spec-${f.id}" onclick="openSpecVoice('${f.id}')">
+                        <span class="spec-label">${f.label}</span>
+                        <span id="val-${f.id}" class="spec-val${shrinkClass}">${val}</span>
+                    </div>`;
+                }).join('');
+            }
+
             // Render Grid
             const grid = document.getElementById('mainSpecGrid');
-            grid.innerHTML = EQUIP_SCHEMA[tab].map(f => {
-                const val = systemSpecs[tab][f.id] || '--';
-                const shrinkClass = val.length > 10 ? ' shrink' : '';
-                return `
-                <div class="spec-cell" id="spec-${f.id}" onclick="openSpecVoice('${f.id}')">
-                    <span class="spec-label">${f.label}</span>
-                    <span id="val-${f.id}" class="spec-val${shrinkClass}">${val}</span>
-                </div>`;
-            }).join('');
+            grid.innerHTML = buildCells(EQUIP_SCHEMA[tab].filter(f => !f.id.startsWith('C_')));
+
+            const subGrid = document.getElementById('subSpecGrid');
+            if (tab === 'indoor' && ['Furnace', 'Air Handler', 'Boiler'].includes(systemSpecs[tab].TYPE)) {
+                subGrid.style.display = 'grid';
+                document.getElementById('subSpecHeader').style.display = 'block';
+                subGrid.innerHTML = buildCells(EQUIP_SCHEMA['indoor'].filter(f => f.id.startsWith('C_')));
+            } else {
+                subGrid.style.display = 'none';
+                document.getElementById('subSpecHeader').style.display = 'none';
+                subGrid.innerHTML = '';
+            }
         }
 
         function initV2Controls() {
@@ -1334,24 +1377,27 @@
         }
 
         function confirmAiSpecs() {
-            const t = document.getElementById('aiRouteTarget').value;
+            const rawTarget = document.getElementById('aiRouteTarget').value;
+            const t = rawTarget === 'coil' ? 'indoor' : rawTarget;
+            const prefix = rawTarget === 'coil' ? 'C_' : '';
+
             const fieldMap = {
-                'BRAND': 'BRAND', 'MAKE': 'BRAND', 'MODEL': 'MDL', 'MDL': 'MDL', 'SERIAL': 'SER', 'SER': 'SER', 
-                'YEAR': 'YEAR', 'RLA': 'RLA', 'FLA': 'FLA', 'LRA': 'LRA', 'VOLTAGE': 'VOLT', 
+                'BRAND': 'BRAND', 'MAKE': 'BRAND', 'MODEL': 'MDL', 'MDL': 'MDL', 'SERIAL': 'SER', 'SER': 'SER',
+                'YEAR': 'YEAR', 'RLA': 'RLA', 'FLA': 'FLA', 'LRA': 'LRA', 'VOLTAGE': 'VOLT',
                 'VOLTS': 'VOLT', 'VOLT': 'VOLT', 'SUB': 'SUB', 'TARGET SC': 'SUB', 'TONNAGE': 'TON', 'TON': 'TON',
                 'KBTU': 'KBTU', 'KW': 'KW', 'GAS': 'KBTU', 'HP': 'BLOWER'
             };
 
             for (const [aiKey, val] of Object.entries(tempAiSpecs)) {
                 let cleanKey = aiKey.toUpperCase();
-                let mappedKey = fieldMap[cleanKey] || cleanKey;
+                let mappedKey = prefix + (fieldMap[cleanKey] || cleanKey);
                 // Only save if target bucket accepts this property
                 if (systemSpecs[t][mappedKey] !== undefined) {
-                    systemSpecs[t][mappedKey] = mappedKey === 'RLA' || mappedKey === 'FLA' || mappedKey === 'SUB' ? parseFloat(val) : val;
+                    systemSpecs[t][mappedKey] = mappedKey === (prefix+'RLA') || mappedKey === (prefix+'FLA') || mappedKey === (prefix+'SUB') ? parseFloat(val) : val;
                 }
             }
-            
-            localStorage.setItem('hvacSystemV20_34', JSON.stringify(systemSpecs));
+
+            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
             switchEquipTab(t);
             closeAiModal();
         }
@@ -1678,7 +1724,7 @@
             document.querySelectorAll('.step-nav#dictNav .step-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`dict-btn-${type}`).classList.add('active');
             const labels = { 'brands': 'BRANDS', 'refs': 'REFRIGERANTS', 'confirms': 'CONFIRM WORDS', 'notes': 'TECH NOTES' };
-            
+
             const tgtLabel = document.getElementById('dictTargetLabel');
             tgtLabel.innerHTML = labels[type];
 
@@ -1729,7 +1775,7 @@
                 `).join('');
                 return;
             }
-            
+
             const arr = (userDict[activeDictType] || "").split(',').map(s => s.trim()).filter(x => x);
             list.innerHTML = arr.map((item, i) => `
                 <div class="log-item">
@@ -1913,7 +1959,7 @@
             // Visual Indicators (Light up both potential trigger locations)
             document.getElementById('micTrigger').innerText = "⏹ STOP MIC";
             document.getElementById('micTrigger').style.background = "var(--crimson-red)";
-            document.getElementById('masterSpecBtn').style.background = 'var(--emerald-green)';
+            document.getElementById('headerMicBtn').style.background = 'var(--emerald-green)';
 
             document.getElementById('pwrIndicator').style.display = "block";
             document.getElementById('masterIndicator').style.display = "block";
@@ -2047,7 +2093,7 @@
 
             document.getElementById('micTrigger').innerText = "🎙 START MIC";
             document.getElementById('micTrigger').style.background = "#0056b3";
-            document.getElementById('masterSpecBtn').style.background = 'var(--amber-orange)';
+            document.getElementById('headerMicBtn').style.background = 'var(--electric-blue)';
 
             document.getElementById('pwrIndicator').style.display = "none";
             document.getElementById('masterIndicator').style.display = "none";
@@ -2268,21 +2314,21 @@
 
             const pushLine = (text, htmlFlag = '') => {
                 lines.push(`
-                <div class="compiler-line" id="cline-${i}">
-                    <div style="display:flex; flex-direction:column; margin-right:8px; gap:4px; flex-shrink:0;">
-                        <button onclick="moveCompilerLine(this, -1)" style="background:transparent; border:1px solid #444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; cursor:pointer;">▲</button>
-                        <button onclick="moveCompilerLine(this, 1)" style="background:transparent; border:1px solid #444; color:white; font-size:9px; padding:2px 6px; border-radius:4px; cursor:pointer;">▼</button>
-                    </div>
+                <div class="compiler-line" id="cline-${i}" style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <button onclick="moveCompilerLine(this, -1)" style="flex-shrink:0; background:transparent; border:1px solid #444; color:white; font-size:10px; padding:4px; border-radius:4px; margin-right:8px; cursor:pointer;">▲</button>
+                    
                     <div style="flex:1; display:flex; align-items:flex-start;" onclick="removeReportLine('cline-${i}')">
                         <span class="c-bullet" style="margin-right:6px;">►</span><span class="c-text">${text}</span>${htmlFlag}
                     </div>
+
+                    <button onclick="moveCompilerLine(this, 1)" style="flex-shrink:0; background:transparent; border:1px solid #444; color:white; font-size:10px; padding:4px; border-radius:4px; margin-left:8px; cursor:pointer;">▼</button>
                 </div>`);
                 i++;
             };
 
             // SPECS (Full PM only)
             if (activeTemplate === 'full') {
-                ['outdoor', 'furnace', 'coil'].forEach(tab => {
+                ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
                     const obj = systemSpecs[tab];
                     if (obj.BRAND !== '--' || obj.MDL !== '--' || obj.SER !== '--') {
                         let parts = [];
@@ -2297,6 +2343,16 @@
                             if (obj.REF !== '--') parts.push(`Ref: ${obj.REF}`);
                         }
                         pushLine(`[${obj.TYPE.toUpperCase()}] → ${parts.join(' | ')}`);
+                    }
+
+                    // Render nested coil for indoor
+                    if (tab === 'indoor' && obj.C_BRAND !== undefined && (obj.C_BRAND !== '--' || obj.C_MDL !== '--' || obj.C_SER !== '--')) {
+                        let cParts = [];
+                        if (obj.C_BRAND !== "--") cParts.push(`Brand: ${obj.C_BRAND}`);
+                        if (obj.C_MDL !== "--") cParts.push(`Model: ${obj.C_MDL}`);
+                        if (obj.C_SER !== "--") cParts.push(`Serial: ${obj.C_SER}`);
+                        if (obj.C_TON !== "--") cParts.push(`${obj.C_TON} TON`);
+                        pushLine(`[EVAP COIL] → ${cParts.join(' | ')}`);
                     }
                 });
             }
