@@ -24,6 +24,7 @@
             --text-primary: #ffffff;
             --text-secondary: #b0b0b0;
             --glass-effect: rgba(255, 255, 255, 0.05);
+            --sync-glow: rgba(0, 229, 255, 0.3);
         }
 
         body {
@@ -58,6 +59,39 @@
             background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 900;
+        }
+
+        .sync-active {
+            animation: sync-pulse 2s infinite alternate;
+            border: 1px solid var(--electric-blue) !important;
+            box-shadow: 0 0 15px var(--sync-glow);
+        }
+
+        @keyframes sync-pulse {
+            from { box-shadow: 0 0 5px var(--sync-glow); }
+            to { box-shadow: 0 0 20px var(--sync-glow); }
+        }
+
+        .job-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .job-toggle-label {
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #888;
+        }
+
+        .job-toggle-label.active {
+            color: var(--electric-blue);
         }
 
         .btn {
@@ -843,7 +877,12 @@
                 <h1
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SERVICE PRO</h1>
-                <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px; margin-top:-2px;">v21.7
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                    <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v21.9</div>
+                    <div class="job-toggle-container" onclick="toggleJobMode()">
+                        <span id="jobModeLabel" class="job-toggle-label">JOB SYNC</span>
+                        <div id="jobToggle" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
+                    </div>
                 </div>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
@@ -1399,69 +1438,93 @@
             for (let ph of toProcess) {
                 try {
                     status.innerText = `Analyzing: ${ph.filename}...`;
-                    console.log("AI: Fetching for", ph.filename);
+                    const result = await callAppsScript({ action: "uploadPhotoAI", data: ph.data, filename: ph.filename, mimeType: ph.mime });
                     
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s safety
-
-                    console.log("AI: POSTing to", WEB_APP_URL);
-                    const response = await fetch(WEB_APP_URL, { 
-                        method: "POST", 
-                        // Simplified 'Simple POST' - bypasses preflight on mobile
-                        body: JSON.stringify({ action: "uploadPhotoAI", data: ph.data, filename: ph.filename, mimeType: ph.mime }),
-                        signal: controller.signal
-                    });
-                    console.log("AI Response Status:", response.status);
-                    console.log("AI Response Status:", response.status, response.statusText);
-                    
-                    clearTimeout(timeoutId);
-                    const result = await response.json();
-                    console.log("AI Result:", result);
-
-                    if (result && result.extractedData) {
-                        tempAiSpecs = { ...tempAiSpecs, ...result.extractedData }; // Merge results if multi-photo
-                        // Add slight delay so Gallery overlay DOM is fully gone before Modal shows
-                        setTimeout(() => openAiModal(result.extractedData), 300);
+                    if (result && result.status === "success" && result.data && result.data.extractedData) {
+                        tempAiSpecs = { ...tempAiSpecs, ...result.data.extractedData }; 
+                        setTimeout(() => openAiModal(result.data.extractedData), 300);
                     } else {
                         alert("AI Error: No data extracted from " + ph.filename);
                     }
                 } catch (err) {
                     console.error("AI Fetch Error:", err);
-                    alert("AI NETWORK ERROR: " + (err.name === 'AbortError' ? "Timed out (45s)" : err.message));
-                    status.style.display = 'none'; // Clear status on error
+                    alert("AI NETWORK ERROR: " + err.message);
+                    status.style.display = 'none'; 
                 }
             }
             status.innerText = "Analysis Complete.";
             setTimeout(() => status.style.display = 'none', 2000);
         }
 
-        async function sendShelfToDrive() {
-            const photosFull = await getAllPhotos();
-            const photos = currentShelf === 'ALL' ? photosFull : photosFull.filter(p => p.shelf === currentShelf);
-            if (photos.length === 0) return;
+        function toggleJobMode() {
+            isJobMode = !isJobMode;
+            const toggle = document.getElementById('jobToggle');
+            const label = document.getElementById('jobModeLabel');
+            const dashboard = document.getElementById('mainDashboard');
 
-            const confirmUpload = confirm(`Send ${photos.length} photos in [${currentShelf}] to Customer's Google Drive?`);
-            if (!confirmUpload) return;
+            if (isJobMode) {
+                toggle.classList.add('on');
+                label.classList.add('active');
+                dashboard.classList.add('sync-active');
+                startJobSync();
+            } else {
+                toggle.classList.remove('on');
+                label.classList.remove('active');
+                dashboard.classList.remove('sync-active');
+                stopJobSync();
+            }
+        }
 
-            const status = document.getElementById('photoStatus');
-            status.style.display = 'block';
-            status.innerText = `Syncing [${currentShelf}] to Drive...`;
+        async function startJobSync() {
+            refreshJobData();
+            jobSyncInterval = setInterval(refreshJobData, 5000); // 5s heartbeat
+        }
 
-            for (let ph of photos) {
-                status.innerText = `Uploading: ${ph.filename}...`;
-                await fetch(WEB_APP_URL, { 
-                    method: "POST", 
-                    body: JSON.stringify({ 
-                        action: "uploadPhotoAI", // Reuse vision endpoint or specific for simple move
-                        data: ph.data, 
-                        filename: ph.filename, 
-                        mimeType: ph.mime,
-                        folderName: currentShelf // Pass Shelf Name to Apps Script
-                    }) 
+        function stopJobSync() {
+            if (jobSyncInterval) clearInterval(jobSyncInterval);
+        }
+
+        async function refreshJobData() {
+            if (!isJobMode) return;
+            try {
+                const response = await callAppsScript({ action: "getJobData" });
+                if (response.status === "success" && response.data) {
+                    processJobDataResults(response.data);
+                }
+            } catch (err) {
+                console.error("Sync Error:", err);
+            }
+        }
+
+        function processJobDataResults(data) {
+            // Update UI fields based on the Total Truth from AB6/W232
+            // Since we use the same labels as the EQUIP_SCHEMA, we can map them
+            for (let tab in EQUIP_SCHEMA) {
+                EQUIP_SCHEMA[tab].forEach(field => {
+                    if (data[field.label]) {
+                        systemSpecs[tab][field.id] = data[field.label];
+                    }
                 });
             }
-            status.innerText = "Sync Complete.";
-            setTimeout(() => status.style.display = 'none', 2000);
+            renderSystemSpecs();
+        }
+
+        async function callAppsScript(payload) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                const json = await response.json();
+                return json; // Returns {status, data}
+            } catch (err) {
+                clearTimeout(timeoutId);
+                throw err;
+            }
         }
     </script>
     <style>
@@ -1476,8 +1539,10 @@
     </style>
 
     <script>
-        const APP_VERSION = "21.7";
+        const APP_VERSION = "21.9";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwD7yqSJ1ay0boj8qbmRSTfkzenWbDEjafoS12NA4BK_tXaaAefWhNAFDry1Zm3SnpB/exec";
+        let isJobMode = false;
+        let jobSyncInterval = null;
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
         let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV21_0')) || {
@@ -1781,11 +1846,13 @@
         async function runLibrarianInApp() {
             const linksDiv = document.getElementById('manualLinks');
             linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center;">Searching Manuals...</div>';
-            await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "runPipeline" }) });
-            const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "fetchManuals" }) });
-            const links = await response.json();
-            if (links.length === 0) { linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>'; }
-            else { linksDiv.innerHTML = links.map(l => `<a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>`).join(''); }
+            await callAppsScript({ action: "runPipeline" });
+            const response = await callAppsScript({ action: "fetchManuals" });
+            if (response.status === "success" && response.data) {
+                const links = response.data;
+                if (links.length === 0) { linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>'; }
+                else { linksDiv.innerHTML = links.map(l => `<a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>`).join(''); }
+            }
         }
 
         // ── Single Cell Tap Local Mic + Inline Override ───────────────
@@ -2910,7 +2977,11 @@
         }
 
         function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); document.getElementById('voiceModal').style.display = 'none'; document.getElementById('mainDashboard').style.display = 'block'; }
-        function startJob() { const name = document.getElementById('custName').value; fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] }), mode: "no-cors" }).then(() => alert("Job Created.")); }
+        async function startJob() { 
+            const name = document.getElementById('custName').value; 
+            const result = await callAppsScript({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] });
+            if (result && result.status === "success") alert("Job Created: " + name);
+        }
     </script>
 </body>
 
