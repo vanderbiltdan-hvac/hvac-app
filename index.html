@@ -3152,22 +3152,7 @@
             if (lines.length === 0) preview.innerHTML = '<div style="color:#555; text-align:center; padding:20px;">No fields selected.</div>';
         }
 
-        function moveCompilerLine(btn, dir) {
-            const line = btn.closest('.compiler-line');
-            if (!line) return;
-            if (dir === -1 && line.previousElementSibling) {
-                line.parentNode.insertBefore(line, line.previousElementSibling);
-            } else if (dir === 1 && line.nextElementSibling) {
-                if (line.nextElementSibling.nextElementSibling) {
-                    line.parentNode.insertBefore(line, line.nextElementSibling.nextElementSibling);
-                } else {
-                    line.parentNode.appendChild(line);
-                }
-            }
-        }
-
-        function closeReport() { closeAllModals(); showSection('mainDashboard'); }
-
+        function closeReport() { showSection('v23-home'); }
         function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); showSection('v23-home'); }
         async function startJob() { 
             const name = document.getElementById('custName').value; 
@@ -3176,14 +3161,23 @@
             if (result && result.status === "success") {
                 alert("Job Created: " + name);
                 window.currentJob = name;
-                document.getElementById('hookedJobNameLauncher').innerText = name;
-                document.getElementById('activeJobIndicatorLauncher').style.display = 'block';
+                const hookLabel = document.getElementById('hookedJobNameLauncher');
+                if (hookLabel) {
+                    hookLabel.innerText = name;
+                    document.getElementById('activeJobIndicatorLauncher').style.display = 'block';
+                }
             }
         }
 
         window.onload = async () => {
-            console.log("v23.0 Starting...");
+            console.log("v23.1 Start - Phoenix Foundation");
+            
+            // Standardize Hidden sections
+            const overlays = document.querySelectorAll('.modal-overlay');
+            overlays.forEach(o => o.style.display = 'none');
+            
             showSection('v23-home');
+            
             await initIndexedDB();
             loadFromStorage();
             refreshJobData();
@@ -3195,10 +3189,10 @@
             const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SR) return;
             
-            // We hook into the existing dispatcher or replace it for global nav
             const origDispatcher = window.voiceDispatcher;
             window.voiceDispatcher = function(transcript) {
                 const t = transcript.toLowerCase();
+                // 1. Check for Navigation keywords first (Direct Transport)
                 if (/\b(home|launcher|mission control|start over)\b/.test(t)) { showSection('v23-home'); return true; }
                 if (/\b(diag|diagnostic|capacitor|test)\b/.test(t)) { showSection('voiceModal'); return true; }
                 if (/\b(specs|specifications|equipment)\b/.test(t)) { showSection('section-specs'); return true; }
@@ -3206,7 +3200,7 @@
                 if (/\b(report|summary|compile)\b/.test(t)) { showSection('reportModal'); return true; }
                 if (/\b(settings|options|config)\b/.test(t)) { showSection('settingsModal'); return true; }
                 
-                // If not a nav command, fall back to the 1835 engine logic
+                // 2. Fallback to original diagnostic/dictionary logic
                 return origDispatcher ? origDispatcher(transcript) : false;
             };
         }
@@ -3218,10 +3212,11 @@
             let block = "";
             lines.forEach(line => {
                 if (line.style.display !== 'none') {
-                    // Extract just the bullet and text, ignoring HTML flags
-                    const bullet = line.querySelector('.c-bullet').innerText;
-                    const text = line.querySelector('.c-text').innerText;
-                    block += `${bullet} ${text}\n`;
+                    const bulletEl = line.querySelector('.c-bullet');
+                    const textEl = line.querySelector('.c-text');
+                    if (bulletEl && textEl) {
+                        block += `${bulletEl.innerText} ${textEl.innerText}\n`;
+                    }
                 }
             });
 
@@ -3229,14 +3224,6 @@
                 alert("Invoice Block Copied!");
             });
         }
-
-        function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); document.getElementById('voiceModal').style.display = 'none'; document.getElementById('mainDashboard').style.display = 'block'; }
-        async function startJob() { 
-            const name = document.getElementById('custName').value; 
-            const result = await callAppsScript({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] });
-            if (result && result.status === "success") alert("Job Created: " + name);
-        }
     </script>
 </body>
-
 </html>
