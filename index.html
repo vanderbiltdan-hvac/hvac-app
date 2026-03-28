@@ -1642,7 +1642,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "21.13";
+        const APP_VERSION = "21.14";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwRjU5jwWBcnftyYS9EZnBWiD6cmRf8mybv6_sW2LLG_SDN58qWZ9mArI8o9nkuRP7z/exec"; 
         let isJobMode = false;
         let showAdvancedSpecs = false; 
@@ -1708,11 +1708,12 @@
 
         const EQUIP_SCHEMA = {
             outdoor: [
-                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' },
-                { id: 'YEAR', label: 'YEAR' }, { id: 'TON', label: 'TONNAGE' }, { id: 'REF', label: 'REF' },
-                { id: 'SUB', label: 'TARGET SC', advanced: true }, { id: 'RLA', label: 'COMP RLA', advanced: true }, 
-                { id: 'LRA', label: 'LRA', advanced: true }, { id: 'FLA', label: 'FAN FLA', advanced: true }, 
-                { id: 'VOLT', label: 'VOLTAGE', advanced: true }, { id: 'METER', label: 'METERING', advanced: true }
+                { id: 'BRAND', label: 'BRAND' }, { id: 'YEAR', label: 'YEAR' }, { id: 'RLA', label: 'COMP RLA' },
+                { id: 'LRA', label: 'LRA' }, { id: 'FLA', label: 'FAN FLA' }, { id: 'SUB', label: 'TARGET SC' },
+                { id: 'REF', label: 'REFRIGERANT' },
+                { id: 'MDL', label: 'MODEL #', advanced: true }, { id: 'SER', label: 'SERIAL #', advanced: true },
+                { id: 'TON', label: 'TONNAGE', advanced: true }, { id: 'VOLT', label: 'VOLTAGE', advanced: true }, 
+                { id: 'METER', label: 'METERING', advanced: true }
             ],
             indoor: [
                 { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' },
