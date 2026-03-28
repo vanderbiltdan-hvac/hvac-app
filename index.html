@@ -605,29 +605,36 @@
             const field = FIELD_CYCLE[fieldIndex];
             document.getElementById('modalLabel').innerText = field.toUpperCase();
             
-            // MATH LOGIC
-            const rating = parseFloat(document.getElementById(activeRatingTarget + 'Rating').value);
-            const volts = buffer[fieldIndex - (fieldIndex % 2 === 0 ? 0 : 1)]?.val || 0;
-            const amps = buffer[fieldIndex + (fieldIndex % 2 === 0 ? 1 : 0)]?.val || 0;
+            let lastVolt = 0;
+            const entries = Object.entries(buffer).sort((a,b)=>a[0]-b[0]);
+            for (let i = entries.length - 1; i >= 0; i--) {
+                if (entries[i][1].field.includes("Volts")) { lastVolt = entries[i][1].val; break; }
+            }
 
-            let rangeStr = "READY...";
+            let rangeStr = "READY FOR " + field.toUpperCase();
 
             if (field.includes("Amps")) {
-                const lastVolt = buffer[fieldIndex - 1]?.val || 0;
-                if (lastVolt > 0) {
+                const rating = parseFloat(document.getElementById(field.includes("Herm") ? "hermRating" : "fanRating").value);
+                if (lastVolt > 0 && rating) {
                     const target = (rating * lastVolt) / 2652;
-                    const minVal = (target * (1 - tolerance)).toFixed(2);
-                    const maxVal = (target * (1 + tolerance)).toFixed(2);
-                    rangeStr = `RANGE: ${minVal} - ${maxVal}`;
-                } else { rangeStr = "WAITING FOR VOLTS..."; }
+                    const low = (target * (1 - tolerance)).toFixed(2);
+                    const high = (target * (1 + tolerance)).toFixed(2);
+                    rangeStr = `RANGE: ${low} - ${high}`;
+                } else if (field === "Comp Amps" && systemSpecs.outdoor.RLA !== '--') {
+                    rangeStr = `⚡ RLA: ${systemSpecs.outdoor.RLA} A`;
+                } else if (field === "ODF Amps" && systemSpecs.outdoor.FLA !== '--') {
+                    rangeStr = `🌀 FLA: ${systemSpecs.outdoor.FLA} A`;
+                }
             } else if (field.includes("Volts")) {
                 // REVERSE MATH
+                const rating = parseFloat(document.getElementById(field.includes("Herm") ? "hermRating" : "fanRating").value);
+                const nextAmpField = FIELD_CYCLE[fieldIndex + 1];
                 const nextAmp = buffer[fieldIndex + 1]?.val || 0;
-                if (nextAmp > 0) {
+                if (nextAmp > 0 && rating) {
                     const target = (nextAmp * 2652) / rating;
-                    const minVal = (target * (1 - tolerance)).toFixed(0);
-                    const maxVal = (target * (1 + tolerance)).toFixed(0);
-                    rangeStr = `TARGET VOLTS: ${minVal} - ${maxVal}`;
+                    const low = (target * (1 - tolerance)).toFixed(0);
+                    const high = (target * (1 + tolerance)).toFixed(0);
+                    rangeStr = `TARGET VOLTS: ${low} - ${high}`;
                 }
             }
 
@@ -636,67 +643,138 @@
         }
 
         function updateLiveCheck() {
-            const display = document.getElementById('bigDisplay');
-            const val = parseFloat(display.innerText);
-            const live = document.getElementById('liveCheck');
-            if (!val) { live.innerHTML = ""; return; }
-
             const field = FIELD_CYCLE[fieldIndex];
-            const rating = parseFloat(document.getElementById(field.includes("Herm") ? "hermRating" : "fanRating").value);
-            
-            if (field.includes("Amps")) {
-                const volts = buffer[fieldIndex - 1]?.val || 0;
-                if (volts > 0) {
-                    const uF = (val * 2652) / volts;
-                    const varPct = ((uF / rating) - 1) * 100;
-                    const isPass = Math.abs(varPct) <= (tolerance * 100);
-                    live.innerHTML = `<span style="color:${isPass ? 'var(--emerald-green)' : 'var(--crimson-red)'}">${uF.toFixed(2)}µF (${varPct > 0 ? '+' : ''}${varPct.toFixed(1)}%)</span>`;
-                    return;
-                }
+            const display = document.getElementById('bigDisplay');
+            const live = document.getElementById('liveCheck');
+            const val = parseFloat(display.innerText);
+            if (!val || val === 0) { live.innerHTML = ""; return; }
+
+            let lastVolt = 0;
+            const entries = Object.entries(buffer).sort((a,b)=>a[0]-b[0]);
+            for (let i = entries.length - 1; i >= 0; i--) {
+                if (entries[i][1].field.includes("Volts")) { lastVolt = entries[i][1].val; break; }
             }
-            live.innerHTML = `<span style="color:var(--electric-blue)">LIVE: ${val.toFixed(2)}</span>`;
+            
+            let status = ""; let color = "var(--electric-blue)";
+            if (field.includes("Amps")) {
+                const rating = parseFloat(document.getElementById(field.includes("Herm") ? "hermRating" : "fanRating").value);
+                if (lastVolt > 0 && rating) {
+                    const uF = (val * 2652) / lastVolt;
+                    const varPct = ((uF / rating) - 1) * 100;
+                    const isPass = Math.abs(varPct / 100) <= (tolerance + 0.0001);
+                    status = (isPass ? "✓ PASS " : "✗ FAIL ") + (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "% (" + uF.toFixed(2) + "µF)";
+                    color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
+                } else if (field === "Comp Amps" && systemSpecs.outdoor.RLA !== '--') {
+                    const pct = (val / parseFloat(systemSpecs.outdoor.RLA)) * 100;
+                    const isPass = pct <= 100;
+                    status = (isPass ? "✓ PASS " : "✗ FAIL ") + pct.toFixed(1) + "% RLA";
+                    color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
+                } else if (field === "ODF Amps" && systemSpecs.outdoor.FLA !== '--') {
+                    const pct = (val / parseFloat(systemSpecs.outdoor.FLA)) * 100;
+                    const isPass = pct <= 100;
+                    status = (isPass ? "✓ PASS " : "✗ FAIL ") + pct.toFixed(1) + "% FLA";
+                    color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
+                }
+            } else {
+                status = "LIVE: " + val.toFixed(1);
+            }
+            live.innerHTML = status;
+            live.style.color = color;
         }
+
 
         function confirmReading() {
             const val = parseFloat(document.getElementById('bigDisplay').innerText);
             if (!val || val === 0) return;
 
-            buffer[fieldIndex] = { field: FIELD_CYCLE[fieldIndex], val, timestamp: Date.now() };
+            let lastVolt = 0;
+            const entries = Object.values(buffer).sort((a,b)=>a.timestamp - b.timestamp);
+            for (let i = entries.length - 1; i >= 0; i--) {
+                if (entries[i].field.includes("Volts")) { lastVolt = entries[i].val; break; }
+            }
+
+            buffer[fieldIndex] = { field: FIELD_CYCLE[fieldIndex], val, volts: lastVolt, timestamp: Date.now() };
             localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
 
             document.getElementById('bigDisplay').style.color = "var(--emerald-green)";
+            const savedIdx = fieldIndex; 
             setTimeout(() => {
                 document.getElementById('bigDisplay').style.color = "white";
                 document.getElementById('bigDisplay').innerText = "0.0";
-                fieldIndex = (fieldIndex + 1) % FIELD_CYCLE.length;
+                
+                // Find next empty step
+                let nextIdx = -1;
+                for (let i = 1; i < FIELD_CYCLE.length; i++) {
+                    let check = (savedIdx + i) % FIELD_CYCLE.length;
+                    if (!buffer[check]) { nextIdx = check; break; }
+                }
+                if (nextIdx !== -1) { fieldIndex = nextIdx; }
+                
                 updateStepNav();
                 recalculateField();
                 syncLogToUI();
             }, 600);
         }
 
+
         function undoAt(idx) {
             delete buffer[idx];
             localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
+            fieldIndex = parseInt(idx);
+            updateStepNav();
+            recalculateField();
             syncLogToUI();
+        }
+
+        function getTolData(item, localTolerance) {
+            if (!item || !item.field) return null;
+            let rating = null;
+            if (item.field === "Herm Amps") rating = parseFloat(document.getElementById("hermRating").value);
+            if (item.field === "Fan Amps") rating = parseFloat(document.getElementById("fanRating").value);
+
+            if (rating && item.volts > 0) {
+                const uF = (item.val * 2652) / item.volts;
+                const varPct = ((uF / rating) - 1) * 100;
+                const isPass = Math.abs(varPct / 100) <= (localTolerance + 0.0001);
+                return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${uF.toFixed(2)}µF | ${varPct > 0 ? '+' : ''}${varPct.toFixed(2)}%)` };
+            } else if (item.field === "Comp Amps" && systemSpecs.outdoor.RLA && systemSpecs.outdoor.RLA !== "--") {
+                const pct = (item.val / parseFloat(systemSpecs.outdoor.RLA)) * 100;
+                const isPass = pct <= 100;
+                return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${pct.toFixed(1)}% RLA)` };
+            } else if (item.field === "ODF Amps" && systemSpecs.outdoor.FLA && systemSpecs.outdoor.FLA !== "--") {
+                const pct = (item.val / parseFloat(systemSpecs.outdoor.FLA)) * 100;
+                const isPass = pct <= 100;
+                return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${pct.toFixed(1)}% FLA)` };
+            }
+            return null;
         }
 
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
-            log.innerHTML = Object.entries(buffer).sort((a,b)=>a[0]-b[0]).map(([idx, item]) => `
-                <div class="log-item">
-                    <b>${item.field}:</b>
-                    <span>${item.val}</span>
-                    <button onclick="undoAt(${idx})" style="background:transparent; border:none; color:#777; font-size:9px; cursor:pointer;">UNDO</button>
-                </div>
-            `).join('');
+            const entries = Object.keys(buffer).sort((a,b)=>a-b);
+            if (entries.length === 0) { log.innerHTML = '<div style="color:#444; text-align:center;">Log is empty</div>'; return; }
+
+            log.innerHTML = entries.map(idx => {
+                const item = buffer[idx];
+                const t = getTolData(item, tolerance);
+                const badge = t ? `<span class="badge-small" style="color:${t.color}; border:1px solid ${t.color}">${t.isPass ? 'PASS' : 'FAIL'}</span>` : "";
+                const details = t ? `<span style="color:${t.color}; opacity:0.8; margin-left:6px;">${t.txt}</span>` : "";
+                
+                return `
+                    <div class="log-item">
+                        <div><b>${item.field}:</b> ${item.val.toFixed(2)}${details}${badge}</div>
+                        <button onclick="undoAt(${idx})" style="background:transparent; border:none; color:#777; font-size:9px; cursor:pointer;">UNDO</button>
+                    </div>
+                `;
+            }).join('');
             
             document.querySelectorAll('.step-btn span').forEach(s => s.innerText = "--");
             Object.entries(buffer).forEach(([idx, item]) => {
                 const el = document.getElementById('glance-' + idx);
-                if (el) el.innerText = item.val;
+                if (el) el.innerText = item.val.toFixed(1);
             });
         }
+
 
         // --- FIELD MANAGER ---
         async function refreshFieldMap() {
@@ -753,7 +831,8 @@
             document.getElementById('fanWrap').classList.toggle('active', target === 'fan');
         }
         function dial(val) { document.getElementById(activeRatingTarget + 'Rating').value = val; recalculateField(); }
-        function setTol(val) { tolerance = val / 100; document.querySelectorAll('.tolerance-pill').forEach(p => p.classList.remove('active')); document.getElementById('tol' + val).classList.add('active'); recalculateField(); }
+        function setTol(val) { tolerance = val / 100; document.querySelectorAll('.tolerance-pill').forEach(p => p.classList.remove('active')); document.getElementById('tol' + val).classList.add('active'); syncLogToUI(); recalculateField(); }
+
         
         async function openJobPortal() {
             showSection('jobPortal');
