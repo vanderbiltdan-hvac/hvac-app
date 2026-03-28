@@ -289,8 +289,9 @@
             <div>
                 <h1>SERVICE PRO</h1>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:2px;">
-                    <div style="font-size:10px; color:#555; font-weight:900; letter-spacing:1px;">HVAC v22.3 GOLD</div>
+                    <div style="font-size:10px; color:#555; font-weight:900; letter-spacing:1px;">HVAC v22.4 GOLD</div>
                     <div id="activeJobIndicator" style="font-size:9px; color:var(--emerald-green); font-weight:900; display:none;">
+
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
                     </div>
                 </div>
@@ -461,7 +462,8 @@
     </div>
 
     <script id="RigorousRestorationEngine">
-        const APP_VERSION = "22.3 GOLD";
+        const APP_VERSION = "22.4 GOLD";
+
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwRjU5jwWBcnftyYS9EZnBWiD6cmRf8mybv6_sW2LLG_SDN58qWZ9mArI8o9nkuRP7z/exec";
 
         let currentSection = 'home';
@@ -566,11 +568,16 @@
             // Navigation
             if (/\b(HOME|DASHBOARD)\b/.test(transcript)) { showSection('home'); return; }
             if (/\b(DIAG|DIAGNOSTIC|CAPACITOR)\b/.test(transcript)) { showSection('diag'); return; }
+            if (/\b(SPECS|EQUIPMENT|DATA)\b/.test(transcript)) { showSection('specs'); return; }
+            if (/\b(OUTDOOR|CONDENSER)\b/.test(transcript)) { switchEquipTab('outdoor'); showSection('specs'); return; }
+            if (/\b(INDOOR|AIR HANDLER|FURNACE)\b/.test(transcript)) { switchEquipTab('indoor'); showSection('specs'); return; }
+            if (/\b(THERMO|THERMOSTAT)\b/.test(transcript)) { switchEquipTab('thermostat'); showSection('specs'); return; }
             if (/\b(REPORT|SUMMARY|INVOICE)\b/.test(transcript)) { showSection('report'); return; }
             if (/\b(RESOURCES|MANUALS|LIBRARY)\b/.test(transcript)) { openManuals(); return; }
             if (/\b(SETTINGS|OPTIONS)\b/.test(transcript)) { showSection('settings'); return; }
             if (/\b(NEW JOB)\b/.test(transcript)) { startJob(); return; }
             if (/\b(EXISTING JOB|PORTAL)\b/.test(transcript)) { openJobPortal(); return; }
+
 
             // Sequencer Intake
             if (currentSection === 'diag') {
@@ -642,7 +649,32 @@
             updateLiveCheck();
         }
 
+        function clearBuffer() {
+            _lastBuffer = { ...buffer };
+            buffer = {};
+            localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
+            fieldIndex = 0;
+            document.getElementById('restoreBox').style.display = 'block';
+            updateStepNav();
+            recalculateField();
+            syncLogToUI();
+        }
+
+        function restoreBuffer() {
+            if (Object.keys(_lastBuffer).length > 0) {
+                buffer = { ..._lastBuffer };
+                localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
+                fieldIndex = 0;
+                for (let i = 0; i < FIELD_CYCLE.length; i++) { if (!buffer[i]) { fieldIndex = i; break; } }
+                document.getElementById('restoreBox').style.display = 'none';
+                updateStepNav();
+                recalculateField();
+                syncLogToUI();
+            }
+        }
+
         function updateLiveCheck() {
+
             const field = FIELD_CYCLE[fieldIndex];
             const display = document.getElementById('bigDisplay');
             const live = document.getElementById('liveCheck');
@@ -773,7 +805,9 @@
                 const el = document.getElementById('glance-' + idx);
                 if (el) el.innerText = item.val.toFixed(1);
             });
+            log.scrollTop = log.scrollHeight;
         }
+
 
 
         // --- FIELD MANAGER ---
@@ -823,6 +857,48 @@
                 </div>
             `).join('');
         }
+
+        function renderCompiler() {
+            const preview = document.getElementById('compilerPreview');
+            let lines = [];
+            const pushLine = (txt) => lines.push(`<div style="margin-bottom:4px;">${txt}</div>`);
+
+            pushLine(`<span style="color:var(--amber-orange); font-weight:bold;">--- SYSTEM SPECS ---</span>`);
+            ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
+                let parts = [];
+                Object.entries(systemSpecs[tab]).forEach(([k, v]) => {
+                    if (v !== '--' && k !== 'activeTab') parts.push(`${k}: ${v}`);
+                });
+                if (parts.length > 0) pushLine(`[${tab.toUpperCase()}] → ${parts.join(' | ')}`);
+            });
+
+            pushLine(`<br><span style="color:var(--emerald-green); font-weight:bold;">--- DIAGNOSTIC RESULTS ---</span>`);
+            
+            // Capacitor Math evaluation
+            let hVolts = buffer[0]?.val, hAmps = buffer[1]?.val, fVolts = buffer[2]?.val, fAmps = buffer[3]?.val;
+            let hRating = parseFloat(document.getElementById('hermRating').value);
+            let fRating = parseFloat(document.getElementById('fanRating').value);
+
+            if (hVolts && hAmps) {
+                const uF = (hAmps * 2652) / hVolts;
+                const varPct = ((uF / hRating) - 1) * 100;
+                const isPass = Math.abs(varPct / 100) <= (tolerance + 0.0001);
+                pushLine(`HERM: ${uF.toFixed(2)}µF (${varPct > 0 ? '+' : ''}${varPct.toFixed(1)}%) - ${isPass ? 'PASS' : 'FAIL'}`);
+            }
+            if (fVolts && fAmps) {
+                const uF = (fAmps * 2652) / fVolts;
+                const varPct = ((uF / fRating) - 1) * 100;
+                const isPass = Math.abs(varPct / 100) <= (tolerance + 0.0001);
+                pushLine(`FAN: ${fVolts.toFixed(0)}V | ${fAmps.toFixed(2)}A → ${uF.toFixed(2)}µF (${varPct > 0 ? '+' : ''}${varPct.toFixed(1)}%) - ${isPass ? 'PASS' : 'FAIL'}`);
+            }
+
+            // Other Amps
+            if (buffer[4]) pushLine(`COMP AMPS: ${buffer[4].val} A`);
+            if (buffer[5]) pushLine(`ODF AMPS: ${buffer[5].val} A`);
+
+            preview.innerHTML = lines.length > 0 ? lines.join('') : '<div style="color:#444;">No data staged.</div>';
+        }
+
 
         // --- UTILS ---
         function selectRating(target) {
