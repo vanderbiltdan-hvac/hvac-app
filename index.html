@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v22.0</title>
+    <title>HVAC Master Pro v22.1</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -51,6 +51,7 @@
             min-height: 90vh;
             display: flex;
             flex-direction: column;
+            padding-bottom: 90px;
         }
 
         /* MISSION CONTROL LAYOUT */
@@ -122,7 +123,7 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 900;
             transition: 0.3s;
             flex: 1;
@@ -148,19 +149,44 @@
         .app-section { display: none; }
         .app-section.active { display: block; }
 
-        /* EXISTING STYLES RE-INTEGRATED */
+        /* SEQUENCER STYLES */
+        .voice-console {
+            background: var(--glass-effect);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 20px 10px;
+            text-align: center;
+            margin: 4px 0;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .big-display { font-size: 80px; line-height: 1; font-weight: 900; color: var(--text-primary); margin: 4px 0; font-variant-numeric: tabular-nums; text-shadow: 0 0 30px rgba(255, 255, 255, 0.15); }
+        #modalLabel { color: var(--amber-orange); letter-spacing: 2px; font-size: 11px; text-transform: uppercase; font-weight: 900; }
+        #targetRange { font-size: 11px; font-weight: 900; color: #555; min-height: 14px; margin-bottom: 12px; background: rgba(255,171,0,0.05); padding: 4px 8px; border-radius: 6px; }
+        
+        .step-nav { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; margin-bottom: 6px; scrollbar-width: none; }
+        .step-btn { background: #2a2a2a; border: 1px solid #444; color: #888; padding: 8px 14px; border-radius: 12px; font-size: 11px; font-weight: 900; white-space: nowrap; transition: 0.3s; flex-shrink: 0; }
+        .step-btn.active { border-color: var(--electric-blue); color: var(--electric-blue); background: rgba(0, 229, 255, 0.1); }
+
+        .dual-inputs { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
+        .cap-cell { background: rgba(0, 0, 0, 0.3); border: 2px solid transparent; border-radius: 12px; padding: 8px 12px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .cap-cell.active { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.05); }
+        .cap-cell input { background: transparent; border: none; color: white; font-size: 22px; font-weight: 900; width: 50px; text-align: center; outline: none; pointer-events: none; }
+        .tolerance-pill { background: #222; border: 1px solid #444; color: #777; border-radius: 6px; padding: 4px 8px; font-size: 10px; font-weight: 900; cursor: pointer; }
+        .tolerance-pill.active { background: var(--electric-blue); color: black; border-color: var(--electric-blue); }
+        
+        .rating-reel { display: flex; gap: 8px; overflow-x: auto; width: 100%; padding: 10px 0; margin-bottom: 15px; scrollbar-width: none; }
+        .dial-btn { background: #222; border: 1px solid #333; color: #777; border-radius: 10px; padding: 12px; min-width: 60px; font-weight: 900; transition: 0.3s; }
+        .dial-btn.selected { background: var(--electric-blue); color: black; border-color: var(--electric-blue); }
+
+        /* SPEC GRID STYLES */
         .rig-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
         .spec-cell { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.3s; }
         .spec-label { font-size: 8px; color: #777; font-weight: 900; margin-bottom: 2px; text-transform: uppercase; }
         .spec-val { font-size: 13px; font-weight: 900; color: var(--text-primary); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
         .spec-val.shrink { font-size: 10px; }
-        
+
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 10000; flex-direction: column; padding: 10px; box-sizing: border-box; }
-        .toggle-switch { width: 44px; height: 24px; background: #333; border-radius: 12px; position: relative; cursor: pointer; border: 1px solid #444; }
-        .toggle-switch.on { background: var(--emerald-green); }
-        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: 0.2s; }
-        .toggle-switch.on::after { left: calc(100% - 20px); }
-        
         .btn-utility { background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); color: #ccc; padding: 6px 11px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer; white-space: nowrap; }
     </style>
 </head>
@@ -175,13 +201,13 @@
         <button class="nav-btn" onclick="showSection('diag')" id="nav-diag">
             <svg class="icon-svg"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
             DIAG</button>
-        <button class="nav-btn" onclick="openReport()" id="nav-report">
-            <svg class="icon-svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <button class="nav-btn" onclick="showSection('specs')" id="nav-specs">
+            <svg class="icon-svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            SPECS</button>
+        <button class="nav-btn" onclick="showSection('report')" id="nav-report">
+            <svg class="icon-svg"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             REPORT</button>
-        <button class="nav-btn" onclick="openManuals()" id="nav-manuals">
-            <svg class="icon-svg"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            RESOURCES</button>
-        <button class="nav-btn" onclick="openSettings()" id="nav-settings">
+        <button class="nav-btn" onclick="showSection('settings')" id="nav-settings">
             <svg class="icon-svg"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             SETTINGS</button>
     </nav>
@@ -192,7 +218,7 @@
             <div>
                 <h1 style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">SERVICE PRO</h1>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="font-size:10px; color:#555; font-weight:900;">v22.0 MISSION CONTROL</div>
+                    <div style="font-size:10px; color:#555; font-weight:900;">v22.1 MISSION CONTROL</div>
                     <div id="activeJobIndicator" style="font-size:10px; color:var(--emerald-green); font-weight:900; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
                     </div>
@@ -215,11 +241,11 @@
                     <svg class="icon-svg icon-large"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                     <b>EXISTING JOB</b>
                 </div>
-                <div class="launcher-btn btn-quick" onclick="enterQuickDiagMode()">
+                <div class="launcher-btn btn-quick" onclick="showSection('diag')">
                     <svg class="icon-svg icon-large" style="stroke:var(--amber-orange);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                     <b>QUICK DIAG (STANDALONE)</b>
                 </div>
-                <div class="launcher-btn btn-reports" onclick="openReport()">
+                <div class="launcher-btn btn-reports" onclick="showSection('report')">
                     <svg class="icon-svg icon-large"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <b>REPORTS</b>
                 </div>
@@ -233,8 +259,44 @@
             </div>
         </div>
 
-        <!-- SECTION: DIAG (EQUIPMENT GRID) -->
+        <!-- SECTION: DIAG (THE SEQUENCER - GOLD STANDARD) -->
         <div id="section-diag" class="app-section">
+            <div class="step-nav" id="stepNav"></div>
+            
+            <div class="voice-console">
+                <div id="modalLabel">HERM AMPS</div>
+                <div class="big-display" id="bigDisplay" onclick="toggleManualEntry()">0.0</div>
+                <div id="targetRange">RANGE: --</div>
+                <div id="liveCheck" style="font-weight:900; font-size:14px; min-height:20px;"></div>
+
+                <div class="dual-inputs">
+                    <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
+                        <div style="font-size:8px; color:#555; font-weight:900;">HERM</div>
+                        <input type="number" id="hermRating" value="45" readonly>
+                    </div>
+                    <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')">
+                        <div style="font-size:8px; color:#555; font-weight:900;">FAN</div>
+                        <input type="number" id="fanRating" value="5" readonly>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <button class="tolerance-pill active" id="tol6" onclick="setTol(6)">6%</button>
+                        <button class="tolerance-pill" id="tol10" onclick="setTol(10)">10%</button>
+                    </div>
+                </div>
+                
+                <div class="rating-reel" id="capReel"></div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; margin-top:10px;">
+                    <button id="micTrigger" onclick="toggleGlobalMic()" class="btn btn-primary" style="padding:15px; font-size:16px;">🎙 MIC</button>
+                    <button onclick="confirmReading()" class="btn btn-green" style="padding:15px; font-size:16px;">✔ COMMIT</button>
+                </div>
+            </div>
+
+            <div id="stagingLog" style="background:rgba(0,0,0,0.2); margin-top:15px; border-radius:12px; max-height:150px; overflow-y:auto; padding:10px; font-size:11px; border:1px solid #222;"></div>
+        </div>
+
+        <!-- SECTION: SPECS (EQUIPMENT GRID) -->
+        <div id="section-specs" class="app-section">
             <div class="step-nav" id="equipNav">
                 <button class="step-btn active" id="tab-outdoor" onclick="switchEquipTab('outdoor')" style="flex:1;">OUTDOOR</button>
                 <button class="step-btn" id="tab-indoor" onclick="switchEquipTab('indoor')" style="flex:1;">INDOOR</button>
@@ -249,71 +311,19 @@
             </div>
             <div id="subSpecHeader" style="font-size:10px; color:var(--amber-orange); font-weight:900; text-align:center; display:none; margin:15px 0 5px 0;">--- EVAP COIL COMPONENT ---</div>
             <div class="rig-grid" id="subSpecGrid" style="display:none;"></div>
-            
-            <button onclick="openVoiceConsole()" class="btn btn-primary" style="margin-top:10px; background:linear-gradient(135deg, var(--electric-blue), #00b8d4);">⚡ OPEN VOICE CONSOLE</button>
         </div>
     </div>
 
-    <!-- MODALS (LOGIC RETAINED) -->
-    <div id="voiceModal" class="modal-overlay" style="background:#0f0f0f; display:none; flex-direction:column; padding-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
-            <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">⚡ SEQUENCER</h2>
-            <button onclick="showSection('home')" style="background:transparent; border:none; color:white; font-size:28px;">&times;</button>
-        </div>
-        
-        <div class="step-nav" id="stepNav" style="margin:10px; flex-shrink:0; display:flex; gap:8px; overflow-x:auto; padding-bottom:5px;"></div>
-
-        <div class="voice-console" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0 20px;">
-            <div id="modalLabel" style="color:var(--amber-orange); font-size:10px; font-weight:900; letter-spacing:2px; margin-bottom:10px;">HERM AMPS</div>
-            <div id="bigDisplay" style="font-size:80px; font-weight:900; color:white; text-shadow:0 0 30px rgba(255,255,255,0.1); margin-bottom:5px;" onclick="toggleManualEntry()">0.0</div>
-            <div id="targetRange" style="font-size:11px; color:#555; font-weight:900; margin-bottom:15px; background:rgba(255,171,0,0.05); padding:6px 12px; border-radius:8px; border:1px solid rgba(255,171,0,0.1);">RANGE: --</div>
-            <div id="liveCheck" style="font-weight:900; font-size:14px; margin-bottom:20px;"></div>
-
-            <style>
-                .dual-inputs { display:flex; gap:12px; align-items:center; margin-bottom:15px; }
-                .cap-cell { background:rgba(0,0,0,0.3); border:1px solid #333; border-radius:12px; padding:10px 15px; text-align:center; transition:0.3s; }
-                .cap-cell.active { border-color:var(--electric-blue); box-shadow:0 0 15px rgba(0,229,255,0.2); background:rgba(0,229,255,0.05); }
-                .cap-cell input { background:transparent; border:none; color:white; font-size:24px; font-weight:900; width:50px; text-align:center; outline:none; }
-                .tolerance-pill { background:#222; border:1px solid #444; color:#777; border-radius:6px; padding:4px 8px; font-size:10px; font-weight:900; cursor:pointer; }
-                .tolerance-pill.active { background:var(--electric-blue); color:black; border-color:var(--electric-blue); }
-                .rating-reel { display:flex; gap:8px; overflow-x:auto; width:100%; padding:10px 0; margin-bottom:15px; }
-                .dial-btn { background:#222; border:1px solid #333; color:#777; border-radius:10px; padding:12px; min-width:60px; font-weight:900; transition:0.3s; }
-                .dial-btn.selected { background:var(--electric-blue); color:black; border-color:var(--electric-blue); box-shadow:0 0 15px rgba(0,229,255,0.3); }
-            </style>
-            
-            <div class="dual-inputs">
-                <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
-                    <div style="font-size:8px; color:#555; font-weight:900;">HERM</div>
-                    <input type="number" id="hermRating" value="45" readonly>
-                </div>
-                <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')">
-                    <div style="font-size:8px; color:#555; font-weight:900;">FAN</div>
-                    <input type="number" id="fanRating" value="5" readonly>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px;">
-                    <button class="tolerance-pill active" id="tol6" onclick="setTol(6)">6%</button>
-                    <button class="tolerance-pill" id="tol10" onclick="setTol(10)">10%</button>
-                </div>
-            </div>
-            
-            <div class="rating-reel" id="capReel"></div>
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; margin-top:10px;">
-                <button id="micTrigger" onclick="toggleGlobalMic()" class="btn btn-primary" style="padding:15px; font-size:16px;">🎙 MIC</button>
-                <button onclick="confirmReading()" class="btn btn-green" style="padding:15px; font-size:16px;">✔ COMMIT</button>
-            </div>
-        </div>
-
-        <div id="stagingLog" style="background:rgba(0,0,0,0.2); margin:10px; border-radius:12px; max-height:150px; overflow-y:auto; padding:10px; font-size:11px; border:1px solid #222;"></div>
-        <div id="manualOverlay" class="modal-overlay" style="background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px; z-index:20000;">
-            <div style="font-size:10px; color:var(--amber-orange); margin-bottom:10px;">TYPE VALUE:</div>
-            <input type="number" id="manualInput" style="font-size:40px; text-align:center; background:transparent; border:none; color:white; border-bottom:2px solid var(--electric-blue); outline:none; width:200px; margin-bottom:20px;">
-            <div style="display:flex; gap:10px; width:100%;">
-                <button onclick="confirmManualEntry()" class="btn btn-green" style="flex:1;">✔ SET</button>
-                <button onclick="closeManualEntry()" class="btn btn-outline" style="flex:1;">CANCEL</button>
-            </div>
+    <!-- MODALS -->
+    <div id="manualOverlay" class="modal-overlay" style="background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px; z-index:20000;">
+        <div style="font-size:10px; color:var(--amber-orange); margin-bottom:10px;">TYPE VALUE:</div>
+        <input type="number" id="manualInput" style="font-size:40px; text-align:center; background:transparent; border:none; color:white; border-bottom:2px solid var(--electric-blue); outline:none; width:200px; margin-bottom:20px;">
+        <div style="display:flex; gap:10px; width:100%;">
+            <button onclick="confirmManualEntry()" class="btn btn-green" style="flex:1;">✔ SET</button>
+            <button onclick="closeManualEntry()" class="btn btn-outline" style="flex:1;">CANCEL</button>
         </div>
     </div>
+
     <div id="manualsOverlay" class="modal-overlay" style="background:#000;">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📚 MANUALS</h2>
@@ -321,6 +331,7 @@
         </div>
         <div id="manualLinks" style="padding:15px; overflow-y:auto; flex:1;"></div>
     </div>
+
     <div id="reportOverlay" class="modal-overlay">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">📋 REPORT COMPILER</h2>
@@ -332,6 +343,7 @@
             <button class="btn btn-outline" onclick="showSection('home')" style="flex:1;">CLOSE</button>
         </div>
     </div>
+
     <div id="settingsOverlay" class="modal-overlay" style="background:#0f0f0f; overflow-y:auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
@@ -340,21 +352,26 @@
         <div style="padding:15px;">
             <h3 style="font-size:14px; color:var(--electric-blue); border-bottom:1px solid #333; padding-bottom:8px;">FIELD MANAGER (I19:I32)</h3>
             <div id="fieldManagerList"></div>
-            
             <h3 style="font-size:14px; color:var(--emerald-green); border-bottom:1px solid #333; padding-bottom:8px; margin-top:30px; display:flex; justify-content:space-between;">
                 VOICE ALIAS MAP <button onclick="addAlias()" class="btn-utility" style="font-size:9px;">+ ADD</button>
             </h3>
             <div id="aliasMapList"></div>
-
             <div style="margin-top:40px; border-top:1px solid #333; padding-top:15px;">
                 <button class="btn btn-stop" onclick="cleanStorage()" style="width:100%; font-size:10px; opacity:0.6;">⚠️ RESET ALL LOCAL DATA</button>
             </div>
         </div>
     </div>
-    <div id="jobPortalModal" class="modal-overlay"></div>
 
-    <script id="v22_0_Logic">
-        const APP_VERSION = "22.0";
+    <div id="jobPortalModal" class="modal-overlay">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333;">
+            <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">📁 JOB PORTAL</h2>
+            <button onclick="showSection('home')" style="background:transparent; border:none; color:white; font-size:28px;">&times;</button>
+        </div>
+        <div id="jobListContainer" style="padding:15px; overflow-y:auto; flex:1;"></div>
+    </div>
+
+    <script id="v22_1_Logic">
+        const APP_VERSION = "22.1";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwRjU5jwWBcnftyYS9EZnBWiD6cmRf8mybv6_sW2LLG_SDN58qWZ9mArI8o9nkuRP7z/exec";
 
         // --- STATE & PREFS ---
@@ -366,11 +383,12 @@
         let showAdvancedSpecs = false;
         let isMicOn = false;
         let globalMic = null;
-        let forceKill = false;
-        let activeTemplate = 'full';
-        let activeDictType = 'brands';
-        let dictStagedRaw = null;
-        let navStaging = null;
+        let activeRatingTarget = 'herm';
+        let tolerance = 0.06;
+        let isCapturing = false;
+
+        const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Amps", "ODF Amps"];
+        const CAP_SIZES = [2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90];
 
         // --- CONFIG & SCHEMAS ---
         const UI_TRANSLATIONS = {
@@ -432,21 +450,9 @@
         let fieldPrefs = JSON.parse(localStorage.getItem('hvacFieldPrefs')) || LIBRARIAN_FIELDS.map((f, i) => ({ id: f, visible: true, order: i }));
         let voiceAliases = JSON.parse(localStorage.getItem('hvacVoiceAliases')) || { "MAKE": "BRAND", "MODEL": "MDL", "SERIAL": "SER" };
 
-        let appSettings = JSON.parse(localStorage.getItem('hvacSettingsV22')) || { navConfirm: true, autoCommit: false, strictDict: false };
-        let refData = JSON.parse(localStorage.getItem('hvacRefDataV22')) || {};
-        let techNotes = JSON.parse(localStorage.getItem('hvacTechNotesV22')) || [];
-        
-        let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV22')) || {
-            "Filter": ["Clean", "Dirty / Changed"],
-            "Evap Coil": ["Clean", "Minor buildup", "Needs Pull & Clean"],
-            "Condenser": ["Coil washed", "Contactor Good", "Contactor Pitted"]
-        };
-
         // --- CORE NAVIGATION ---
         function showSection(id) {
             currentSection = id;
-            isSettingsMode = (id === 'settings');
-            
             document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
             
@@ -456,20 +462,14 @@
                 else target.style.display = 'flex';
             }
 
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active', 'staging'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             const navBtn = document.getElementById('nav-' + id.replace('Overlay', '').replace('Modal', ''));
             if (navBtn) navBtn.classList.add('active');
             
-            if (id === 'diag') renderSystemSpecs();
-            if (id === 'report') openReport();
+            if (id === 'diag') { initSequencer(); syncLogToUI(); }
+            if (id === 'specs') renderSystemSpecs();
             if (id === 'settings') { renderFieldManager(); renderAliasMap(); }
-        }
-
-        function enterQuickDiagMode() {
-            activeJob = null;
-            localStorage.removeItem('hvacActiveJob');
-            updateJobUI();
-            showSection('diag');
+            if (id === 'report') renderCompiler();
         }
 
         function startJob() {
@@ -484,317 +484,23 @@
         }
 
         function openJobPortal() { showSection('jobPortal'); fetchJobTabs(); }
-        function openReport() { 
-            showSection('report');
-            initTechNotes();
-            loadRefInputs();
-            renderCompiler();
-        }
         function openManuals() { showSection('manuals'); runLibrarianInApp(); }
-        function openSettings() { showSection('settings'); }
 
-        // --- SPEC GRID LOGIC ---
-        function renderSystemSpecs() {
-            const tab = systemSpecs.activeTab;
-            document.querySelectorAll('.step-btn').forEach(t => t.classList.toggle('active', t.id === 'tab-' + tab));
-
-            const drop = document.getElementById('equipTypeDrop');
-            if (drop) {
-                const types = { outdoor: ['Condenser', 'Heat Pump'], indoor: ['Furnace', 'Air Handler'], thermostat: ['Smart', 'Prog'] };
-                drop.innerHTML = types[tab].map(t => `<option value="${t}">${t}</option>`).join('');
-                drop.value = systemSpecs[tab].TYPE || types[tab][0];
-            }
-
-            const grid = document.getElementById('mainSpecGrid');
-            if (grid) {
-                grid.innerHTML = EQUIP_SCHEMA[tab]
-                    .filter(f => showAdvancedSpecs || !f.advanced)
-                    .map(f => {
-                        const val = systemSpecs[tab][f.id] || '--';
-                        const label = UI_TRANSLATIONS[f.id] || f.label;
-                        return `
-                        <div class="spec-cell" id="spec-${f.id}" onclick="openSpecVoice('${f.id}')">
-                            <span class="spec-label">${label}</span>
-                            <span class="spec-val ${val.length > 10 ? 'shrink' : ''}">${val}</span>
-                        </div>`;
-                    }).join('');
-            }
-        }
-
-        function switchEquipTab(tab) { systemSpecs.activeTab = tab; renderSystemSpecs(); }
-        function updateEquipType(val) { systemSpecs[systemSpecs.activeTab].TYPE = val; renderSystemSpecs(); }
-        function toggleAdvancedSpecs() { showAdvancedSpecs = !showAdvancedSpecs; renderSystemSpecs(); }
-
-        // --- DATA SYNC ---
-        async function callAppsScript(payload) {
-            if (activeJob) payload.sheetName = activeJob;
-            try {
-                const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(payload) });
-                return await res.json();
-            } catch (e) { console.error("Sync Error", e); return null; }
-        }
-
-        async function fetchJobTabs() {
-            const container = document.getElementById('jobListContainer');
-            if (!container) return;
-            container.innerHTML = "Fetching...";
-            const res = await callAppsScript({ action: "getJobTabs" });
-            if (res && res.status === "success") {
-                container.innerHTML = res.data.map(t => `<button onclick="hookJob('${t}')" class="btn btn-outline" style="margin-bottom:8px; width:100%; text-align:left;">📁 ${t}</button>`).join('');
-            }
-        }
-
-        function hookJob(name) {
-            activeJob = name;
-            localStorage.setItem('hvacActiveJob', name);
-            updateJobUI();
-            showSection('home');
-        }
-
-        // --- SETTINGS: FIELD MANAGER ---
-        function renderFieldManager() {
-            const container = document.getElementById('fieldManagerList');
-            if (!container) return;
-            container.innerHTML = fieldPrefs.sort((a,b) => a.order - b.order).map((f, i) => `
-                <style>.settings-row { display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; }</style>
-                <div class="settings-row">
-                    <div style="flex:1;">
-                        <div style="font-weight:900; font-size:12px;">${f.id}</div>
-                    </div>
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <button onclick="moveField(${i}, -1)" class="btn-utility">▲</button>
-                        <button onclick="moveField(${i}, 1)" class="btn-utility">▼</button>
-                        <div class="toggle-switch ${f.visible ? 'on' : ''}" onclick="toggleFieldVisible(${i})"></div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function toggleFieldVisible(idx) {
-            fieldPrefs[idx].visible = !fieldPrefs[idx].visible;
-            saveFieldPrefs();
-        }
-
-        function moveField(idx, dir) {
-            const target = idx + dir;
-            if (target < 0 || target >= fieldPrefs.length) return;
-            [fieldPrefs[idx].order, fieldPrefs[target].order] = [fieldPrefs[target].order, fieldPrefs[idx].order];
-            saveFieldPrefs();
-        }
-
-        function saveFieldPrefs() {
-            localStorage.setItem('hvacFieldPrefs', JSON.stringify(fieldPrefs));
-            renderFieldManager();
-        }
-
-        // --- SETTINGS: ALIAS MAP ---
-        function renderAliasMap() {
-            const container = document.getElementById('aliasMapList');
-            if (!container) return;
-            container.innerHTML = Object.entries(voiceAliases).map(([alias, target]) => `
-                <div class="settings-row">
-                    <b style="color:var(--electric-blue); font-size:12px;">"${alias}"</b>
-                    <span style="color:#777;">➔</span>
-                    <b style="color:var(--emerald-green); font-size:12px;">${target}</b>
-                    <button onclick="deleteAlias('${alias}')" style="background:transparent; border:none; color:var(--crimson-red); font-weight:900;">&times;</button>
-                </div>
-            `).join('');
-        }
-
-        function addAlias() {
-            const a = prompt("Voice Trigger (e.g. MAKE):")?.toUpperCase();
-            const t = prompt("Maps to Schema ID (e.g. BRAND):")?.toUpperCase();
-            if (a && t) {
-                voiceAliases[a] = t;
-                localStorage.setItem('hvacVoiceAliases', JSON.stringify(voiceAliases));
-                renderAliasMap();
-            }
-        }
-
-        function deleteAlias(a) {
-            delete voiceAliases[a];
-            localStorage.setItem('hvacVoiceAliases', JSON.stringify(voiceAliases));
-            renderAliasMap();
-        }
-
-        // --- VOICE ENGINE: CONTEXTUAL INTERCEPTOR ---
-        function toggleGlobalMic() { if (isMicOn) stopMic(); else startMic(); }
-
-        function startMic() {
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) return;
-            isMicOn = true;
-            document.getElementById('headerMicBtn').style.background = 'var(--emerald-green)';
-            globalMic = new SR();
-            globalMic.continuous = true;
-            globalMic.interimResults = false;
-            globalMic.onresult = (e) => {
-                let transcript = e.results[e.results.length - 1][0].transcript.toUpperCase();
-                handleVoiceCommand(transcript);
-            };
-            globalMic.start();
-        }
-
-        function stopMic() {
-            isMicOn = false;
-            if (globalMic) globalMic.stop();
-            document.getElementById('headerMicBtn').style.background = 'var(--electric-blue)';
-        }
-
-        function handleVoiceCommand(transcript) {
-            console.log("VOICE:", transcript);
+        // --- SEQUENCER LOGIC (RESTORED GOLD STANDARD) ---
+        function initSequencer() {
+            const nav = document.getElementById('stepNav');
+            nav.innerHTML = FIELD_CYCLE.map((f, i) => `<button class="step-btn" id="step-${i}" onclick="jumpToStep(${i})">${f.toUpperCase()}<br><span id="glance-${i}" style="font-size:9px; color:#555;">--</span></button>`).join('');
             
-            // 1. Intercept Aliases
-            Object.entries(voiceAliases).forEach(([alias, target]) => {
-                if (transcript.includes(alias)) transcript = transcript.replace(new RegExp(alias, 'g'), target);
-            });
-
-            // 2. Mapping Synonyms for Sections
-            if (transcript.includes("HOME") || transcript.includes("LAUNCHER")) { showSection('home'); return; }
-            if (transcript.includes("DIAG") || transcript.includes("DIAGNOSTIC")) { showSection('diag'); return; }
-            if (transcript.includes("REPORT") || transcript.includes("COMPILER")) { showSection('report'); return; }
-            if (transcript.includes("SETTINGS")) { showSection('settings'); return; }
-
-            // 3. Contextual Logic
-            switch(currentSection) {
-                case 'home':
-                    if (transcript.includes("NEW JOB")) startJob();
-                    if (transcript.includes("EXISTING")) openJobPortal();
-                    if (transcript.includes("QUICK")) enterQuickDiagMode();
-                    if (transcript.includes("REPORTS")) openReport();
-                    if (transcript.includes("RESOURCES")) openManuals();
-                    break;
-                case 'diag':
-                    processIntakeLogic(transcript);
-                    break;
-            }
-        }
-
-        function processIntakeLogic(transcript) {
-            const fields = ["BRAND", "MDL", "SER", "YEAR", "RLA", "LRA", "FLA", "VOLT", "SUB", "REF", "TON"];
-            fields.forEach(f => {
-                if (transcript.includes(f)) {
-                    let val = transcript.replace(f, "").trim();
-                    if (val) {
-                        systemSpecs[systemSpecs.activeTab][f] = val;
-                        localStorage.setItem('hvacSystemV22_0', JSON.stringify(systemSpecs));
-                        renderSystemSpecs();
-                        const cell = document.getElementById('spec-' + f);
-                        if (cell) {
-                            cell.style.boxShadow = "0 0 20px var(--emerald-green)";
-                            setTimeout(() => cell.style.boxShadow = "none", 800);
-                        }
-                    }
-                }
-            });
+            const reel = document.getElementById('capReel');
+            reel.innerHTML = CAP_SIZES.map(s => `<button class="dial-btn" id="cap-${s}" onclick="dial(${s})">${s}</button>`).join('');
             
-            // Standalone Logic Intercept
-            const standaloneMatch = transcript.match(/\b(SUCTION|LIQUID|ODAT|RETURN|SUPPLY)\b\s?(\d+\.?\d*)/);
-            if (standaloneMatch) {
-                const key = standaloneMatch[1];
-                const val = parseFloat(standaloneMatch[2]);
-                tempDiagBuffer[key] = { field: key, val: val, timestamp: Date.now() };
-                localStorage.setItem('hvacQuickDiagV22', JSON.stringify(tempDiagBuffer));
-                if (currentSection === 'report') renderCompiler();
-            }
-        }
-
-        // --- COMPILER & STANDALONE ---
-        function renderCompiler() {
-            const preview = document.getElementById('compilerPreview');
-            let lines = [];
-            
-            // 1. Specs
-            if (activeTemplate === 'full') {
-                ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
-                    const obj = systemSpecs[tab];
-                    if (obj.BRAND !== '--') lines.push(`<div class="compiler-line"><span class="c-bullet">►</span> [${obj.TYPE}] ${obj.BRAND} | ${obj.YEAR}</div>`);
-                });
-            }
-
-            // 2. Standalone vs Job Buffer
-            const source = activeJob ? JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {} : tempDiagBuffer;
-            
-            Object.values(source).forEach(item => {
-                lines.push(`<div class="compiler-line"><span class="c-bullet">►</span> ${item.field}: ${item.val}</div>`);
-            });
-
-            preview.innerHTML = lines.join('') || '<div style="text-align:center; color:#555; padding:20px;">No Data to Compile.</div>';
-        }
-
-        function copyCompilerReport() {
-            const block = Array.from(document.querySelectorAll('.compiler-line')).map(el => el.innerText).join('\n');
-            navigator.clipboard.writeText(block).then(() => alert("Copied to Clipboard"));
-        }
-
-        // --- TECH NOTES ---
-        function initTechNotes() {
-            // Re-using techNotes logic from v21.13
-        }
-        
-        function loadRefInputs() {
-            // Re-using refrig inputs logic from v21.13
-        }
-
-        // --- LIBRARIAN ---
-        async function runLibrarianInApp() {
-            const div = document.getElementById('manualLinks');
-            div.innerHTML = "Searching...";
-            const res = await callAppsScript({ action: "fetchManuals" });
-            if (res && res.status === "success") {
-                div.innerHTML = res.data.map(l => `<a href="${l.url}" target="_blank" style="display:block; padding:12px; background:#111; margin-bottom:8px; border-radius:10px; color:var(--electric-blue); text-decoration:none;">📄 ${l.title}</a>`).join('');
-            }
-        }
-
-        // --- MISC ---
-        function updateJobUI() {
-            const ind = document.getElementById('activeJobIndicator');
-            const name = document.getElementById('hookedJobName');
-            if (activeJob) {
-                ind.style.display = 'block';
-                name.innerText = activeJob;
-            } else {
-                ind.style.display = 'none';
-            }
-        }
-
-        function cleanStorage() {
-            if (confirm("WIPE ALL LOCAL DATA? Current job, aliases, and field prefs will be lost.")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        // --- SEQUENCER LOGIC (RETAINED) ---
-        const FIELD_CYCLE = ["Herm Volts", "Herm Amps", "Fan Volts", "Fan Amps", "Comp Amps", "ODF Amps"];
-        const CAP_SIZES = [2.0, 3.0, 4.0, 5.0, 6.0, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90];
-        let tolerance = 0.06;
-        let activeRatingTarget = 'herm';
-        let isCapturing = false;
-
-        function openVoiceConsole() {
-            showSection('voice');
-            initV2Controls();
-            syncLogToUI();
+            updateStepNav();
             recalculateField();
         }
 
-        function initV2Controls() {
-            const nav = document.getElementById('stepNav');
-            if (nav) nav.innerHTML = FIELD_CYCLE.map((f, i) => `<button class="step-btn" id="step-${i}" onclick="jumpToStep(${i})" style="flex-shrink:0; padding:10px; border-radius:10px; background:#222; border:1px solid #333; color:#777; font-size:10px; font-weight:900;">${f.toUpperCase()}<br><span id="glance-${i}">--</span></button>`).join('');
-            
-            const reel = document.getElementById('capReel');
-            if (reel) reel.innerHTML = CAP_SIZES.map(s => `<button class="dial-btn" id="cap-${s}" onclick="dial(${s})">${s}</button>`).join('');
-            
-            updateStepNav();
-        }
-
         function jumpToStep(idx) { fieldIndex = idx; updateStepNav(); recalculateField(); }
+        function updateStepNav() { document.querySelectorAll('.step-btn').forEach((b, i) => b.classList.toggle('active', i === fieldIndex)); }
         
-        function updateStepNav() {
-            document.querySelectorAll('.step-btn').forEach((b, i) => b.classList.toggle('active', i === fieldIndex));
-        }
-
         function selectRating(target) {
             activeRatingTarget = target;
             document.getElementById('hermWrap').classList.toggle('active', target === 'herm');
@@ -822,6 +528,7 @@
             Object.values(source).forEach(v => { if (v.field.includes("Volts")) lastVolt = v.val; });
 
             if (field.includes("Amps") && lastVolt > 0) {
+                // RLA / FLA Check
                 const rating = parseFloat(document.getElementById(field.includes("Herm") ? "hermRating" : "fanRating").value);
                 const target = (rating * lastVolt) / 2652;
                 document.getElementById('targetRange').innerText = `EXPECTED: ${(target * (1 - tolerance)).toFixed(2)} - ${(target * (1 + tolerance)).toFixed(2)}`;
@@ -871,11 +578,17 @@
         function syncLogToUI() {
             const log = document.getElementById('stagingLog');
             const source = activeJob ? JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {} : tempDiagBuffer;
-            log.innerHTML = Object.entries(source).map(([idx, item]) => `
+            log.innerHTML = Object.entries(source).sort((a,b) => a[0]-b[0]).map(([idx, item]) => `
                 <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                     <b>${item.field}:</b> <span>${item.val}</span>
                 </div>
             `).join('');
+            
+            // Update Glance Icons
+            Object.entries(source).forEach(([idx, item]) => {
+                const el = document.getElementById('glance-' + idx);
+                if (el) el.innerText = item.val;
+            });
         }
 
         function toggleManualEntry() {
@@ -892,11 +605,135 @@
             closeManualEntry();
         }
 
+        // --- SPEC GRID LOGIC (RESTORED) ---
+        function renderSystemSpecs() {
+            const tab = systemSpecs.activeTab;
+            document.querySelectorAll('.step-btn').forEach(t => t.classList.toggle('active', t.id === 'tab-' + tab));
+
+            const drop = document.getElementById('equipTypeDrop');
+            if (drop) {
+                const types = { outdoor: ['Condenser', 'Heat Pump'], indoor: ['Furnace', 'Air Handler'], thermostat: ['Smart', 'Prog'] };
+                drop.innerHTML = types[tab].map(t => `<option value="${t}">${t}</option>`).join('');
+                drop.value = systemSpecs[tab].TYPE || types[tab][0];
+            }
+
+            const grid = document.getElementById('mainSpecGrid');
+            if (grid) {
+                grid.innerHTML = EQUIP_SCHEMA[tab]
+                    .filter(f => showAdvancedSpecs || !f.advanced)
+                    .map(f => {
+                        const val = systemSpecs[tab][f.id] || '--';
+                        const label = UI_TRANSLATIONS[f.id] || f.label;
+                        return `
+                        <div class="spec-cell" id="spec-${f.id}" onclick="openSpecVoice('${f.id}')">
+                            <span class="spec-label">${label}</span>
+                            <span class="spec-val ${String(val).length > 10 ? 'shrink' : ''}">${val}</span>
+                        </div>`;
+                    }).join('');
+            }
+        }
+        function switchEquipTab(tab) { systemSpecs.activeTab = tab; renderSystemSpecs(); }
+        function updateEquipType(val) { systemSpecs[systemSpecs.activeTab].TYPE = val; renderSystemSpecs(); }
+        function toggleAdvancedSpecs() { showAdvancedSpecs = !showAdvancedSpecs; renderSystemSpecs(); }
+
+        // --- VOICE ENGINE ---
+        function toggleGlobalMic() { if (isMicOn) stopMic(); else startMic(); }
+
+        function startMic() {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return;
+            isMicOn = true;
+            document.getElementById('headerMicBtn').style.background = 'var(--emerald-green)';
+            globalMic = new SR();
+            globalMic.continuous = true;
+            globalMic.onresult = (e) => {
+                let transcript = e.results[e.results.length - 1][0].transcript.toUpperCase();
+                handleVoiceCommand(transcript);
+            };
+            globalMic.start();
+        }
+
+        function stopMic() {
+            isMicOn = false;
+            if (globalMic) globalMic.stop();
+            document.getElementById('headerMicBtn').style.background = 'var(--electric-blue)';
+        }
+
+        function handleVoiceCommand(transcript) {
+            console.log("VOICE:", transcript);
+            Object.entries(voiceAliases).forEach(([alias, target]) => {
+                if (transcript.includes(alias)) transcript = transcript.replace(new RegExp(alias, 'g'), target);
+            });
+
+            if (transcript.includes("HOME")) { showSection('home'); return; }
+            if (transcript.includes("DIAG")) { showSection('diag'); return; }
+            if (transcript.includes("SPECS")) { showSection('specs'); return; }
+            if (transcript.includes("REPORT")) { showSection('report'); return; }
+
+            if (currentSection === 'diag') {
+                const num = transcript.match(/\d+\.?\d*/);
+                if (num) {
+                    document.getElementById('bigDisplay').innerText = parseFloat(num[0]).toFixed(2);
+                    updateLiveCheck();
+                    if (transcript.includes("COMMIT") || transcript.includes("NEXT")) confirmReading();
+                }
+            } else if (currentSection === 'specs') {
+                processIntakeLogic(transcript);
+            }
+        }
+
+        function processIntakeLogic(transcript) {
+            const fields = ["BRAND", "MDL", "SER", "YEAR", "RLA", "LRA", "FLA", "VOLT", "SUB", "REF", "TON"];
+            fields.forEach(f => {
+                if (transcript.includes(f)) {
+                    let val = transcript.replace(f, "").trim();
+                    if (val) {
+                        systemSpecs[systemSpecs.activeTab][f] = val;
+                        localStorage.setItem('hvacSystemV22_0', JSON.stringify(systemSpecs));
+                        renderSystemSpecs();
+                    }
+                }
+            });
+        }
+
+        // --- COMPILER ---
+        function renderCompiler() {
+            const preview = document.getElementById('compilerPreview');
+            let lines = [];
+            ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
+                const obj = systemSpecs[tab];
+                if (obj.BRAND !== '--') lines.push(`[${obj.TYPE}] ${obj.BRAND} | ${obj.YEAR} | M:${obj.MDL}`);
+            });
+            const source = activeJob ? JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {} : tempDiagBuffer;
+            Object.values(source).forEach(item => lines.push(`► ${item.field}: ${item.val}`));
+            preview.innerHTML = lines.join('\n') || 'No Data.';
+        }
+
+        function copyCompilerReport() {
+            const block = document.getElementById('compilerPreview').innerText;
+            navigator.clipboard.writeText(block).then(() => alert("Copied."));
+        }
+
+        // --- MISC ---
+        function updateJobUI() {
+            const ind = document.getElementById('activeJobIndicator');
+            const name = document.getElementById('hookedJobName');
+            if (activeJob) { ind.style.display = 'block'; name.innerText = activeJob; }
+            else { ind.style.display = 'none'; }
+        }
+
+        async function callAppsScript(payload) {
+            if (activeJob) payload.sheetName = activeJob;
+            try {
+                const res = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(payload) });
+                return await res.json();
+            } catch (e) { return null; }
+        }
+
         window.onload = () => {
             updateJobUI();
             showSection('home');
         };
     </script>
 </body>
-
 </html>
