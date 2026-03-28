@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro</title>
+    <title>HVAC Master Pro v23.2</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Pro">
+    <meta name="apple-mobile-web-app-title" content="HVAC Pro v23.2">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
@@ -1395,11 +1395,23 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if (navMap[id]) document.getElementById(navMap[id]).classList.add('active');
 
-            // Trigger specific refreshes
-            if (id === 'section-manuals') { /* MANUALS Logic */ }
-            if (id === 'reportModal') { renderCompiler(); initTechNotes(); loadRefInputs(); }
-            if (id === 'settingsModal') { isSettingsMode = true; updateSettingsUI(); } else { isSettingsMode = false; }
-            if (id === 'voiceModal') { updateStepNav(); recalculateField(); }
+            // Trigger specific refreshes and setups
+            if (id === 'reportModal') { 
+                renderCompiler(); initTechNotes(); loadRefInputs(); 
+            }
+            if (id === 'settingsModal') { 
+                isSettingsMode = true; 
+                updateSettingsUI(); 
+                switchDictType('brands');
+            } else { 
+                isSettingsMode = false; 
+            }
+            if (id === 'voiceModal') { 
+                let firstEmpty = 0;
+                for (let i = 0; i < FIELD_CYCLE.length; i++) { if (!buffer[i]) { firstEmpty = i; break; } }
+                fieldIndex = firstEmpty;
+                syncLogToUI(); updateStepNav(); recalculateField(); 
+            }
         }
 
         // --- Backward Compatibility Shims ---
@@ -1411,11 +1423,9 @@
         function closeManuals() { showSection('v23-home'); }
         function closeSettings() { showSection('v23-home'); }
         function closeReport() { showSection('v23-home'); }
-        function closeAllModals() { showSection('v23-home'); }
-
+        function closeAllModals() { showSection('v23-home'); }        
+        
         async function initIndexedDB() {
-
-            console.log("DB: Init Called");
             return new Promise((resolve, reject) => {
                 try {
                     console.log("DB: Opening Request...");
@@ -2308,103 +2318,7 @@
 
         // openSpecVoice now defined above (tap-cell listener)
 
-        function openVoiceConsole() {
-            closeAllModals();
-            document.getElementById('section-specs').style.display = 'none';
-            document.getElementById('voiceModal').style.display = 'flex';
-
-            // Default to first empty step
-            let firstEmpty = 0;
-            for (let i = 0; i < FIELD_CYCLE.length; i++) { if (!buffer[i]) { firstEmpty = i; break; } }
-            fieldIndex = firstEmpty;
-
-            updateNavUI('nav-diag');
-            syncLogToUI(); updateStepNav(); recalculateField();
-        }
-
-        function showSection(id) {
-            closeAllModals();
-            if (localStorage.getItem('galleryOpen') === 'true') {
-                document.getElementById('galleryOverlay').style.display = 'flex';
-            }
-            document.getElementById('section-specs').style.display = (id === 'section-specs') ? 'block' : 'none';
-            if (id !== 'section-specs') {
-                document.getElementById(id).style.display = 'block';
-            }
-            updateNavUI(id === 'section-specs' ? 'nav-home' : 'nav-' + id.replace('Overlay','').replace('Modal',''));
-        }
-
-        function updateNavUI(activeId) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(activeId).classList.add('active');
-        }
-
-        function closeAllModals() {
-            isSettingsMode = false;
-            document.getElementById('voiceModal').style.display = 'none';
-            document.getElementById('reportOverlay').style.display = 'none';
-            document.getElementById('manualsOverlay').style.display = 'none';
-            document.getElementById('settingsOverlay').style.display = 'none';
-            // Note: galleryOverlay is NOT closed here to prevent "bounce back"
-        }
-
-        // ── UNIFIED VOICE DISPATCHER ───────────────────────────────────
-        function voiceDispatcher(transcript, isIntake) {
-            transcript = transcript.toLowerCase();
-
-            // 1. Navigation Commands
-            if (/\b(home|dashboard|splash)\b/.test(transcript)) { return stageNav('section-specs', 'nav-home'); }
-            if (/\b(diag|diagnostic|capacitor)\b/.test(transcript)) { return stageNav('voiceModal', 'nav-diag'); }
-            if (/\b(report|summary)\b/.test(transcript)) { return stageNav('reportOverlay', 'nav-report'); }
-            if (/\b(manual|manuals|library)\b/.test(transcript)) { return stageNav('manualsOverlay', 'nav-manuals'); }
-            if (/\b(setting|settings)\b/.test(transcript)) { return stageNav('settingsOverlay', 'nav-settings'); }
-
-            // 2. Handshake / Confirmation — ONLY fires when a destination is already staged
-            if (navStaging) {
-                const confirmStr = userDict && userDict.confirms ? userDict.confirms : "yes, go, copy, confirm, ok, stage";
-                const confirmArr = confirmStr.toLowerCase().split(',').map(s => s.trim());
-                if (confirmArr.some(w => transcript.includes(w))) {
-                    const target = navStaging; navStaging = null;
-                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging'));
-                    if (target.id === 'section-specs') showSection('section-specs');
-                    else if (target.id === 'voiceModal') openVoiceConsole();
-                    else if (target.id === 'reportOverlay') openReport();
-                    else if (target.id === 'manualsOverlay') openManuals();
-                    else if (target.id === 'settingsOverlay') openSettings();
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        function stageNav(id, btnId) {
-            if (!appSettings.navConfirm) {
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging')); // BUG FIX
-                if (id === 'section-specs') showSection('section-specs');
-                else if (id === 'voiceModal') openVoiceConsole();
-                else if (id === 'reportOverlay') openReport();
-                else if (id === 'manualsOverlay') openManuals();
-                else if (id === 'settingsOverlay') openSettings();
-                return true;
-            }
-            navStaging = { id, btnId };
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging'));
-            document.getElementById(btnId).classList.add('staging');
-            // iOS Haptic
-            if (navigator.vibrate) navigator.vibrate(50);
-            return true;
-        }
-
-        function openSettings() {
-            closeAllModals();
-            isSettingsMode = true;
-            updateNavUI('nav-settings');
-            document.getElementById('settingsOverlay').style.display = 'flex';
-            updateSettingsUI();
-            switchDictType('brands');
-        }
-        function closeSettings() { isSettingsMode = false; closeAllModals(); showSection('section-specs'); }
+        // Duplicate Legacy Navigation Block Removed for v23.1 GOLD
         function toggleSetting(key) {
             appSettings[key] = !appSettings[key];
             localStorage.setItem('hvacSettingsV20', JSON.stringify(appSettings));
@@ -3170,7 +3084,8 @@
         }
 
         window.onload = async () => {
-            console.log("v23.1 Start - Phoenix Foundation");
+            console.log("v23.2 Start - Core Stability");
+            document.title = "HVAC PRO v23.2 GOLD";
             
             // Standardize Hidden sections
             const overlays = document.querySelectorAll('.modal-overlay');
@@ -3178,31 +3093,31 @@
             
             showSection('v23-home');
             
-            await initIndexedDB();
-            loadFromStorage();
-            refreshJobData();
-            initDirectVocalNav();
+            try {
+                await initIndexedDB();
+            } catch (e) {
+                console.warn("DB Init Failed, bypassing to ensure UI loads:", e);
+            }
+            
+            try {
+                loadFromStorage();
+                refreshJobData();
+            } catch (e) {
+                console.error("Storage load error:", e);
+            }
         };
 
-        function initDirectVocalNav() {
-            // Hardening Vocal Routing for v23.0 Direct Transport
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) return;
+        // ── NATIVE VOICE DISPATCHER for v23.0 Direct Transport ──
+        function voiceDispatcher(transcript) {
+            const t = transcript.toLowerCase();
+            if (/\b(home|launcher|mission control|start over)\b/.test(t)) { showSection('v23-home'); return true; }
+            if (/\b(diag|diagnostic|capacitor|test)\b/.test(t)) { showSection('voiceModal'); return true; }
+            if (/\b(specs|specifications|equipment)\b/.test(t)) { showSection('section-specs'); return true; }
+            if (/\b(manual|manuals|library)\b/.test(t)) { showSection('section-manuals'); return true; }
+            if (/\b(report|summary|compile)\b/.test(t)) { showSection('reportModal'); return true; }
+            if (/\b(settings|options|config)\b/.test(t)) { showSection('settingsModal'); return true; }
             
-            const origDispatcher = window.voiceDispatcher;
-            window.voiceDispatcher = function(transcript) {
-                const t = transcript.toLowerCase();
-                // 1. Check for Navigation keywords first (Direct Transport)
-                if (/\b(home|launcher|mission control|start over)\b/.test(t)) { showSection('v23-home'); return true; }
-                if (/\b(diag|diagnostic|capacitor|test)\b/.test(t)) { showSection('voiceModal'); return true; }
-                if (/\b(specs|specifications|equipment)\b/.test(t)) { showSection('section-specs'); return true; }
-                if (/\b(manual|manuals|library)\b/.test(t)) { showSection('section-manuals'); return true; }
-                if (/\b(report|summary|compile)\b/.test(t)) { showSection('reportModal'); return true; }
-                if (/\b(settings|options|config)\b/.test(t)) { showSection('settingsModal'); return true; }
-                
-                // 2. Fallback to original diagnostic/dictionary logic
-                return origDispatcher ? origDispatcher(transcript) : false;
-            };
+            return false;
         }
 
         function copyCompilerReport() {
