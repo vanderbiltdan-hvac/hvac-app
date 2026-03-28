@@ -935,7 +935,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top:4px;">
             <div>
                 <h1 style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span style="color:var(--amber-orange);">v23.0 GOLD</span></h1>
+                    HVAC PRO <span style="color:var(--amber-orange);">v23.1 GOLD</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <div class="job-toggle-container" onclick="toggleJobMode()">
                         <span id="jobModeLabelLauncher" class="job-toggle-label">JOB SYNC</span>
@@ -972,7 +972,7 @@
                 <h1 style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v23.0 GOLD</div>
+                    <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v23.1 GOLD</div>
                     <div class="job-toggle-container" onclick="toggleJobMode()">
                         <span id="jobModeLabel" class="job-toggle-label">JOB SYNC</span>
                         <div id="jobToggle" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
@@ -1526,7 +1526,7 @@
         function closeGallery() { 
             localStorage.removeItem('galleryOpen');
             document.getElementById('galleryOverlay').style.display = 'none'; 
-            showSection('mainDashboard'); 
+            showSection('section-specs'); 
         }
 
         async function switchShelf(shelfName) {
@@ -1619,7 +1619,7 @@
             isJobMode = !isJobMode;
             const toggle = document.getElementById('jobToggle');
             const label = document.getElementById('jobModeLabel');
-            const dashboard = document.getElementById('mainDashboard');
+            const dashboard = document.getElementById('section-specs');
 
             if (isJobMode) {
                 toggle.classList.add('on');
@@ -1718,7 +1718,7 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000);
             
-            // Inject Sheet Context (v21.10)
+            // Inject Sheet Context (v23.1 GOLD0)
             if (currentJob) payload.sheetName = currentJob;
 
             try {
@@ -2310,7 +2310,7 @@
 
         function openVoiceConsole() {
             closeAllModals();
-            document.getElementById('mainDashboard').style.display = 'none';
+            document.getElementById('section-specs').style.display = 'none';
             document.getElementById('voiceModal').style.display = 'flex';
 
             // Default to first empty step
@@ -2327,11 +2327,11 @@
             if (localStorage.getItem('galleryOpen') === 'true') {
                 document.getElementById('galleryOverlay').style.display = 'flex';
             }
-            document.getElementById('mainDashboard').style.display = (id === 'mainDashboard') ? 'block' : 'none';
-            if (id !== 'mainDashboard') {
+            document.getElementById('section-specs').style.display = (id === 'section-specs') ? 'block' : 'none';
+            if (id !== 'section-specs') {
                 document.getElementById(id).style.display = 'block';
             }
-            updateNavUI(id === 'mainDashboard' ? 'nav-home' : 'nav-' + id.replace('Overlay','').replace('Modal',''));
+            updateNavUI(id === 'section-specs' ? 'nav-home' : 'nav-' + id.replace('Overlay','').replace('Modal',''));
         }
 
         function updateNavUI(activeId) {
@@ -2353,7 +2353,7 @@
             transcript = transcript.toLowerCase();
 
             // 1. Navigation Commands
-            if (/\b(home|dashboard|splash)\b/.test(transcript)) { return stageNav('mainDashboard', 'nav-home'); }
+            if (/\b(home|dashboard|splash)\b/.test(transcript)) { return stageNav('section-specs', 'nav-home'); }
             if (/\b(diag|diagnostic|capacitor)\b/.test(transcript)) { return stageNav('voiceModal', 'nav-diag'); }
             if (/\b(report|summary)\b/.test(transcript)) { return stageNav('reportOverlay', 'nav-report'); }
             if (/\b(manual|manuals|library)\b/.test(transcript)) { return stageNav('manualsOverlay', 'nav-manuals'); }
@@ -2366,7 +2366,7 @@
                 if (confirmArr.some(w => transcript.includes(w))) {
                     const target = navStaging; navStaging = null;
                     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging'));
-                    if (target.id === 'mainDashboard') showSection('mainDashboard');
+                    if (target.id === 'section-specs') showSection('section-specs');
                     else if (target.id === 'voiceModal') openVoiceConsole();
                     else if (target.id === 'reportOverlay') openReport();
                     else if (target.id === 'manualsOverlay') openManuals();
@@ -2381,7 +2381,7 @@
         function stageNav(id, btnId) {
             if (!appSettings.navConfirm) {
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('staging')); // BUG FIX
-                if (id === 'mainDashboard') showSection('mainDashboard');
+                if (id === 'section-specs') showSection('section-specs');
                 else if (id === 'voiceModal') openVoiceConsole();
                 else if (id === 'reportOverlay') openReport();
                 else if (id === 'manualsOverlay') openManuals();
@@ -2404,7 +2404,7 @@
             updateSettingsUI();
             switchDictType('brands');
         }
-        function closeSettings() { isSettingsMode = false; closeAllModals(); showSection('mainDashboard'); }
+        function closeSettings() { isSettingsMode = false; closeAllModals(); showSection('section-specs'); }
         function toggleSetting(key) {
             appSettings[key] = !appSettings[key];
             localStorage.setItem('hvacSettingsV20', JSON.stringify(appSettings));
@@ -2675,7 +2675,7 @@
                         const transcript = res[0].transcript.toLowerCase().trim();
 
                         const isSequenceMode = document.getElementById('voiceModal').style.display === 'flex';
-                        const isIntakeMode = document.getElementById('mainDashboard').style.display !== 'none';
+                        const isIntakeMode = document.getElementById('section-specs').style.display !== 'none';
 
                         // 1. Process Interim purely for Sequence Live-Number display
                         if (!res.isFinal) {
