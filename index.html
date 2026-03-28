@@ -870,7 +870,49 @@
             border-radius: 8px;
             color: white;
         }
+        .v23-launcher-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .v23-pwr-btn {
+            width: 100%;
+            height: 70px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 900;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .v23-sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .v23-sub-btn {
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 900;
+            color: white;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .v23-pwr-btn:active, .v23-sub-btn:active { transform: scale(0.95); }
     </style>
+
 </head>
 
 <body id="masterBody">
@@ -879,24 +921,58 @@
 
     <!-- PERSISTENT NAVIGATION BAR -->
     <nav class="app-nav">
-        <button class="nav-btn active" onclick="showSection('mainDashboard')" id="nav-home"><span>🏠</span>
-            HOME</button>
-        <button class="nav-btn" onclick="openVoiceConsole()" id="nav-diag"><span>⚡</span> DIAG</button>
-        <button class="nav-btn" onclick="openReport()" id="nav-report"><span>📋</span> REPORT</button>
-        <button class="nav-btn" onclick="openManuals()" id="nav-manuals"><span>📄</span> MANUALS</button>
-        <button class="nav-btn" onclick="openSettings()" id="nav-settings"><span>⚙️</span> SETTINGS</button>
+        <button class="nav-btn active" onclick="showSection('v23-home')" id="nav-home"><span>🏠</span> HOME</button>
+        <button class="nav-btn" onclick="showSection('voiceModal')" id="nav-diag"><span>⚡</span> DIAG</button>
+        <button class="nav-btn" onclick="showSection('section-specs')" id="nav-specs"><span>📋</span> SPECS</button>
+        <button class="nav-btn" onclick="showSection('section-manuals')" id="nav-manuals"><span>📄</span> MANUALS</button>
+        <button class="nav-btn" onclick="showSection('reportModal')" id="nav-report"><span>📋</span> REPORT</button>
+        <button class="nav-btn" onclick="showSection('settingsModal')" id="nav-settings"><span>⚙️</span> SETTINGS</button>
     </nav>
 
-    <div class="container" id="mainDashboard" style="padding-bottom:100px;">
-        <!-- GLOBAL HEADER (V21.1) -->
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px; flex-wrap: wrap; gap: 10px;">
+
+    <!-- NEW v23.0 LAUNCHER SECTION (HOME) -->
+    <div class="container" id="v23-home" style="padding-bottom:100px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top:4px;">
             <div>
-                <h1
-                    style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
-                    SERVICE PRO</h1>
+                <h1 style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
+                    HVAC PRO <span style="color:var(--amber-orange);">v23.0 GOLD</span></h1>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+                    <div class="job-toggle-container" onclick="toggleJobMode()">
+                        <span id="jobModeLabelLauncher" class="job-toggle-label">JOB SYNC</span>
+                        <div id="jobToggleLauncher" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
+                    </div>
+                </div>
+            </div>
+            <button id="launcherMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:16px; width:50px; height:50px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0, 229, 255, 0.4);">
+                <span style="font-size:24px;">🎙</span>
+            </button>
+        </div>
+
+        <div class="v23-launcher-grid">
+            <button class="v23-pwr-btn" style="background:var(--emerald-green); color:#000;">1</button>
+            <button class="v23-pwr-btn" style="background:var(--electric-blue); color:#000;">2</button>
+            <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;">3</button>
+            <button class="v23-pwr-btn" style="background:var(--crimson-red);">4</button>
+            
+            <div class="v23-sub-grid">
+                <button class="v23-sub-btn">5</button>
+                <button class="v23-sub-btn">6</button>
+                <button class="v23-sub-btn">7</button>
+                <button class="v23-sub-btn">8</button>
+                <button class="v23-sub-btn">9</button>
+                <button class="v23-sub-btn">10</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ORIGINAL HOME (RENAMED TO SPECS) -->
+    <div class="container" id="section-specs" style="padding-bottom:100px; display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px;">
+            <div>
+                <h1 style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
+                    SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v21.11</div>
+                    <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v23.0 GOLD</div>
                     <div class="job-toggle-container" onclick="toggleJobMode()">
                         <span id="jobModeLabel" class="job-toggle-label">JOB SYNC</span>
                         <div id="jobToggle" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
@@ -905,7 +981,7 @@
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
                     </div>
                 </div>
-            </div>
+
             <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
                 <button onclick="openJobPortal()" class="btn-utility" style="background:#222; border:1px solid #c5a059; color:#c5a059; padding:6px 10px; border-radius:12px; display:flex; align-items:center; gap:4px;">
                     <span style="font-size:14px;">📂</span><span style="font-size:9px; font-weight:900;">PORTAL</span>
@@ -1042,8 +1118,9 @@
         <div id="restoreBox" onclick="restoreBuffer()">↩️ RESTORE WIPED DATA</div>
     </div>
 
-    <!-- MANUALS OVERLAY -->
-    <div id="manualsOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
+    <!-- MANUALS OVERLAY (RENAMED TO SECTION-MANUALS) -->
+    <div id="section-manuals" class="modal-overlay" style="background:#0f0f0f; display:none;">
+
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">📄 SYSTEM MANUALS</h2>
@@ -1063,7 +1140,8 @@
     </div>
 
     <!-- REPORT COMPILER (v20.32) -->
-    <div id="reportOverlay" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
+    <div id="reportModal" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
+
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📋 COMPILER</h2>
@@ -1190,7 +1268,8 @@
     </div>
 
     <!-- SETTINGS MODAL -->
-    <div id="settingsOverlay" class="modal-overlay" style="background:#0f0f0f; display:none;">
+    <div id="settingsModal" class="modal-overlay" style="background:#0f0f0f; display:none;">
+
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
@@ -1291,7 +1370,51 @@
         const OS_NAME = "PH_GALLERY";
         let currentShelf = 'ALL';
 
+        // ── v23.0 Unified Navigation Engine ──────────────────────
+        function showSection(id) {
+            const sections = ['v23-home', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'settingsModal', 'jobPortalModal', 'galleryOverlay'];
+            sections.forEach(s => {
+                const el = document.getElementById(s);
+                if (el) el.style.display = 'none';
+            });
+
+            const target = document.getElementById(id);
+            if (target) {
+                target.style.display = (target.classList.contains('container') ? 'block' : 'flex');
+            }
+
+            // Update Bottom Nav Active State
+            const navMap = {
+                'v23-home': 'nav-home',
+                'voiceModal': 'nav-diag',
+                'section-specs': 'nav-specs',
+                'section-manuals': 'nav-manuals',
+                'reportModal': 'nav-report',
+                'settingsModal': 'nav-settings'
+            };
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if (navMap[id]) document.getElementById(navMap[id]).classList.add('active');
+
+            // Trigger specific refreshes
+            if (id === 'section-manuals') { /* MANUALS Logic */ }
+            if (id === 'reportModal') { renderCompiler(); initTechNotes(); loadRefInputs(); }
+            if (id === 'settingsModal') { isSettingsMode = true; updateSettingsUI(); } else { isSettingsMode = false; }
+            if (id === 'voiceModal') { updateStepNav(); recalculateField(); }
+        }
+
+        // --- Backward Compatibility Shims ---
+        function openVoiceConsole() { showSection('voiceModal'); }
+        function openReport() { showSection('reportModal'); }
+        function openSettings() { showSection('settingsModal'); }
+        function openManuals() { showSection('section-manuals'); }
+        function closeVoiceModal() { showSection('v23-home'); }
+        function closeManuals() { showSection('v23-home'); }
+        function closeSettings() { showSection('v23-home'); }
+        function closeReport() { showSection('v23-home'); }
+        function closeAllModals() { showSection('v23-home'); }
+
         async function initIndexedDB() {
+
             console.log("DB: Init Called");
             return new Promise((resolve, reject) => {
                 try {
@@ -2602,10 +2725,11 @@
                         // 4. Settings is FIRST — hard-isolated pipeline
                         if (isSettingsMode) {
                             // NAV ESCAPE HATCH: nav words exit Settings cleanly before being staged
-                            if (/\b(home|dashboard|splash|diag|diagnostic|capacitor|report|summary|manual|manuals|library)\b/.test(transcript)) {
+                            if (/\b(home|dashboard|splash|diag|diagnostic|capacitor|report|summary|manual|manuals|library|specs|specifications)\b/.test(transcript)) {
                                 isSettingsMode = false;
                                 if (voiceDispatcher(transcript)) return;
                             }
+
                             if (/\b(stop|mic off|done)\b/.test(transcript)) { stopGlobalMic(); return; }
 
                             if (/\b(brands?)\b/.test(transcript)) { switchDictType('brands'); return; }
@@ -3043,6 +3167,49 @@
         }
 
         function closeReport() { closeAllModals(); showSection('mainDashboard'); }
+
+        function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); showSection('v23-home'); }
+        async function startJob() { 
+            const name = document.getElementById('custName').value; 
+            if (!name) return alert("Enter Job Name/Number First");
+            const result = await callAppsScript({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] });
+            if (result && result.status === "success") {
+                alert("Job Created: " + name);
+                window.currentJob = name;
+                document.getElementById('hookedJobNameLauncher').innerText = name;
+                document.getElementById('activeJobIndicatorLauncher').style.display = 'block';
+            }
+        }
+
+        window.onload = async () => {
+            console.log("v23.0 Starting...");
+            showSection('v23-home');
+            await initIndexedDB();
+            loadFromStorage();
+            refreshJobData();
+            initDirectVocalNav();
+        };
+
+        function initDirectVocalNav() {
+            // Hardening Vocal Routing for v23.0 Direct Transport
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SR) return;
+            
+            // We hook into the existing dispatcher or replace it for global nav
+            const origDispatcher = window.voiceDispatcher;
+            window.voiceDispatcher = function(transcript) {
+                const t = transcript.toLowerCase();
+                if (/\b(home|launcher|mission control|start over)\b/.test(t)) { showSection('v23-home'); return true; }
+                if (/\b(diag|diagnostic|capacitor|test)\b/.test(t)) { showSection('voiceModal'); return true; }
+                if (/\b(specs|specifications|equipment)\b/.test(t)) { showSection('section-specs'); return true; }
+                if (/\b(manual|manuals|library)\b/.test(t)) { showSection('section-manuals'); return true; }
+                if (/\b(report|summary|compile)\b/.test(t)) { showSection('reportModal'); return true; }
+                if (/\b(settings|options|config)\b/.test(t)) { showSection('settingsModal'); return true; }
+                
+                // If not a nav command, fall back to the 1835 engine logic
+                return origDispatcher ? origDispatcher(transcript) : false;
+            };
+        }
 
         function copyCompilerReport() {
             const lines = document.querySelectorAll('#compilerPreview .compiler-line');
