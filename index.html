@@ -4,16 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v24.4</title>
+    <title id="appTitle">HVAC Master Pro</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Pro v24.5.1">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.5.2">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v24.5 GOLD SUCCESS: Fixed Scroll Footer, Live Bridge, PMI/REFRIG Hubs -->
+    <!-- v24.5.2 GOLD SUCCESS: Fixed Scroll Footer, Live Bridge, PMI/REFRIG Hubs -->
     <style>
         :root {
             --bg-dark: #121212;
@@ -572,6 +572,12 @@
             min-width: 65px;
             border-radius: 12px;
             height: 100%;
+        }
+
+        .nav-btn.active {
+            color: var(--electric-blue);
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+            background: rgba(0, 229, 255, 0.05);
         }
 
         .nav-btn.staging {
@@ -1225,11 +1231,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v23.2 GOLD</div>
-                    <div class="job-toggle-container" onclick="toggleJobMode()">
-                        <span id="jobModeLabel" class="job-toggle-label">JOB SYNC</span>
-                        <div id="jobToggle" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
-                    </div>
+                        v24.5.2</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -1727,7 +1729,8 @@
                 <h2 id="pmiActiveCat" style="color:var(--amber-orange); margin:0;">CATEGORY</h2>
                 <button onclick="closePMINotes()" style="background:none; border:none; color:white; font-size:30px;">&times;</button>
             </div>
-            <div id="pmiNoteList" style="display:grid; gap:10px; overflow-y:auto;"></div>
+            <div id="pmiNoteList" style="display:grid; gap:10px; overflow-y:auto; flex:1;"></div>
+            <button onclick="closePMINotes()" class="btn btn-primary" style="margin-top:20px; padding:15px; font-weight:900; letter-spacing:1px;">✔ BACK TO GRID</button>
         </div>
     </div>
 
@@ -1790,7 +1793,7 @@
         }
 
         function showSection(id) {
-            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings'];
+            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig'];
             sections.forEach(s => {
                 const el = document.getElementById(s);
                 if (el) el.style.display = 'none';
@@ -2411,7 +2414,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "v24.5.1";
+        const APP_VERSION = "v24.5.2";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -2533,11 +2536,14 @@
             const grid = document.getElementById('pmiCategoryGrid');
             if (!grid) return;
             grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
-                const isSelected = techNotes.some(n => n.startsWith(cat + ' →') || n.startsWith(cat + '◘'));
+                const activeNotesInCat = techNotes.filter(n => n.startsWith(cat + ' →'));
+                const hasSelected = activeNotesInCat.length > 0;
+                const noteText = hasSelected ? activeNotesInCat[0].split(' → ')[1] : 'TAP TO ADD';
+                
                 return `
-                <div onclick="openPMINotes('${cat}')" class="btn-utility" style="flex-direction:column; height:80px; padding:15px; border-color:${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.1)'}; background:${isSelected ? 'rgba(0,229,255,0.05)' : 'transparent'}">
-                    <span style="font-size:14px; font-weight:900; color:${isSelected ? 'var(--electric-blue)' : 'white'}">${cat.toUpperCase()}</span>
-                    ${isSelected ? '<span style="color:var(--electric-blue); font-size:12px;">✅ SELECTED</span>' : '<span style="color:#444; font-size:10px;">TAP TO ADD</span>'}
+                <div onclick="openPMINotes('${cat}')" class="btn-utility" style="flex-direction:column; height:80px; padding:15px; border-color:${hasSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.1)'}; background:${hasSelected ? 'rgba(0,229,255,0.05)' : 'transparent'}">
+                    <span style="font-size:14px; font-weight:900; color:${hasSelected ? 'var(--electric-blue)' : 'white'}">${cat.toUpperCase()}</span>
+                    ${hasSelected ? `<span style="color:var(--electric-blue); font-size:11px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;">✅ ${noteText}</span>` : '<span style="color:#444; font-size:10px;">TAP TO ADD</span>'}
                 </div>`;
             }).join('');
         }
@@ -4023,6 +4029,8 @@
         window.onload = async () => {
             console.log(APP_VERSION + " Start - Vault SOP Verified");
             document.title = "HVAC PRO " + APP_VERSION;
+            const metaTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+            if (metaTitle) metaTitle.setAttribute("content", "HVAC PRO " + APP_VERSION);
 
             // Sync UI Version Badges
             const lVer = document.getElementById('launcherVerBadge'); if (lVer) lVer.innerText = APP_VERSION;
