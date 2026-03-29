@@ -9,10 +9,11 @@
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Pro v24.5">
+    <meta name="apple-mobile-web-app-title" content="HVAC Pro v24.5.1">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
+    <!-- v24.5 GOLD SUCCESS: Fixed Scroll Footer, Live Bridge, PMI/REFRIG Hubs -->
     <style>
         :root {
             --bg-dark: #121212;
@@ -519,7 +520,7 @@
             font-weight: 900;
         }
 
-        /* APP NAV BAR - Truly Universal */
+        /* APP NAV BAR - Truly Universal (Fixed + Scroll v24.5.1) */
         .app-nav {
             position: fixed;
             bottom: 0;
@@ -529,11 +530,30 @@
             background: rgba(18, 18, 18, 0.98);
             backdrop-filter: blur(15px);
             display: flex;
-            justify-content: space-around;
             align-items: center;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 10005;
             padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-fixed-home {
+            flex-shrink: 0;
+            width: 70px;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-scroller {
+            flex: 1;
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            height: 100%;
+            scroll-behavior: smooth;
         }
 
         .nav-btn {
@@ -543,20 +563,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 4px;
             cursor: pointer;
             font-size: 8px;
             font-weight: 900;
             transition: all 0.3s;
-            flex: 1;
+            min-width: 65px;
             border-radius: 12px;
             height: 100%;
-            padding-top: 10px;
-        }
-
-        .nav-btn.active {
-            color: var(--electric-blue);
-            font-size: 9px;
         }
 
         .nav-btn.staging {
@@ -1680,27 +1695,84 @@
     <div class="container" id="section-datablock" style="padding-bottom:100px; display:none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:var(--emerald-green); font-weight:900;">📦 DATA BLOCK</h1>
-            <button onclick="pushToDataBlock()" class="btn-utility" style="background:var(--emerald-green); color:black; border:none; padding:8px 15px;">⚡ PUSH ALL</button>
+            <div style="display:flex; gap:8px;">
+                <button onclick="copyToClipboard(document.getElementById('blockDraftPreview').innerText)" class="btn-utility" style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">📋 COPY STRING</button>
+                <button onclick="pushToDataBlock()" class="btn-utility" style="background:var(--emerald-green); color:black; border:none; padding:8px 15px;">⚡ PUSH ALL</button>
+            </div>
         </div>
         <div style="font-size:10px; color:#666; font-weight:900; margin-bottom:15px; letter-spacing:1px;">DRAFT BLOCK FOR AA7:AA16</div>
         <div class="voice-console" style="text-align:left; background:rgba(0,0,0,0.5); padding:15px; min-height:100px;">
            <div id="blockDraftPreview" style="font-family:monospace; font-size:13px; color:var(--emerald-green); word-break:break-all;">(EMPTY DRAFT)</div>
         </div>
-        <div style="margin-top:20px; display:grid; gap:10px;">
-            <button onclick="copyToClipboard(document.getElementById('blockDraftPreview').innerText)" class="btn btn-outline" style="font-size:11px;">📋 COPY STRING</button>
-            <button onclick="clearDraftBlock()" class="btn btn-outline" style="border-color:var(--crimson-red); color:var(--crimson-red); font-size:11px;">🗑 CLEAR DRAFT</button>
+        <div style="margin-top:20px;">
+            <button onclick="clearDraftBlock()" class="btn btn-outline" style="border-color:var(--crimson-red); color:var(--crimson-red); font-size:11px; width:100%;">🗑 CLEAR DRAFT</button>
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (7 BUTTONS) -->
+    <!-- SECTION: PMI (FULL SCREEN TECH NOTES) -->
+    <div class="container" id="section-pmi" style="padding-bottom:100px; display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
+            <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:var(--amber-orange); font-weight:900;">🛠 PMI HUB</h1>
+            <button onclick="showSection('reportModal')" class="btn-utility" style="border-color:var(--emerald-green); color:var(--emerald-green);">VIEW REPORT</button>
+        </div>
+        <div style="font-size:10px; color:#666; font-weight:900; margin-bottom:15px; letter-spacing:1px;">SELECT CATEGORY TO ADD NOTES</div>
+        
+        <div id="pmiCategoryGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <!-- Rendered via renderPMIGrid() -->
+        </div>
+
+        <!-- Inline Note Selector (Hidden by default) -->
+        <div id="pmiNoteOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:20000; flex-direction:column; padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 id="pmiActiveCat" style="color:var(--amber-orange); margin:0;">CATEGORY</h2>
+                <button onclick="closePMINotes()" style="background:none; border:none; color:white; font-size:30px;">&times;</button>
+            </div>
+            <div id="pmiNoteList" style="display:grid; gap:10px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <!-- SECTION: REFRIG (FULL SCREEN MANUAL READINGS) -->
+    <div class="container" id="section-refrig" style="padding-bottom:100px; display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top:4px;">
+            <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🌡 REFRIG DATA</h1>
+            <button onclick="showSection('reportModal')" class="btn-utility" style="border-color:var(--emerald-green); color:var(--emerald-green);">VIEW REPORT</button>
+        </div>
+
+        <div id="refrigInputList" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+            <!-- Rendered via renderRefrigRows() -->
+        </div>
+
+        <!-- GLOBAL NUMERIC KEYPAD -->
+        <div id="refrigKeypad" style="display:none; position:fixed; bottom:85px; left:0; width:100%; background:#1a1a1a; border-top:2px solid var(--electric-blue); z-index:10006; padding:15px; padding-bottom:env(safe-area-inset-bottom);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span id="keypadLabel" style="font-weight:900; color:var(--electric-blue); font-size:12px;">FIELD NAME</span>
+                <span id="keypadValue" style="font-size:24px; font-weight:900; color:white; letter-spacing:2px;">0.0</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+                <button class="btn-numpad" onclick="numIn(1)">1</button><button class="btn-numpad" onclick="numIn(2)">2</button><button class="btn-numpad" onclick="numIn(3)">3</button>
+                <button class="btn-numpad" onclick="numIn(4)">4</button><button class="btn-numpad" onclick="numIn(5)">5</button><button class="btn-numpad" onclick="numIn(6)">6</button>
+                <button class="btn-numpad" onclick="numIn(7)">7</button><button class="btn-numpad" onclick="numIn(8)">8</button><button class="btn-numpad" onclick="numIn(9)">9</button>
+                <button class="btn-numpad" onclick="numIn('.')">.</button><button class="btn-numpad" onclick="numIn(0)">0</button><button class="btn-numpad danger" onclick="numIn('C')">CLR</button>
+            </div>
+            <button class="btn btn-green" onclick="saveRefrigNum()" style="width:100%; margin-top:15px; padding:15px; font-weight:900;">✔ COMMIT READING</button>
+        </div>
+    </div>
+
+    <!-- UNIVERSAL FIXED FOOTER (Fixed Home + Scroll v24.5.1) -->
     <nav class="app-nav">
-        <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
-        <button id="nav-mirror" onclick="showSection('section-mirror')" class="nav-btn"><span>🪞</span>MIRROR</button>
-        <button id="nav-diag" onclick="showSection('voiceModal')" class="nav-btn"><span>🎙️</span>DIAG</button>
-        <button id="nav-specs" onclick="showSection('section-specs')" class="nav-btn"><span>📋</span>SPECS</button>
-        <button id="nav-compiler" onclick="showSection('reportModal')" class="nav-btn"><span>🏗️</span>COMPILER</button>
-        <button id="nav-block" onclick="showSection('section-datablock')" class="nav-btn"><span>📦</span>BLOCK</button>
-        <button id="nav-settings" onclick="showSection('settingsModal')" class="nav-btn"><span>⚙️</span>SETTINGS</button>
+        <div class="nav-fixed-home">
+             <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
+        </div>
+        <div class="nav-scroller">
+            <button id="nav-mirror" onclick="showSection('section-mirror')" class="nav-btn"><span>🪞</span>MIRROR</button>
+            <button id="nav-diag" onclick="showSection('voiceModal')" class="nav-btn"><span>🎙️</span>DIAG</button>
+            <button id="nav-specs" onclick="showSection('section-specs')" class="nav-btn"><span>📋</span>SPECS</button>
+            <button id="nav-pmi" onclick="showSection('section-pmi')" class="nav-btn"><span>🛠️</span>PMI</button>
+            <button id="nav-refrig" onclick="showSection('section-refrig')" class="nav-btn"><span>🌡️</span>REFRIG</button>
+            <button id="nav-compiler" onclick="showSection('reportModal')" class="nav-btn"><span>🏗️</span>COMPILER</button>
+            <button id="nav-block" onclick="showSection('section-datablock')" class="nav-btn"><span>📦</span>BLOCK</button>
+            <button id="nav-settings" onclick="showSection('settingsModal')" class="nav-btn"><span>⚙️</span>SETTINGS</button>
+        </div>
     </nav>
 
     <script id="galleryScript">
@@ -1739,6 +1811,8 @@
                 'section-mirror': 'nav-mirror',
                 'voiceModal': 'nav-diag',
                 'section-specs': 'nav-specs',
+                'section-pmi': 'nav-pmi',
+                'section-refrig': 'nav-refrig',
                 'reportModal': 'nav-compiler',
                 'section-datablock': 'nav-block',
                 'settingsModal': 'nav-settings'
@@ -1748,6 +1822,8 @@
 
             // Trigger specific refreshes and setups
             if (id === 'section-mirror') renderMirrorTruth();
+            if (id === 'section-pmi') renderPMIGrid();
+            if (id === 'section-refrig') renderRefrigRows();
             if (id === 'section-datablock') renderDraftBlock();
             if (id === 'reportModal') {
                 renderCompiler(); initTechNotes(); loadRefInputs();
@@ -2054,10 +2130,6 @@
             document.getElementById('syncErrorModal').style.display = 'none';
         }
 
-        function retrySync() {
-            fetchMirrorSync();
-        }
-
         function processJobDataResults(data) {
             mirrorState = data; // Global Total Truth Update
 
@@ -2082,11 +2154,27 @@
             renderSystemSpecs();
         }
 
+        function renderSystemSpecs() {
+            const grid = document.getElementById('mainSpecGrid');
+            if (!grid) return;
+            const tab = systemSpecs.activeTab;
+            const fields = EQUIP_SCHEMA[tab] || [];
+            
+            grid.innerHTML = fields.map(f => {
+                const val = systemSpecs[tab][f.id] || '--';
+                const isSynced = isJobMode && mirrorState[f.label];
+                return `
+                <div class="spec-cell ${isSynced ? 'synced' : 'draft'}" id="spec-${f.id}" onclick="showSpecOverride('${f.id}', '${val}')">
+                    <div class="spec-label">${f.label.toUpperCase()}</div>
+                    <div class="spec-val" style="color:${isSynced ? 'var(--electric-blue)' : 'white'}">${val}</div>
+                </div>`;
+            }).join('');
+        }
+
         function renderMirrorTruth() {
             const list = document.getElementById('mirrorTruthList');
             if (!list) return;
             
-            // Filter out empty rows from Column W (mirrorState)
             const populated = Object.keys(mirrorState).filter(k => {
                 const val = mirrorState[k];
                 return val && val !== "" && val !== "--" && k !== 'success';
@@ -2097,21 +2185,35 @@
                 return;
             }
 
-            list.innerHTML = populated.map(k => `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+            list.innerHTML = populated.map(k => {
+                const val = mirrorState[k];
+                const noteStr = `${k}: ${val}`;
+                const isSelected = techNotes.includes(noteStr);
+                return `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
                     <div style="display:flex; flex-direction:column;">
                         <span style="font-size:8px; color:#666; font-weight:900; text-transform:uppercase;">${k}</span>
-                        <span style="font-size:15px; font-weight:900; color:var(--text-primary);">${mirrorState[k]}</span>
+                        <span style="font-size:15px; font-weight:900; color:var(--text-primary);">${val}</span>
                     </div>
-                    <button onclick="addMirrorToCompiler('${k}', '${mirrorState[k]}')" class="btn-utility" style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">➕ ADD</button>
-                </div>
-            `).join('');
+                    <button onclick="addMirrorToCompiler('${k}', '${val}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px;">
+                        ${isSelected ? '✅ UNDO' : '➕ ADD'}
+                    </button>
+                </div>`;
+            }).join('');
         }
 
         function addMirrorToCompiler(label, val) {
-            techNotes.push(`${label}: ${val}`);
+            const noteStr = `${label}: ${val}`;
+            const idx = techNotes.indexOf(noteStr);
+            if (idx > -1) {
+                techNotes.splice(idx, 1);
+            } else {
+                techNotes.push(noteStr);
+            }
             localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
-            alert(`Added to Compiler: ${label}`);
+            renderMirrorTruth();
+            renderCompiler();
+            renderDraftBlock();
         }
 
         async function pushAllSlotOverrides() {
@@ -2309,7 +2411,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "v24.5 GOLD";
+        const APP_VERSION = "v24.5.1";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -2360,12 +2462,32 @@
 
         function getDraftData() {
             let list = [];
+            
+            // 1. All Tech Notes (PMI results)
+            techNotes.forEach(note => {
+                // If note has ◘, it's already a KV pair
+                if (note.includes('◘')) {
+                    const parts = note.split('◘');
+                    list.push({ label: findSheetLabelFor(parts[0]), val: parts[1] });
+                } else if (note.includes(':')) {
+                    const parts = note.split(':');
+                    list.push({ label: findSheetLabelFor(parts[0]), val: parts[1].trim() });
+                } else if (note.includes('→')) {
+                    const parts = note.split('→');
+                    list.push({ label: findSheetLabelFor(parts[0]), val: parts[1].trim() });
+                }
+            });
+
+            // 2. All Manual Refrig Data
+            for (let k in refData) {
+                list.push({ label: findSheetLabelFor(k), val: refData[k] });
+            }
+
+            // 3. Staging Buffer (Diagnostic readings)
             Object.values(buffer).forEach(b => {
                 if (b.val && b.field) list.push({ label: findSheetLabelFor(b.field), val: b.val });
             });
-            for (let k in refData) {
-               list.push({ label: findSheetLabelFor(k), val: refData[k] });
-            }
+
             return list;
         }
 
@@ -2377,7 +2499,6 @@
                 const res = await callAppsScript({ action: "writeToNextDataBlock", dataString: block });
                 if (res.status === "success") {
                     alert("Data Block Successfully Pushed to AA7:AA16!");
-                    // Soft Reset after success
                     clearDraftBlock();
                     fetchMirrorSync();
                 } else {
@@ -2391,14 +2512,120 @@
         function clearDraftBlock() {
             if (!confirm("Clear current draft and staging buffer?")) return;
             buffer = {};
+            techNotes = [];
+            refData = {};
             localStorage.removeItem('hvacStagingBufferV20');
+            localStorage.removeItem('hvacTechNotesV20');
+            localStorage.removeItem('hvacRefDataV20');
             renderDraftBlock();
+            renderCompiler();
             alert("Staging Cleared.");
         }
 
         function copyToClipboard(text) {
             if (text === "(EMPTY DRAFT)") return;
-            navigator.clipboard.writeText(text).then(() => alert("Copied!"));
+            navigator.clipboard.writeText(text).then(() => alert("Copied to Clipboard!"));
+        }
+
+        // ── PMI SYSTEM (v24.5.1) ────────────────────────────────
+        let pmiActiveCategory = null;
+        function renderPMIGrid() {
+            const grid = document.getElementById('pmiCategoryGrid');
+            if (!grid) return;
+            grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
+                const isSelected = techNotes.some(n => n.startsWith(cat + ' →') || n.startsWith(cat + '◘'));
+                return `
+                <div onclick="openPMINotes('${cat}')" class="btn-utility" style="flex-direction:column; height:80px; padding:15px; border-color:${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.1)'}; background:${isSelected ? 'rgba(0,229,255,0.05)' : 'transparent'}">
+                    <span style="font-size:14px; font-weight:900; color:${isSelected ? 'var(--electric-blue)' : 'white'}">${cat.toUpperCase()}</span>
+                    ${isSelected ? '<span style="color:var(--electric-blue); font-size:12px;">✅ SELECTED</span>' : '<span style="color:#444; font-size:10px;">TAP TO ADD</span>'}
+                </div>`;
+            }).join('');
+        }
+
+        function openPMINotes(cat) {
+            pmiActiveCategory = cat;
+            document.getElementById('pmiActiveCat').innerText = cat;
+            const list = document.getElementById('pmiNoteList');
+            const options = techNotesMaster[cat] || [];
+            
+            list.innerHTML = options.map(opt => {
+                const noteStr = `${cat} → ${opt}`;
+                const isSelected = techNotes.includes(noteStr);
+                return `
+                <button onclick="togglePMINote('${opt}')" class="btn btn-outline" style="border-color:${isSelected ? 'var(--electric-blue)' : '#444'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; display:flex; justify-content:space-between; align-items:center; text-align:left;">
+                    <span>${opt}</span>
+                    <span>${isSelected ? '✅' : '➕'}</span>
+                </button>`;
+            }).join('');
+            document.getElementById('pmiNoteOverlay').style.display = 'flex';
+        }
+
+        function togglePMINote(opt) {
+            const noteStr = `${pmiActiveCategory} → ${opt}`;
+            const idx = techNotes.indexOf(noteStr);
+            if (idx > -1) techNotes.splice(idx, 1);
+            else techNotes.push(noteStr);
+            
+            localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+            openPMINotes(pmiActiveCategory);
+            renderPMIGrid();
+            renderCompiler();
+            renderDraftBlock();
+        }
+
+        function closePMINotes() {
+            document.getElementById('pmiNoteOverlay').style.display = 'none';
+        }
+
+        // ── REFRIG SYSTEM (v24.5.1) ─────────────────────────────
+        const REFRIG_FIELDS = {
+            'SUCT_P': 'Suction Pressure', 'LIQ_P': 'Liquid Pressure',
+            'VAPOR_SAT': 'Vapor Saturation', 'LIQ_SAT': 'Liquid Saturation',
+            'SH': 'Superheat (SH)', 'SC': 'Subcool (SC)',
+            'ODAT': 'Outdoor Temp', 'RETURN': 'Return Temp', 'RH': 'Return Humidity %',
+            'SUPPLY': 'Supply Temp', 'DELTA_T': 'Delta T (ΔT)'
+        };
+        let activeRefrigKey = null;
+        let keypadString = "";
+
+        function renderRefrigRows() {
+            const list = document.getElementById('refrigInputList');
+            if (!list) return;
+            list.innerHTML = Object.entries(REFRIG_FIELDS).map(([key, label]) => {
+                const val = refData[key] || '--';
+                const isSynced = isJobMode && mirrorState[findSheetLabelFor(label)];
+                return `
+                <div onclick="openRefrigKeypad('${key}')" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
+                    <span style="font-weight:900; color:#aaa; font-size:12px;">${label.toUpperCase()}</span>
+                    <span style="font-size:20px; font-weight:900; color:${isSynced ? 'var(--electric-blue)' : 'white'}">${val}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function openRefrigKeypad(key) {
+            activeRefrigKey = key;
+            keypadString = "";
+            document.getElementById('keypadLabel').innerText = REFRIG_FIELDS[key].toUpperCase();
+            document.getElementById('keypadValue').innerText = "0.0";
+            document.getElementById('refrigKeypad').style.display = 'block';
+        }
+
+        function numIn(val) {
+            if (val === 'C') keypadString = "";
+            else keypadString += val;
+            document.getElementById('keypadValue').innerText = keypadString || "0.0";
+        }
+
+        function saveRefrigNum() {
+            const val = parseFloat(keypadString);
+            if (!isNaN(val)) {
+                refData[activeRefrigKey] = val;
+                localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+                renderRefrigRows();
+                renderCompiler();
+                renderDraftBlock();
+            }
+            document.getElementById('refrigKeypad').style.display = 'none';
         }
 
         // ── COMPILER SORTING FIX ────────────────────────────────
@@ -2909,14 +3136,14 @@
                 }
 
                 if (input.length > 0) {
-                    let val = input.toUpperCase().trim();
+                    let val = input.trim(); // NATURAL CASING for Tech Notes
 
                     if (masterTarget === "BRAND") {
                         const brandsStr = userDict && userDict.brands ? userDict.brands : "Trane, Carrier, Lennox, Goodman, Rheem, Ruud, Daikin, Amana, Bryant, Comfortmaker";
                         const bArr = brandsStr.split(',').map(s => s.trim().toUpperCase());
-                        const match = bArr.find(b => val.includes(b));
+                        const match = bArr.find(b => val.toUpperCase().includes(b));
                         if (match) {
-                            val = match;
+                            val = match; // Keep Brand as Cannonical Upper
                         } else if (appSettings.strictDict) {
                             // Strict Mode: reject and show inline override prompt
                             showSpecOverride('BRAND', val);
@@ -2926,11 +3153,11 @@
                     else if (masterTarget === "REF") {
                         const refsStr = userDict && userDict.refs ? userDict.refs : "R-410A, R-22, R-407C, R-134a, R-454B, R-438A";
                         const rArr = refsStr.split(',').map(s => s.trim().toUpperCase());
-                        const match = rArr.find(r => val.includes(r.replace('-', '')));
+                        const match = rArr.find(r => val.toUpperCase().includes(r.replace('-', '')));
                         if (match) {
-                            val = match;
+                            val = match; // Keep Ref as Cannonical Upper
                         } else if (appSettings.strictDict) {
-                            showSpecOverride('REF', val);
+                            showSpecOverride('REF', val.toUpperCase());
                             return;
                         }
                     }
@@ -3364,8 +3591,10 @@
 
                             if (transcript.includes("undo") || transcript.includes("scrub")) { undoDictStaged(); return; }
 
-                            // Stage text in Settings
-                            dictStagedRaw = transcript.toUpperCase().trim();
+                            // Stage text in Settings (Dictionary usually Upper, but flexible)
+                            dictStagedRaw = transcript.trim();
+                            if (activeDictType !== 'notes') dictStagedRaw = dictStagedRaw.toUpperCase();
+                            
                             document.getElementById('dictStagedWord').innerText = dictStagedRaw;
                             document.getElementById('dictStagedWord').style.color = "white";
                             return;
@@ -3564,7 +3793,7 @@
             localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
             localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
             input.value = '';
-            initTechNotes(); renderCompiler();
+            initTechNotes(); renderCompiler(); renderDraftBlock();
         }
 
         // ── REFRIG DATA MANAGMENT ───────────────────────────────
@@ -3820,15 +4049,22 @@
             }
         };
 
-        // ── NATIVE VOICE DISPATCHER for v23.0 Direct Transport ──
+        // ── NATIVE VOICE DISPATCHER for v24.5.1 GOLD Navigation ──
         function voiceDispatcher(transcript) {
-            const t = transcript.toLowerCase();
-            if (/\b(home|launcher|mission control|start over)\b/.test(t)) { showSection('v23-home'); return true; }
-            if (/\b(diag|diagnostic|capacitor|test)\b/.test(t)) { showSection('voiceModal'); return true; }
+            const raw = transcript.toLowerCase();
+            // Handle optional "Go to" prefix
+            const t = raw.replace(/^go to\s+/, '').trim();
+
+            if (/\b(home|launcher|mission control|dashboard)\b/.test(t)) { showSection('v23-home'); return true; }
+            if (/\b(mirror|truth|w column)\b/.test(t)) { showSection('section-mirror'); return true; }
+            if (/\b(diag|diagnostic|capacitor|readings)\b/.test(t)) { showSection('voiceModal'); return true; }
             if (/\b(specs|specifications|equipment)\b/.test(t)) { showSection('section-specs'); return true; }
-            if (/\b(manual|manuals|library)\b/.test(t)) { showSection('section-manuals'); return true; }
-            if (/\b(report|summary|compile)\b/.test(t)) { showSection('reportModal'); return true; }
+            if (/\b(pmi|tech notes|maintenance)\b/.test(t)) { showSection('section-pmi'); return true; }
+            if (/\b(refrig|refrigeration|pressures)\b/.test(t)) { showSection('section-refrig'); return true; }
+            if (/\b(report|compiler|summary|invoice)\b/.test(t)) { showSection('reportModal'); return true; }
+            if (/\b(block|data block|spreadsheet push)\b/.test(t)) { showSection('section-datablock'); return true; }
             if (/\b(settings|options|config)\b/.test(t)) { showSection('settingsModal'); return true; }
+            if (/\b(manual|manuals|library)\b/.test(t)) { showSection('section-manuals'); return true; }
 
             return false;
         }
