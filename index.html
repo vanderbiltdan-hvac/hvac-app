@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v23.3</title>
+    <title id="appTitle">HVAC Master Pro v24.0</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Pro v23.3">
+    <meta name="apple-mobile-web-app-title" content="HVAC Pro v24.0">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
@@ -75,6 +75,17 @@
             to {
                 box-shadow: 0 0 20px var(--sync-glow);
             }
+        }
+
+        /* LIVE SYNC ENGINE STYLES */
+        .amber-glow {
+            border: 1px solid var(--amber-orange) !important;
+            box-shadow: inset 0 0 8px rgba(255, 171, 0, 0.2);
+        }
+
+        .mirror-blue {
+            color: var(--electric-blue) !important;
+            text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
         }
 
         .job-toggle-container {
@@ -939,6 +950,90 @@
         .v23-sub-btn:active {
             transform: scale(0.95);
         }
+
+        /* READINGS HUB STYLES */
+        .reading-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .reading-card.selected {
+            border-color: var(--emerald-green);
+        }
+
+        .reading-icon {
+            font-size: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reading-info {
+            flex: 1;
+        }
+
+        .reading-label {
+            font-size: 10px;
+            color: #888;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .reading-value {
+            font-size: 16px;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .reading-check {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .reading-check.on {
+            background: var(--emerald-green);
+            border-color: var(--emerald-green);
+            color: black;
+        }
+
+        .reading-status {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 900;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .status-pass {
+            background: rgba(0, 200, 83, 0.2);
+            color: #00c853;
+        }
+
+        .status-fail {
+            background: rgba(255, 23, 68, 0.2);
+            color: #ff1744;
+        }
     </style>
 
 </head>
@@ -951,9 +1046,9 @@
     <nav class="app-nav">
         <button class="nav-btn active" onclick="showSection('v23-home')" id="nav-home"><span>🏠</span> HOME</button>
         <button class="nav-btn" onclick="showSection('voiceModal')" id="nav-diag"><span>⚡</span> DIAG</button>
+        <button class="nav-btn" onclick="showSection('section-readings')" id="nav-readings"><span>📊</span>
+            READINGS</button>
         <button class="nav-btn" onclick="showSection('section-specs')" id="nav-specs"><span>📋</span> SPECS</button>
-        <button class="nav-btn" onclick="showSection('section-manuals')" id="nav-manuals"><span>📄</span>
-            MANUALS</button>
         <button class="nav-btn" onclick="showSection('reportModal')" id="nav-report"><span>📋</span> REPORT</button>
         <button class="nav-btn" onclick="showSection('settingsModal')" id="nav-settings"><span>⚙️</span>
             SETTINGS</button>
@@ -967,19 +1062,26 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v23.2 GOLD</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.0 GOLD</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <div class="job-toggle-container" onclick="toggleJobMode()">
                         <span id="jobModeLabelLauncher" class="job-toggle-label">JOB SYNC</span>
                         <div id="jobToggleLauncher" class="toggle-switch"
                             style="width: 34px; height: 18px; scale: 0.8;"></div>
                     </div>
+                    <!-- MANUAL REFRESH MIRROR BTN -->
+                    <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync"
+                        style="padding:4px 10px;">⚡ MIRROR</button>
                 </div>
             </div>
             <button id="launcherMicBtn" onclick="toggleGlobalMic()"
                 style="background:var(--electric-blue); color:black; border:none; border-radius:16px; width:50px; height:50px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0, 229, 255, 0.4);">
                 <span style="font-size:24px;">🎙</span>
             </button>
+        </div>
+        <!-- GLOBAL CONFLICT BADGE -->
+        <div id="conflictBadgeHeader"
+            style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
         </div>
 
         <div class="v23-launcher-grid">
@@ -999,6 +1101,108 @@
         </div>
     </div>
 
+    <!-- NEW READINGS HUB SECTION -->
+    <div class="container" id="section-readings" style="padding-bottom:100px; display:none;">
+        <div id="hubMainView" class="hub-page" style="display:flex; flex-direction:column;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top:4px;">
+                <div>
+                    <h1 style="font-size:24px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">READINGS HUB
+                    </h1>
+                    <div style="font-size:10px; color:var(--emerald-green); font-weight:900; letter-spacing:1px;">
+                        TRANSFER AREA • STAGING FOR REPORT</div>
+                </div>
+                <button onclick="clearMasterReadings()" class="btn btn-outline"
+                    style="border-color:var(--crimson-red); color:var(--crimson-red); font-size:10px; padding:6px 12px;">WIPE
+                    ALL</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+                <button onclick="navSubPage('hub', 'hubMirror')" class="btn btn-outline"
+                    style="font-size:11px; color:var(--electric-blue); border-color:var(--electric-blue); font-weight:900;">⚡
+                    MIRROR</button>
+                <button onclick="navSubPage('hub', 'hubOverride')" class="btn btn-outline"
+                    style="font-size:11px; color:var(--amber-orange); border-color:var(--amber-orange); font-weight:900;">⚠️
+                    OVERRIDE</button>
+                <button onclick="navSubPage('hub', 'hubConflicts')" class="btn btn-outline"
+                    style="font-size:11px; color:var(--crimson-red); border-color:var(--crimson-red); font-weight:900;">⚔️
+                    CONFLICTS</button>
+            </div>
+
+            <div id="readingsList" style="display: grid; gap: 8px;">
+                <div style="text-align:center; color:#555; padding:40px; font-weight:900;">NO READINGS SYNCED YET</div>
+            </div>
+
+            <div
+                style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="font-size:11px; color:#888; font-weight:900; text-align:center;">Readings checked above will
+                    be included in the Final Report Compiler.</div>
+            </div>
+        </div>
+
+        <!-- SUB PAGE: LIVE MIRROR -->
+        <div id="hubMirror" class="hub-page" style="display:none; flex-direction:column; padding-top:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0; font-size:20px; color:var(--electric-blue);">⚡ LIVE MIRROR</h2>
+                <button onclick="navSubPage('hub', 'hubMainView')" class="btn-utility">BACK</button>
+            </div>
+            <div style="font-size:11px; color:#aaa; margin-bottom:15px; font-weight:900;">View live inputs from the
+                Spreadsheet (I12:W199).</div>
+            <div id="mirrorList"
+                style="background:rgba(0,0,0,0.3); border-radius:12px; padding:10px; flex:1; overflow-y:auto; display:grid; gap:8px;">
+                <div style="text-align:center; padding:20px; color:#555; font-weight:900;">Tap 'Job Sync Mirror' to
+                    populate.</div>
+            </div>
+        </div>
+
+        <!-- SUB PAGE: OVERRIDES -->
+        <div id="hubOverride" class="hub-page" style="display:none; flex-direction:column; padding-top:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0; font-size:20px; color:var(--amber-orange);">⚠️ OVERRIDES</h2>
+                <button onclick="navSubPage('hub', 'hubMainView')" class="btn-utility">BACK</button>
+            </div>
+            <div style="font-size:11px; color:#aaa; font-weight:900; margin-bottom:15px;">Force empty fields in the
+                final report (Targets AE3:AF6).</div>
+            <div id="overrideSubList" style="display:grid; gap:8px;">
+                <div class="dual-inputs">
+                    <input type="text" id="ovr-slot1" placeholder="Label Target" style="flex:2;">
+                    <input type="text" id="ovr-val1" placeholder="Val" style="flex:1;">
+                </div>
+                <div class="dual-inputs">
+                    <input type="text" id="ovr-slot2" placeholder="Label Target" style="flex:2;">
+                    <input type="text" id="ovr-val2" placeholder="Val" style="flex:1;">
+                </div>
+                <div class="dual-inputs">
+                    <input type="text" id="ovr-slot3" placeholder="Label Target" style="flex:2;">
+                    <input type="text" id="ovr-val3" placeholder="Val" style="flex:1;">
+                </div>
+                <div class="dual-inputs">
+                    <input type="text" id="ovr-slot4" placeholder="Label Target" style="flex:2;">
+                    <input type="text" id="ovr-val4" placeholder="Val" style="flex:1;">
+                </div>
+            </div>
+            <button onclick="pushAllSlotOverrides()" class="btn btn-outline"
+                style="border-color:var(--amber-orange); color:var(--amber-orange); margin-top:15px;">PUSH ALL
+                SLOTS</button>
+        </div>
+
+        <!-- SUB PAGE: CONFLICTS -->
+        <div id="hubConflicts" class="hub-page" style="display:none; flex-direction:column; padding-top:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0; font-size:20px; color:var(--crimson-red);">⚔️ CONFLICTS</h2>
+                <button onclick="navSubPage('hub', 'hubMainView')" class="btn-utility">BACK</button>
+            </div>
+            <div style="font-size:11px; color:#aaa; font-weight:900; margin-bottom:15px;">Resolve data collisions
+                (Targets AE7:AF11).</div>
+            <div id="conflictResolverList" style="display:flex; flex-direction:column; gap:8px;">
+                <input type="text" id="cr-targetLabel" placeholder="Field Label (e.g. BRAND)">
+                <input type="text" id="cr-targetValue" placeholder="Winner Value">
+                <button onclick="pushConflictResolver()" class="btn btn-stop" style="margin-top:10px;">FORCE
+                    WINNER</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ORIGINAL HOME (RENAMED TO SPECS) -->
     <div class="container" id="section-specs" style="padding-bottom:100px; display:none;">
         <div
@@ -1008,7 +1212,8 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v23.2 GOLD</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
+                        v23.2 GOLD</div>
                     <div class="job-toggle-container" onclick="toggleJobMode()">
                         <span id="jobModeLabel" class="job-toggle-label">JOB SYNC</span>
                         <div id="jobToggle" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
@@ -1311,69 +1516,96 @@
 
     <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="modal-overlay" style="background:#0f0f0f; display:none;">
-
-        <div
-            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
-            <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
-            <div style="display:flex; gap:12px; align-items:center;">
-                <button id="dictMicBtn" onclick="toggleGlobalMic()"
-                    style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
-                    <span style="font-size:18px;">🎙</span> INTAKE AUTO
-                </button>
-                <button onclick="closeSettings()"
-                    style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
-            </div>
-        </div>
-        <div class="step-nav" id="dictNav" style="margin:10px;">
-            <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')"
-                style="flex:1;">BRANDS</button>
-            <button class="step-btn" id="dict-btn-refs" onclick="switchDictType('refs')" style="flex:1;">REF</button>
-            <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')"
-                style="flex:1;">WORDS</button>
-            <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')"
-                style="flex:1;">NOTES</button>
-        </div>
-
-        <div class="voice-console" style="margin:0 10px;">
-            <div id="dictTargetLabel"
-                style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
-            <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY ENTRY...
-            </div>
-            <div class="btn-main-grid" style="grid-template-columns: 1fr;">
-                <button onclick="confirmDictWord()" class="btn btn-green" style="padding:16px; font-size:18px;">✔
-                    CONFIRM & SAVE</button>
-            </div>
-        </div>
-
-        <div style="padding:0 10px;">
-            <div class="settings-row" style="padding:8px 0; border:none;">
-                <div>
-                    <div style="font-weight:900; font-size:12px;">Voice Navigation Safety</div>
+        <div id="settingsMainView" class="settings-page" style="display:flex; flex-direction:column; height:100%;">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+                <h2 style="margin:0; font-size:18px; color:var(--amber-orange);">⚙️ SETTINGS</h2>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <button id="dictMicBtn" onclick="toggleGlobalMic()"
+                        style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:18px;">🎙</span> INTAKE AUTO
+                    </button>
+                    <button onclick="closeSettings()"
+                        style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
                 </div>
-                <div id="toggle-navConfirm" class="toggle-switch on" onclick="toggleSetting('navConfirm')"></div>
             </div>
-            <div class="settings-row" style="padding:8px 0; border-bottom:none;">
-                <div>
-                    <div style="font-weight:900; font-size:12px;">Direct Voice Entry</div>
+
+            <div style="padding:10px;">
+                <button onclick="navSubPage('settings', 'settingsFieldManager')" class="btn btn-outline"
+                    style="border-color:var(--electric-blue); color:var(--electric-blue);">🛠 ENTER FIELD
+                    MANAGER</button>
+            </div>
+
+            <div class="step-nav" id="dictNav" style="margin:10px;">
+                <button class="step-btn active" id="dict-btn-brands" onclick="switchDictType('brands')"
+                    style="flex:1;">BRANDS</button>
+                <button class="step-btn" id="dict-btn-refs" onclick="switchDictType('refs')"
+                    style="flex:1;">REF</button>
+                <button class="step-btn" id="dict-btn-confirms" onclick="switchDictType('confirms')"
+                    style="flex:1;">WORDS</button>
+                <button class="step-btn" id="dict-btn-notes" onclick="switchDictType('notes')"
+                    style="flex:1;">NOTES</button>
+            </div>
+
+            <div class="voice-console" style="margin:0 10px;">
+                <div id="dictTargetLabel"
+                    style="color:var(--amber-orange); letter-spacing:2px; font-size:11px; font-weight:900;">BRANDS</div>
+                <div id="dictStagedWord" class="big-display" style="font-size:35px; margin:20px 0; color:#777;">SAY
+                    ENTRY...</div>
+                <div class="btn-main-grid" style="grid-template-columns: 1fr;">
+                    <button onclick="confirmDictWord()" class="btn btn-green" style="padding:16px; font-size:18px;">✔
+                        CONFIRM & SAVE</button>
                 </div>
-                <div id="toggle-autoCommit" class="toggle-switch" onclick="toggleSetting('autoCommit')"></div>
             </div>
-            <div class="settings-row" style="padding:8px 0; border-bottom:1px solid #333;">
-                <div>
-                    <div style="font-weight:900; font-size:12px;">Strict Dictionary Validation</div>
-                    <div style="font-size:10px; color:#777;">Reject unknown Brands/Refs — shows tap-to-override popup
+
+            <div style="padding:0 10px;">
+                <div class="settings-row" style="padding:8px 0; border:none;">
+                    <div>
+                        <div style="font-weight:900; font-size:12px;">Voice Navigation Safety</div>
                     </div>
+                    <div id="toggle-navConfirm" class="toggle-switch on" onclick="toggleSetting('navConfirm')"></div>
                 </div>
-                <div id="toggle-strictDict" class="toggle-switch" onclick="toggleSetting('strictDict')"></div>
+                <div class="settings-row" style="padding:8px 0; border-bottom:none;">
+                    <div>
+                        <div style="font-weight:900; font-size:12px;">Direct Voice Entry</div>
+                    </div>
+                    <div id="toggle-autoCommit" class="toggle-switch" onclick="toggleSetting('autoCommit')"></div>
+                </div>
+                <div class="settings-row" style="padding:8px 0; border-bottom:1px solid #333;">
+                    <div>
+                        <div style="font-weight:900; font-size:12px;">Strict Dictionary Validation</div>
+                        <div style="font-size:10px; color:#777;">Reject unknown Brands/Refs — shows tap-to-override
+                            popup</div>
+                    </div>
+                    <div id="toggle-strictDict" class="toggle-switch" onclick="toggleSetting('strictDict')"></div>
+                </div>
+            </div>
+
+            <div id="dictLogList" class="log-list" style="margin:10px;"></div>
+
+            <div style="padding:10px; margin-top:auto;">
+                <button class="btn btn-stop" onclick="cleanStorage()"
+                    style="background:#442222; border-color:#884444; color:#ff8888; font-size:10px; margin-bottom:10px;">⚠️
+                    CLEAN PHOTO STORAGE (DATABASE RESET)</button>
+                <button class="btn btn-outline" onclick="closeSettings()">CLOSE SETTINGS</button>
             </div>
         </div>
 
-        <div id="dictLogList" class="log-list" style="margin:10px;"></div>
-        <div style="padding:10px; margin-top:auto;">
-            <button class="btn btn-stop" onclick="cleanStorage()"
-                style="background:#442222; border-color:#884444; color:#ff8888; font-size:10px; margin-bottom:10px;">⚠️
-                CLEAN PHOTO STORAGE (DATABASE RESET)</button>
-            <button class="btn btn-outline" onclick="closeSettings()">CLOSE SETTINGS</button>
+        <!-- NEW SUB PAGE: FIELD MANAGER -->
+        <div id="settingsFieldManager" class="settings-page" style="display:none; flex-direction:column; height:100%;">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+                <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🛠 FIELD MANAGER</h2>
+                <button onclick="navSubPage('settings', 'settingsMainView')" class="btn-utility">BACK</button>
+            </div>
+            <div style="padding:20px; text-align:center;">
+                <div style="font-size:50px;">🏗️</div>
+                <h3 style="color:#FFF;">SCHEMA EDITOR ACTIVE IN NEXT PATCH</h3>
+                <p style="color:#888; font-size:13px; font-weight:900;">This area will manage the visibility and custom
+                    properties of the global data layout schema.</p>
+                <button onclick="navSubPage('settings', 'settingsMainView')" class="btn btn-outline"
+                    style="margin-top:20px;">RETURN TO SETTINGS</button>
+            </div>
         </div>
     </div>
 
@@ -1425,9 +1657,15 @@
         const OS_NAME = "PH_GALLERY";
         let currentShelf = 'ALL';
 
-        const APP_VERSION = "v23.4 GOLD";
+        const APP_VERSION = "v24.0 GOLD";
 
         // ── v23.0 Unified Navigation Engine ──────────────────────
+        function navSubPage(groupClass, targetId) {
+            document.querySelectorAll('.' + groupClass + '-page').forEach(el => el.style.display = 'none');
+            const tgt = document.getElementById(targetId);
+            if (tgt) tgt.style.display = 'flex';
+        }
+
         function showSection(id) {
             const sections = ['v23-home', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'settingsModal', 'jobPortalModal', 'galleryOverlay'];
             sections.forEach(s => {
@@ -1439,6 +1677,10 @@
             if (target) {
                 target.style.display = (target.classList.contains('container') ? 'block' : 'flex');
             }
+
+            // Reset sub-pages if switching main navigation
+            if (id === 'settingsModal') navSubPage('settings', 'settingsMainView');
+            if (id === 'section-readings') navSubPage('hub', 'hubMainView');
 
             // Update Bottom Nav Active State
             const navMap = {
@@ -1692,50 +1934,130 @@
                 toggle.classList.add('on');
                 label.classList.add('active');
                 dashboard.classList.add('sync-active');
-                startJobSync();
+                fetchMirrorSync();
             } else {
                 toggle.classList.remove('on');
                 label.classList.remove('active');
                 dashboard.classList.remove('sync-active');
-                stopJobSync();
             }
         }
 
-        async function startJobSync() {
-            refreshJobData();
-            jobSyncInterval = setInterval(refreshJobData, 5000); // 5s heartbeat
-        }
+        async function fetchMirrorSync() {
+            if (!isJobMode) {
+                alert("Enable 'JOB SYNC' first.");
+                return;
+            }
+            const btn = document.getElementById('manualSyncBtn');
+            if (btn) btn.innerText = "⏳";
 
-        function stopJobSync() {
-            if (jobSyncInterval) clearInterval(jobSyncInterval);
-        }
-
-        async function refreshJobData() {
-            if (!isJobMode) return;
             try {
                 const response = await callAppsScript({ action: "getJobData" });
-                if (response.status === "success" && response.data) {
-                    processJobDataResults(response.data);
+                if (response.status === "success" && response.data && response.data.fields) {
+                    processJobDataResults(response.data.fields);
+
+                    // Conflict Checking Display
+                    const cb = document.getElementById('conflictBadgeHeader');
+                    if (cb) {
+                        if (response.data.conflict && response.data.conflict.trim() !== "") {
+                            cb.style.display = 'block';
+                            cb.innerHTML = "⚠️ " + response.data.conflict;
+                        } else {
+                            cb.style.display = 'none';
+                        }
+                    }
                 }
             } catch (err) {
                 console.error("Sync Error:", err);
+                alert("Sync failed. Check connection.");
+            } finally {
+                if (btn) btn.innerText = "⚡ MIRROR";
             }
         }
 
         function processJobDataResults(data) {
-            if (data.error) {
-                console.warn("Sync Warning:", data.error);
-                return;
-            }
-            // Update UI fields based on the Total Truth from AB6/W232
+            mirrorState = data; // Global Total Truth Update
+
+            // Reconciliation Logic
             for (let tab in EQUIP_SCHEMA) {
                 EQUIP_SCHEMA[tab].forEach(field => {
-                    if (data[field.label]) {
-                        systemSpecs[tab][field.id] = data[field.label];
+                    const sheetVal = data[field.label];
+                    const draftVal = localDrafts[field.id];
+
+                    // Draft officially logged!
+                    if (sheetVal && draftVal && draftVal.toUpperCase() === sheetVal.toUpperCase()) {
+                        delete localDrafts[field.id];
+                    }
+
+                    // No draft holding it back, accept sheet truth
+                    if (!localDrafts[field.id] && sheetVal) {
+                        systemSpecs[tab][field.id] = sheetVal;
                     }
                 });
             }
+            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
             renderSystemSpecs();
+
+            // Populate Live Mirror
+            const mList = document.getElementById('mirrorList');
+            if (mList && Object.keys(data).length > 0) {
+                mList.innerHTML = Object.keys(data).filter(k => data[k] && k !== 'success').map(k => `
+                    <div style="display:flex; justify-content:space-between; background:#222; padding:8px 12px; border-radius:6px; border:1px solid #444;">
+                        <span style="font-weight:900; color:#888;">${k}</span>
+                        <span style="color:var(--electric-blue); font-weight:900;">${data[k]}</span>
+                    </div>
+                `).join('') || '<div style="text-align:center; padding:20px; color:#555; font-weight:900;">NO W COLUMN DATA YET</div>';
+            }
+        }
+
+        async function pushAllSlotOverrides() {
+            if (!isJobMode) { alert("Enable 'JOB SYNC' first."); return; }
+            const btn = document.querySelector('#hubOverride button');
+            if (btn) btn.innerText = "PUSHING...";
+
+            const batch = [];
+            for (let i = 1; i <= 4; i++) {
+                const label = document.getElementById('ovr-slot' + i).value.trim().toUpperCase();
+                const val = document.getElementById('ovr-val' + i).value.trim();
+                // Check if either exists. Sending empty label/val clears the slot.
+                if (label || val || document.getElementById('ovr-slot' + i).dataset.synced) {
+                    batch.push({ label: label, value: val, index: i - 1 });
+                    document.getElementById('ovr-slot' + i).dataset.synced = "true";
+                }
+            }
+
+            if (batch.length === 0) { alert("No overrides entered."); btn.innerText = "PUSH ALL SLOTS"; return; }
+
+            try {
+                await callAppsScript({ action: "pushBatchOverrides", slots: batch });
+                alert("Overrides Batch Pushed to AE3:AF6");
+                fetchMirrorSync();
+            } catch (e) {
+                alert("Push Error: " + e.message);
+            } finally {
+                if (btn) btn.innerText = "PUSH ALL SLOTS";
+            }
+        }
+
+        async function pushConflictResolver() {
+            if (!isJobMode) { alert("Enable 'JOB SYNC' first."); return; }
+            const label = document.getElementById('cr-targetLabel').value.trim().toUpperCase();
+            const val = document.getElementById('cr-targetValue').value.trim();
+            if (!label || !val) { alert("Enter both Subject Field and Winning Value"); return; }
+
+            const btn = document.querySelector('#hubConflicts button');
+            if (btn) btn.innerText = "FORCING...";
+
+            try {
+                await callAppsScript({ action: "pushConflictResolve", label: label, value: val });
+                alert("Conflict Resolution Sent to AE7:AF11");
+                fetchMirrorSync();
+                document.getElementById('cr-targetLabel').value = '';
+                document.getElementById('cr-targetValue').value = '';
+            } catch (e) {
+                alert("Push Error: " + e.message);
+            } finally {
+                if (btn) btn.innerText = "FORCE WINNER";
+            }
         }
 
         async function openJobPortal() {
@@ -1874,8 +2196,11 @@
     <script>
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwRjU5jwWBcnftyYS9EZnBWiD6cmRf8mybv6_sW2LLG_SDN58qWZ9mArI8o9nkuRP7z/exec";
         let isJobMode = false;
-        let jobSyncInterval = null;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
+
+        let localDrafts = {}; // Input fields that haven't sync'd yet
+        let mirrorState = {}; // Live from I12:W199
+
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
         let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV21_0')) || {
@@ -2017,8 +2342,16 @@
                 return schemaList.map(f => {
                     const val = systemSpecs[tab][f.id] || '--';
                     const shrinkClass = String(val).length > 10 ? ' shrink' : '';
+
+                    let extraClass = '';
+                    if (mirrorState[f.label] && String(val).toUpperCase() === String(mirrorState[f.label]).toUpperCase()) {
+                        extraClass = ' mirror-blue';
+                    } else if (val === '--' || !val) {
+                        extraClass = ' amber-glow';
+                    }
+
                     return `
-                    <div class="spec-cell" id="spec-${f.id}" onclick="openSpecVoice('${f.id}')">
+                    <div class="spec-cell${extraClass}" id="spec-${f.id}" onclick="openSpecVoice('${f.id}')">
                         <span class="spec-label">${f.label}</span>
                         <span id="val-${f.id}" class="spec-val${shrinkClass}">${val}</span>
                     </div>`;
@@ -2167,6 +2500,7 @@
                 // Only save if target bucket accepts this property
                 if (systemSpecs[t][mappedKey] !== undefined) {
                     systemSpecs[t][mappedKey] = mappedKey === (prefix + 'RLA') || mappedKey === (prefix + 'FLA') || mappedKey === (prefix + 'SUB') ? parseFloat(val) : val;
+                    localDrafts[mappedKey] = systemSpecs[t][mappedKey]; // Store draft
                 }
             }
 
@@ -2218,6 +2552,7 @@
                 const val = document.getElementById('specOverrideInput').value.trim().toUpperCase();
                 if (val) {
                     systemSpecs[systemSpecs.activeTab][_overrideTarget] = val;
+                    localDrafts[_overrideTarget] = val; // Store draft for reconciliation
                     const el = document.getElementById('val-' + _overrideTarget);
                     if (el) { el.innerText = val; el.classList.toggle('shrink', val.length > 10); }
                     localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
@@ -2251,6 +2586,7 @@
                 if (numMatch) {
                     const num = parseFloat(numMatch[1]);
                     systemSpecs[systemSpecs.activeTab][target] = num;
+                    localDrafts[target] = num; // Store draft for reconciliation
                     const valEl = document.getElementById('val-' + target);
                     if (valEl) {
                         valEl.innerText = num;
@@ -2413,6 +2749,7 @@
                     }
 
                     systemSpecs[systemSpecs.activeTab][masterTarget] = val;
+                    localDrafts[masterTarget] = val; // Store draft for reconciliation
                     const valEl = document.getElementById('val-' + masterTarget);
                     if (valEl) {
                         valEl.innerText = val;
@@ -3233,7 +3570,7 @@
         window.onload = async () => {
             console.log(APP_VERSION + " Start - Vault SOP Verified");
             document.title = "HVAC PRO " + APP_VERSION;
-            
+
             // Sync UI Version Badges
             const lVer = document.getElementById('launcherVerBadge'); if (lVer) lVer.innerText = APP_VERSION;
             const sVer = document.getElementById('specsVerBadge'); if (sVer) sVer.innerText = APP_VERSION;
