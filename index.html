@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v23.2</title>
+    <title>HVAC Master Pro v23.3</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Pro v23.2">
+    <meta name="apple-mobile-web-app-title" content="HVAC Pro v23.3">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
@@ -68,8 +68,13 @@
         }
 
         @keyframes sync-pulse {
-            from { box-shadow: 0 0 5px var(--sync-glow); }
-            to { box-shadow: 0 0 20px var(--sync-glow); }
+            from {
+                box-shadow: 0 0 5px var(--sync-glow);
+            }
+
+            to {
+                box-shadow: 0 0 20px var(--sync-glow);
+            }
         }
 
         .job-toggle-container {
@@ -107,10 +112,25 @@
             align-items: center;
         }
 
-        .job-card:hover { border-color: var(--electric-blue); background: rgba(0, 229, 255, 0.1); }
-        .job-card.active { border-color: var(--emerald-green); background: rgba(0, 255, 127, 0.1); }
-        .job-card b { color: #fff; font-size: 14px; }
-        .job-card span { color: #888; font-size: 10px; }
+        .job-card:hover {
+            border-color: var(--electric-blue);
+            background: rgba(0, 229, 255, 0.1);
+        }
+
+        .job-card.active {
+            border-color: var(--emerald-green);
+            background: rgba(0, 255, 127, 0.1);
+        }
+
+        .job-card b {
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .job-card span {
+            color: #888;
+            font-size: 10px;
+        }
 
         .btn {
             width: 100%;
@@ -870,12 +890,14 @@
             border-radius: 8px;
             color: white;
         }
+
         .v23-launcher-grid {
             display: flex;
             flex-direction: column;
             gap: 12px;
             margin-top: 10px;
         }
+
         .v23-pwr-btn {
             width: 100%;
             height: 70px;
@@ -886,16 +908,18 @@
             font-size: 24px;
             font-weight: 900;
             color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             cursor: pointer;
             transition: transform 0.2s;
         }
+
         .v23-sub-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
+
         .v23-sub-btn {
             height: 60px;
             border-radius: 16px;
@@ -905,12 +929,16 @@
             font-size: 18px;
             font-weight: 900;
             color: white;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .v23-pwr-btn:active, .v23-sub-btn:active { transform: scale(0.95); }
+
+        .v23-pwr-btn:active,
+        .v23-sub-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 
 </head>
@@ -924,26 +952,32 @@
         <button class="nav-btn active" onclick="showSection('v23-home')" id="nav-home"><span>🏠</span> HOME</button>
         <button class="nav-btn" onclick="showSection('voiceModal')" id="nav-diag"><span>⚡</span> DIAG</button>
         <button class="nav-btn" onclick="showSection('section-specs')" id="nav-specs"><span>📋</span> SPECS</button>
-        <button class="nav-btn" onclick="showSection('section-manuals')" id="nav-manuals"><span>📄</span> MANUALS</button>
+        <button class="nav-btn" onclick="showSection('section-manuals')" id="nav-manuals"><span>📄</span>
+            MANUALS</button>
         <button class="nav-btn" onclick="showSection('reportModal')" id="nav-report"><span>📋</span> REPORT</button>
-        <button class="nav-btn" onclick="showSection('settingsModal')" id="nav-settings"><span>⚙️</span> SETTINGS</button>
+        <button class="nav-btn" onclick="showSection('settingsModal')" id="nav-settings"><span>⚙️</span>
+            SETTINGS</button>
     </nav>
 
 
     <!-- NEW v23.0 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top:4px;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top:4px;">
             <div>
-                <h1 style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
+                <h1
+                    style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
                     HVAC PRO <span style="color:var(--amber-orange);">v23.2 GOLD</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <div class="job-toggle-container" onclick="toggleJobMode()">
                         <span id="jobModeLabelLauncher" class="job-toggle-label">JOB SYNC</span>
-                        <div id="jobToggleLauncher" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
+                        <div id="jobToggleLauncher" class="toggle-switch"
+                            style="width: 34px; height: 18px; scale: 0.8;"></div>
                     </div>
                 </div>
             </div>
-            <button id="launcherMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:16px; width:50px; height:50px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0, 229, 255, 0.4);">
+            <button id="launcherMicBtn" onclick="toggleGlobalMic()"
+                style="background:var(--electric-blue); color:black; border:none; border-radius:16px; width:50px; height:50px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0, 229, 255, 0.4);">
                 <span style="font-size:24px;">🎙</span>
             </button>
         </div>
@@ -953,7 +987,7 @@
             <button class="v23-pwr-btn" style="background:var(--electric-blue); color:#000;">2</button>
             <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;">3</button>
             <button class="v23-pwr-btn" style="background:var(--crimson-red);">4</button>
-            
+
             <div class="v23-sub-grid">
                 <button class="v23-sub-btn">5</button>
                 <button class="v23-sub-btn">6</button>
@@ -967,9 +1001,11 @@
 
     <!-- ORIGINAL HOME (RENAMED TO SPECS) -->
     <div class="container" id="section-specs" style="padding-bottom:100px; display:none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px;">
             <div>
-                <h1 style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
+                <h1
+                    style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v23.2 GOLD</div>
@@ -977,20 +1013,24 @@
                         <span id="jobModeLabel" class="job-toggle-label">JOB SYNC</span>
                         <div id="jobToggle" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
                     </div>
-                    <div id="activeJobIndicator" style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
+                    <div id="activeJobIndicator"
+                        style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
                     </div>
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
 
             <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                <button onclick="openJobPortal()" class="btn-utility" style="background:#222; border:1px solid #c5a059; color:#c5a059; padding:6px 10px; border-radius:12px; display:flex; align-items:center; gap:4px;">
+                <button onclick="openJobPortal()" class="btn-utility"
+                    style="background:#222; border:1px solid #c5a059; color:#c5a059; padding:6px 10px; border-radius:12px; display:flex; align-items:center; gap:4px;">
                     <span style="font-size:14px;">📂</span><span style="font-size:9px; font-weight:900;">PORTAL</span>
                 </button>
-                <button onclick="openGallery()" style="background:#222; color:var(--electric-blue); border:1px solid var(--electric-blue); border-radius:12px; padding:6px 10px; font-weight:900; font-size:9px; display:flex; align-items:center; gap:4px;">
+                <button onclick="openGallery()"
+                    style="background:#222; color:var(--electric-blue); border:1px solid var(--electric-blue); border-radius:12px; padding:6px 10px; font-weight:900; font-size:9px; display:flex; align-items:center; gap:4px;">
                     <span style="font-size:14px;">🖼</span> GALLERY
                 </button>
-                <button id="headerMicBtn" onclick="toggleGlobalMic()" style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:6px 12px; font-weight:900; font-size:10px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:4px;">
+                <button id="headerMicBtn" onclick="toggleGlobalMic()"
+                    style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:6px 12px; font-weight:900; font-size:10px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:4px;">
                     <span style="font-size:14px;">🎙</span> INTAKE
                 </button>
             </div>
@@ -1232,7 +1272,8 @@
         <div class="modal-content" style="max-height:85%;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h2 style="margin:0;">JOB MANAGER</h2>
-                <button onclick="closeJobPortal()" class="btn-utility" style="width:auto; padding:5px 15px;">CLOSE</button>
+                <button onclick="closeJobPortal()" class="btn-utility"
+                    style="width:auto; padding:5px 15px;">CLOSE</button>
             </div>
             <div id="jobListContainer" style="overflow-y:auto; flex:1;">
                 <div style="color:#666; text-align:center; padding:20px;">Fetching Job Tabs...</div>
@@ -1329,39 +1370,52 @@
 
         <div id="dictLogList" class="log-list" style="margin:10px;"></div>
         <div style="padding:10px; margin-top:auto;">
-            <button class="btn btn-stop" onclick="cleanStorage()" style="background:#442222; border-color:#884444; color:#ff8888; font-size:10px; margin-bottom:10px;">⚠️ CLEAN PHOTO STORAGE (DATABASE RESET)</button>
+            <button class="btn btn-stop" onclick="cleanStorage()"
+                style="background:#442222; border-color:#884444; color:#ff8888; font-size:10px; margin-bottom:10px;">⚠️
+                CLEAN PHOTO STORAGE (DATABASE RESET)</button>
             <button class="btn btn-outline" onclick="closeSettings()">CLOSE SETTINGS</button>
         </div>
     </div>
 
     <!-- PHOTO GALLERY OVERLAY (V21.4 - SHELF EDITION) -->
-    <div id="galleryOverlay" class="modal-overlay" style="background:#000; display:none; flex-direction:column; height:88vh; top:0; z-index:10000; padding-bottom:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
+    <div id="galleryOverlay" class="modal-overlay"
+        style="background:#000; display:none; flex-direction:column; height:88vh; top:0; z-index:10000; padding-bottom:10px;">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 PHOTO HOARD</h2>
-            <button onclick="closeGallery()" style="background:transparent; border:none; color:white; font-size:28px;">&times;</button>
+            <button onclick="closeGallery()"
+                style="background:transparent; border:none; color:white; font-size:28px;">&times;</button>
         </div>
-        
+
         <!-- SHELF DRAWER -->
-        <div id="shelfBar" style="background:#111; padding:10px; display:flex; gap:8px; overflow-x:auto; border-bottom:1px solid #333; flex-shrink:0;">
+        <div id="shelfBar"
+            style="background:#111; padding:10px; display:flex; gap:8px; overflow-x:auto; border-bottom:1px solid #333; flex-shrink:0;">
             <button onclick="switchShelf('ALL')" id="shelf-ALL" class="shelf-pill active">ALL</button>
             <button onclick="switchShelf('UNSORTED')" id="shelf-UNSORTED" class="shelf-pill">UNSORTED</button>
             <div id="dynamicShelves" style="display:flex; gap:8px;"></div>
             <button onclick="createNewShelfPrompt()" class="shelf-pill" style="border:1px dashed #555;">+ NEW</button>
         </div>
 
-        <div id="galleryGrid" style="flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start;">
+        <div id="galleryGrid"
+            style="flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start;">
             <!-- Thumbnails inserted here -->
         </div>
-        <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">Selected shelf is empty. Hoard some more!</div>
-        
-        <div style="padding:15px; border-top:1px solid #333; display:flex; flex-direction:column; gap:10px; background:#111; flex-shrink:0;">
+        <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">Selected shelf is
+            empty. Hoard some more!</div>
+
+        <div
+            style="padding:15px; border-top:1px solid #333; display:flex; flex-direction:column; gap:10px; background:#111; flex-shrink:0;">
             <div style="display:flex; gap:10px;">
-                <button onclick="processSelectedPhotos()" class="btn btn-primary" style="flex:2; padding:12px; font-size:14px;">⚡ PARSE AI</button>
-                <button onclick="deleteSelectedPhotos()" class="btn btn-stop" style="flex:1; background:var(--crimson-red); padding:12px;">DEL</button>
+                <button onclick="processSelectedPhotos()" class="btn btn-primary"
+                    style="flex:2; padding:12px; font-size:14px;">⚡ PARSE AI</button>
+                <button onclick="deleteSelectedPhotos()" class="btn btn-stop"
+                    style="flex:1; background:var(--crimson-red); padding:12px;">DEL</button>
             </div>
             <div style="display:flex; gap:10px;">
-                <button onclick="moveSelectedToShelf()" class="btn btn-outline" style="flex:1; border-color:var(--amber-orange); color:var(--amber-orange);">📁 TO SHELF</button>
-                <button onclick="sendShelfToDrive()" class="btn btn-outline" style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green);">☁️ DRIVE</button>
+                <button onclick="moveSelectedToShelf()" class="btn btn-outline"
+                    style="flex:1; border-color:var(--amber-orange); color:var(--amber-orange);">📁 TO SHELF</button>
+                <button onclick="sendShelfToDrive()" class="btn btn-outline"
+                    style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green);">☁️ DRIVE</button>
             </div>
         </div>
     </div>
@@ -1397,21 +1451,21 @@
             if (navMap[id]) document.getElementById(navMap[id]).classList.add('active');
 
             // Trigger specific refreshes and setups
-            if (id === 'reportModal') { 
-                renderCompiler(); initTechNotes(); loadRefInputs(); 
+            if (id === 'reportModal') {
+                renderCompiler(); initTechNotes(); loadRefInputs();
             }
-            if (id === 'settingsModal') { 
-                isSettingsMode = true; 
-                updateSettingsUI(); 
+            if (id === 'settingsModal') {
+                isSettingsMode = true;
+                updateSettingsUI();
                 switchDictType('brands');
-            } else { 
-                isSettingsMode = false; 
+            } else {
+                isSettingsMode = false;
             }
-            if (id === 'voiceModal') { 
+            if (id === 'voiceModal') {
                 let firstEmpty = 0;
                 for (let i = 0; i < FIELD_CYCLE.length; i++) { if (!buffer[i]) { firstEmpty = i; break; } }
                 fieldIndex = firstEmpty;
-                syncLogToUI(); updateStepNav(); recalculateField(); 
+                syncLogToUI(); updateStepNav(); recalculateField();
             }
         }
 
@@ -1424,19 +1478,19 @@
         function closeManuals() { showSection('v23-home'); }
         function closeSettings() { showSection('v23-home'); }
         function closeReport() { showSection('v23-home'); }
-        function closeAllModals() { showSection('v23-home'); }        
-        
+        function closeAllModals() { showSection('v23-home'); }
+
         async function initIndexedDB() {
             return new Promise((resolve, reject) => {
                 try {
                     console.log("DB: Opening Request...");
                     const request = indexedDB.open(DB_NAME, 2);
-                    
+
                     request.onblocked = () => {
                         alert("DIAGNOSTIC: DB BLOCKED. Close all other tabs/windows of Service Pro.");
                         reject("Blocked");
                     };
-                    
+
                     request.onupgradeneeded = (e) => {
                         console.log("DB: Upgrade Needed");
                         const dbInstance = e.target.result;
@@ -1445,12 +1499,12 @@
                             store.createIndex("shelf", "shelf", { unique: false });
                         }
                     };
-                    
+
                     request.onsuccess = (e) => {
                         console.log("DB: Success");
                         resolve(e.target.result);
                     };
-                    
+
                     request.onerror = (e) => {
                         alert("DIAGNOSTIC: DB Error: " + e.target.error);
                         reject(e.target.error);
@@ -1534,10 +1588,10 @@
             currentShelf = 'ALL';
             renderGallery();
         }
-        function closeGallery() { 
+        function closeGallery() {
             localStorage.removeItem('galleryOpen');
-            document.getElementById('galleryOverlay').style.display = 'none'; 
-            showSection('section-specs'); 
+            document.getElementById('galleryOverlay').style.display = 'none';
+            showSection('section-specs');
         }
 
         async function switchShelf(shelfName) {
@@ -1599,7 +1653,7 @@
             if (selectedPhotoIds.size === 0) return;
             const photos = await getAllPhotos();
             const toProcess = photos.filter(p => selectedPhotoIds.has(p.id));
-            
+
             closeGallery();
             const status = document.getElementById('photoStatus');
             status.style.display = 'block';
@@ -1609,9 +1663,9 @@
                 try {
                     status.innerText = `Analyzing: ${ph.filename}...`;
                     const result = await callAppsScript({ action: "uploadPhotoAI", data: ph.data, filename: ph.filename, mimeType: ph.mime });
-                    
+
                     if (result && result.status === "success" && result.data && result.data.extractedData) {
-                        tempAiSpecs = { ...tempAiSpecs, ...result.data.extractedData }; 
+                        tempAiSpecs = { ...tempAiSpecs, ...result.data.extractedData };
                         setTimeout(() => openAiModal(result.data.extractedData), 300);
                     } else {
                         alert("AI Error: No data extracted from " + ph.filename);
@@ -1619,7 +1673,7 @@
                 } catch (err) {
                     console.error("AI Fetch Error:", err);
                     alert("AI NETWORK ERROR: " + err.message);
-                    status.style.display = 'none'; 
+                    status.style.display = 'none';
                 }
             }
             status.innerText = "Analysis Complete.";
@@ -1686,7 +1740,7 @@
             document.getElementById('jobPortalModal').style.display = 'flex';
             const list = document.getElementById('jobListContainer');
             list.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">Fetching Jobs from Spreadsheet...</div>';
-            
+
             try {
                 const res = await callAppsScript({ action: "getJobList" });
                 if (res.status === "success" && res.data) {
@@ -1728,7 +1782,7 @@
         async function callAppsScript(payload) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000);
-            
+
             // Inject Sheet Context (v23.1 GOLD0)
             if (currentJob) payload.sheetName = currentJob;
 
@@ -1748,19 +1802,76 @@
         }
     </script>
     <style>
-        .shelf-pill { background:#222; color:#777; border:1px solid #333; border-radius:15px; padding:6px 14px; font-weight:900; font-size:10px; cursor:pointer; white-space:nowrap; transition:0.2s; }
-        .shelf-pill.active { background:var(--electric-blue); color:black; border-color:var(--electric-blue); }
-        .gallery-card { position:relative; border-radius:12px; overflow:hidden; border:2px solid transparent; aspect-ratio:1/1; background:#111; cursor:pointer; }
-        .gallery-card img { width:100%; height:100%; object-fit:cover; opacity:0.8; transition:0.2s; }
-        .gallery-card.selected { border-color:var(--electric-blue); }
-        .gallery-card.selected img { opacity:1; filter:brightness(1.2); }
-        .card-check { position:absolute; top:8px; right:8px; background:var(--electric-blue); color:black; width:22px; height:22px; border-radius:50%; display:none; justify-content:center; align-items:center; font-weight:900; font-size:12px; }
-        .gallery-card.selected .card-check { display:flex; }
+        .shelf-pill {
+            background: #222;
+            color: #777;
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 6px 14px;
+            font-weight: 900;
+            font-size: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+
+        .shelf-pill.active {
+            background: var(--electric-blue);
+            color: black;
+            border-color: var(--electric-blue);
+        }
+
+        .gallery-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            aspect-ratio: 1/1;
+            background: #111;
+            cursor: pointer;
+        }
+
+        .gallery-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+            transition: 0.2s;
+        }
+
+        .gallery-card.selected {
+            border-color: var(--electric-blue);
+        }
+
+        .gallery-card.selected img {
+            opacity: 1;
+            filter: brightness(1.2);
+        }
+
+        .card-check {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--electric-blue);
+            color: black;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            font-size: 12px;
+        }
+
+        .gallery-card.selected .card-check {
+            display: flex;
+        }
     </style>
 
     <script>
         const APP_VERSION = "21.11";
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwRjU5jwWBcnftyYS9EZnBWiD6cmRf8mybv6_sW2LLG_SDN58qWZ9mArI8o9nkuRP7z/exec"; 
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwRjU5jwWBcnftyYS9EZnBWiD6cmRf8mybv6_sW2LLG_SDN58qWZ9mArI8o9nkuRP7z/exec";
         let isJobMode = false;
         let jobSyncInterval = null;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -1977,13 +2088,13 @@
                     const file = files[i];
                     status.innerText = `Saving [${i + 1}/${files.length}]: ${file.name}`;
                     console.log("BATCH: Reading", file.name);
-                    
+
                     await new Promise((resolve, reject) => {
                         const timeout = setTimeout(() => {
                             alert("DIAGNOSTIC: File read timed out at 8 seconds.");
                             reject("File Read Timeout");
                         }, 8000);
-                        
+
                         const reader = new FileReader();
                         reader.onload = async (e) => {
                             clearTimeout(timeout);
@@ -2001,15 +2112,15 @@
                                     alert("DIAGNOSTIC: Store Error: " + err);
                                     reject(err);
                                 };
-                            } catch (err) { 
+                            } catch (err) {
                                 alert("DIAGNOSTIC: Transact Catch: " + err);
-                                reject(err); 
+                                reject(err);
                             }
                         };
-                        reader.onerror = () => { 
-                            clearTimeout(timeout); 
+                        reader.onerror = () => {
+                            clearTimeout(timeout);
                             alert("DIAGNOSTIC: Reader Error");
-                            reject("Read Error"); 
+                            reject("Read Error");
                         };
                         reader.readAsDataURL(file);
                     });
@@ -2495,11 +2606,23 @@
         function getTolData(item, localTolerance) {
             if (!item || !item.field) return null;
             let rating = null;
-            if (item.field === "Herm Amps") rating = parseFloat(document.getElementById("hermRating").value);
-            if (item.field === "Fan Amps") rating = parseFloat(document.getElementById("fanRating").value);
+            let currentVolts = item.volts;
 
-            if (rating && item.volts > 0) {
-                const uF = (item.val * 2652) / item.volts;
+            // DYNAMIC CALCULATION: Retroactively find the latest corresponding volts in the buffer
+            const bArr = Object.values(buffer);
+            if (item.field === "Herm Amps") {
+                rating = parseFloat(document.getElementById("hermRating").value);
+                const hv = bArr.find(b => b.field === "Herm Volts");
+                if (hv && hv.val > 0) currentVolts = hv.val;
+            }
+            if (item.field === "Fan Amps") {
+                rating = parseFloat(document.getElementById("fanRating").value);
+                const fv = bArr.find(b => b.field === "Fan Volts");
+                if (fv && fv.val > 0) currentVolts = fv.val;
+            }
+
+            if (rating && currentVolts > 0) {
+                const uF = (item.val * 2652) / currentVolts;
                 const varPct = ((uF / rating) - 1) * 100;
                 const isPass = Math.abs(varPct / 100) <= (localTolerance + 0.0001);
                 return { isPass, color: isPass ? 'var(--emerald-green)' : 'var(--crimson-red)', txt: `(${uF.toFixed(2)}µF | ${varPct > 0 ? '+' : ''}${varPct.toFixed(2)}%)` };
@@ -3069,8 +3192,8 @@
 
         function closeReport() { showSection('v23-home'); }
         function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); showSection('v23-home'); }
-        async function startJob() { 
-            const name = document.getElementById('custName').value; 
+        async function startJob() {
+            const name = document.getElementById('custName').value;
             if (!name) return alert("Enter Job Name/Number First");
             const result = await callAppsScript({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] });
             if (result && result.status === "success") {
@@ -3087,19 +3210,19 @@
         window.onload = async () => {
             console.log("v23.2 Start - Core Stability");
             document.title = "HVAC PRO v23.2 GOLD";
-            
+
             // Standardize Hidden sections
             const overlays = document.querySelectorAll('.modal-overlay');
             overlays.forEach(o => o.style.display = 'none');
-            
+
             showSection('v23-home');
-            
+
             try {
                 await initIndexedDB();
             } catch (e) {
                 console.warn("DB Init Failed, bypassing to ensure UI loads:", e);
             }
-            
+
             try {
                 loadFromStorage();
                 refreshJobData();
@@ -3117,7 +3240,7 @@
             if (/\b(manual|manuals|library)\b/.test(t)) { showSection('section-manuals'); return true; }
             if (/\b(report|summary|compile)\b/.test(t)) { showSection('reportModal'); return true; }
             if (/\b(settings|options|config)\b/.test(t)) { showSection('settingsModal'); return true; }
-            
+
             return false;
         }
 
@@ -3142,4 +3265,5 @@
         }
     </script>
 </body>
+
 </html>
