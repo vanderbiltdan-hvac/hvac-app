@@ -9,7 +9,7 @@
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Pro v24.4">
+    <meta name="apple-mobile-web-app-title" content="HVAC Pro v24.5">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
@@ -25,6 +25,7 @@
             --text-secondary: #b0b0b0;
             --glass-effect: rgba(255, 255, 255, 0.05);
             --sync-glow: rgba(0, 229, 255, 0.3);
+            --nav-bg: rgba(18, 18, 18, 0.95);
         }
 
         body {
@@ -1663,6 +1664,45 @@
         </div>
     </div>
 
+    <!-- SECTON: MIRROR (COLUMN W TRUTH) -->
+    <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
+            <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🪞 MIRROR TRUTH</h1>
+            <button onclick="fetchMirrorSync()" class="btn-utility" style="border-color:var(--electric-blue); color:var(--electric-blue);">RE-SYNC</button>
+        </div>
+        <div style="font-size:10px; color:#666; font-weight:900; margin-bottom:15px; letter-spacing:1px;">LIVE SPREADSHEET READINGS (COLUMN W)</div>
+        <div id="mirrorTruthList" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 60vh;">
+            <div style="text-align:center; color:#444; padding:40px;">Tap RE-SYNC to pull Truth.</div>
+        </div>
+    </div>
+
+    <!-- SECTION: DATA BLOCK (PRE-PUSH) -->
+    <div class="container" id="section-datablock" style="padding-bottom:100px; display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
+            <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:var(--emerald-green); font-weight:900;">📦 DATA BLOCK</h1>
+            <button onclick="pushToDataBlock()" class="btn-utility" style="background:var(--emerald-green); color:black; border:none; padding:8px 15px;">⚡ PUSH ALL</button>
+        </div>
+        <div style="font-size:10px; color:#666; font-weight:900; margin-bottom:15px; letter-spacing:1px;">DRAFT BLOCK FOR AA7:AA16</div>
+        <div class="voice-console" style="text-align:left; background:rgba(0,0,0,0.5); padding:15px; min-height:100px;">
+           <div id="blockDraftPreview" style="font-family:monospace; font-size:13px; color:var(--emerald-green); word-break:break-all;">(EMPTY DRAFT)</div>
+        </div>
+        <div style="margin-top:20px; display:grid; gap:10px;">
+            <button onclick="copyToClipboard(document.getElementById('blockDraftPreview').innerText)" class="btn btn-outline" style="font-size:11px;">📋 COPY STRING</button>
+            <button onclick="clearDraftBlock()" class="btn btn-outline" style="border-color:var(--crimson-red); color:var(--crimson-red); font-size:11px;">🗑 CLEAR DRAFT</button>
+        </div>
+    </div>
+
+    <!-- UNIVERSAL FIXED FOOTER (7 BUTTONS) -->
+    <nav class="app-nav">
+        <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
+        <button id="nav-mirror" onclick="showSection('section-mirror')" class="nav-btn"><span>🪞</span>MIRROR</button>
+        <button id="nav-diag" onclick="showSection('voiceModal')" class="nav-btn"><span>🎙️</span>DIAG</button>
+        <button id="nav-specs" onclick="showSection('section-specs')" class="nav-btn"><span>📋</span>SPECS</button>
+        <button id="nav-compiler" onclick="showSection('reportModal')" class="nav-btn"><span>🏗️</span>COMPILER</button>
+        <button id="nav-block" onclick="showSection('section-datablock')" class="nav-btn"><span>📦</span>BLOCK</button>
+        <button id="nav-settings" onclick="showSection('settingsModal')" class="nav-btn"><span>⚙️</span>SETTINGS</button>
+    </nav>
+
     <script id="galleryScript">
         const DB_NAME = "HVAC_PRO_DB";
         const OS_NAME = "PH_GALLERY";
@@ -1678,7 +1718,7 @@
         }
 
         function showSection(id) {
-            const sections = ['v23-home', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings'];
+            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings'];
             sections.forEach(s => {
                 const el = document.getElementById(s);
                 if (el) el.style.display = 'none';
@@ -1696,16 +1736,19 @@
             // Update Bottom Nav Active State
             const navMap = {
                 'v23-home': 'nav-home',
+                'section-mirror': 'nav-mirror',
                 'voiceModal': 'nav-diag',
                 'section-specs': 'nav-specs',
-                'section-manuals': 'nav-manuals',
-                'reportModal': 'nav-report',
+                'reportModal': 'nav-compiler',
+                'section-datablock': 'nav-block',
                 'settingsModal': 'nav-settings'
             };
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if (navMap[id]) document.getElementById(navMap[id]).classList.add('active');
 
             // Trigger specific refreshes and setups
+            if (id === 'section-mirror') renderMirrorTruth();
+            if (id === 'section-datablock') renderDraftBlock();
             if (id === 'reportModal') {
                 renderCompiler(); initTechNotes(); loadRefInputs();
             }
@@ -2037,17 +2080,38 @@
             }
             localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
             renderSystemSpecs();
+        }
 
-            // Populate Live Mirror
-            const mList = document.getElementById('mirrorList');
-            if (mList && Object.keys(data).length > 0) {
-                mList.innerHTML = Object.keys(data).filter(k => data[k] && k !== 'success').map(k => `
-                    <div style="display:flex; justify-content:space-between; background:#222; padding:8px 12px; border-radius:6px; border:1px solid #444;">
-                        <span style="font-weight:900; color:#888;">${k}</span>
-                        <span style="color:var(--electric-blue); font-weight:900;">${data[k]}</span>
-                    </div>
-                `).join('') || '<div style="text-align:center; padding:20px; color:#555; font-weight:900;">NO W COLUMN DATA YET</div>';
+        function renderMirrorTruth() {
+            const list = document.getElementById('mirrorTruthList');
+            if (!list) return;
+            
+            // Filter out empty rows from Column W (mirrorState)
+            const populated = Object.keys(mirrorState).filter(k => {
+                const val = mirrorState[k];
+                return val && val !== "" && val !== "--" && k !== 'success';
+            });
+
+            if (populated.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:40px; color:#555; font-weight:900;">NO POPULATED DATA IN COLUMN W</div>';
+                return;
             }
+
+            list.innerHTML = populated.map(k => `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+                    <div style="display:flex; flex-direction:column;">
+                        <span style="font-size:8px; color:#666; font-weight:900; text-transform:uppercase;">${k}</span>
+                        <span style="font-size:15px; font-weight:900; color:var(--text-primary);">${mirrorState[k]}</span>
+                    </div>
+                    <button onclick="addMirrorToCompiler('${k}', '${mirrorState[k]}')" class="btn-utility" style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">➕ ADD</button>
+                </div>
+            `).join('');
+        }
+
+        function addMirrorToCompiler(label, val) {
+            techNotes.push(`${label}: ${val}`);
+            localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+            alert(`Added to Compiler: ${label}`);
         }
 
         async function pushAllSlotOverrides() {
@@ -2245,7 +2309,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "24.4";
+        const APP_VERSION = "v24.5 GOLD";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -2264,6 +2328,91 @@
             },
             thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
+
+        // ── THE BRIDGE: KEYWORD MAPPING ─────────────────────────
+        function findSheetLabelFor(appLabel) {
+            const clean = appLabel.toLowerCase();
+            // 1. Try exact match in EQUIP_SCHEMA
+            for (let tab in EQUIP_SCHEMA) {
+                const match = EQUIP_SCHEMA[tab].find(f => f.label.toLowerCase() === clean);
+                if (match) return match.label;
+            }
+            // 2. Try Keyword match in Mirror State (Truth from sheet)
+            const keys = Object.keys(mirrorState);
+            const keywords = clean.split(' ');
+            const bestMatch = keys.find(k => keywords.every(kw => k.toLowerCase().includes(kw)));
+            return bestMatch || appLabel; 
+        }
+
+        // ── DATA BLOCK ENGINE (AA7:AA16) ────────────────────────
+        function renderDraftBlock() {
+            const preview = document.getElementById('blockDraftPreview');
+            if (!preview) return;
+            const data = getDraftData();
+            if (data.length === 0) {
+                preview.innerText = "(EMPTY DRAFT)";
+                return;
+            }
+            // Format: Label◘Value|Label◘Value
+            const block = data.map(d => `${d.label}◘${d.val}`).join('|');
+            preview.innerText = block;
+        }
+
+        function getDraftData() {
+            let list = [];
+            Object.values(buffer).forEach(b => {
+                if (b.val && b.field) list.push({ label: findSheetLabelFor(b.field), val: b.val });
+            });
+            for (let k in refData) {
+               list.push({ label: findSheetLabelFor(k), val: refData[k] });
+            }
+            return list;
+        }
+
+        async function pushToDataBlock() {
+            const block = document.getElementById('blockDraftPreview').innerText;
+            if (block === "(EMPTY DRAFT)") return alert("Draft is empty!");
+            
+            try {
+                const res = await callAppsScript({ action: "writeToNextDataBlock", dataString: block });
+                if (res.status === "success") {
+                    alert("Data Block Successfully Pushed to AA7:AA16!");
+                    // Soft Reset after success
+                    clearDraftBlock();
+                    fetchMirrorSync();
+                } else {
+                    alert("Push Failed: " + res.message);
+                }
+            } catch (e) {
+                alert("Push Error: " + e.message);
+            }
+        }
+
+        function clearDraftBlock() {
+            if (!confirm("Clear current draft and staging buffer?")) return;
+            buffer = {};
+            localStorage.removeItem('hvacStagingBufferV20');
+            renderDraftBlock();
+            alert("Staging Cleared.");
+        }
+
+        function copyToClipboard(text) {
+            if (text === "(EMPTY DRAFT)") return;
+            navigator.clipboard.writeText(text).then(() => alert("Copied!"));
+        }
+
+        // ── COMPILER SORTING FIX ────────────────────────────────
+        function moveCompilerLine(btn, direction) {
+            const line = btn.closest('.compiler-line');
+            if (direction === -1) { // UP
+                const prev = line.previousElementSibling;
+                if (prev) line.parentNode.insertBefore(line, prev);
+            } else { // DOWN
+                const next = line.nextElementSibling;
+                if (next) line.parentNode.insertBefore(next, line);
+            }
+        }
+
         // Backwards compatibility migration
         let oldSystem = JSON.parse(localStorage.getItem('hvacSystemV20_34'));
         if (oldSystem && systemSpecs.outdoor.MDL === '--' && oldSystem.outdoor && oldSystem.outdoor.MDL !== '--') {
