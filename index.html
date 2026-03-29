@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v24.1</title>
+    <title id="appTitle">HVAC Master Pro v24.2</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Pro v24.1">
+    <meta name="apple-mobile-web-app-title" content="HVAC Pro v24.2">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
@@ -1062,16 +1062,12 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.1 GOLD</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.2 GOLD</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
-                    <div class="job-toggle-container" onclick="toggleJobMode()">
-                        <span id="jobModeLabelLauncher" class="job-toggle-label">JOB SYNC</span>
-                        <div id="jobToggleLauncher" class="toggle-switch"
-                            style="width: 34px; height: 18px; scale: 0.8;"></div>
-                    </div>
                     <!-- MANUAL REFRESH MIRROR BTN -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync"
                         style="padding:4px 10px;">⚡ MIRROR</button>
+                    <div id="activeJobIndicatorHome" style="display:none; font-weight:900; font-size:10px; color:var(--electric-blue); letter-spacing:1px;">HOOKED: <span id="hookedJobNameHome">--</span></div>
                 </div>
             </div>
             <button id="launcherMicBtn" onclick="toggleGlobalMic()"
@@ -1657,7 +1653,7 @@
         const OS_NAME = "PH_GALLERY";
         let currentShelf = 'ALL';
 
-        const APP_VERSION = "v24.1 GOLD";
+        const APP_VERSION = "v24.2 GOLD";
 
         // ── v23.0 Unified Navigation Engine ──────────────────────
         function navSubPage(groupClass, targetId) {
@@ -1924,29 +1920,27 @@
             setTimeout(() => status.style.display = 'none', 2000);
         }
 
-        function toggleJobMode() {
-            isJobMode = !isJobMode;
-            const toggle = document.getElementById('jobToggle');
-            const label = document.getElementById('jobModeLabel');
+        function refreshSyncUI() {
             const dashboard = document.getElementById('section-specs');
+            const launcherBadge = document.getElementById('launcherVerBadge');
+            const jobIndHome = document.getElementById('activeJobIndicatorHome');
 
-            if (isJobMode) {
-                toggle.classList.add('on');
-                label.classList.add('active');
-                dashboard.classList.add('sync-active');
-                fetchMirrorSync();
+            if (isJobMode && currentJob) {
+                if (dashboard) dashboard.classList.add('sync-active');
+                if (launcherBadge) launcherBadge.style.color = 'var(--electric-blue)';
             } else {
-                toggle.classList.remove('on');
-                label.classList.remove('active');
-                dashboard.classList.remove('sync-active');
+                if (dashboard) dashboard.classList.remove('sync-active');
+                if (launcherBadge) launcherBadge.style.color = 'var(--amber-orange)';
             }
+            updateJobUI(); 
         }
 
         async function fetchMirrorSync() {
-            if (!isJobMode) {
-                alert("Enable 'JOB SYNC' first.");
+            if (!currentJob) {
+                alert("Please select a Job from the Portal first.");
                 return;
             }
+            isJobMode = true; // Auto-enable if triggered manually or via select
             const btn = document.getElementById('manualSyncBtn');
             if (btn) btn.innerText = "⏳";
 
@@ -1965,10 +1959,11 @@
                             cb.style.display = 'none';
                         }
                     }
+                    refreshSyncUI();
                 }
             } catch (err) {
                 console.error("Sync Error:", err);
-                alert("Sync failed. Check connection.");
+                alert("Mirror Sync Failed. Check connection.");
             } finally {
                 if (btn) btn.innerText = "⚡ MIRROR";
             }
@@ -2087,19 +2082,26 @@
         function selectJob(jobName) {
             currentJob = jobName;
             localStorage.setItem('hvacActiveJob', jobName);
-            updateJobUI();
+            isJobMode = true; // Auto-Enable Sync on selection
+            refreshSyncUI();
             closeJobPortal();
-            if (isJobMode) refreshJobData();
+            fetchMirrorSync(); // Immediate pull
         }
 
         function updateJobUI() {
-            const ind = document.getElementById('activeJobIndicator');
-            const name = document.getElementById('hookedJobName');
+            const indHome = document.getElementById('activeJobIndicatorHome');
+            const nameHome = document.getElementById('hookedJobNameHome');
+            const indSpecs = document.getElementById('activeJobIndicator');
+            const nameSpecs = document.getElementById('hookedJobName');
+            
             if (currentJob) {
-                ind.style.display = 'block';
-                name.innerText = currentJob;
+                if (indHome) indHome.style.display = 'block';
+                if (nameHome) nameHome.innerText = currentJob.toUpperCase();
+                if (indSpecs) indSpecs.style.display = 'block';
+                if (nameSpecs) nameSpecs.innerText = currentJob.toUpperCase();
             } else {
-                ind.style.display = 'none';
+                if (indHome) indHome.style.display = 'none';
+                if (indSpecs) indSpecs.style.display = 'none';
             }
         }
 
@@ -2311,6 +2313,10 @@
         function initSplash() {
             document.title = "HVAC Master Pro v" + APP_VERSION;
             renderSystemSpecs();
+            if (currentJob) {
+                isJobMode = true; 
+                refreshSyncUI();
+            }
         }
 
         function switchEquipTab(tabName) {
