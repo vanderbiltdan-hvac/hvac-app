@@ -1086,7 +1086,7 @@
 
         <div class="v23-launcher-grid">
             <button class="v23-pwr-btn" style="background:var(--emerald-green); color:#000;">1</button>
-            <button class="v23-pwr-btn" style="background:var(--electric-blue); color:#000;">2</button>
+            <button class="v23-pwr-btn" style="background:var(--electric-blue); color:#000; font-size:18px; letter-spacing:1px; line-height:1.2;" onclick="openJobPortal()">📂<br><span style="font-size:10px;">JOB PORTAL</span></button>
             <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;">3</button>
             <button class="v23-pwr-btn" style="background:var(--crimson-red);">4</button>
 
@@ -1667,7 +1667,7 @@
         }
 
         function showSection(id) {
-            const sections = ['v23-home', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'settingsModal', 'jobPortalModal', 'galleryOverlay'];
+            const sections = ['v23-home', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings'];
             sections.forEach(s => {
                 const el = document.getElementById(s);
                 if (el) el.style.display = 'none';
