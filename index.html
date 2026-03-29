@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v23.3</title>
+    <title id="appTitle">HVAC Master Pro v23.3</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -967,7 +967,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span style="color:var(--amber-orange);">v23.2 GOLD</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v23.2 GOLD</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <div class="job-toggle-container" onclick="toggleJobMode()">
                         <span id="jobModeLabelLauncher" class="job-toggle-label">JOB SYNC</span>
@@ -1008,7 +1008,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v23.2 GOLD</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v23.2 GOLD</div>
                     <div class="job-toggle-container" onclick="toggleJobMode()">
                         <span id="jobModeLabel" class="job-toggle-label">JOB SYNC</span>
                         <div id="jobToggle" class="toggle-switch" style="width: 34px; height: 18px; scale: 0.8;"></div>
@@ -1424,6 +1424,8 @@
         const DB_NAME = "HVAC_PRO_DB";
         const OS_NAME = "PH_GALLERY";
         let currentShelf = 'ALL';
+
+        const APP_VERSION = "v23.4 GOLD";
 
         // ── v23.0 Unified Navigation Engine ──────────────────────
         function showSection(id) {
@@ -1870,7 +1872,6 @@
     </style>
 
     <script>
-        const APP_VERSION = "21.11";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwRjU5jwWBcnftyYS9EZnBWiD6cmRf8mybv6_sW2LLG_SDN58qWZ9mArI8o9nkuRP7z/exec";
         let isJobMode = false;
         let jobSyncInterval = null;
@@ -2553,6 +2554,18 @@
                     const highDisplay = (Math.floor(target * (1 + tolerance) * 100) / 100).toFixed(2);
                     document.getElementById('targetRange').innerHTML = "RANGE: " + lowDisplay + " - " + highDisplay;
                 } else { document.getElementById('targetRange').innerHTML = "WAITING FOR VOLTS..."; }
+            } else if (field === "Herm Volts" || field === "Fan Volts") {
+                const rating = parseFloat(document.getElementById(field === "Herm Volts" ? "hermRating" : "fanRating").value);
+                const amField = field === "Herm Volts" ? "Herm Amps" : "Fan Amps";
+                const am = Object.values(buffer).find(b => b.field === amField);
+                if (am && am.val > 0 && rating > 0) {
+                    const k = am.val * 2652;
+                    const vLow = (k / (rating * (1 + tolerance))).toFixed(2);
+                    const vHigh = (k / (rating * (1 - tolerance))).toFixed(2);
+                    document.getElementById('targetRange').innerHTML = "RANGE: " + vLow + " - " + vHigh;
+                } else {
+                    document.getElementById('targetRange').innerHTML = "READY FOR " + field.toUpperCase();
+                }
             } else if (field === "Comp Amps") {
                 document.getElementById('targetRange').innerHTML = systemSpecs.outdoor.RLA !== '--' ? `&#9889; RLA: ${systemSpecs.outdoor.RLA} A` : "READY FOR COMP AMPS";
             } else if (field === "ODF Amps") {
@@ -2580,8 +2593,18 @@
             if (field === "Herm Amps" || field === "Fan Amps") {
                 const rating = parseFloat(document.getElementById(field === "Herm Amps" ? "hermRating" : "fanRating").value);
                 if (lastVolt > 0 && rating) {
-                    const target = (rating * lastVolt) / 2652;
                     const uF = (val * 2652) / lastVolt;
+                    const varPct = ((uF / rating) - 1) * 100;
+                    const isPass = Math.abs(varPct / 100) <= (tolerance + 0.0001);
+                    status = (isPass ? "&#10003; PASS " : "&#10007; FAIL ") + (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
+                    color = isPass ? "var(--emerald-green)" : "var(--crimson-red)";
+                }
+            } else if (field === "Herm Volts" || field === "Fan Volts") {
+                const rating = parseFloat(document.getElementById(field === "Herm Volts" ? "hermRating" : "fanRating").value);
+                const amField = field === "Herm Volts" ? "Herm Amps" : "Fan Amps";
+                const am = Object.values(buffer).find(b => b.field === amField);
+                if (am && am.val > 0 && rating > 0) {
+                    const uF = (am.val * 2652) / val;
                     const varPct = ((uF / rating) - 1) * 100;
                     const isPass = Math.abs(varPct / 100) <= (tolerance + 0.0001);
                     status = (isPass ? "&#10003; PASS " : "&#10007; FAIL ") + (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
@@ -3208,8 +3231,13 @@
         }
 
         window.onload = async () => {
-            console.log("v23.2 Start - Core Stability");
-            document.title = "HVAC PRO v23.2 GOLD";
+            console.log(APP_VERSION + " Start - Vault SOP Verified");
+            document.title = "HVAC PRO " + APP_VERSION;
+            
+            // Sync UI Version Badges
+            const lVer = document.getElementById('launcherVerBadge'); if (lVer) lVer.innerText = APP_VERSION;
+            const sVer = document.getElementById('specsVerBadge'); if (sVer) sVer.innerText = APP_VERSION;
+            const aTitle = document.getElementById('appTitle'); if (aTitle) aTitle.innerText = "HVAC Master Pro " + APP_VERSION;
 
             // Standardize Hidden sections
             const overlays = document.querySelectorAll('.modal-overlay');
