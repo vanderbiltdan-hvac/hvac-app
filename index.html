@@ -1426,59 +1426,7 @@
         <div id="compilerPreview" class="compiler-preview">
             <!-- Populated via renderCompiler() -->
         </div>
-        <div style="text-align:center; font-size:9px; color:#555; margin:4px 0; flex-shrink:0;">TAP ANY LINE TO REMOVE
-            IT</div>
-
-        <!-- Control Switcher -->
-        <div style="display:flex; gap:8px; margin: 10px 0; flex-shrink:0;">
-            <button id="btn-show-notes" class="btn btn-outline"
-                style="flex:1; border-color:var(--electric-blue); color:var(--electric-blue);"
-                onclick="switchCompilerView('notes')">📝 TECH NOTES</button>
-            <button id="btn-show-refrig" class="btn btn-outline" style="flex:1;"
-                onclick="switchCompilerView('refrig')">❄️ REFRIG DATA</button>
-        </div>
-
-        <!-- Tech Notes View -->
-        <div id="view-tech-notes"
-            style="display:block; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
-            <div id="view-tech-notes-list"></div>
-
-            <div style="display:flex; gap:6px; margin-top:10px;">
-                <select id="newNoteCategory"
-                    style="background:rgba(0,0,0,0.5); color:white; border:1px solid #444; border-radius:6px; padding:6px; font-weight:bold;"></select>
-                <input type="text" id="newNoteInput" placeholder="Type new note..."
-                    style="flex:1; margin:0; font-size:14px; padding:6px; border-radius:6px; background:rgba(255,255,255,0.05); color:white; border:1px solid #444;">
-                <button onclick="addNewTechNote()" class="btn btn-primary"
-                    style="width:auto; padding:0 15px;">ADD</button>
-            </div>
-        </div>
-
-        <!-- Refrig Manual Data View -->
-        <div id="view-refrig-data"
-            style="display:none; overflow-y:auto; flex-shrink:0; max-height: 250px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px;">
-            <div class="field-row"><span>Suction Pressure</span><input type="number" id="in-suct"
-                    onchange="saveRef('SUCT_P', this.value)"></div>
-            <div class="field-row"><span>Liquid Pressure</span><input type="number" id="in-liq"
-                    onchange="saveRef('LIQ_P', this.value)"></div>
-            <div class="field-row"><span>Vapor Saturation</span><input type="number" id="in-vsat"
-                    onchange="saveRef('VAPOR_SAT', this.value)"></div>
-            <div class="field-row"><span>Liquid Saturation</span><input type="number" id="in-lsat"
-                    onchange="saveRef('LIQ_SAT', this.value)"></div>
-            <div class="field-row"><span>Superheat (SH)</span><input type="number" id="in-sh"
-                    onchange="saveRef('SH', this.value)"></div>
-            <div class="field-row"><span>Subcool (SC)</span><input type="number" id="in-sc"
-                    onchange="saveRef('SC', this.value)"></div>
-            <div class="field-row"><span>ODAT</span><input type="number" id="in-odat"
-                    onchange="saveRef('ODAT', this.value)"></div>
-            <div class="field-row"><span>Return Temp</span><input type="number" id="in-ret"
-                    onchange="saveRef('RETURN', this.value)"></div>
-            <div class="field-row"><span>Return Humidity %</span><input type="number" id="in-rh"
-                    onchange="saveRef('RH', this.value)"></div>
-            <div class="field-row"><span>Supply Temp</span><input type="number" id="in-sup"
-                    onchange="saveRef('SUPPLY', this.value)"></div>
-            <div class="field-row"><span>Delta T (ΔT)</span><input type="number" id="in-dt"
-                    onchange="saveRef('DELTA_T', this.value)"></div>
-        </div>
+        <div style="text-align:center; font-size:9px; color:#555; margin:4px 0; flex-shrink:0;">TAP ANY LINE TO REMOVE IT</div>
 
         <div style="padding-top:15px; border-top:1px solid #333; flex-shrink:0; display:flex; gap:10px;">
             <button class="btn btn-green" onclick="copyCompilerReport()">📝 COPY INVOICE</button>
@@ -2414,7 +2362,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "v24.5.2";
+        const APP_VERSION = "v24.5.2 B";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -2436,16 +2384,37 @@
 
         // ── THE BRIDGE: KEYWORD MAPPING ─────────────────────────
         function findSheetLabelFor(appLabel) {
-            const clean = appLabel.toLowerCase();
+            if (!appLabel) return "UNKNOWN";
+            const clean = appLabel.toLowerCase().trim();
+            
             // 1. Try exact match in EQUIP_SCHEMA
             for (let tab in EQUIP_SCHEMA) {
                 const match = EQUIP_SCHEMA[tab].find(f => f.label.toLowerCase() === clean);
                 if (match) return match.label;
             }
-            // 2. Try Keyword match in Mirror State (Truth from sheet)
+
+            // 2. Priority check for exact sheet match
             const keys = Object.keys(mirrorState);
+            const exact = keys.find(k => k.toLowerCase() === clean);
+            if (exact) return exact;
+
+            // 3. Known abbreviation aliases
+            if (clean === 'outdoor temp' || clean === 'outdoor air temp') return 'ODAT';
+            if (clean === 'superheat') return 'SH';
+            if (clean === 'subcool') return 'SC';
+
+            // 4. Stricter keyword match (prevent Tech Note "Condenser" -> "Condenser Model")
+            // Only allow keyword match if multiple words match or if it's a very clear winner
             const keywords = clean.split(' ');
-            const bestMatch = keys.find(k => keywords.every(kw => k.toLowerCase().includes(kw)));
+            const bestMatch = keys.find(k => {
+                const kLower = k.toLowerCase();
+                if (keywords.length === 1) {
+                    // Single word? Must be an exact word match (e.g. "Filter" matches "Filter Result" but not "Condenser" for "Model")
+                    return kLower.split(' ').includes(clean);
+                }
+                return keywords.every(kw => kLower.includes(kw));
+            });
+            
             return bestMatch || appLabel; 
         }
 
@@ -2583,12 +2552,12 @@
             document.getElementById('pmiNoteOverlay').style.display = 'none';
         }
 
-        // ── REFRIG SYSTEM (v24.5.1) ─────────────────────────────
+        // ── REFRIG SYSTEM (v24.5.2 B) ───────────────────────────
         const REFRIG_FIELDS = {
             'SUCT_P': 'Suction Pressure', 'LIQ_P': 'Liquid Pressure',
             'VAPOR_SAT': 'Vapor Saturation', 'LIQ_SAT': 'Liquid Saturation',
-            'SH': 'Superheat (SH)', 'SC': 'Subcool (SC)',
-            'ODAT': 'Outdoor Temp', 'RETURN': 'Return Temp', 'RH': 'Return Humidity %',
+            'SH': 'SH', 'SC': 'SC',
+            'ODAT': 'ODAT', 'RETURN': 'Return Temp', 'RH': 'Return Humidity %',
             'SUPPLY': 'Supply Temp', 'DELTA_T': 'Delta T (ΔT)'
         };
         let activeRefrigKey = null;
@@ -2598,8 +2567,11 @@
             const list = document.getElementById('refrigInputList');
             if (!list) return;
             list.innerHTML = Object.entries(REFRIG_FIELDS).map(([key, label]) => {
-                const val = refData[key] || '--';
-                const isSynced = isJobMode && mirrorState[findSheetLabelFor(label)];
+                const sheetField = findSheetLabelFor(label);
+                const sheetVal = isJobMode ? mirrorState[sheetField] : null;
+                const val = refData[key] || (sheetVal && sheetVal !== "--" ? sheetVal : '--');
+                const isSynced = isJobMode && mirrorState[sheetField];
+                
                 return `
                 <div onclick="openRefrigKeypad('${key}')" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
                     <span style="font-weight:900; color:#aaa; font-size:12px;">${label.toUpperCase()}</span>
@@ -3888,9 +3860,9 @@
                     const obj = systemSpecs[tab];
                     if (obj.BRAND !== '--' || obj.MDL !== '--' || obj.SER !== '--') {
                         let parts = [];
-                        if (obj.BRAND !== "--") parts.push(`Brand: ${obj.BRAND}`);
-                        if (obj.MDL !== "--") parts.push(`Model: ${obj.MDL}`);
-                        if (obj.SER !== "--") parts.push(`Serial: ${obj.SER}`);
+                        if (obj.BRAND && obj.BRAND !== "--") parts.push(`Brand: ${obj.BRAND}`);
+                        if (obj.MDL && obj.MDL !== "--") parts.push(`Model: ${obj.MDL}`);
+                        if (obj.SER && obj.SER !== "--") parts.push(`Serial: ${obj.SER}`);
                         if (obj.TON !== undefined && obj.TON !== "--") parts.push(`${obj.TON} TON`);
                         if (tab === 'outdoor') {
                             if (obj.YEAR !== '--') parts.push(`Year: ${obj.YEAR}`);
