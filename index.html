@@ -1195,7 +1195,7 @@
             <button class="v23-pwr-btn"
                 style="background:var(--electric-blue); color:#000; font-size:18px; letter-spacing:1px; line-height:1.2;"
                 onclick="openJobPortal()">📂<br><span style="font-size:10px;">JOB PORTAL</span></button>
-            <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;">3</button>
+            <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;" onclick="openManuals()">📖<br><span style="font-size:10px;">MANUALS HUB</span></button>
             <button class="v23-pwr-btn" style="background:var(--crimson-red);">4</button>
 
             <div class="v23-sub-grid">
@@ -1949,6 +1949,8 @@
             <button id="nav-pmi" onclick="showSection('section-pmi')" class="nav-btn"><span>🛠️</span>PMI</button>
             <button id="nav-refrig" onclick="showSection('section-refrig')"
                 class="nav-btn"><span>🌡️</span>REFRIGERANT</button>
+            <button id="nav-manuals" onclick="openManuals()"
+                class="nav-btn"><span>📖</span>MANUALS</button>
             <button id="nav-compiler" onclick="showSection('reportModal')"
                 class="nav-btn"><span>🏗️</span>COMPILER</button>
             <button id="nav-block" onclick="showSection('section-datablock')"
@@ -2040,7 +2042,7 @@
         function openVoiceConsole() { showSection('voiceModal'); }
         function openReport() { showSection('reportModal'); }
         function openSettings() { showSection('settingsModal'); }
-        function openManuals() { showSection('section-manuals'); }
+        function openManuals() { showSection('manualsModal'); }
         function closeVoiceModal() { showSection('v23-home'); }
         function closeManuals() { showSection('v23-home'); }
         function closeSettings() { showSection('v23-home'); }
@@ -2447,7 +2449,7 @@
 
 
         function renderMirrorTruth() {
-            const list = document.getElementById('mirrorTruthList');
+            const list = document.getElementById('mirrorList');
             if (!list) return;
 
             // Safety: Ensure mirrorState is at least an object
