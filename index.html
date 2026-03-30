@@ -9,7 +9,7 @@
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.0">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.1">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
@@ -1793,7 +1793,7 @@
             </div>
         </div>
 
-        <div id="refrigInputList" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+        <div id="refrigInputList" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; max-height: 70vh;">
             <!-- Rendered via renderRefrigRows() -->
         </div>
 
@@ -2277,11 +2277,14 @@
                         if (val && val !== '--') buffer[i] = { field: f, val: parseFloat(val), volts: 0 };
                     });
                     
-                    // Fix: Pull Capacitor Ratings for Diag Sync
-                    const hermR = mirrorState['Herm microfarad rating'];
-                    if (hermR && hermR !== '--') document.getElementById('hermRating').value = parseFloat(hermR);
-                    const fanR = mirrorState['Fan microfarad rating'];
-                    if (fanR && fanR !== '--') document.getElementById('fanRating').value = parseFloat(fanR);
+                    // Capacitor Sync using Internal Map
+                    for (const [id, label] of Object.entries(DIAG_SYNC_MAP)) {
+                        const val = mirrorState[label];
+                        if (val && val !== '--') {
+                           const input = document.getElementById(id);
+                           if (input) input.value = parseFloat(val);
+                        }
+                    }
                     
                     localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
                     syncLogToUI();
@@ -2320,12 +2323,12 @@
                 const noteStr = `${k}: ${val}`;
                 const isSelected = techNotes.includes(noteStr);
                 return `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
-                    <div style="display:flex; flex-direction:column;">
-                        <span style="font-size:8px; color:#666; font-weight:900; text-transform:uppercase;">${k}</span>
-                        <span style="font-size:15px; font-weight:900; color:var(--text-primary);">${val}</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <span style="font-size:12px; color:#bbb; font-weight:900; text-transform:uppercase; letter-spacing:0.5px;">${k}</span>
+                        <span style="font-size:16px; font-weight:900; color:var(--text-primary);">${val}</span>
                     </div>
-                    <button onclick="addMirrorToCompiler('${k}', '${val.toString().replace(/'/g, "\\'")}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px;">
+                    <button onclick="addMirrorToCompiler('${k}', '${val.toString().replace(/'/g, "\\'")}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px; padding:6px 12px;">
                         ${isSelected ? '✅ UNDO' : '➕ ADD'}
                     </button>
                 </div>`;
@@ -2541,8 +2544,14 @@
     </style>
 
     <script>
-        const APP_VERSION = "v24.6.0";
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
+        const APP_VERSION = "v24.6.1";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2300.gs
+
+        // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
+        const DIAG_SYNC_MAP = {
+            'hermRating': 'Herm microfarad rating',
+            'fanRating': 'Fan microfarad rating'
+        };
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
 
@@ -3888,6 +3897,13 @@
             // Silent wipe — no confirm() dialog (kills mic on iOS). RESTORE banner acts as safety net.
             _lastBuffer = { ...buffer };
             buffer = {}; localStorage.removeItem('hvacStagingBufferV20'); fieldIndex = 0;
+            
+            // Reset Capacitor Ratings to defaults
+            const hermIn = document.getElementById('hermRating');
+            const fanIn = document.getElementById('fanRating');
+            if (hermIn) hermIn.value = 45;
+            if (fanIn) fanIn.value = 5;
+
             syncLogToUI(); updateStepNav(); recalculateField();
             document.getElementById('restoreBox').style.display = 'block';
         }
@@ -4129,11 +4145,20 @@
             // REFRIGERANT PAIRS
             if (activeTemplate === 'full' || activeTemplate === 'refrig') {
                 if (refData['ODAT']) pushLine(`ODAT → ${refData['ODAT']}°`);
-                if (refData['SUCT_P'] && refData['LIQ_P']) pushLine(`Suction / Liquid Pressure → ${refData['SUCT_P']} / ${refData['LIQ_P']}`);
-                else if (refData['SUCT_P']) pushLine(`Suction Pressure → ${refData['SUCT_P']}`);
-                else if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${refData['LIQ_P']}`);
+                
+                if (refData['SUCT_P'] && refData['LIQ_P']) {
+                    pushLine(`Suction / Liquid Pressure → ${refData['SUCT_P']} psis / ${refData['LIQ_P']} psig`);
+                } else {
+                    if (refData['SUCT_P']) pushLine(`Suction Pressure → ${refData['SUCT_P']} psig`);
+                    if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${refData['LIQ_P']} psig`);
+                }
 
-                if (refData['VAPOR_SAT'] && refData['LIQ_SAT']) pushLine(`Vapor Sat / Liquid Sat → ${refData['VAPOR_SAT']}° / ${refData['LIQ_SAT']}°`);
+                if (refData['VAPOR_SAT'] && refData['LIQ_SAT']) {
+                    pushLine(`Vapor Sat / Liquid Sat → ${refData['VAPOR_SAT']}° / ${refData['LIQ_SAT']}°`);
+                } else {
+                    if (refData['VAPOR_SAT']) pushLine(`Vapor Saturation → ${refData['VAPOR_SAT']}°`);
+                    if (refData['LIQ_SAT']) pushLine(`Liquid Saturation → ${refData['LIQ_SAT']}°`);
+                }
 
                 if (refData['SH'] && refData['SC']) {
                     let flag = '';
