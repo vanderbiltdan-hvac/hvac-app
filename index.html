@@ -9,7 +9,7 @@
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.5.3">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.0">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
@@ -1123,19 +1123,6 @@
 
     <div id="masterIndicator" class="master-indicator"></div>
 
-    <!-- PERSISTENT NAVIGATION BAR -->
-    <nav class="app-nav">
-        <button class="nav-btn active" onclick="showSection('v23-home')" id="nav-home"><span>🏠</span> HOME</button>
-        <button class="nav-btn" onclick="showSection('voiceModal')" id="nav-diag"><span>⚡</span> DIAG</button>
-        <button class="nav-btn" onclick="showSection('section-readings')" id="nav-readings"><span>📊</span>
-            READINGS</button>
-        <button class="nav-btn" onclick="showSection('section-specs')" id="nav-specs"><span>📋</span> SPECS</button>
-        <button class="nav-btn" onclick="showSection('reportModal')" id="nav-report"><span>📋</span> REPORT</button>
-        <button class="nav-btn" onclick="showSection('settingsModal')" id="nav-settings"><span>⚙️</span>
-            SETTINGS</button>
-    </nav>
-
-
     <!-- NEW v23.0 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
         <div
@@ -1426,12 +1413,12 @@
             <div class="dual-inputs">
                 <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
                     <span style="font-size:9px; color:#aaa; font-weight:bold;">HERM</span>
-                    <input type="number" id="hermRating" value="45" readonly>
+                    <input type="number" id="hermRating" value="45" oninput="manualRatingInput()" style="pointer-events: auto;">
                 </div>
                 <span style="font-size:24px; font-weight:bold; color:var(--amber-orange); margin-top:15px;">+</span>
                 <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')">
                     <span style="font-size:9px; color:#aaa; font-weight:bold;">FAN</span>
-                    <input type="number" id="fanRating" value="5" readonly>
+                    <input type="number" id="fanRating" value="5" oninput="manualRatingInput()" style="pointer-events: auto;">
                 </div>
                 <div id="tolSelector" style="display:flex; flex-direction:column; gap:4px; margin-left:10px;">
                     <div class="tolerance-pill" id="tol5" onclick="setTol(5)">5%</div>
@@ -1721,31 +1708,27 @@
 
     <!-- SECTION: MIRROR (COLUMN W TRUTH - v24.5.3) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
-            <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🪞 MIRROR TRUTH</h1>
-            <button onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn" style="border-color:var(--electric-blue); color:var(--electric-blue);">⚡ MIRROR PULL</button>
-        </div>
-
-        <!-- SYNC HUB CONTROL CENTER -->
-        <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; border:1px solid rgba(255,255,255,0.05); margin-bottom:15px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:0 5px;">
-                <span style="font-size:11px; color:#aaa; font-weight:900;">HUB DATA SYNC (LOCAL)</span>
-                <div class="toggle-container" style="border:none; padding:0; background:none;">
-                    <span style="font-size:9px; color:var(--amber-orange); font-weight:900;">SAFE SYNC</span>
-                    <label class="switch">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:4px;">
+            <h1 style="font-size:20px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🪞 MIRROR</h1>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn" style="border-color:var(--electric-blue); color:var(--electric-blue); padding:6px 10px;">⚡ PULL</button>
+                <button onclick="applyMirrorToHub('all')" class="btn-utility" style="border-color:var(--electric-blue); color:var(--electric-blue); padding:6px 10px;">SYNC ALL</button>
+                <div class="toggle-container" style="border:none; padding:0; background:none; gap:6px;">
+                    <span style="font-size:8px; color:var(--amber-orange); font-weight:900;">SAFE</span>
+                    <label class="switch" style="transform:scale(0.8);">
                         <input type="checkbox" id="safeSyncToggleMirror" onchange="toggleSafeSync(this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
             </div>
+        </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button onclick="applyMirrorToHub('specs')" class="btn btn-outline" style="font-size:10px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ SPECS</button>
-                <button onclick="applyMirrorToHub('refrig')" class="btn btn-outline" style="font-size:10px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ REFRIGERANT</button>
-                <button onclick="applyMirrorToHub('pmi')" class="btn btn-outline" style="font-size:10px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ PMI HUB</button>
-                <button onclick="applyMirrorToHub('diag')" class="btn btn-outline" style="font-size:10px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ DIAGNOSTIC</button>
-                <button onclick="applyMirrorToHub('all')" class="btn btn-green" style="grid-column: span 2; padding:12px; font-size:12px;">⚡ SYNC ALL HUB DATA</button>
-            </div>
+        <!-- COMPACT HUB BUTTONS -->
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px; margin-bottom:15px; background:rgba(255,255,255,0.03); padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+            <button onclick="applyMirrorToHub('specs')" class="btn btn-outline" style="font-size:9px; padding:8px 2px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ SPECS</button>
+            <button onclick="applyMirrorToHub('refrig')" class="btn btn-outline" style="font-size:9px; padding:8px 2px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ REFRIG</button>
+            <button onclick="applyMirrorToHub('pmi')" class="btn btn-outline" style="font-size:9px; padding:8px 2px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ PMI</button>
+            <button onclick="applyMirrorToHub('diag')" class="btn btn-outline" style="font-size:9px; padding:8px 2px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ DIAG</button>
         </div>
 
         <div style="font-size:10px; color:#666; font-weight:900; margin-bottom:10px; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2238,6 +2221,15 @@
             if (cbMirror) cbMirror.checked = val;
         }
 
+        // Helper to format raw spreadsheet floats cleanly
+        function formatVal(v) {
+            if (typeof v === 'number' || (typeof v === 'string' && !isNaN(v) && v.trim() !== '')) {
+                const num = parseFloat(v);
+                if (num.toString().split('.')[1]?.length > 2) return num.toFixed(2);
+            }
+            return v;
+        }
+
         function applyMirrorToHub(hubType) {
             if (!isJobMode || !mirrorState) return alert("No active Mirror Data to sync.");
             
@@ -2246,7 +2238,7 @@
                     for (let tab in EQUIP_SCHEMA) {
                         EQUIP_SCHEMA[tab].forEach(f => {
                             const val = mirrorState[f.label];
-                            if (val && val !== '--') systemSpecs[tab][f.id] = val;
+                            if (val && val !== '--') systemSpecs[tab][f.id] = formatVal(val);
                         });
                     }
                     localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
@@ -2256,8 +2248,11 @@
                 if (hubType === 'refrig' || hubType === 'all') {
                     Object.entries(REFRIG_FIELDS).forEach(([key, label]) => {
                         const sheetField = findSheetLabelFor(label);
-                        const val = mirrorState[sheetField];
-                        if (val && val !== '--') refData[key] = isNaN(val) ? val : parseFloat(val);
+                        let val = mirrorState[sheetField];
+                        if (val && val !== '--') {
+                            val = typeof val === 'string' ? val.replace(/°/g, '') : val;
+                            refData[key] = isNaN(val) ? val : parseFloat(formatVal(val));
+                        }
                     });
                     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
                     renderRefrigRows();
@@ -2268,7 +2263,7 @@
                     Object.keys(techNotesMaster).forEach(cat => {
                         const sheetVal = mirrorState[cat];
                         if (sheetVal && sheetVal !== '--') {
-                            const newNote = `${cat} → ${sheetVal}`;
+                            const newNote = `${cat} → ${formatVal(sheetVal)}`;
                             if (!techNotes.includes(newNote)) techNotes.push(newNote);
                         }
                     });
@@ -2281,8 +2276,16 @@
                         const val = mirrorState[f];
                         if (val && val !== '--') buffer[i] = { field: f, val: parseFloat(val), volts: 0 };
                     });
+                    
+                    // Fix: Pull Capacitor Ratings for Diag Sync
+                    const hermR = mirrorState['Herm microfarad rating'];
+                    if (hermR && hermR !== '--') document.getElementById('hermRating').value = parseFloat(hermR);
+                    const fanR = mirrorState['Fan microfarad rating'];
+                    if (fanR && fanR !== '--') document.getElementById('fanRating').value = parseFloat(fanR);
+                    
                     localStorage.setItem('hvacStagingBufferV20', JSON.stringify(buffer));
                     syncLogToUI();
+                    recalculateField();
                 }
                 
                 alert(`⚡ ${hubType.toUpperCase()} Hub Synchronized!`);
@@ -2313,7 +2316,7 @@
             }
 
             list.innerHTML = populated.map(k => {
-                const val = mirrorState[k];
+                const val = formatVal(mirrorState[k]);
                 const noteStr = `${k}: ${val}`;
                 const isSelected = techNotes.includes(noteStr);
                 return `
@@ -2322,7 +2325,7 @@
                         <span style="font-size:8px; color:#666; font-weight:900; text-transform:uppercase;">${k}</span>
                         <span style="font-size:15px; font-weight:900; color:var(--text-primary);">${val}</span>
                     </div>
-                    <button onclick="addMirrorToCompiler('${k}', '${val}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px;">
+                    <button onclick="addMirrorToCompiler('${k}', '${val.toString().replace(/'/g, "\\'")}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px;">
                         ${isSelected ? '✅ UNDO' : '➕ ADD'}
                     </button>
                 </div>`;
@@ -2538,7 +2541,7 @@
     </style>
 
     <script>
-        const APP_VERSION = "v24.5.3";
+        const APP_VERSION = "v24.6.0";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -3481,7 +3484,8 @@
             updateCapSelection();
         }
 
-        function dial(val) { document.getElementById(activeRatingTarget + 'Rating').value = val; updateCapSelection(); recalculateField(); if (buffer.length > 0) syncLogToUI(); }
+        function dial(val) { document.getElementById(activeRatingTarget + 'Rating').value = val; updateCapSelection(); recalculateField(); if (Object.keys(buffer).length > 0) syncLogToUI(); }
+        function manualRatingInput() { updateCapSelection(); recalculateField(); if (Object.keys(buffer).length > 0) syncLogToUI(); }
 
         function recalculateField() {
             const field = FIELD_CYCLE[fieldIndex];
