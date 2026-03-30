@@ -4,16 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v24.6.7</title>
+    <title id="appTitle">HVAC Master Pro v25.0.0</title>
+
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.7">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.0.0">
+
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v24.6.7 REFINEMENT (0554): Vert Stretch, Header Sync, PMI Pill Grid, Refrig Highlights -->
+    <!-- v25.0.0 NEW ERA: Top Alignment, Mic Tab-Switching, PMI Chip Shrink, Refrig Mapping -->
+
     <style>
         :root {
             --bg-dark: #121212;
@@ -292,9 +295,13 @@
             background: var(--bg-dark);
             z-index: 10000;
             flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
             padding: 10px;
+            padding-top: env(safe-area-inset-top, 20px);
             box-sizing: border-box;
         }
+
 
         /* STEP NAV */
         .step-nav {
@@ -971,14 +978,15 @@
         .note-chip {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 8px 12px;
-            border-radius: 16px;
-            font-size: 11px;
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 10px;
             font-weight: 900;
             color: #bbb;
             cursor: pointer;
             transition: 0.2s;
         }
+
 
         .note-chip.selected {
             background: rgba(0, 229, 255, 0.15);
@@ -2367,9 +2375,13 @@
                         // Priority Mapping for Refrigerant: Use Column I labels from Mirror Hub
                         const map = {
                             'ODAT': 'ODAT',
+                            'SUCT_P': 'Suction Pressure',
+                            'LIQ_P': 'Liquid Pressure',
                             'SH': 'Superheat (SH)',
                             'SC': 'Subcool (SC)',
-                            'DELTA_T': 'Delta T (ΔT)'
+                            'DELTA_T': 'Delta T (ΔT)',
+                            'RETURN': 'Return Temp',
+                            'SUPPLY': 'Supply Temp'
                         };
                         const sheetField = map[key] || findSheetLabelFor(label);
                         let val = mirrorState[sheetField];
@@ -2381,6 +2393,7 @@
                     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
                     renderRefrigRows();
                 }
+
 
                 if (hubType === 'pmi' || hubType === 'all') {
                     // Pull standard notes if they match our categories
@@ -2679,7 +2692,8 @@
             });
         }
 
-        const APP_VERSION = "v24.6.7";
+        const APP_VERSION = "v25.0.0";
+
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2300.gs
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -3057,7 +3071,9 @@
         }
 
         async function initSplash() {
+            console.log("HVAC Master Pro v25.0.0 Initialization - NEW ERA Start");
             document.title = "HVAC Master Pro v" + APP_VERSION;
+
             renderSystemSpecs();
             if (currentJob) {
                 console.log("SYNC: Performing startup link check for [" + currentJob + "]...");
@@ -3382,10 +3398,10 @@
             // --- PHASE 3 UI VERBAL ROUTING ---
             const tLower = transcript.toLowerCase();
 
-            // Tab Jump Core
-            if (tLower.includes('outdoor')) { switchEquipTab('outdoor'); return; }
-            if (tLower.includes('indoor')) { switchEquipTab('indoor'); return; }
-            if (tLower.includes('thermostat')) { switchEquipTab('thermostat'); return; }
+            // Tab Jump Core (Universal navigation)
+            if (tLower.includes('outdoor')) { switchEquipTab('outdoor'); if(masterTarget && !masterTarget.startsWith('C_')) showSection('section-specs'); return; }
+            if (tLower.includes('indoor') || tLower.includes('filter')) { switchEquipTab('indoor'); if(masterTarget) showSection('section-specs'); return; }
+            if (tLower.includes('thermostat')) { switchEquipTab('thermostat'); if(masterTarget) showSection('section-specs'); return; }
             if (tLower.includes('manuals')) { openManuals(); return; }
 
             // Compiler Context Jumps
@@ -3416,7 +3432,10 @@
             else if (/\b(kw|electric heat|heat strips)\b/.test(transcript)) { masterTarget = "KW"; kwRegex = /\b(kw|electric heat|heat strips)\b/; }
             else if (/\b(blower|blower motor|hp)\b/.test(transcript)) { masterTarget = "BLOWER"; kwRegex = /\b(blower|blower motor|hp)\b/; }
             else if (/\b(inducer|draft inducer)\b/.test(transcript)) { masterTarget = "INDUCER"; kwRegex = /\b(inducer|draft inducer)\b/; }
-            else if (/\b(filter|air filter)\b/.test(transcript)) { masterTarget = "FILTER"; kwRegex = /\b(filter|air filter)\b/; }
+            else if (/\b(filter|air filter)\b/.test(transcript)) { 
+                masterTarget = "FILTER"; kwRegex = /\b(filter|air filter)\b/; 
+                if (systemSpecs.activeTab !== 'indoor') { switchEquipTab('indoor'); }
+            }
             else if (/\b(gas valve)\b/.test(transcript)) { masterTarget = "GAS_V"; kwRegex = /\b(gas valve)\b/; }
             // Evap Coil (Nested)
             else if (/\b(coil brand|coil make)\b/.test(transcript)) { masterTarget = "C_BRAND"; kwRegex = /\b(coil brand|coil make)\b/; }
@@ -3431,8 +3450,8 @@
             else if (/\b(batteries|stat batteries)\b/.test(transcript)) { masterTarget = "BATT"; kwRegex = /\b(batteries|stat batteries)\b/; }
             else if (/\b(schedule|programming)\b/.test(transcript)) { masterTarget = "SCHED"; kwRegex = /\b(schedule|programming)\b/; }
             // Refrigerant Extensions (v20.32)
-            else if (/\b(suction|low side)\b/.test(transcript)) { masterTarget = "SUCT_P"; kwRegex = /\b(suction|low side)\b/; }
-            else if (/\b(liquid|high side)\b/.test(transcript)) { masterTarget = "LIQ_P"; kwRegex = /\b(liquid|high side)\b/; }
+            else if (/\b(suction|low side|suction pressure)\b/.test(transcript)) { masterTarget = "SUCT_P"; kwRegex = /\b(suction|low side|suction pressure)\b/; }
+            else if (/\b(liquid|high side|liquid pressure)\b/.test(transcript)) { masterTarget = "LIQ_P"; kwRegex = /\b(liquid|high side|liquid pressure)\b/; }
             else if (/\bsuperheat\b/.test(transcript)) { masterTarget = "SH"; kwRegex = /\bsuperheat\b/; }
             else if (/\bsubcool\b/.test(transcript)) { masterTarget = "SC"; kwRegex = /\bsubcool\b/; }
             else if (/\b(return|return temp)\b/.test(transcript)) { masterTarget = "RETURN"; kwRegex = /\b(return|return temp)\b/; }
@@ -3440,6 +3459,7 @@
             else if (/\b(humidity)\b/.test(transcript)) { masterTarget = "RH"; kwRegex = /\b(humidity)\b/; }
             else if (/\b(delta|delta t)\b/.test(transcript)) { masterTarget = "DELTA_T"; kwRegex = /\b(delta|delta t)\b/; }
             else if (/\b(outdoor temp|o d a t|odat)\b/.test(transcript)) { masterTarget = "ODAT"; kwRegex = /\b(outdoor temp|o d a t|odat)\b/; }
+
 
             if (masterTarget) {
                 document.querySelectorAll('.spec-cell').forEach(c => c.classList.remove('listening'));
