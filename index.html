@@ -4,16 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v24.6.5</title>
+    <title id="appTitle">HVAC Master Pro v24.6.6</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.5">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v24.6.5 REFINEMENT (0535): Dead Space Fix, Job Headers, Refrig Mapping, PMI Redesign -->
+    <!-- v24.6.6 REFINEMENT (0546): Vertical Layout, Header Fix, Refrig Keys, PMI Button Grid -->
     <style>
         :root {
             --bg-dark: #121212;
@@ -36,9 +36,9 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
-            overflow: hidden;
+            padding-top: env(safe-area-inset-top, 10px);
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -203,19 +203,19 @@
             display: none;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(0, 229, 255, 0.1);
             padding: 8px 12px;
             border-radius: 12px;
             margin-bottom: 12px;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 900;
             letter-spacing: 1px;
-            color: #666;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #aaa;
+            border: 1px solid var(--electric-blue);
         }
 
         .job-header-text {
-            color: var(--emerald-green);
+            color: var(--electric-blue);
         }
 
         .job-card span {
@@ -1919,7 +1919,7 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (v24.6.5) -->
+    <!-- UNIVERSAL FIXED FOOTER (v24.6.6) -->
     <nav class="app-nav">
         <div class="nav-fixed-home">
             <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
@@ -2358,9 +2358,9 @@
 
                 if (hubType === 'refrig' || hubType === 'all') {
                     Object.entries(REFRIG_FIELDS).forEach(([key, label]) => {
-                        // Priority Mapping for Refrigerant
+                        // Priority Mapping for Refrigerant: Use Column I labels from Mirror Hub
                         const map = {
-                            'ODAT': 'Outdoor Air Temp (ODAT)',
+                            'ODAT': 'ODAT',
                             'SH': 'Superheat (SH)',
                             'SC': 'Subcool (SC)',
                             'DELTA_T': 'Delta T (ΔT)'
@@ -2673,7 +2673,7 @@
             });
         }
 
-        const APP_VERSION = "v24.6.5";
+        const APP_VERSION = "v24.6.6";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2300.gs
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2847,13 +2847,18 @@
             const list = document.getElementById('pmiNoteList');
             const options = techNotesMaster[cat] || [];
 
+            // Redesigned: Compact 2-Column Grid (Phase 4)
+            list.style.display = 'grid';
+            list.style.gridTemplateColumns = '1fr 1fr';
+            list.style.gap = '8px';
+
             list.innerHTML = options.map(opt => {
                 const noteStr = `${cat} → ${opt}`;
                 const isSelected = techNotes.includes(noteStr);
                 return `
-                <button onclick="togglePMINote('${opt}')" class="btn btn-outline" style="border-color:${isSelected ? 'var(--electric-blue)' : '#444'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; display:flex; justify-content:space-between; align-items:center; text-align:left;">
-                    <span>${opt}</span>
-                    <span>${isSelected ? '✅' : '➕'}</span>
+                <button onclick="togglePMINote('${opt}')" class="btn btn-outline" style="padding:10px; font-size:11px; min-height:44px; border-color:${isSelected ? 'var(--electric-blue)' : '#444'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; display:flex; justify-content:space-between; align-items:center; text-align:left;">
+                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80%;">${opt}</span>
+                    <span>${isSelected ? '✅' : '+'}</span>
                 </button>`;
             }).join('');
             document.getElementById('pmiNoteOverlay').style.display = 'flex';
