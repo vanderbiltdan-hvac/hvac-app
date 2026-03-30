@@ -4,16 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v24.6.2</title>
+    <title id="appTitle">HVAC Master Pro v24.6.3</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.2">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.3">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v24.6.2 REFINEMENT: Two-Step Sync, Safe Sync Toggle, Expanded Job Portal (300) -->
+    <!-- v24.6.3 RESTORATION: Fixed Launcher Grid, Missing Nav Bar, and Black Mirror regression. -->
     <style>
         :root {
             --bg-dark: #121212;
@@ -581,17 +581,17 @@
 
         /* APP NAV BAR - Truly Universal (v24.6.2) */
         .app-nav {
-            position: fixed;
-            bottom: 0;
+            position: fixed !important;
+            bottom: 0 !important;
             left: 0;
             width: 100%;
             height: 75px;
-            background: rgba(18, 18, 18, 0.98);
+            background: rgba(18, 18, 18, 0.98) !important;
             backdrop-filter: blur(15px);
-            display: flex;
+            display: flex !important;
             align-items: center;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 10005;
+            z-index: 10005 !important;
             padding-bottom: env(safe-area-inset-bottom);
         }
 
@@ -1151,7 +1151,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.6.2</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.6.3</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1178,18 +1178,21 @@
         </div>
 
         <div class="v23-launcher-grid">
-            <button class="v23-pwr-btn" style="background:var(--emerald-green); color:#000;">1</button>
+            <!-- ⚡ BUTTON 1 & 2: MAJOR ACTIONS -->
+            <button class="v23-pwr-btn" style="background:var(--emerald-green); color:#000; font-size:18px; letter-spacing:1px; line-height:1.2;" onclick="showJobCreator()">🏗️<br><span style="font-size:10px;">CREATE NEW JOB</span></button>
             <button class="v23-pwr-btn" style="background:var(--electric-blue); color:#000; font-size:18px; letter-spacing:1px; line-height:1.2;" onclick="openJobPortal()">📂<br><span style="font-size:10px;">JOB PORTAL</span></button>
-            <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;">3</button>
-            <button class="v23-pwr-btn" style="background:var(--crimson-red);">4</button>
+            
+            <!-- ⚡ BUTTON 3 & 4: SYNC & NOTES -->
+            <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000; font-size:18px; letter-spacing:1px; line-height:1.2;" onclick="showSection('section-mirror')">🪞<br><span style="font-size:10px;">MIRROR HUB</span></button>
+            <button class="v23-pwr-btn" style="background:var(--crimson-red); font-size:18px; letter-spacing:1px; line-height:1.2;" onclick="showSection('section-pmi')">🛠️<br><span style="font-size:10px;">PMI HUB</span></button>
 
             <div class="v23-sub-grid">
-                <button class="v23-sub-btn">5</button>
-                <button class="v23-sub-btn">6</button>
-                <button class="v23-sub-btn">7</button>
-                <button class="v23-sub-btn">8</button>
-                <button class="v23-sub-btn">9</button>
-                <button class="v23-sub-btn">10</button>
+                <button class="v23-sub-btn" onclick="showSection('section-specs')">📋 SPECS</button>
+                <button class="v23-sub-btn" onclick="showSection('section-refrig')">🌡️ REFRIG</button>
+                <button class="v23-sub-btn" onclick="openGallery()">🖼️ GALLERY</button>
+                <button class="v23-sub-btn" onclick="runLibrarianInApp()">📑 LIBRARIAN</button>
+                <button class="v23-sub-btn" onclick="showSection('reportModal')">🏗️ COMPILER</button>
+                <button class="v23-sub-btn" onclick="showSection('settingsModal')">⚙️ SETTINGS</button>
             </div>
         </div>
     </div>
@@ -1388,20 +1391,8 @@
         </div>
 
         <!-- RUN DIAGNOSTIC REMOVED FOR REAL ESTATE -->
-        <hr style="opacity:0.1; margin:12px 0;">
-
-        <div id="activeJobSection"
-            style="background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
-            <span style="font-size:9px; color:#aaa; font-weight:900; display:block; margin-bottom:5px;">ACTIVE
-                JOB</span>
-            <input type="text" id="custName" placeholder="Enter Name / Job #">
-            <div style="display:flex; gap:8px;">
-                <button class="btn btn-primary" id="shellBtn" onclick="startJob()" style="flex:2;">CREATE SHELL</button>
-                <button class="btn btn-outline" onclick="runLibrarianInApp()"
-                    style="flex:1; font-size:10px;">LIBRARIAN</button>
-            </div>
-            <div id="manualLinks" style="margin-top:10px;"></div>
-        </div>
+        <!-- REPLACED: Active Job Shell Creator moved to Home/Modal (v24.6.3) -->
+        <div id="activeJobSection" style="display:none;"></div>
     </div>
 
     <!-- VOICE MODAL (V2 LAYOUT - REWORKED) -->
@@ -1535,19 +1526,24 @@
         </div>
     </div>
 
-    <!-- Job Portal Modal -->
-    <div id="jobPortalModal" class="modal-overlay" style="display:none; z-index:30000;">
-        <div class="modal-content" style="max-height:85%;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 style="margin:0;">JOB MANAGER</h2>
-                <button onclick="closeJobPortal()" class="btn-utility"
-                    style="width:auto; padding:5px 15px;">CLOSE</button>
-            </div>
-            <div id="jobListContainer" style="overflow-y:auto; flex:1;">
-                <div style="color:#666; text-align:center; padding:20px;">Fetching Job Tabs...</div>
+    <!-- Job Creation Modal (v24.6.3) -->
+    <div id="jobCreatorModal" class="modal-overlay" style="display:none; z-index:40000; background:rgba(0,0,0,0.95);">
+        <div class="container" style="background:#222; border:1px solid var(--emerald-green); max-width:400px; padding:25px; text-align:center; border-radius:24px;">
+            <div style="font-size:48px; margin-bottom:15px;">🏗️</div>
+            <h2 style="color:var(--emerald-green); margin:0 0 20px 0; font-size:22px; letter-spacing:1px;">CREATE NEW JOB</h2>
+            <p style="color:#aaa; font-size:12px; margin-bottom:20px; font-weight:900;">Enter the customer name or job number to initialize a new spreadsheet tab.</p>
+            
+            <input type="text" id="custName" placeholder="Customer Name / Job #" 
+                   style="width:100%; padding:18px; font-size:18px; font-weight:900; background:rgba(255,255,255,0.05); border:1px solid rgba(0,200,83,0.3); color:white; border-radius:12px; margin-bottom:20px; text-align:center;">
+            
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <button class="btn btn-primary" onclick="startJob()" style="padding:20px; font-size:16px; font-weight:900; background:var(--emerald-green); color:black;">🚀 INITIALIZE SPREADSHEET</button>
+                <button class="btn btn-outline" onclick="closeJobCreator()" style="padding:12px; color:#666; border:none;">CANCEL</button>
             </div>
         </div>
     </div>
+
+    <!-- Job Portal Modal -->
     <!-- AI PREVIEW MODAL -->
     <div id="aiModal" class="modal-overlay"
         style="background:rgba(0,0,0,0.95); justify-content:center; display:none; z-index:9000;">
@@ -1939,11 +1935,13 @@
         function openReport() { showSection('reportModal'); }
         function openSettings() { showSection('settingsModal'); }
         function openManuals() { showSection('section-manuals'); }
+        function showJobCreator() { document.getElementById('jobCreatorModal').style.display = 'flex'; }
+        function closeJobCreator() { document.getElementById('jobCreatorModal').style.display = 'none'; }
         function closeVoiceModal() { showSection('v23-home'); }
         function closeManuals() { showSection('v23-home'); }
         function closeSettings() { showSection('v23-home'); }
         function closeReport() { showSection('v23-home'); }
-        function closeAllModals() { showSection('v23-home'); }
+        function closeAllModals() { showSection('v23-home'); document.getElementById('jobCreatorModal').style.display = 'none'; }
 
         async function initIndexedDB() {
             return new Promise((resolve, reject) => {
@@ -2335,7 +2333,8 @@
             const list = document.getElementById('mirrorTruthList');
             if (!list) return;
             
-            const populated = Object.keys(mirrorState).filter(k => {
+            // Critical fix for v24.6.3: ensure mirrorState is valid and populated
+            const populated = Object.keys(mirrorState || {}).filter(k => {
                 const val = mirrorState[k];
                 return val && val !== "" && val !== "--" && k !== 'success';
             });
@@ -4265,7 +4264,7 @@
                     const activeJob = JSON.parse(activeJobStr);
                     document.querySelectorAll('.job-header-text').forEach(el => {
                         el.innerText = activeJob.name;
-                        el.parentElement.style.display = 'flex';
+                        if (el.parentElement) el.parentElement.style.display = 'flex';
                     });
                 }
                 loadFromStorage();
