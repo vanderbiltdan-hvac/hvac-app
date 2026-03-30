@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro</title>
+    <title id="appTitle">HVAC Master Pro v24.6.1</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,7 +13,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v24.5.3 SYNC HUB: Two-Step Sync, Safe Sync Toggle, Refrigerant Hub ODAT Refinement -->
+    <!-- v24.6.1 REFINEMENT: Two-Step Sync, Safe Sync Toggle, Expanded Job Portal (300) -->
     <style>
         :root {
             --bg-dark: #121212;
@@ -140,7 +140,7 @@
             font-size: 14px;
         }
 
-        /* TOGGLE SWITCH STYLE - v24.5.3 */
+        /* TOGGLE SWITCH STYLE - v24.6.1 */
         .switch {
             position: relative;
             display: inline-block;
@@ -579,7 +579,7 @@
             font-weight: 900;
         }
 
-        /* APP NAV BAR - Truly Universal (Fixed + Scroll v24.5.1) */
+        /* APP NAV BAR - Truly Universal (v24.6.1) */
         .app-nav {
             position: fixed;
             bottom: 0;
@@ -1123,14 +1123,14 @@
 
     <div id="masterIndicator" class="master-indicator"></div>
 
-    <!-- NEW v23.0 LAUNCHER SECTION (HOME) -->
+    <!-- v24.6.1 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top:4px;">
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.3 GOLD</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.6.1</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1201,7 +1201,7 @@
                     CONFLICTS</button>
             </div>
             
-            <!-- MIRROR ENGINE CONTROL CENTER (v24.5.3) -->
+            <!-- MIRROR ENGINE CONTROL CENTER (v24.6.1) -->
             <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; border:1px solid rgba(255,255,255,0.05); margin-bottom:15px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:0 5px;">
                     <span style="font-size:11px; color:#aaa; font-weight:900;">INDIVIDUAL HUB SYNC</span>
@@ -1307,7 +1307,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v24.5.2</div>
+                        v24.6.1</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -1553,7 +1553,7 @@
         </div>
     </div>
     
-    <!-- SYNC ERROR MODAL (v24.4 GOLD) -->
+    <!-- SYNC ERROR MODAL (v24.6.1) -->
     <div id="syncErrorModal" class="modal-overlay" style="display:none; z-index:35000; background:rgba(0,0,0,0.85);">
         <div class="container" style="background:#222; border:1px solid var(--crimson-red); max-width:320px; padding:25px; text-align:center; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
             <div style="font-size:40px; margin-bottom:15px;">🔌</div>
@@ -1706,7 +1706,7 @@
         </div>
     </div>
 
-    <!-- SECTION: MIRROR (COLUMN W TRUTH - v24.5.3) -->
+    <!-- SECTION: MIRROR (COLUMN W TRUTH - v24.6.1) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:4px;">
             <h1 style="font-size:20px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🪞 MIRROR</h1>
@@ -1813,7 +1813,7 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (Fixed Home + Scroll v24.5.1) -->
+    <!-- UNIVERSAL FIXED FOOTER (v24.6.1) -->
     <nav class="app-nav">
         <div class="nav-fixed-home">
              <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
@@ -2687,7 +2687,7 @@
             navigator.clipboard.writeText(text).then(() => alert("Copied to Clipboard!"));
         }
 
-        // ── PMI SYSTEM (v24.5.1) ────────────────────────────────
+        // ── PMI SYSTEM (v24.6.1) ────────────────────────────────
         let pmiActiveCategory = null;
         function renderPMIGrid() {
             const grid = document.getElementById('pmiCategoryGrid');
@@ -2740,7 +2740,7 @@
             document.getElementById('pmiNoteOverlay').style.display = 'none';
         }
 
-        // ── REFRIGERANT SYSTEM (v24.5.3) ───────────────────────────
+        // ── REFRIGERANT SYSTEM (v24.6.1) ───────────────────────────
         const REFRIG_FIELDS = {
             'ODAT': 'Outdoor Air Temp (ODAT)', 
             'SUCT_P': 'Suction Pressure', 'LIQ_P': 'Liquid Pressure',
