@@ -4,16 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v24.6.1</title>
+    <title id="appTitle">HVAC Master Pro v24.6.2</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.1">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.2">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v24.6.1 REFINEMENT: Two-Step Sync, Safe Sync Toggle, Expanded Job Portal (300) -->
+    <!-- v24.6.2 REFINEMENT: Two-Step Sync, Safe Sync Toggle, Expanded Job Portal (300) -->
     <style>
         :root {
             --bg-dark: #121212;
@@ -140,7 +140,7 @@
             font-size: 14px;
         }
 
-        /* TOGGLE SWITCH STYLE - v24.6.1 */
+        /* TOGGLE SWITCH STYLE - v24.6.2 */
         .switch {
             position: relative;
             display: inline-block;
@@ -579,7 +579,7 @@
             font-weight: 900;
         }
 
-        /* APP NAV BAR - Truly Universal (v24.6.1) */
+        /* APP NAV BAR - Truly Universal (v24.6.2) */
         .app-nav {
             position: fixed;
             bottom: 0;
@@ -992,12 +992,12 @@
 
         .v23-pwr-btn {
             width: 100%;
-            height: 70px;
+            height: 58px;
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 900;
             color: white;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -1013,12 +1013,12 @@
         }
 
         .v23-sub-btn {
-            height: 60px;
+            height: 48px;
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 900;
             color: white;
             background: rgba(255, 255, 255, 0.05);
@@ -1030,7 +1030,27 @@
         .v23-pwr-btn:active,
         .v23-sub-btn:active {
             transform: scale(0.95);
+            opacity: 0.8;
         }
+
+        /* UNIVERSAL JOB HEADER */
+        .job-header {
+            display: none; /* Shown via JS when activeJob is set */
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 229, 255, 0.08);
+            padding: 4px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            margin-bottom: 12px;
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--electric-blue);
+            width: fit-content;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .job-header span { opacity: 0.6; font-size: 9px; }
 
         /* READINGS HUB STYLES */
         .reading-card {
@@ -1123,14 +1143,15 @@
 
     <div id="masterIndicator" class="master-indicator"></div>
 
-    <!-- v24.6.1 LAUNCHER SECTION (HOME) -->
+    <!-- v24.6.2 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
+        <div class="job-header" id="jobHeaderLauncher"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top:4px;">
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.6.1</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v24.6.2</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1201,7 +1222,7 @@
                     CONFLICTS</button>
             </div>
             
-            <!-- MIRROR ENGINE CONTROL CENTER (v24.6.1) -->
+            <!-- MIRROR ENGINE CONTROL CENTER (v24.6.2) -->
             <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; border:1px solid rgba(255,255,255,0.05); margin-bottom:15px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding:0 5px;">
                     <span style="font-size:11px; color:#aaa; font-weight:900;">INDIVIDUAL HUB SYNC</span>
@@ -1299,6 +1320,7 @@
 
     <!-- ORIGINAL HOME (RENAMED TO SPECS) -->
     <div class="container" id="section-specs" style="padding-bottom:100px; display:none;">
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-shrink: 0; padding-top:4px;">
             <div>
@@ -1307,7 +1329,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v24.6.1</div>
+                        v24.6.2</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -1384,8 +1406,10 @@
 
     <!-- VOICE MODAL (V2 LAYOUT - REWORKED) -->
     <div id="voiceModal" class="modal-overlay">
-        <!-- TOP NAV -->
-        <div class="step-nav" id="stepNav"></div>
+        <div class="container" style="max-width:550px;">
+            <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+            <!-- TOP NAV -->
+            <div class="step-nav" id="stepNav"></div>
 
         <!-- LABEL + UTILITY ROW (top of modal) -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
@@ -1553,7 +1577,7 @@
         </div>
     </div>
     
-    <!-- SYNC ERROR MODAL (v24.6.1) -->
+    <!-- SYNC ERROR MODAL (v24.6.2) -->
     <div id="syncErrorModal" class="modal-overlay" style="display:none; z-index:35000; background:rgba(0,0,0,0.85);">
         <div class="container" style="background:#222; border:1px solid var(--crimson-red); max-width:320px; padding:25px; text-align:center; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
             <div style="font-size:40px; margin-bottom:15px;">🔌</div>
@@ -1706,8 +1730,9 @@
         </div>
     </div>
 
-    <!-- SECTION: MIRROR (COLUMN W TRUTH - v24.6.1) -->
+    <!-- SECTION: MIRROR (COLUMN W TRUTH - v24.6.2) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:4px;">
             <h1 style="font-size:20px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🪞 MIRROR</h1>
             <div style="display:flex; align-items:center; gap:8px;">
@@ -1732,9 +1757,9 @@
         </div>
 
         <div style="font-size:10px; color:#666; font-weight:900; margin-bottom:10px; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
-            <span>🗄️</span> LIVE TRUTH <span style="font-size:9px; font-weight:normal; opacity:0.5;">(COLUMN W)</span>
+            <span>🗄️</span> LIVE TRUTH <span style="font-size:9px; font-weight:normal; opacity:0.5;">(SYNC MODAL)</span>
         </div>
-        <div id="mirrorTruthList" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 40vh;">
+        <div id="mirrorTruthList" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 75vh;">
             <div style="text-align:center; color:#444; padding:40px;">Tap MIRROR PULL to fetch truth.</div>
         </div>
     </div>
@@ -1759,6 +1784,7 @@
 
     <!-- SECTION: PMI (FULL SCREEN TECH NOTES) -->
     <div class="container" id="section-pmi" style="padding-bottom:100px; display:none;">
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:var(--amber-orange); font-weight:900;">🛠 PMI HUB</h1>
             <div style="display:flex; gap:8px;">
@@ -1785,6 +1811,7 @@
 
     <!-- REFRIGERANT DATA HUB -->
     <div class="container" id="section-refrig" style="padding-bottom:100px; display:none;">
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🌡 REFRIGERANT DATA</h1>
             <div style="display:flex; gap:8px;">
@@ -1813,7 +1840,7 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (v24.6.1) -->
+    <!-- UNIVERSAL FIXED FOOTER (v24.6.2) -->
     <nav class="app-nav">
         <div class="nav-fixed-home">
              <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
@@ -2544,8 +2571,8 @@
     </style>
 
     <script>
-        const APP_VERSION = "v24.6.1";
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2300.gs
+        const APP_VERSION = "v24.6.2";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2345.gs
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
         const DIAG_SYNC_MAP = {
@@ -2687,7 +2714,7 @@
             navigator.clipboard.writeText(text).then(() => alert("Copied to Clipboard!"));
         }
 
-        // ── PMI SYSTEM (v24.6.1) ────────────────────────────────
+        // ── PMI SYSTEM (v24.6.2) ────────────────────────────────
         let pmiActiveCategory = null;
         function renderPMIGrid() {
             const grid = document.getElementById('pmiCategoryGrid');
@@ -2740,14 +2767,19 @@
             document.getElementById('pmiNoteOverlay').style.display = 'none';
         }
 
-        // ── REFRIGERANT SYSTEM (v24.6.1) ───────────────────────────
+        // ── REFRIGERANT SYSTEM (v24.6.2) ───────────────────────────
         const REFRIG_FIELDS = {
-            'ODAT': 'Outdoor Air Temp (ODAT)', 
-            'SUCT_P': 'Suction Pressure', 'LIQ_P': 'Liquid Pressure',
-            'VAPOR_SAT': 'Vapor Saturation', 'LIQ_SAT': 'Liquid Saturation',
-            'SH': 'Superheat (SH)', 'SC': 'Subcool (SC)',
-            'RETURN': 'Return Temp', 'RH': 'Return Humidity %',
-            'SUPPLY': 'Supply Temp', 'DELTA_T': 'Delta T (ΔT)'
+            'ODAT': 'ODAT', 
+            'SUCT_P': 'Suction Pressure', 
+            'LIQ_P': 'Liquid Pressure',
+            'VAPOR_SAT': 'Vapor Saturation', 
+            'LIQ_SAT': 'Liquid Saturation',
+            'SH': 'SH', 
+            'SC': 'SC',
+            'RETURN': 'Return Temp', 
+            'RH': 'Return Humidity',
+            'SUPPLY': 'Supply Temp', 
+            'DELTA_T': '\u2206T'
         };
         let activeRefrigKey = null;
         let keypadString = "";
@@ -2856,12 +2888,12 @@
 
         const EQUIP_SCHEMA = {
             outdoor: [
-                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
+                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'Condenser Model' }, { id: 'SER', label: 'Condenser Serial' }, { id: 'YEAR', label: 'YEAR' },
                 { id: 'RLA', label: 'COMP RLA' }, { id: 'LRA', label: 'LRA' }, { id: 'FLA', label: 'FAN FLA' }, { id: 'VOLT', label: 'VOLTAGE' },
                 { id: 'SUB', label: 'TARGET SC' }, { id: 'REF', label: 'REFRIGERANT' }, { id: 'METER', label: 'METERING' }, { id: 'TON', label: 'TONNAGE' }
             ],
             indoor: [
-                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
+                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'Air Handler Model' }, { id: 'SER', label: 'Air Handler Serial' }, { id: 'YEAR', label: 'YEAR' },
                 { id: 'KBTU', label: 'GAS KBTU' }, { id: 'KW', label: 'HEAT KW' }, { id: 'BLOWER', label: 'BLOWER HP' }, { id: 'INDUCER', label: 'INDUCER AMPS' },
                 { id: 'VOLT', label: 'VOLTAGE' }, { id: 'FILTER', label: 'FILTER' }, { id: 'GAS_V', label: 'GAS VALVE' }, { id: 'TON', label: 'TONNAGE' },
                 { id: 'C_BRAND', label: 'COIL BRAND' }, { id: 'C_MDL', label: 'COIL MDL #' }, { id: 'C_SER', label: 'COIL SER #' }, { id: 'C_YEAR', label: 'COIL YEAR' },
@@ -4228,6 +4260,14 @@
             }
 
             try {
+                const activeJobStr = localStorage.getItem('hvacActiveJob');
+                if (activeJobStr) {
+                    const activeJob = JSON.parse(activeJobStr);
+                    document.querySelectorAll('.job-header-text').forEach(el => {
+                        el.innerText = activeJob.name;
+                        el.parentElement.style.display = 'flex';
+                    });
+                }
                 loadFromStorage();
                 refreshJobData();
             } catch (e) {
