@@ -4,16 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v24.6.6</title>
+    <title id="appTitle">HVAC Master Pro v24.6.7</title>
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.6">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v24.6.7">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v24.6.6 REFINEMENT (0546): Vertical Layout, Header Fix, Refrig Keys, PMI Button Grid -->
+    <!-- v24.6.7 REFINEMENT (0554): Vert Stretch, Header Sync, PMI Pill Grid, Refrig Highlights -->
     <style>
         :root {
             --bg-dark: #121212;
@@ -88,6 +88,11 @@
         .mirror-blue {
             color: var(--electric-blue) !important;
             text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+        }
+
+        .mirror-blue-glow {
+            border: 1px solid var(--electric-blue) !important;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
         }
 
         .job-toggle-container {
@@ -1801,7 +1806,7 @@
             <span>🗄️</span> LIVE TRUTH <span style="font-size:9px; font-weight:normal; opacity:0.5;">(COLUMN W)</span>
         </div>
         <div id="mirrorTruthList"
-            style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 40vh;">
+            style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 60vh;">
             <div style="text-align:center; color:#444; padding:40px;">Tap MIRROR PULL to fetch truth.</div>
         </div>
     </div>
@@ -1891,7 +1896,7 @@
         </div>
 
         <div id="refrigInputList"
-            style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; max-height: 70vh;">
+            style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; max-height: 60vh;">
             <!-- Rendered via renderRefrigRows() -->
         </div>
 
@@ -1919,7 +1924,7 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (v24.6.6) -->
+    <!-- UNIVERSAL FIXED FOOTER (v24.6.7) -->
     <nav class="app-nav">
         <div class="nav-fixed-home">
             <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
@@ -1967,7 +1972,8 @@
                 target.style.display = (target.classList.contains('container') ? 'block' : 'flex');
             }
 
-            // Sync Safe Sync Checkboxes on enter
+            // Sync Safe Sync Checkboxes and Job Headers on enter
+            updateUniversalJobHeaders();
             if (id === 'v23-home' || id === 'section-mirror') {
                 const cbHome = document.getElementById('safeSyncToggleHome');
                 const cbMirror = document.getElementById('safeSyncToggleMirror');
@@ -2673,7 +2679,7 @@
             });
         }
 
-        const APP_VERSION = "v24.6.6";
+        const APP_VERSION = "v24.6.7";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2300.gs
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2847,18 +2853,17 @@
             const list = document.getElementById('pmiNoteList');
             const options = techNotesMaster[cat] || [];
 
-            // Redesigned: Compact 2-Column Grid (Phase 4)
+            // Redesigned: Compact 3-Column Pill Grid (Phase 4)
             list.style.display = 'grid';
-            list.style.gridTemplateColumns = '1fr 1fr';
-            list.style.gap = '8px';
+            list.style.gridTemplateColumns = '1fr 1fr 1fr';
+            list.style.gap = '6px';
 
             list.innerHTML = options.map(opt => {
                 const noteStr = `${cat} → ${opt}`;
                 const isSelected = techNotes.includes(noteStr);
                 return `
-                <button onclick="togglePMINote('${opt}')" class="btn btn-outline" style="padding:10px; font-size:11px; min-height:44px; border-color:${isSelected ? 'var(--electric-blue)' : '#444'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; display:flex; justify-content:space-between; align-items:center; text-align:left;">
-                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:80%;">${opt}</span>
-                    <span>${isSelected ? '✅' : '+'}</span>
+                <button onclick="togglePMINote('${opt}')" class="btn btn-outline" style="padding:4px; font-size:10px; min-height:40px; border-color:${isSelected ? 'var(--electric-blue)' : '#444'}; background:${isSelected ? 'rgba(0,229,255,0.1)' : 'transparent'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; display:flex; justify-content:center; align-items:center; text-align:center;">
+                    <span style="overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; word-break:break-word;">${opt}</span>
                 </button>`;
             }).join('');
             document.getElementById('pmiNoteOverlay').style.display = 'flex';
@@ -2896,14 +2901,21 @@
         function renderRefrigRows() {
             const list = document.getElementById('refrigInputList');
             if (!list) return;
+
+            // Mapping used for priority checking
+            const mapKeys = {
+                'ODAT': 'ODAT', 'SH': 'Superheat (SH)', 'SC': 'Subcool (SC)', 'DELTA_T': 'Delta T (ΔT)'
+            };
+
             list.innerHTML = Object.entries(REFRIG_FIELDS).map(([key, label]) => {
-                const sheetField = findSheetLabelFor(label);
+                const sheetField = mapKeys[key] || findSheetLabelFor(label);
                 const sheetVal = isJobMode ? mirrorState[sheetField] : null;
                 const val = refData[key] || (sheetVal && sheetVal !== "--" ? sheetVal : '--');
-                const isSynced = isJobMode && mirrorState[sheetField];
+                const isSynced = (refData[key] !== undefined && refData[key] !== null);
+                const mirrorAvailable = isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== "--";
 
                 return `
-                <div onclick="openRefrigKeypad('${key}')" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
+                <div onclick="openRefrigKeypad('${key}')" class="refrig-card ${mirrorAvailable ? 'mirror-blue-glow' : ''}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
                     <span style="font-weight:900; color:#aaa; font-size:12px;">${label.toUpperCase()}</span>
                     <span style="font-size:20px; font-weight:900; color:${isSynced ? 'var(--electric-blue)' : 'white'}">${val}</span>
                 </div>`;
