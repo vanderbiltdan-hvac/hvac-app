@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v25.2.7</title>
+    <title>HVAC Master Pro v25.2.8</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0415.html
-        VERSION: v25.2.7 (Final Precision Sync)
-        SOP: Targeted PMI Scan (I55:AE84) + Literal Matching (SH/SC/AMPS/HUMID)
+        BUILD: index_v25_2026_03_31_0430.html
+        VERSION: v25.2.8 (Final Seal)
+        SOP: Targeted PMI Scan (I55:AE84) + Literal Matching (RLA/FLA Parentheses)
     -->
 
     <!-- PWA NATIVE FEEL -->
@@ -2355,6 +2355,7 @@
                 });
             }
             renderMirrorTruth();
+            alert("⚡ Mirror Data Synced!");
         }
 
         function toggleSafeSync(val) {
@@ -2416,9 +2417,7 @@
                         }
 
                         if (val && val !== '--') {
-                            // v25.2.5: Strip % and ° symbols so 55.0% converts to 55.0
-                            val = typeof val === 'string' ? val.replace(/[°%]/g, '') : val;
-                            refData[key] = isNaN(val) ? val : parseFloat(formatVal(val));
+                            refData[key] = val; // Store literal from Mirror (v25.2.8)
                         }
                     });
                     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
@@ -2771,7 +2770,7 @@
             });
         }
 
-        const APP_VERSION = "v25.2.7";
+        const APP_VERSION = "v25.2.8";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -2779,8 +2778,8 @@
         const DIAG_SYNC_MAP = {
             'hermRating': 'HERM MFD RATING',
             'fanRating': 'FAN MFD RATING',
-            'compAmps': 'COMP AMPS',
-            'fanAmps': 'ODF AMPS'
+            'compAmps': 'RLA (MEASURED)',
+            'fanAmps': 'FLA ODF (MEASURED)'
         };
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -2929,8 +2928,8 @@
             grid.style.gap = '8px';
             
             grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
-                const activeNotesInCat = techNotes.filter(n => n.startsWith(cat + ' →') || n.startsWith(cat + ':'));
-                const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().includes(cat.toUpperCase()));
+                const activeNotesInCat = techNotes.filter(n => n.toLowerCase().startsWith(cat.toLowerCase() + ' →') || n.toLowerCase().startsWith(cat.toLowerCase() + ':'));
+                const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim() || m.label.toUpperCase().includes(cat.toUpperCase()));
                 const hasSelected = activeNotesInCat.length > 0 || mirrorMatch;
                 const noteText = activeNotesInCat.length > 0 ? activeNotesInCat[0].split(/[→:]/)[1].trim() : (mirrorMatch ? mirrorMatch.value : 'TAP TO ADD');
 
