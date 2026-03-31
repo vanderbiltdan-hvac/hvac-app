@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v25.2.0</title>
+    <title id="appTitle">HVAC Master Pro v25.2.2</title>
 
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.0">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.2">
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
@@ -1163,7 +1163,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.2.1</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.2.2</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -2384,10 +2384,18 @@
                             'SC': 'Subcool (SC)',
                             'DELTA_T': 'Delta T (ΔT)',
                             'RETURN': 'Return Temp',
-                            'SUPPLY': 'Supply Temp'
+                            'SUPPLY': 'Supply Temp',
+                            'RETURN_HUMID': 'Return Humidity'
                         };
                         const sheetField = map[key] || findSheetLabelFor(label);
                         let val = mirrorState[sheetField];
+
+                        // Fuzzy fallback if exact map fails (v25.2.2)
+                        if (!val || val === '--') {
+                           const fuzzyKey = Object.keys(mirrorState).find(k => k.toLowerCase().includes(label.toLowerCase()));
+                           if (fuzzyKey) val = mirrorState[fuzzyKey];
+                        }
+
                         if (val && val !== '--') {
                             val = typeof val === 'string' ? val.replace(/°/g, '') : val;
                             refData[key] = isNaN(val) ? val : parseFloat(formatVal(val));
@@ -2417,12 +2425,22 @@
                         if (val && val !== '--') buffer[i] = { field: f, val: parseFloat(val), volts: 0 };
                     });
 
-                    // Capacitor Sync using Internal Map
-                    for (const [id, label] of Object.entries(DIAG_SYNC_MAP)) {
-                        const val = mirrorState[label];
+                    // Capacitor & Measured Amps Sync (v25.2.2 Smart Catch)
+                    for (const [id, keyword] of Object.entries(DIAG_SYNC_MAP)) {
+                        // Search mirrorState keys for keyword
+                        const mirrorKey = Object.keys(mirrorState).find(k => k.toLowerCase().includes(keyword.toLowerCase()));
+                        const val = mirrorKey ? mirrorState[mirrorKey] : null;
+
                         if (val && val !== '--') {
                             const input = document.getElementById(id);
-                            if (input) input.value = parseFloat(val);
+                            if (input) {
+                                input.value = parseFloat(val);
+                                input.classList.add('mirror-blue-glow');
+                                input.classList.add('sync-active');
+                            }
+                            // Also update the buffer if it exists (for top-bar display)
+                            const bufIdx = FIELD_CYCLE.findIndex(f => f.toLowerCase().includes(keyword.toLowerCase()));
+                            if (bufIdx !== -1) buffer[bufIdx] = { field: FIELD_CYCLE[bufIdx], val: parseFloat(val), volts: 0 };
                         }
                     }
 
@@ -2695,14 +2713,16 @@
             });
         }
 
-        const APP_VERSION = "v25.2.1";
+        const APP_VERSION = "v25.2.2";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2300.gs
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
         const DIAG_SYNC_MAP = {
             'hermRating': 'Herm microfarad rating',
-            'fanRating': 'Fan microfarad rating'
+            'fanRating': 'Fan microfarad rating',
+            'compAmps': 'RLA measured',
+            'fanAmps': 'FLA ODF measured'
         };
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
