@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v25.2.3</title>
+    <title>HVAC Master Pro v25.2.4</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0255.html
-        VERSION: v25.2.3 (Literal Bridge Sync)
-        SOP: Targeted PMI Scan (AE55:AF84) + Literal Screenshot Naming
+        BUILD: index_v25_2026_03_31_0300.html
+        VERSION: v25.2.4 (Literal Bridge Sync)
+        SOP: Targeted PMI Scan (AE55:AF84) + Literal Matching (SH/SC/AMPS)
     -->
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.3">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.4">
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
@@ -304,6 +304,16 @@
             padding: 10px;
             padding-top: env(safe-area-inset-top, 20px);
             box-sizing: border-box;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #jobListContainer {
+            width: 100%;
+            max-height: 70vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 0;
         }
 
 
@@ -2384,12 +2394,12 @@
                             'ODAT': 'ODAT',
                             'SUCT_P': 'Suction Pressure',
                             'LIQ_P': 'Liquid Pressure',
-                            'SH': 'SH', // Literal Bridge v25.2.3
-                            'SC': 'SC', // Literal Bridge v25.2.3
-                            'DELTA_T': '∆T', // Literal Bridge v25.2.3
+                            'SH': 'SH',
+                            'SC': 'SC',
+                            'DELTA_T': '∆T',
                             'RETURN': 'Return Temp',
                             'SUPPLY': 'Supply Temp',
-                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal Bridge v25.2.3
+                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal match to spreadsheet row (v25.2.4)
                         };
                         const sheetField = map[key] || findSheetLabelFor(label);
                         let val = mirrorState[sheetField];
@@ -2437,22 +2447,32 @@
                         if (val && val !== '--') buffer[i] = { field: f, val: parseFloat(val), volts: 0 };
                     });
 
-                    // Capacitor & Measured Amps Sync (v25.2.2 Smart Catch)
+                    // Capacitor & Measured Amps Sync (v25.2.4 Literal Explicit Catch)
                     for (const [id, keyword] of Object.entries(DIAG_SYNC_MAP)) {
                         // Search mirrorState keys for keyword
-                        const mirrorKey = Object.keys(mirrorState).find(k => k.toLowerCase().includes(keyword.toLowerCase()));
+                        const mirrorKey = Object.keys(mirrorState).find(k => k.toUpperCase() === keyword.toUpperCase());
                         const val = mirrorKey ? mirrorState[mirrorKey] : null;
 
                         if (val && val !== '--') {
+                            const numVal = parseFloat(val);
+                            
+                            // 1. Update the named input (Capacitors)
                             const input = document.getElementById(id);
                             if (input) {
-                                input.value = parseFloat(val);
+                                input.value = numVal;
                                 input.classList.add('mirror-blue-glow');
                                 input.classList.add('sync-active');
                             }
-                            // Also update the buffer if it exists (for top-bar display)
-                            const bufIdx = FIELD_CYCLE.findIndex(f => f.toLowerCase().includes(keyword.toLowerCase()));
-                            if (bufIdx !== -1) buffer[bufIdx] = { field: FIELD_CYCLE[bufIdx], val: parseFloat(val), volts: 0 };
+                            
+                            // 2. Update the measurement buffer (Amps / Volts / Caps)
+                            const bufIdx = FIELD_CYCLE.indexOf(keyword);
+                            if (bufIdx !== -1) {
+                                buffer[bufIdx] = { field: keyword, val: numVal, volts: 0 };
+                                // Explicitly update the main "Tap Number to Type" display if this is the active field
+                                if (fieldIndex === bufIdx) {
+                                    syncLogToUI();
+                                }
+                            }
                         }
                     }
 
@@ -2494,16 +2514,27 @@
                 const val = formatVal(state[k]);
                 const isSelected = techNotes.some(n => n.includes(k) && n.includes(val.toString()));
                 return `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
-                    <div style="display:flex; flex-direction:column; gap:2px;">
-                        <span style="font-size:12px; color:#bbb; font-weight:900; text-transform:uppercase; letter-spacing:0.5px;">${k}</span>
-                        <span style="font-size:16px; font-weight:900; color:var(--text-primary);">${val}</span>
-                    </div>
-                    <button onclick="addMirrorToCompiler('${k}', '${val.toString().replace(/'/g, "\\'")}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px; padding:6px 12px;">
-                        ${isSelected ? '✅ UNDO' : '➕ ADD'}
-                    </button>
                 </div>`;
             }).join('');
+
+            // v25.2.4: Inject Targeted AE55 PMI Chips into Truth List
+            if (mirrorPMI && mirrorPMI.length > 0) {
+                list.innerHTML += `<div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin:12px 0;"></div>`;
+                list.innerHTML += `<div style="font-size:10px; color:var(--electric-blue); font-weight:900; margin-bottom:8px; text-align:center;">--- TARGETED PMI (AE55:AF84) ---</div>`;
+                list.innerHTML += mirrorPMI.map(item => {
+                    const isSelected = techNotes.some(n => n.includes(item.label) && n.includes(item.value));
+                    return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,229,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(0,229,255,0.1)'};">
+                        <div style="display:flex; flex-direction:column; gap:2px;">
+                            <span style="font-size:12px; color:#bbb; font-weight:900; text-transform:uppercase;">${item.label}</span>
+                            <span style="font-size:16px; font-weight:900; color:var(--text-primary);">${item.value}</span>
+                        </div>
+                        <button onclick="addMirrorToCompiler('${item.label}', '${item.value.toString().replace(/'/g, "\\'")}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px; padding:6px 12px;">
+                            ${isSelected ? '✅ UNDO' : '➕ ADD'}
+                        </button>
+                    </div>`;
+                }).join('');
+            }
         }
 
         function addMirrorToCompiler(label, val) {
@@ -2725,7 +2756,7 @@
             });
         }
 
-        const APP_VERSION = "v25.2.3";
+        const APP_VERSION = "v25.2.4";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
