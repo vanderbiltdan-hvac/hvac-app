@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v25.1.0</title>
+    <title id="appTitle">HVAC Master Pro v25.2.0</title>
 
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.1.0">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.0">
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
@@ -1163,7 +1163,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.1.0</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.2.0</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1195,7 +1195,7 @@
             <button class="v23-pwr-btn"
                 style="background:var(--electric-blue); color:#000; font-size:18px; letter-spacing:1px; line-height:1.2;"
                 onclick="openJobPortal()">📂<br><span style="font-size:10px;">JOB PORTAL</span></button>
-            <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;" onclick="openManuals()">📖<br><span style="font-size:10px;">MANUALS HUB</span></button>
+            <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;">3</button>
             <button class="v23-pwr-btn" style="background:var(--crimson-red);">4</button>
 
             <div class="v23-sub-grid">
@@ -1347,6 +1347,7 @@
     <!-- ORIGINAL HOME (RENAMED TO SPECS) -->
     <div class="container" id="section-specs" style="padding-bottom:100px; display:none;">
         <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; padding-top:2px;">
             <div>
@@ -1355,7 +1356,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v25.1.0</div>
+                        v25.2.0</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -1434,7 +1435,6 @@
 
     <!-- VOICE MODAL (V2 LAYOUT - REWORKED) -->
     <div id="voiceModal" class="modal-overlay">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <!-- TOP NAV -->
         <div class="step-nav" id="stepNav"></div>
 
@@ -1483,10 +1483,10 @@
 
             <div class="rating-reel" id="capReel"></div>
 
-            <div class="btn-main-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:16px; width:100%;">
+            <div class="btn-main-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:16px;">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()"
-                    style="padding:16px; font-size:18px; color:white !important;">🎙 START MIC</button>
-                <button onclick="confirmReading()" class="btn btn-green" style="padding:16px; font-size:18px; color:black !important;">✔
+                    style="padding:16px; font-size:18px; color: white !important;">🎙 START MIC</button>
+                <button onclick="confirmReading()" class="btn btn-green" style="padding:16px; font-size:18px; color: black !important;">✔
                     COMMIT</button>
             </div>
         </div>
@@ -1509,9 +1509,8 @@
         <div id="restoreBox" onclick="restoreBuffer()">↩️ RESTORE WIPED DATA</div>
     </div>
 
-    <!-- MANUALS HUB MODAL -->
-    <div id="manualsModal" class="modal-overlay" style="background:#0f0f0f; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+    <!-- MANUALS OVERLAY (RENAMED TO SECTION-MANUALS) -->
+    <div id="section-manuals" class="modal-overlay" style="background:#0f0f0f; display:none;">
 
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
@@ -1533,7 +1532,6 @@
 
     <!-- REPORT COMPILER (v20.32) -->
     <div id="reportModal" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
 
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
@@ -1772,8 +1770,9 @@
         </div>
     </div>
 
-    <!-- SECTION: MIRROR (COLUMN W TRUTH - v24.6.4) -->
+    <!-- SECTION: MIRROR (COLUMN W TRUTH - v25.2.0) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:4px;">
@@ -1949,10 +1948,10 @@
             <button id="nav-pmi" onclick="showSection('section-pmi')" class="nav-btn"><span>🛠️</span>PMI</button>
             <button id="nav-refrig" onclick="showSection('section-refrig')"
                 class="nav-btn"><span>🌡️</span>REFRIGERANT</button>
-            <button id="nav-manuals" onclick="openManuals()"
-                class="nav-btn"><span>📖</span>MANUALS</button>
             <button id="nav-compiler" onclick="showSection('reportModal')"
                 class="nav-btn"><span>🏗️</span>COMPILER</button>
+            <button id="nav-manuals" onclick="showSection('section-manuals')"
+                class="nav-btn"><span>📖</span>MANUALS</button>
             <button id="nav-block" onclick="showSection('section-datablock')"
                 class="nav-btn"><span>📦</span>BLOCK</button>
             <button id="nav-settings" onclick="showSection('settingsModal')"
@@ -1975,7 +1974,7 @@
         }
 
         function showSection(id) {
-            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'manualsModal', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig'];
+            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig'];
             sections.forEach(s => {
                 const el = document.getElementById(s);
                 if (el) el.style.display = 'none';
@@ -2042,7 +2041,7 @@
         function openVoiceConsole() { showSection('voiceModal'); }
         function openReport() { showSection('reportModal'); }
         function openSettings() { showSection('settingsModal'); }
-        function openManuals() { showSection('manualsModal'); }
+        function openManuals() { showSection('section-manuals'); }
         function closeVoiceModal() { showSection('v23-home'); }
         function closeManuals() { showSection('v23-home'); }
         function closeSettings() { showSection('v23-home'); }
@@ -2287,7 +2286,6 @@
                         throw new Error("Missing Data Fields");
                     }
 
-                    console.log("SYNC DATA RECEIVED:", response.data.fields);
                     processJobDataResults(response.data.fields);
                     isJobMode = true;
 
@@ -2449,7 +2447,7 @@
 
 
         function renderMirrorTruth() {
-            const list = document.getElementById('mirrorList');
+            const list = document.getElementById('mirrorTruthList');
             if (!list) return;
 
             // Safety: Ensure mirrorState is at least an object
@@ -2699,8 +2697,8 @@
             });
         }
 
-        const APP_VERSION = "v25.1.0";
-        const LAST_UPDATED = "2026-03-30 19:01";
+        const APP_VERSION = "v25.0.0";
+
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2300.gs
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -4431,7 +4429,7 @@
             if (/\b(report|compiler|summary|invoice)\b/.test(t)) { showSection('reportModal'); return true; }
             if (/\b(block|data block|spreadsheet push)\b/.test(t)) { showSection('section-datablock'); return true; }
             if (/\b(settings|options|config)\b/.test(t)) { showSection('settingsModal'); return true; }
-            if (/\b(manual|manuals|library)\b/.test(t)) { showSection('manualsModal'); return true; }
+            if (/\b(manual|manuals|library)\b/.test(t)) { showSection('section-manuals'); return true; }
 
             return false;
         }
