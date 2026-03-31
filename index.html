@@ -4,13 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="appTitle">HVAC Master Pro v25.2.2</title>
-
+    <title>HVAC Master Pro v25.2.3</title>
+    <!-- 
+        BUILD: index_v25_2026_03_31_0255.html
+        VERSION: v25.2.3 (Literal Bridge Sync)
+        SOP: Targeted PMI Scan (AE55:AF84) + Literal Screenshot Naming
+    -->
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.2">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.3">
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
@@ -2380,19 +2384,19 @@
                             'ODAT': 'ODAT',
                             'SUCT_P': 'Suction Pressure',
                             'LIQ_P': 'Liquid Pressure',
-                            'SH': 'Superheat (SH)',
-                            'SC': 'Subcool (SC)',
-                            'DELTA_T': 'Delta T (ΔT)',
+                            'SH': 'SH', // Literal Bridge v25.2.3
+                            'SC': 'SC', // Literal Bridge v25.2.3
+                            'DELTA_T': '∆T', // Literal Bridge v25.2.3
                             'RETURN': 'Return Temp',
                             'SUPPLY': 'Supply Temp',
-                            'RETURN_HUMID': 'Return Humidity'
+                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal Bridge v25.2.3
                         };
                         const sheetField = map[key] || findSheetLabelFor(label);
                         let val = mirrorState[sheetField];
 
-                        // Fuzzy fallback if exact map fails (v25.2.2)
+                        // Fuzzy fallback if exact map fails (v25.2.3 Literal Priority)
                         if (!val || val === '--') {
-                           const fuzzyKey = Object.keys(mirrorState).find(k => k.toLowerCase().includes(label.toLowerCase()));
+                           const fuzzyKey = Object.keys(mirrorState).find(k => k.toLowerCase() === label.toLowerCase() || k.toLowerCase().includes(label.toLowerCase()));
                            if (fuzzyKey) val = mirrorState[fuzzyKey];
                         }
 
@@ -2407,7 +2411,15 @@
 
 
                 if (hubType === 'pmi' || hubType === 'all') {
-                    // Pull standard notes if they match our categories
+                    // v25.2.3: Targeted Scan Injection from AE55:AF84
+                    if (mirrorPMI && mirrorPMI.length > 0) {
+                        mirrorPMI.forEach(item => {
+                            const newNote = `${item.label}: ${item.value}`;
+                            if (!techNotes.includes(newNote)) techNotes.push(newNote);
+                        });
+                    }
+
+                    // Fallback to Column W notes if they contain keywords
                     Object.keys(techNotesMaster).forEach(cat => {
                         const sheetVal = mirrorState[cat];
                         if (sheetVal && sheetVal !== '--') {
@@ -2713,22 +2725,23 @@
             });
         }
 
-        const APP_VERSION = "v25.2.2";
+        const APP_VERSION = "v25.2.3";
 
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Matches script_v24_2026_03_29_2300.gs
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwyj7uO3v3zD4uIu3U-c3Y8zI3U-c3Y8zI3U-c3Y8zI3U-c3Y8zI3U-c3Y8zI3U-c3Y8z/exec"; // Placeholder for 0252 Deployment
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
         const DIAG_SYNC_MAP = {
-            'hermRating': 'Herm microfarad rating',
-            'fanRating': 'Fan microfarad rating',
-            'compAmps': 'RLA measured',
-            'fanAmps': 'FLA ODF measured'
+            'hermRating': 'HERM MFD RATING',
+            'fanRating': 'FAN MFD RATING',
+            'compAmps': 'HERM AMPS',
+            'fanAmps': 'FLA ODF'
         };
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
 
         let localDrafts = {}; // Input fields that haven't sync'd yet
         let mirrorState = {}; // Live from I12:W199
+        let mirrorPMI = []; // Targeted AE55:AF84 Context (v25.2.3)
 
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
