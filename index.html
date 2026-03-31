@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v25.2.5</title>
+    <title>HVAC Master Pro v25.2.6</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0345.html
-        VERSION: v25.2.5 (Precision Alignment)
-        SOP: Targeted PMI Scan (AE55:AF84) + Literal Matching (SH/SC/AMPS)
+        BUILD: index_v25_2026_03_31_0400.html
+        VERSION: v25.2.6 (Gold Baseline Sync)
+        SOP: Targeted PMI Scan (I55:AE84) + Literal Matching (SH/SC/AMPS)
     -->
 
     <!-- PWA NATIVE FEEL -->
@@ -358,9 +358,11 @@
             border-radius: 24px;
             padding: 10px;
             text-align: center;
-            margin: 4px 0;
+            margin: 4px auto !important; /* v25.2.6: Re-centered card */
             flex-shrink: 0;
             position: relative;
+            max-width: 460px;
+            width: 100%;
         }
 
         .big-display {
@@ -2402,7 +2404,7 @@
                             'DELTA_T': '∆T',
                             'RETURN': 'Return Temp',
                             'SUPPLY': 'Supply Temp',
-                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal match to spreadsheet row (v25.2.4)
+                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal match to spreadsheet Column I (v25.2.6)
                         };
                         const sheetField = map[key] || findSheetLabelFor(label);
                         let val = mirrorState[sheetField];
@@ -2474,7 +2476,7 @@
                                 buffer[bufIdx] = { field: keyword, val: numVal, volts: 0 };
                                 // v25.2.5: Force "active" display update
                                 if (fieldIndex === bufIdx) {
-                                    document.getElementById('mainValue').innerText = numVal.toFixed(1);
+                                    document.getElementById('bigDisplay').innerText = numVal.toFixed(1);
                                     syncLogToUI();
                                 }
                             }
@@ -2769,7 +2771,7 @@
             });
         }
 
-        const APP_VERSION = "v25.2.5";
+        const APP_VERSION = "v25.2.6";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
