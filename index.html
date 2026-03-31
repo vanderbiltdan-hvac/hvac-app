@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v25.2.10</title>
+    <title>HVAC Master Pro v25.2.11</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0500.html
-        VERSION: v25.2.10 (Compiler Precision)
-        SOP: Targeted PMI Scan (I55:AE84) + Aggressive Symbolic Strip
+        BUILD: index_v25_2026_03_31_0515.html
+        VERSION: v25.2.11 (Silent Precision)
+        SOP: Targeted PMI Scan (I55:AE84) + Silent Sync + Clean Compiler
     -->
 
     <!-- PWA NATIVE FEEL -->
@@ -1179,7 +1179,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.2.10</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.2.11</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1371,7 +1371,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v25.2.10</div>
+                        v25.2.11</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -2279,7 +2279,6 @@
 
         async function fetchMirrorSync() {
             if (!currentJob) {
-                alert("Please select a Job from the Portal first.");
                 return;
             }
 
@@ -2355,7 +2354,6 @@
                 });
             }
             renderMirrorTruth();
-            alert("⚡ Mirror Data Synced!");
         }
 
         function toggleSafeSync(val) {
@@ -2487,7 +2485,6 @@
                     recalculateField();
                 }
 
-                alert(`⚡ ${hubType.toUpperCase()} Hub Synchronized!`);
                 renderCompiler();
                 renderDraftBlock();
             };
@@ -2552,8 +2549,8 @@
         }
 
         function addMirrorToCompiler(label, val) {
-            // v25.2.10: Aggressive Numeric Extraction (Digits/Decimals/Signs only) to prevent double/mixed symbols
-            let cleanVal = String(val).match(/[\d.-]+/)?.[0] || val;
+            // v25.2.11: Silent Clean Extraction
+            let cleanVal = String(val).replace(/[°%']+/g, '').trim();
             const noteStr = `${label}: ${cleanVal}`;
             const idx = techNotes.indexOf(noteStr);
             if (idx > -1) {
@@ -2773,7 +2770,7 @@
             });
         }
 
-        const APP_VERSION = "v25.2.10";
+        const APP_VERSION = "v25.2.11";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
