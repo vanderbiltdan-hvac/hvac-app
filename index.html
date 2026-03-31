@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HVAC Master Pro v25.2.4</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0300.html
-        VERSION: v25.2.4 (Literal Bridge Sync)
+        BUILD: index_v25_2026_03_31_0313.html
+        VERSION: v25.2.4 (Mirror Repair Sync)
         SOP: Targeted PMI Scan (AE55:AF84) + Literal Matching (SH/SC/AMPS)
     -->
 
@@ -2298,7 +2298,10 @@
                         throw new Error("Missing Data Fields");
                     }
 
-                    processJobDataResults(response.data.fields);
+                    // --- v25.2.4: Targeted Context Storage ---
+                    mirrorState = response.data.fields;
+                    mirrorPMI = response.data.pmi || []; // Capture the AE55:AF84 scan
+                    
                     isJobMode = true;
 
                     const cb = document.getElementById('conflictBadgeHeader');
@@ -2514,6 +2517,14 @@
                 const val = formatVal(state[k]);
                 const isSelected = techNotes.some(n => n.includes(k) && n.includes(val.toString()));
                 return `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <span style="font-size:12px; color:#bbb; font-weight:900; text-transform:uppercase; letter-spacing:0.5px;">${k}</span>
+                        <span style="font-size:16px; font-weight:900; color:var(--text-primary);">${val}</span>
+                    </div>
+                    <button onclick="addMirrorToCompiler('${k}', '${val.toString().replace(/'/g, "\\'")}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px; padding:6px 12px;">
+                        ${isSelected ? '✅ UNDO' : '➕ ADD'}
+                    </button>
                 </div>`;
             }).join('');
 
