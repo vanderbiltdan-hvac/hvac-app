@@ -7,19 +7,19 @@
     <title>HVAC Master Pro v25.2.12</title>
     <!-- 
         BUILD: index_v25_2026_03_31_0530.html
-        VERSION: v25.2.12 (Librarian Repair)
-        SOP: Targeted PMI Scan (I55:AE84) + Silent Sync + Clean Compiler
+        VERSION: v25.4 (Mirror & Map Restoration)
+        SOP: Symbol Strip + Diag Mapping + Instant Pull Refresh
     -->
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.5">
+    <meta name="apple-mobile-web-app-title" content="HVAC PRO v25.4">
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v25.2.0 NEW ERA: Top Alignment, Mic Tab-Switching, PMI Chip Shrink, Refrig Mapping -->
+    <!-- v25.4: Mirror Pull Fix, Diag Amp Map, Compiler Symbol Clean -->
 
     <style>
         :root {
@@ -566,28 +566,34 @@
 
         .log-list {
             flex: 1;
+            min-height: 140px; /* v25.4: Increased Girth */
+            max-height: 35vh; /* Responsive on mobile */
             overflow-y: auto;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 16px;
-            padding: 10px;
-            margin: 6px 0;
+            padding: 15px; /* v25.4: Better padding */
+            margin: 8px 0;
             font-size: 11px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .log-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            padding: 8px 0; /* v25.4: Better tap space */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .badge-small {
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 3px 8px;
+            border-radius: 5px;
             font-weight: 900;
-            font-size: 9px;
-            margin-left: 6px;
+            font-size: 10px;
+            margin-left: 8px;
         }
 
         .pass-small {
@@ -2315,6 +2321,8 @@
                         }
                     }
                     refreshSyncUI();
+                    renderMirrorTruth(); // v25.4: Instant Refresh
+                    if (typeof renderMirrorGrid === 'function') renderMirrorGrid(); 
                     closeSyncError(); // Close modal if open on success
                 } else {
                     throw new Error(response.message || "Invalid Response");
@@ -2468,9 +2476,14 @@
                             }
                             
                             // 2. Update the measurement buffer (Amps / Volts / Caps)
-                            const bufIdx = FIELD_CYCLE.indexOf(keyword);
+                            // v25.4 Fix: Map 'RLA (MEASURED)' -> 'Comp Amps' and 'FLA ODF (MEASURED)' -> 'ODF Amps'
+                            let bufferKey = keyword;
+                            if (keyword === 'RLA (MEASURED)') bufferKey = 'Comp Amps';
+                            if (keyword === 'FLA ODF (MEASURED)') bufferKey = 'ODF Amps';
+
+                            const bufIdx = FIELD_CYCLE.indexOf(bufferKey);
                             if (bufIdx !== -1) {
-                                buffer[bufIdx] = { field: keyword, val: numVal, volts: 0 };
+                                buffer[bufIdx] = { field: bufferKey, val: numVal, volts: 0 };
                                 // v25.2.5: Force "active" display update
                                 if (fieldIndex === bufIdx) {
                                     document.getElementById('bigDisplay').innerText = numVal.toFixed(1);
@@ -2764,7 +2777,7 @@
             });
         }
 
-        const APP_VERSION = "v25.2.12";
+        const APP_VERSION = "v25.4";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -4279,6 +4292,13 @@
             document.getElementById('reportOverlay').style.display = 'flex';
         }
 
+
+        // v25.4: Universal Symbol Stripper
+        function cleanNum(v) {
+            if (v === null || v === undefined) return '';
+            return String(v).replace(/[°%'"psispsig]+/g, '').trim();
+        }
+
         function renderCompiler() {
             const preview = document.getElementById('compilerPreview');
             let lines = [];
@@ -4391,43 +4411,51 @@
 
             // REFRIGERANT PAIRS
             if (activeTemplate === 'full' || activeTemplate === 'refrig') {
-                if (refData['ODAT']) pushLine(`ODAT → ${refData['ODAT']}°`);
+                if (refData['ODAT']) pushLine(`ODAT → ${cleanNum(refData['ODAT'])}°`);
 
                 if (refData['SUCT_P'] && refData['LIQ_P']) {
-                    pushLine(`Suction / Liquid Pressure → ${refData['SUCT_P']} psis / ${refData['LIQ_P']} psig`);
+                    pushLine(`Suction / Liquid Pressure → ${cleanNum(refData['SUCT_P'])} psis / ${cleanNum(refData['LIQ_P'])} psig`);
                 } else {
-                    if (refData['SUCT_P']) pushLine(`Suction Pressure → ${refData['SUCT_P']} psig`);
-                    if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${refData['LIQ_P']} psig`);
+                    if (refData['SUCT_P']) pushLine(`Suction Pressure → ${cleanNum(refData['SUCT_P'])} psig`);
+                    if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${cleanNum(refData['LIQ_P'])} psig`);
                 }
 
                 if (refData['VAPOR_SAT'] && refData['LIQ_SAT']) {
-                    pushLine(`Vapor Sat / Liquid Sat → ${refData['VAPOR_SAT']}° / ${refData['LIQ_SAT']}°`);
+                    pushLine(`Vapor Sat / Liquid Sat → ${cleanNum(refData['VAPOR_SAT'])}° / ${cleanNum(refData['LIQ_SAT'])}°`);
                 } else {
-                    if (refData['VAPOR_SAT']) pushLine(`Vapor Saturation → ${refData['VAPOR_SAT']}°`);
-                    if (refData['LIQ_SAT']) pushLine(`Liquid Saturation → ${refData['LIQ_SAT']}°`);
+                    if (refData['VAPOR_SAT']) pushLine(`Vapor Saturation → ${cleanNum(refData['VAPOR_SAT'])}°`);
+                    if (refData['LIQ_SAT']) pushLine(`Liquid Saturation → ${cleanNum(refData['LIQ_SAT'])}°`);
                 }
 
                 if (refData['SH'] && refData['SC']) {
                     let flag = '';
-                    if (refData['SH'] < 5 || refData['SH'] > 25 || refData['SC'] < 5 || refData['SC'] > 20) flag = '<span class="c-flag">🔴</span>';
-                    pushLine(`SH / SC → ${refData['SH']}° / ${refData['SC']}°`, flag);
+                    const cSH = cleanNum(refData['SH']);
+                    const cSC = cleanNum(refData['SC']);
+                    if (parseFloat(cSH) < 5 || parseFloat(cSH) > 25 || parseFloat(cSC) < 5 || parseFloat(cSC) > 20) flag = '<span class="c-flag">🔴</span>';
+                    pushLine(`SH / SC → ${cSH}° / ${cSC}°`, flag);
                 } else if (refData['SH']) {
-                    const flag = (refData['SH'] < 5 || refData['SH'] > 25) ? '<span class="c-flag">🔴</span>' : '';
-                    pushLine(`SH → ${refData['SH']}°`, flag);
+                    const cSH = cleanNum(refData['SH']);
+                    const flag = (parseFloat(cSH) < 5 || parseFloat(cSH) > 25) ? '<span class="c-flag">🔴</span>' : '';
+                    pushLine(`SH → ${cSH}°`, flag);
                 } else if (refData['SC']) {
-                    const flag = (refData['SC'] < 5 || refData['SC'] > 20) ? '<span class="c-flag">🔴</span>' : '';
-                    pushLine(`SC → ${refData['SC']}°`, flag);
+                    const cSC = cleanNum(refData['SC']);
+                    const flag = (parseFloat(cSC) < 5 || parseFloat(cSC) > 20) ? '<span class="c-flag">🔴</span>' : '';
+                    pushLine(`SC → ${cSC}°`, flag);
                 }
             }
 
             // TEMP PAIRS
             if (activeTemplate === 'full' || activeTemplate === 'refrig' || activeTemplate === 'heat') {
-                if (refData['RETURN'] && refData['SUPPLY']) pushLine(`Return / Supply Temp → ${refData['RETURN']}° / ${refData['SUPPLY']}°`);
-                else if (refData['RETURN']) pushLine(`Return Temp → ${refData['RETURN']}°`);
-                else if (refData['SUPPLY']) pushLine(`Supply Temp → ${refData['SUPPLY']}°`);
+                if (refData['RETURN'] && refData['SUPPLY']) pushLine(`Return / Supply Temp → ${cleanNum(refData['RETURN'])}° / ${cleanNum(refData['SUPPLY'])}°`);
+                else if (refData['RETURN']) pushLine(`Return Temp → ${cleanNum(refData['RETURN'])}°`);
+                else if (refData['SUPPLY']) pushLine(`Supply Temp → ${cleanNum(refData['SUPPLY'])}°`);
 
-                if (refData['RH']) pushLine(`Return Humidity → ${refData['RH']}%`);
-                if (refData['DELTA_T']) pushLine(`ΔT → ${refData['DELTA_T']}°`, getDeltaFlagHtml(refData['DELTA_T'], refData['RH']));
+                if (refData['RH']) pushLine(`Return Humidity → ${cleanNum(refData['RH'])}%`);
+                if (refData['DELTA_T']) {
+                    const cDT = cleanNum(refData['DELTA_T']);
+                    const cRH = cleanNum(refData['RH']);
+                    pushLine(`ΔT → ${cDT}°`, getDeltaFlagHtml(parseFloat(cDT), parseFloat(cRH)));
+                }
             }
 
             preview.innerHTML = lines.join('');
