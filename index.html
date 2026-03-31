@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v25.2.6.1</title>
+    <title>HVAC Master Pro v25.2.7</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0405.html
-        VERSION: v25.2.6.1 (Gold Baseline FIX)
-        SOP: Targeted PMI Scan (I55:AE84) + Literal Matching (SH/SC/AMPS)
+        BUILD: index_v25_2026_03_31_0415.html
+        VERSION: v25.2.7 (Final Precision Sync)
+        SOP: Targeted PMI Scan (I55:AE84) + Literal Matching (SH/SC/AMPS/HUMID)
     -->
 
     <!-- PWA NATIVE FEEL -->
@@ -2771,7 +2771,7 @@
             });
         }
 
-        const APP_VERSION = "v25.2.6.1";
+        const APP_VERSION = "v25.2.7";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -2779,8 +2779,8 @@
         const DIAG_SYNC_MAP = {
             'hermRating': 'HERM MFD RATING',
             'fanRating': 'FAN MFD RATING',
-            'compAmps': 'HERM AMPS',
-            'fanAmps': 'FLA ODF'
+            'compAmps': 'COMP AMPS',
+            'fanAmps': 'ODF AMPS'
         };
         let isJobMode = false;
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -2929,9 +2929,10 @@
             grid.style.gap = '8px';
             
             grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
-                const activeNotesInCat = techNotes.filter(n => n.startsWith(cat + ' →'));
-                const hasSelected = activeNotesInCat.length > 0;
-                const noteText = hasSelected ? activeNotesInCat[0].split(' → ')[1] : 'TAP TO ADD';
+                const activeNotesInCat = techNotes.filter(n => n.startsWith(cat + ' →') || n.startsWith(cat + ':'));
+                const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().includes(cat.toUpperCase()));
+                const hasSelected = activeNotesInCat.length > 0 || mirrorMatch;
+                const noteText = activeNotesInCat.length > 0 ? activeNotesInCat[0].split(/[→:]/)[1].trim() : (mirrorMatch ? mirrorMatch.value : 'TAP TO ADD');
 
                 return `
                 <div onclick="openPMINotes('${cat}')" class="btn-utility" style="justify-content:space-between; padding:12px 15px; border-color:${hasSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.1)'}; background:${hasSelected ? 'rgba(0,229,255,0.05)' : 'transparent'}">
@@ -2988,7 +2989,7 @@
             'SUCT_P': 'Suction Pressure', 'LIQ_P': 'Liquid Pressure',
             'VAPOR_SAT': 'Vapor Saturation', 'LIQ_SAT': 'Liquid Saturation',
             'SH': 'Superheat (SH)', 'SC': 'Subcool (SC)',
-            'RETURN': 'Return Temp', 'RH': 'Return Humidity %',
+            'RETURN': 'Return Temp', 'RH': 'Return Humidity',
             'SUPPLY': 'Supply Temp', 'DELTA_T': 'Delta T (ΔT)'
         };
         let activeRefrigKey = null;
