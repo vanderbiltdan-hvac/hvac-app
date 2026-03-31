@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v25.2.8</title>
+    <title>HVAC Master Pro v25.2.9</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0430.html
-        VERSION: v25.2.8 (Final Seal)
-        SOP: Targeted PMI Scan (I55:AE84) + Literal Matching (RLA/FLA Parentheses)
+        BUILD: index_v25_2026_03_31_0445.html
+        VERSION: v25.2.9 (Final Sweep)
+        SOP: Targeted PMI Scan (I55:AE84) + Case-Insensitive Amps Sync
     -->
 
     <!-- PWA NATIVE FEEL -->
@@ -1179,7 +1179,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.2.2</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.2.9</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1371,7 +1371,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v25.2.0</div>
+                        v25.2.9</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -2454,8 +2454,8 @@
 
                     // Capacitor & Measured Amps Sync (v25.2.4 Literal Explicit Catch)
                     for (const [id, keyword] of Object.entries(DIAG_SYNC_MAP)) {
-                        // Search mirrorState keys for keyword
-                        const mirrorKey = Object.keys(mirrorState).find(k => k.toUpperCase() === keyword.toUpperCase());
+                        // v25.2.9: Case-Insensitive Keyword Search (RLA (Measured) match)
+                        const mirrorKey = Object.keys(mirrorState).find(k => k.toLowerCase().trim() === keyword.toLowerCase().trim());
                         const val = mirrorKey ? mirrorState[mirrorKey] : null;
 
                         if (val && val !== '--') {
@@ -2576,6 +2576,7 @@
                 const val = document.getElementById('ovr-val' + i).value.trim();
                 // Check if either exists. Sending empty label/val clears the slot.
                 if (label || val || document.getElementById('ovr-slot' + i).dataset.synced) {
+                    // v25.2.9: Strip existing symbols before adding compiler ones to prevent double symbols
                     batch.push({ label: label, value: val, index: i - 1 });
                     document.getElementById('ovr-slot' + i).dataset.synced = "true";
                 }
@@ -2770,7 +2771,7 @@
             });
         }
 
-        const APP_VERSION = "v25.2.8";
+        const APP_VERSION = "v25.2.9";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
