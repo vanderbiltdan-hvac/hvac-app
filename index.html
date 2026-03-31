@@ -4,17 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v25.2.4</title>
+    <title>HVAC Master Pro v25.2.5</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0313.html
-        VERSION: v25.2.4 (Mirror Repair Sync)
+        BUILD: index_v25_2026_03_31_0345.html
+        VERSION: v25.2.5 (Precision Alignment)
         SOP: Targeted PMI Scan (AE55:AF84) + Literal Matching (SH/SC/AMPS)
     -->
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.4">
+    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v25.2.5">
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
@@ -300,7 +300,7 @@
             z-index: 10000;
             flex-direction: column;
             justify-content: flex-start;
-            align-items: center;
+            align-items: center; /* v25.2.5: Re-centered */
             padding: 10px;
             padding-top: env(safe-area-inset-top, 20px);
             box-sizing: border-box;
@@ -2414,7 +2414,8 @@
                         }
 
                         if (val && val !== '--') {
-                            val = typeof val === 'string' ? val.replace(/°/g, '') : val;
+                            // v25.2.5: Strip % and ° symbols so 55.0% converts to 55.0
+                            val = typeof val === 'string' ? val.replace(/[°%]/g, '') : val;
                             refData[key] = isNaN(val) ? val : parseFloat(formatVal(val));
                         }
                     });
@@ -2471,8 +2472,9 @@
                             const bufIdx = FIELD_CYCLE.indexOf(keyword);
                             if (bufIdx !== -1) {
                                 buffer[bufIdx] = { field: keyword, val: numVal, volts: 0 };
-                                // Explicitly update the main "Tap Number to Type" display if this is the active field
+                                // v25.2.5: Force "active" display update
                                 if (fieldIndex === bufIdx) {
+                                    document.getElementById('mainValue').innerText = numVal.toFixed(1);
                                     syncLogToUI();
                                 }
                             }
@@ -2767,7 +2769,7 @@
             });
         }
 
-        const APP_VERSION = "v25.2.4";
+        const APP_VERSION = "v25.2.5";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
