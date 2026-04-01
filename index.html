@@ -1247,12 +1247,6 @@
             style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
         </div>
 
-        <div id="activeJobIndicatorHome" style="margin-bottom:12px; display:none;">
-            <div style="background:rgba(0,229,255,0.05); border:1px solid var(--electric-blue); padding:10px; border-radius:12px; text-align:center;">
-                <span style="font-size:10px; color:#aaa; font-weight:900; letter-spacing:1px;">HOOKED JOB:</span>
-                <span id="hookedJobNameHome" style="font-size:16px; font-weight:900; color:var(--electric-blue); display:block;">--</span>
-            </div>
-        </div>
 
         <div class="v23-launcher-grid">
             <!-- SLOT 1: NEW JOB (FULL WIDTH) -->
@@ -2795,51 +2789,41 @@
             localStorage.setItem('hvacActiveJob', jobName);
             isJobMode = true; // Auto-Enable Sync on selection
             refreshSyncUI();
-            updateUniversalJobHeaders(); // Instant visual bridge (v26.11)
+            updateUniversalJobHeaders(); // Instant visual bridge (v26.12)
             closeJobPortal();
             fetchMirrorSync(); // Immediate pull
         }
 
         function updateJobUI() {
-            const indHome = document.getElementById('activeJobIndicatorHome');
-            const nameHome = document.getElementById('hookedJobNameHome');
-            const indSpecs = document.getElementById('activeJobIndicator');
+            const bars = document.querySelectorAll('.job-header');
             const nameSpecs = document.getElementById('hookedJobName');
 
             if (currentJob) {
-                if (indHome) indHome.style.display = 'block';
-                if (nameHome) {
-                    nameHome.innerText = currentJob.toUpperCase();
-                    nameHome.style.color = 'var(--electric-blue)';
-                }
-                if (indSpecs) indSpecs.style.display = 'block';
+                bars.forEach(b => b.style.display = 'flex');
                 if (nameSpecs) nameSpecs.innerText = currentJob.toUpperCase();
             } else {
-                if (indHome) indHome.style.display = 'none';
-                if (indSpecs) indSpecs.style.display = 'none';
+                bars.forEach(b => b.style.display = 'none');
             }
         }
 
         async function callAppsScript(payload) {
-            // v26.10: Naked Fetch Restoration (Gold Standard Handshake)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+            // Inject Sheet Context (v23.1 GOLD0)
             if (currentJob) payload.sheetName = currentJob;
 
             try {
                 const response = await fetch(WEB_APP_URL, {
                     method: "POST",
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
                 });
-                
-                const text = await response.text();
-                try {
-                    // v26.10: Direct Parsing (No status:success wrapper required)
-                    return JSON.parse(text); 
-                } catch (parseErr) {
-                    console.error("Malformed Response:", text);
-                    return { error: "Non-JSON response from server" };
-                }
+                clearTimeout(timeoutId);
+                const json = await response.json();
+                return json; // Returns {status, data}
             } catch (err) {
-                console.error("Fetch Reject:", err);
+                clearTimeout(timeoutId);
                 throw err;
             }
         }
@@ -2920,14 +2904,6 @@
 
             bars.forEach(b => b.style.display = currentJob ? 'flex' : 'none');
             hookTexts.forEach(t => t.innerText = currentJob || '--');
-
-            // v26.11: Unified Home Page Mission Control Indicator
-            const homeIndicator = document.getElementById('activeJobIndicatorHome');
-            const homeHookText = document.getElementById('hookedJobNameHome');
-            if (homeIndicator && homeHookText) {
-                homeIndicator.style.display = currentJob ? 'block' : 'none';
-                homeHookText.innerText = currentJob || '--';
-            }
             updateShellButton();
         }
 
@@ -2941,7 +2917,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v26.11";
+        const APP_VERSION = "v26.12";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
