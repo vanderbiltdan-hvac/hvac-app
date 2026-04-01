@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v25.2.12</title>
+    <title>HVAC Master Pro v26.0</title>
     <!-- 
-        BUILD: index_v25_2026_03_31_0530.html
+        BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1073,49 +1073,49 @@
         }
 
         .v23-launcher-grid {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 12px;
             margin-top: 10px;
         }
 
-        .v23-pwr-btn {
-            width: 100%;
-            height: 70px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: 900;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: transform 0.2s;
+        .btn-full {
+             width: 100%;
+             height: 75px;
+             border-radius: 20px;
+             font-size: 18px;
+             font-weight: 900;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 12px;
+             border: 2px solid rgba(255,255,255,0.1);
+             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+             cursor: pointer;
+             transition: 0.2s;
         }
+
+        .btn-full:active { transform: scale(0.96); }
 
         .v23-sub-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .v23-sub-btn {
-            height: 60px;
+        .btn-half {
+            height: 65px;
             border-radius: 16px;
+            font-size: 12px;
+            font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            font-weight: 900;
-            color: white;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: transform 0.2s;
+            gap: 6px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #ccc;
         }
-
         .v23-pwr-btn:active,
         .v23-sub-btn:active {
             transform: scale(0.95);
@@ -1220,7 +1220,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v25.2.12</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.0</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1247,24 +1247,60 @@
             style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
         </div>
 
-        <div class="v23-launcher-grid">
-            <button class="v23-pwr-btn" style="background:var(--emerald-green); color:#000;">1</button>
-            <button class="v23-pwr-btn"
-                style="background:var(--electric-blue); color:#000; font-size:18px; letter-spacing:1px; line-height:1.2;"
-                onclick="openJobPortal()">📂<br><span style="font-size:10px;">JOB PORTAL</span></button>
-            <button class="v23-pwr-btn" style="background:var(--amber-orange); color:#000;">3</button>
-            <button class="v23-pwr-btn" style="background:var(--crimson-red);">4</button>
-
-            <div class="v23-sub-grid">
-                <button class="v23-sub-btn">5</button>
-                <button class="v23-sub-btn">6</button>
-                <button class="v23-sub-btn">7</button>
-                <button class="v23-sub-btn">8</button>
-                <button class="v23-sub-btn">9</button>
-                <button class="v23-sub-btn">10</button>
+        <div id="activeJobIndicatorHome" style="margin-bottom:12px; display:none;">
+            <div style="background:rgba(0,229,255,0.05); border:1px solid var(--electric-blue); padding:10px; border-radius:12px; text-align:center;">
+                <span style="font-size:10px; color:#aaa; font-weight:900; letter-spacing:1px;">HOOKED JOB:</span>
+                <span id="hookedJobNameHome" style="font-size:16px; font-weight:900; color:var(--electric-blue); display:block;">--</span>
             </div>
         </div>
+
+        <div class="v23-launcher-grid">
+            <!-- SLOT 1: NEW JOB (FULL WIDTH) -->
+            <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
+                <input type="text" id="custName" placeholder="Enter Name / Job #" style="margin-bottom:8px; background:#000;">
+                <button class="btn-full" id="shellBtn" onclick="startJob()" style="background:var(--emerald-green); color:#000;">
+                    🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${new Date().toISOString().split('T')[0]}</span>
+                </button>
+            </div>
+
+            <!-- SLOT 2: UPLOAD PHOTOS (FULL WIDTH) -->
+            <button class="btn-full" onclick="document.getElementById('fileInput').click()" style="background:var(--electric-blue); color:#000;">
+                📸 UPLOAD PHOTOS
+            </button>
+            <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+
+            <!-- SLOT 3: GALLERY (FULL WIDTH) -->
+            <button class="btn-full" onclick="openGallery()" style="background:#222; color:var(--electric-blue); border-color:var(--electric-blue);">
+                🖼️ PHOTO HOARD (GALLERY)
+            </button>
+
+            <!-- SLOTS 4 & 5: TWO COLUMNS -->
+            <div class="v23-sub-grid">
+                <button class="btn-half" onclick="runLibrarianInApp()">
+                    🔍 LIBRARIAN
+                </button>
+                <button class="btn-half" onclick="showSection('section-manuals')">
+                    📖 MANUALS
+                </button>
+            </div>
+
+            <!-- SLOT 6: SPECTRUM (TWO COLUMNS) -->
+            <div class="v23-sub-grid">
+                <button class="btn-half" onclick="showSection('section-specs')">
+                    🎙️ SPECTRUM INTAKE
+                </button>
+                <button class="btn-half" style="opacity:0.3; pointer-events:none;">
+                    --
+                </button>
+            </div>
+
+            <!-- SLOT 10: PORTAL (FULL WIDTH BOTTOM) -->
+            <button class="btn-full" onclick="openJobPortal()" style="background:#333; color:var(--amber-orange); border-color:var(--amber-orange); margin-top:20px;">
+                📂 JOB PORTAL (SWITCHER)
+            </button>
+        </div>
     </div>
+ </div>
 
     <!-- NEW READINGS HUB SECTION -->
     <div class="container" id="section-readings" style="padding-bottom:100px; display:none;">
@@ -1412,7 +1448,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v25.2.12</div>
+                        v26.0</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -1474,19 +1510,6 @@
 
         <!-- RUN DIAGNOSTIC REMOVED FOR REAL ESTATE -->
         <hr style="opacity:0.1; margin:12px 0;">
-
-        <div id="activeJobSection"
-            style="background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
-            <span style="font-size:9px; color:#aaa; font-weight:900; display:block; margin-bottom:5px;">ACTIVE
-                JOB</span>
-            <input type="text" id="custName" placeholder="Enter Name / Job #">
-            <div style="display:flex; gap:8px;">
-                <button class="btn btn-primary" id="shellBtn" onclick="startJob()" style="flex:2;">CREATE SHELL</button>
-                <button class="btn btn-outline" onclick="runLibrarianInApp()"
-                    style="flex:1; font-size:10px;">LIBRARIAN</button>
-            </div>
-            <div id="manualLinks" style="margin-top:10px;"></div>
-        </div>
     </div>
 
     <!-- VOICE MODAL (V2 LAYOUT - REWORKED) -->
@@ -2261,9 +2284,42 @@
                 <div id="photo-card-${p.id}" class="gallery-card" onclick="event.stopPropagation(); togglePhotoSelection(${p.id})">
                     <img src="data:${p.mime};base64,${p.data}" pointer-events="none">
                     <div class="card-check">✔</div>
+                    <div onclick="event.stopPropagation(); uploadPhotoToDrive(${p.id})" style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.7); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid var(--electric-blue); font-size:16px;">☁️</div>
                     <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.6); font-size:8px; color:#aaa; padding:2px; text-align:center;">${p.shelf || 'UNSORTED'}</div>
                 </div>
             `).join('');
+        }
+
+        async function uploadPhotoToDrive(id) {
+            const photos = await getAllPhotos();
+            const ph = photos.find(p => p.id === id);
+            if (!ph) return;
+            
+            const targetFolderId = localStorage.getItem('hvacActiveFolderId');
+            if (!targetFolderId) return alert("No active job hooked. Create a shell first.");
+
+            const status = document.getElementById('photoStatus');
+            status.style.display = 'block';
+            status.innerText = `Uploading ${ph.filename} to Drive...`;
+
+            try {
+                const res = await callAppsScript({
+                    action: "uploadPhoto",
+                    data: ph.data,
+                    filename: ph.filename,
+                    mimeType: ph.mime,
+                    folderId: targetFolderId
+                });
+                if (res.status === "success") {
+                    status.innerText = "Upload Complete!";
+                    setTimeout(() => status.style.display = 'none', 3000);
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch (e) {
+                alert("Upload Failed: " + e.message);
+                status.style.display = 'none';
+            }
         }
 
         async function createNewShelfPrompt() {
@@ -2855,16 +2911,34 @@
 
     <script>
         function updateUniversalJobHeaders() {
-            const jobName = localStorage.getItem('hvacActiveJob') || "--";
-            document.querySelectorAll('.job-header-text').forEach(el => {
-                el.innerText = jobName.toUpperCase();
-            });
-            document.querySelectorAll('.job-header').forEach(el => {
-                el.style.display = (jobName !== "--") ? 'flex' : 'none';
-            });
+            const currentJob = localStorage.getItem('hvacActiveJobName');
+            const bars = document.querySelectorAll('.job-header');
+            const hookTexts = document.querySelectorAll('.job-header-text, #hookedJobName');
+
+            bars.forEach(b => b.style.display = currentJob ? 'flex' : 'none');
+            hookTexts.forEach(t => t.innerText = currentJob || '--');
+
+            // v26.0: Home Page Mission Control Indicator
+            const homeIndicator = document.getElementById('activeJobIndicatorHome');
+            const homeHookText = document.getElementById('hookedJobNameHome');
+            if (homeIndicator && homeHookText) {
+                homeIndicator.style.display = currentJob ? 'block' : 'none';
+                homeHookText.innerText = currentJob || '--';
+            }
+            updateShellButton();
         }
 
-        const APP_VERSION = "v25.9";
+        function updateShellButton() {
+            const btn = document.getElementById('shellBtn');
+            if (!btn) return;
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
+        }
+
+        const APP_VERSION = "v26.0";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -3247,7 +3321,7 @@
         }
 
         async function initSplash() {
-            console.log("HVAC Master Pro v25.2.0 Initialization - NEW ERA Start");
+            console.log("HVAC Master Pro v26.0 Mission Control - NEW ERA Start");
             document.title = "HVAC Master Pro v" + APP_VERSION;
 
             renderSystemSpecs();
