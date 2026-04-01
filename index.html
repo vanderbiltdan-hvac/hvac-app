@@ -2335,8 +2335,8 @@
             const ph = photos.find(p => p.id === id);
             if (!ph) return;
 
-            const targetFolderId = localStorage.getItem('hvacActiveFolderId');
-            if (!targetFolderId) return alert("No active job hooked. Create a shell first.");
+            const activeFolderId = localStorage.getItem('hvacActiveFolderId');
+            if (!activeFolderId) return alert("No active job hooked. Create a shell first.");
 
             const status = document.getElementById('photoStatus');
             status.style.display = 'block';
@@ -2345,10 +2345,11 @@
             try {
                 const res = await callAppsScript({
                     action: "uploadPhoto",
-                    data: ph.data,
+                    // v26.3: Strip prefix
+                    data: ph.data.includes(',') ? ph.data.split(',')[1] : ph.data, 
                     filename: ph.filename,
                     mimeType: ph.mime,
-                    folderId: targetFolderId
+                    folderId: activeFolderId
                 });
                 if (res.status === "success") {
                     status.innerText = "Upload Complete!";
@@ -2397,15 +2398,17 @@
                 try {
                     status.innerText = `Analyzing: ${ph.filename}...`;
 
-                    // v25.9: Deep Hooking - use active folder if we have it
-                    const targetFolderId = localStorage.getItem('hvacActiveFolderId') || null;
+                    // v26.3: Strict Folder Hooking - Force direct folder ID from local storage
+                    const activeFolderId = localStorage.getItem('hvacActiveFolderId');
 
                     const result = await callAppsScript({
                         action: "uploadPhotoAI",
-                        data: ph.data,
+                        // v26.3: Strip 'data:image/...;base64,' prefix if it exists
+                        data: ph.data.includes(',') ? ph.data.split(',')[1] : ph.data, 
                         filename: ph.filename,
                         mimeType: ph.mime,
-                        folderId: targetFolderId
+                        sheetName: currentJob,
+                        folderId: activeFolderId 
                     });
 
                     if (result && result.status === "success" && result.data && result.data.extractedData) {
@@ -2995,7 +2998,21 @@
         }
 
         let lastActiveSection = 'v23-home';
-        const APP_VERSION = "v26.2";
+        const APP_VERSION = "v26.3";
+
+        function normalizeJobName(name) {
+            if (!name) return "";
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+            
+            // If already normalized (ends with date pattern), return as is
+            if (/\d{4}-\d{2}-\d{2}$/.test(name)) return name;
+            
+            return `${name.trim()} - ${dateStr}`;
+        }
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_C6H9j-P0LhI7pUe2pM2xJ1Z1y9_Q_8f_Z_x_v_O_0_v/exec"; // Placeholder for verified GAS endpoint - User should verify deployment URL
 
@@ -4703,8 +4720,8 @@
                 if (res && res.status === "success" && res.data.status === "success") {
                     shellBtn.innerText = "🔗 BUILDING BACKLINKS...";
 
-                    // Deep Hooking: Store both Name and Folder ID
-                    const finalName = res.data.sheetName;
+                    // v26.3: Strict Normalization for perfect Hooking
+                    const finalName = normalizeJobName(name); 
                     const folderId = res.data.folderId;
 
                     localStorage.setItem('hvacActiveJob', finalName);
