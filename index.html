@@ -1215,6 +1215,18 @@
 
     <div id="masterIndicator" class="master-indicator"></div>
 
+    <div id="section-refrig" class="container" style="display:none; padding-bottom:90px;">
+        <div class="job-header" id="activeJobIndicatorRefrig" style="display:flex;">
+            <span>ACTIVE JOB:</span>
+            <span class="job-header-text" id="activeJobNameHeaderRefrig">--</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>REFRIGERANT HUB</h2>
+            <button class="btn-utility danger" onclick="wipeRefrig()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE REFRIG</button>
+        </div>
+        <div id="refrigInputList" class="v23-launcher-grid"></div>
+    </div>
+
     <div id="section-pmi" class="container" style="display:none; padding-bottom:90px;">
         <div class="job-header" id="activeJobIndicatorPMI" style="display:flex;">
             <span>ACTIVE JOB:</span>
@@ -1224,8 +1236,10 @@
             <h2>PMI HUB</h2>
             <button class="btn-utility danger" onclick="wipePMI()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE PMI</button>
         </div>
+        <div id="pmiCategoryGrid" class="v23-launcher-grid"></div>
+    </div>
 
-    <!-- v25.2.0 LAUNCHER SECTION (HOME) -->
+    <!-- v26.13 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
         <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
@@ -1233,7 +1247,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.0</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.13</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1307,7 +1321,6 @@
             </button>
         </div>
     </div>
- </div>
 
     <!-- NEW READINGS HUB SECTION -->
     <div class="container" id="section-readings" style="padding-bottom:100px; display:none;">
