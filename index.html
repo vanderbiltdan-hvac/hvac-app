@@ -135,9 +135,18 @@
         }
 
         @keyframes flash-border {
-            0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); border-color: var(--electric-blue); }
-            70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7);
+                border-color: var(--electric-blue);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 229, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 229, 255, 0);
+            }
         }
 
         .job-card.active {
@@ -297,11 +306,13 @@
             background: var(--bg-dark);
             z-index: 10000;
             flex-direction: column;
-            justify-content: center; /* v25.5: Center content vertically for Ultra/Pro Max */
-            align-items: center; 
+            justify-content: center;
+            /* v25.5: Center content vertically for Ultra/Pro Max */
+            align-items: center;
             padding: 10px;
             padding-top: env(safe-area-inset-top, 20px);
-            padding-bottom: env(safe-area-inset-bottom, 20px); /* v25.5: Home bar safety */
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            /* v25.5: Home bar safety */
             box-sizing: border-box;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -310,7 +321,8 @@
         .modal-content {
             width: 100%;
             max-width: 480px;
-            margin: auto; /* v25.6: True vertical centering */
+            margin: auto;
+            /* v25.6: True vertical centering */
             background: var(--card-bg);
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -331,7 +343,8 @@
 
         /* STEP NAV */
         .step-nav {
-            display: inline-flex; /* v25.6: Fix swipe lock */
+            display: inline-flex;
+            /* v25.6: Fix swipe lock */
             gap: 8px;
             overflow-x: auto !important;
             padding: 8px 0;
@@ -339,7 +352,8 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
             width: 100%;
-            touch-action: pan-x; /* v25.6: Force horizontal swipe */
+            touch-action: pan-x;
+            /* v25.6: Force horizontal swipe */
         }
 
         .step-nav::-webkit-scrollbar {
@@ -372,8 +386,9 @@
             border-radius: 24px;
             padding: 10px;
             text-align: center;
-            margin: 4px auto !important; 
-            flex-shrink: 1; /* v25.5: Allow console to yield to log scroll */
+            margin: 4px auto !important;
+            flex-shrink: 1;
+            /* v25.5: Allow console to yield to log scroll */
             min-height: 0;
             position: relative;
             max-width: 460px;
@@ -581,14 +596,16 @@
 
         .log-list {
             flex: 1;
-            min-height: 120px; 
-            max-height: 40vh; 
-            overflow-y: auto !important; /* v25.5: Forced scroll override */
+            min-height: 120px;
+            max-height: 40vh;
+            overflow-y: auto !important;
+            /* v25.5: Forced scroll override */
             -webkit-overflow-scrolling: touch;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 16px;
-            padding: 15px; 
-            padding-bottom: 30px; /* v25.5: Bottom padding for scroll visibility */
+            padding: 15px;
+            padding-bottom: 30px;
+            /* v25.5: Bottom padding for scroll visibility */
             margin: 8px 0;
             font-size: 11px;
             border: 1px solid rgba(255, 255, 255, 0.03);
@@ -601,7 +618,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0; /* v25.4: Better tap space */
+            padding: 8px 0;
+            /* v25.4: Better tap space */
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -1524,7 +1542,8 @@
             <div class="btn-main-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:16px;">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()"
                     style="padding:16px; font-size:18px; color: white !important;">🎙 START MIC</button>
-                <button onclick="confirmReading()" class="btn btn-green" style="padding:16px; font-size:18px; color: black !important;">✔
+                <button onclick="confirmReading()" class="btn btn-green"
+                    style="padding:16px; font-size:18px; color: black !important;">✔
                     COMMIT</button>
             </div>
         </div>
@@ -1915,14 +1934,18 @@
         <!-- Inline Note Selector (Redesigned v25.7 - ROW LOGIC) -->
         <div id="pmiNoteOverlay"
             style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.96); z-index:20000; flex-direction:column; padding:12px; justify-content:flex-start;">
-            
+
             <div class="modal-content" style="max-height:92vh; padding:18px; border-radius:28px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <h2 id="pmiActiveCat" style="color:var(--amber-orange); margin:0; font-size:16px; letter-spacing:1px; font-weight:900;">SELECT OPTION</h2>
-                    <button onclick="closePMINotes()" style="background:none; border:none; color:white; font-size:32px; line-height:1; padding:0 8px;">&times;</button>
+                    <h2 id="pmiActiveCat"
+                        style="color:var(--amber-orange); margin:0; font-size:16px; letter-spacing:1px; font-weight:900;">
+                        SELECT OPTION</h2>
+                    <button onclick="closePMINotes()"
+                        style="background:none; border:none; color:white; font-size:32px; line-height:1; padding:0 8px;">&times;</button>
                 </div>
 
-                <div id="pmiNoteList" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1; padding-right:4px;">
+                <div id="pmiNoteList"
+                    style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1; padding-right:4px;">
                     <!-- Rendered Rows -->
                 </div>
 
@@ -2277,7 +2300,17 @@
             for (let ph of toProcess) {
                 try {
                     status.innerText = `Analyzing: ${ph.filename}...`;
-                    const result = await callAppsScript({ action: "uploadPhotoAI", data: ph.data, filename: ph.filename, mimeType: ph.mime });
+                    
+                    // v25.9: Deep Hooking - use active folder if we have it
+                    const targetFolderId = localStorage.getItem('hvacActiveFolderId') || null;
+
+                    const result = await callAppsScript({ 
+                        action: "uploadPhotoAI", 
+                        data: ph.data, 
+                        filename: ph.filename, 
+                        mimeType: ph.mime,
+                        folderId: targetFolderId 
+                    });
 
                     if (result && result.status === "success" && result.data && result.data.extractedData) {
                         tempAiSpecs = { ...tempAiSpecs, ...result.data.extractedData };
@@ -2335,7 +2368,7 @@
                     // --- v25.2.4: Targeted Context Storage ---
                     mirrorState = response.data.fields;
                     mirrorPMI = response.data.pmi || []; // Capture the AE55:AF84 scan
-                    
+
                     isJobMode = true;
 
                     const cb = document.getElementById('conflictBadgeHeader');
@@ -2349,7 +2382,7 @@
                     }
                     refreshSyncUI();
                     renderMirrorTruth(); // v25.4: Instant Refresh
-                    if (typeof renderMirrorGrid === 'function') renderMirrorGrid(); 
+                    if (typeof renderMirrorGrid === 'function') renderMirrorGrid();
                     closeSyncError(); // Close modal if open on success
                 } else {
                     throw new Error(response.message || "Invalid Response");
@@ -2445,8 +2478,8 @@
 
                         // Fuzzy fallback if exact map fails (v25.2.3 Literal Priority)
                         if (!val || val === '--') {
-                           const fuzzyKey = Object.keys(mirrorState).find(k => k.toLowerCase() === label.toLowerCase() || k.toLowerCase().includes(label.toLowerCase()));
-                           if (fuzzyKey) val = mirrorState[fuzzyKey];
+                            const fuzzyKey = Object.keys(mirrorState).find(k => k.toLowerCase() === label.toLowerCase() || k.toLowerCase().includes(label.toLowerCase()));
+                            if (fuzzyKey) val = mirrorState[fuzzyKey];
                         }
 
                         if (val && val !== '--') {
@@ -2493,7 +2526,7 @@
 
                         if (val && val !== '--') {
                             const numVal = parseFloat(val);
-                            
+
                             // 1. Update the named input (Capacitors)
                             const input = document.getElementById(id);
                             if (input) {
@@ -2501,7 +2534,7 @@
                                 input.classList.add('mirror-blue-glow');
                                 input.classList.add('sync-active');
                             }
-                            
+
                             // 2. Update the measurement buffer (Amps / Volts / Caps)
                             // v25.4 Fix: Map 'RLA (MEASURED)' -> 'Comp Amps' and 'FLA ODF (MEASURED)' -> 'ODF Amps'
                             let bufferKey = keyword;
@@ -2617,8 +2650,8 @@
                 // v25.7: Visual Confirmation of Adding
                 const hubBtn = document.getElementById('btn-nav-report');
                 if (hubBtn) {
-                   hubBtn.classList.add('flash-pulse');
-                   setTimeout(() => hubBtn.classList.remove('flash-pulse'), 500);
+                    hubBtn.classList.add('flash-pulse');
+                    setTimeout(() => hubBtn.classList.remove('flash-pulse'), 500);
                 }
             }
             localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
@@ -2831,7 +2864,7 @@
             });
         }
 
-        const APP_VERSION = "v25.7";
+        const APP_VERSION = "v25.9";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -2985,7 +3018,7 @@
             grid.style.display = 'flex';
             grid.style.flexDirection = 'column';
             grid.style.gap = '8px';
-            
+
             grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
                 const activeNotesInCat = techNotes.filter(n => n.toLowerCase().startsWith(cat.toLowerCase() + ' →') || n.toLowerCase().startsWith(cat.toLowerCase() + ':'));
                 const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim() || m.label.toUpperCase().includes(cat.toUpperCase()));
@@ -3542,9 +3575,9 @@
             const tLower = transcript.toLowerCase();
 
             // Tab Jump Core (Universal navigation)
-            if (tLower.includes('outdoor')) { switchEquipTab('outdoor'); if(masterTarget && !masterTarget.startsWith('C_')) showSection('section-specs'); return; }
-            if (tLower.includes('indoor') || tLower.includes('filter')) { switchEquipTab('indoor'); if(masterTarget) showSection('section-specs'); return; }
-            if (tLower.includes('thermostat')) { switchEquipTab('thermostat'); if(masterTarget) showSection('section-specs'); return; }
+            if (tLower.includes('outdoor')) { switchEquipTab('outdoor'); if (masterTarget && !masterTarget.startsWith('C_')) showSection('section-specs'); return; }
+            if (tLower.includes('indoor') || tLower.includes('filter')) { switchEquipTab('indoor'); if (masterTarget) showSection('section-specs'); return; }
+            if (tLower.includes('thermostat')) { switchEquipTab('thermostat'); if (masterTarget) showSection('section-specs'); return; }
             if (tLower.includes('manuals')) { openManuals(); return; }
 
             // Compiler Context Jumps
@@ -3575,8 +3608,8 @@
             else if (/\b(kw|electric heat|heat strips)\b/.test(transcript)) { masterTarget = "KW"; kwRegex = /\b(kw|electric heat|heat strips)\b/; }
             else if (/\b(blower|blower motor|hp)\b/.test(transcript)) { masterTarget = "BLOWER"; kwRegex = /\b(blower|blower motor|hp)\b/; }
             else if (/\b(inducer|draft inducer)\b/.test(transcript)) { masterTarget = "INDUCER"; kwRegex = /\b(inducer|draft inducer)\b/; }
-            else if (/\b(filter|air filter)\b/.test(transcript)) { 
-                masterTarget = "FILTER"; kwRegex = /\b(filter|air filter)\b/; 
+            else if (/\b(filter|air filter)\b/.test(transcript)) {
+                masterTarget = "FILTER"; kwRegex = /\b(filter|air filter)\b/;
                 if (systemSpecs.activeTab !== 'indoor') { switchEquipTab('indoor'); }
             }
             else if (/\b(gas valve)\b/.test(transcript)) { masterTarget = "GAS_V"; kwRegex = /\b(gas valve)\b/; }
@@ -4424,10 +4457,10 @@
                     if (item.field === 'ODF Amps') odfAmps = item;
                 });
 
-                let hVolts = 0, hAmps = 0, fVolts = 0, fAmps = 0, 
-                    hRating = parseFloat(document.getElementById('hermRating').value), 
+                let hVolts = 0, hAmps = 0, fVolts = 0, fAmps = 0,
+                    hRating = parseFloat(document.getElementById('hermRating').value),
                     fRating = parseFloat(document.getElementById('fanRating').value);
-                
+
                 Object.values(buffer).forEach(item => {
                     if (item.field === "Herm Volts") hVolts = item.val;
                     if (item.field === "Herm Amps") hAmps = item.val;
@@ -4524,17 +4557,65 @@
         function closeReport() { showSection('v23-home'); }
         function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); showSection('v23-home'); }
         async function startJob() {
-            const name = document.getElementById('custName').value;
+            const nameInput = document.getElementById('custName');
+            const shellBtn = document.getElementById('shellBtn');
+            const name = nameInput.value.trim();
             if (!name) return alert("Enter Job Name/Number First");
-            const result = await callAppsScript({ action: "createJob", name: name, date: new Date().toISOString().split('T')[0] });
-            if (result && result.status === "success") {
-                alert("Job Created: " + name);
-                window.currentJob = name;
-                const hookLabel = document.getElementById('hookedJobNameLauncher');
-                if (hookLabel) {
-                    hookLabel.innerText = name;
-                    document.getElementById('activeJobIndicatorLauncher').style.display = 'block';
+
+            // UI Status Sequence
+            const originalText = shellBtn.innerText;
+            const originalBg = shellBtn.style.background;
+            
+            try {
+                shellBtn.disabled = true;
+                shellBtn.innerText = "⏳ DUPLICATING TEMPLATE...";
+                shellBtn.style.background = "var(--amber-orange)";
+                shellBtn.style.color = "black";
+
+                const res = await callAppsScript({ 
+                    action: "createJob", 
+                    name: name, 
+                    date: new Date().toISOString().split('T')[0] 
+                });
+
+                if (res && res.status === "success" && res.data.status === "success") {
+                    shellBtn.innerText = "🔗 BUILDING BACKLINKS...";
+                    
+                    // Deep Hooking: Store both Name and Folder ID
+                    const finalName = res.data.sheetName;
+                    const folderId = res.data.folderId;
+                    
+                    localStorage.setItem('hvacActiveJob', finalName);
+                    localStorage.setItem('hvacActiveFolderId', folderId);
+                    window.currentJob = finalName;
+
+                    shellBtn.innerText = "✅ JOB HOOKED!";
+                    shellBtn.style.background = "var(--emerald-green)";
+                    
+                    // Refresh UI
+                    updateUniversalJobHeaders();
+                    if (typeof fetchMirrorSync === "function") fetchMirrorSync();
+
+                    setTimeout(() => {
+                        shellBtn.disabled = false;
+                        shellBtn.innerText = originalText;
+                        shellBtn.style.background = originalBg;
+                        shellBtn.style.color = "white";
+                        nameInput.value = "";
+                    }, 3000);
+
+                } else {
+                    throw new Error(res.data ? res.data.message : "Creation Failed");
                 }
+            } catch (e) {
+                alert("Creation Error: " + e.message);
+                shellBtn.disabled = false;
+                shellBtn.innerText = "ERROR - TRY AGAIN";
+                shellBtn.style.background = "var(--crimson-red)";
+                setTimeout(() => {
+                    shellBtn.innerText = originalText;
+                    shellBtn.style.background = originalBg;
+                }, 3000);
             }
         }
 
