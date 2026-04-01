@@ -2823,16 +2823,16 @@
 
             try {
                 const res = await callAppsScript({ action: "getJobList" });
-                if (res.status === "success" && res.data) {
-                    list.innerHTML = res.data.map(job => `
+                // v26.6: Gold Handshake - Check if res is array (Success) or has error key
+                if (res && Array.isArray(res)) {
+                    list.innerHTML = res.map(job => `
                         <div class="job-card ${job === currentJob ? 'active' : ''}" onclick="selectJob('${job}')">
                             <b>${job}</b>
                             <span>${job === currentJob ? 'HOOKED' : 'TAP TO SYNC'}</span>
                         </div>
                     `).join('');
                 } else {
-                    // v26.5: Detailed UI feedback on failure
-                    const errorMsg = res.message || "Unknown Script Error";
+                    const errorMsg = res.error || res.message || "Unknown Script Error";
                     list.innerHTML = `
                         <div style="color:var(--crimson-red); text-align:center; padding:20px;">
                             <div style="font-weight:900; margin-bottom:8px;">CONNECTION REJECTED</div>
@@ -2881,9 +2881,8 @@
 
         async function callAppsScript(payload) {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s grace
 
-            // Gold Standard: Only inject sheetName if not already present (prevents double-wrap)
             if (currentJob && !payload.sheetName) payload.sheetName = currentJob;
 
             try {
@@ -2896,18 +2895,17 @@
                 
                 const text = await response.text();
                 try {
-                    const json = JSON.parse(text);
-                    return json; 
+                    // v26.6: Raw JSON Return (GOLD Logic)
+                    // We don't check for .status here; we return the parsed object
+                    return JSON.parse(text); 
                 } catch (parseErr) {
-                    // v26.5: Transparent Error reporting
                     console.error("Malformed JSON from GAS. Raw Content:", text);
-                    return { status: "error", message: "Server returned non-JSON: " + text.substring(0, 100) };
+                    return { error: "Server returned non-JSON: " + text.substring(0, 100) };
                 }
             } catch (err) {
                 clearTimeout(timeoutId);
-                // v26.5: Differentiate timeout from other errors
                 if (err.name === 'AbortError') {
-                    return { status: "error", message: "Connection Timeout (30s)" };
+                    return { error: "Connection Timeout (35s)" };
                 }
                 throw err;
             }
@@ -3017,7 +3015,7 @@
         }
 
         let lastActiveSection = 'v23-home';
-        const APP_VERSION = "v26.5";
+        const APP_VERSION = "v26.6";
 
         function normalizeJobName(name) {
             if (!name) return "";
