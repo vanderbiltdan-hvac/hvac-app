@@ -7,19 +7,19 @@
     <title>HVAC Master Pro v25.2.12</title>
     <!-- 
         BUILD: index_v25_2026_03_31_0530.html
-        VERSION: v25.4 (Mirror & Map Restoration)
-        SOP: Symbol Strip + Diag Mapping + Instant Pull Refresh
+        VERSION: v25.5 (S26 & iPhone Ultra Polish)
+        SOP: Vertical Scroll Fix + Fuzzy Mirror Sync + Name Alignment
     -->
 
     <!-- PWA NATIVE FEEL -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC PRO v25.4">
+    <meta name="apple-mobile-web-app-title" content="HVAC PRO v25.5">
 
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#121212">
 
-    <!-- v25.4: Mirror Pull Fix, Diag Amp Map, Compiler Symbol Clean -->
+    <!-- v25.5: Mobile Scroll Restore, Fuzzy Sync Match, DRAIN AND PAN Alignment -->
 
     <style>
         :root {
@@ -299,10 +299,11 @@
             background: var(--bg-dark);
             z-index: 10000;
             flex-direction: column;
-            justify-content: flex-start;
-            align-items: center; /* v25.2.5: Re-centered */
+            justify-content: center; /* v25.5: Center content vertically for Ultra/Pro Max */
+            align-items: center; 
             padding: 10px;
             padding-top: env(safe-area-inset-top, 20px);
+            padding-bottom: env(safe-area-inset-bottom, 20px); /* v25.5: Home bar safety */
             box-sizing: border-box;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -358,8 +359,9 @@
             border-radius: 24px;
             padding: 10px;
             text-align: center;
-            margin: 4px auto !important; /* v25.2.6: Re-centered card */
-            flex-shrink: 0;
+            margin: 4px auto !important; 
+            flex-shrink: 1; /* v25.5: Allow console to yield to log scroll */
+            min-height: 0;
             position: relative;
             max-width: 460px;
             width: 100%;
@@ -566,12 +568,14 @@
 
         .log-list {
             flex: 1;
-            min-height: 140px; /* v25.4: Increased Girth */
-            max-height: 35vh; /* Responsive on mobile */
-            overflow-y: auto;
+            min-height: 120px; 
+            max-height: 40vh; 
+            overflow-y: auto !important; /* v25.5: Forced scroll override */
+            -webkit-overflow-scrolling: touch;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 16px;
-            padding: 15px; /* v25.4: Better padding */
+            padding: 15px; 
+            padding-bottom: 30px; /* v25.5: Bottom padding for scroll visibility */
             margin: 8px 0;
             font-size: 11px;
             border: 1px solid rgba(255, 255, 255, 0.03);
@@ -2505,12 +2509,19 @@
             doSync();
         }
 
+        // v25.5: Normalizes text for better mirror matching (Fuzzy Matching)
+        function normalizeText(str) {
+            if (!str) return "";
+            // Lowercase, strip punctuation (slashes, dashes, dots), and collapse spaces
+            return String(str).toLowerCase()
+                .replace(/[^a-z0-9]/g, "")
+                .trim();
+        }
 
         function renderMirrorTruth() {
             const list = document.getElementById('mirrorTruthList');
             if (!list) return;
 
-            // Safety: Ensure mirrorState is at least an object
             const state = mirrorState || {};
             const populated = Object.keys(state).filter(k => {
                 const val = state[k];
@@ -2524,7 +2535,14 @@
 
             list.innerHTML = populated.map(k => {
                 const val = formatVal(state[k]);
-                const isSelected = techNotes.some(n => n.includes(k) && n.includes(val.toString()));
+                // v25.5: Fuzzy match logic
+                const normK = normalizeText(k);
+                const normVal = normalizeText(val.toString());
+                const isSelected = techNotes.some(n => {
+                    const normNote = normalizeText(n);
+                    return normNote.includes(normK) && normNote.includes(normVal);
+                });
+
                 return `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
                     <div style="display:flex; flex-direction:column; gap:2px;">
@@ -2537,12 +2555,19 @@
                 </div>`;
             }).join('');
 
-            // v25.2.4: Inject Targeted AE55 PMI Chips into Truth List
+            // Targeted AE55 PMI Chips
             if (mirrorPMI && mirrorPMI.length > 0) {
                 list.innerHTML += `<div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin:12px 0;"></div>`;
                 list.innerHTML += `<div style="font-size:10px; color:var(--electric-blue); font-weight:900; margin-bottom:8px; text-align:center;">--- TARGETED PMI (AE55:AF84) ---</div>`;
                 list.innerHTML += mirrorPMI.map(item => {
-                    const isSelected = techNotes.some(n => n.includes(item.label) && n.includes(item.value));
+                    // v25.5: Fuzzy match logic
+                    const normK = normalizeText(item.label);
+                    const normVal = normalizeText(item.value);
+                    const isSelected = techNotes.some(n => {
+                        const normNote = normalizeText(n);
+                        return normNote.includes(normK) && normNote.includes(normVal);
+                    });
+
                     return `
                     <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,229,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(0,229,255,0.1)'};">
                         <div style="display:flex; flex-direction:column; gap:2px;">
@@ -2777,7 +2802,7 @@
             });
         }
 
-        const APP_VERSION = "v25.4";
+        const APP_VERSION = "v25.5";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -3097,7 +3122,7 @@
                 "Evap Coil": ["Clean", "Minor buildup", "Needs Pull & Clean"],
                 "Blower Visual": ["Clean", "Minor buildup"],
                 "Blower Mech": ["Spinning freely", "Bearings tight"],
-                "Drain/Pan": ["Cleared + algae tabs", "Flushed drain line with water", "Cleared with vacuum"],
+                "DRAIN AND PAN": ["Cleared + algae tabs", "Flushed drain line with water", "Cleared with vacuum"],
                 "UV": ["Operational", "Not operational"],
                 "Float Switch": ["Operational", "Not operational"],
                 "Heater": ["Heat mode operational", "Strips verified"],
