@@ -2335,8 +2335,8 @@
             const ph = photos.find(p => p.id === id);
             if (!ph) return;
 
-            const activeFolderId = localStorage.getItem('hvacActiveFolderId');
-            if (!activeFolderId) return alert("No active job hooked. Create a shell first.");
+            const targetFolderId = localStorage.getItem('hvacActiveFolderId');
+            if (!targetFolderId) return alert("No active job hooked. Create a shell first.");
 
             const status = document.getElementById('photoStatus');
             status.style.display = 'block';
@@ -2345,11 +2345,10 @@
             try {
                 const res = await callAppsScript({
                     action: "uploadPhoto",
-                    // v26.3: Strip prefix
-                    data: ph.data.includes(',') ? ph.data.split(',')[1] : ph.data, 
+                    data: ph.data,
                     filename: ph.filename,
                     mimeType: ph.mime,
-                    folderId: activeFolderId
+                    folderId: targetFolderId
                 });
                 if (res.status === "success") {
                     status.innerText = "Upload Complete!";
@@ -2398,17 +2397,15 @@
                 try {
                     status.innerText = `Analyzing: ${ph.filename}...`;
 
-                    // v26.3: Strict Folder Hooking - Force direct folder ID from local storage
-                    const activeFolderId = localStorage.getItem('hvacActiveFolderId');
+                    // v25.9: Deep Hooking - use active folder if we have it
+                    const targetFolderId = localStorage.getItem('hvacActiveFolderId') || null;
 
                     const result = await callAppsScript({
                         action: "uploadPhotoAI",
-                        // v26.3: Strip 'data:image/...;base64,' prefix if it exists
-                        data: ph.data.includes(',') ? ph.data.split(',')[1] : ph.data, 
+                        data: ph.data,
                         filename: ph.filename,
                         mimeType: ph.mime,
-                        sheetName: currentJob,
-                        folderId: activeFolderId 
+                        folderId: targetFolderId
                     });
 
                     if (result && result.status === "success" && result.data && result.data.extractedData) {
@@ -2876,8 +2873,8 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-            // Inject Sheet Context (v23.1 GOLD0)
-            if (currentJob) payload.sheetName = currentJob;
+            // Gold Standard: Only inject sheetName if not already present (prevents double-wrap)
+            if (currentJob && !payload.sheetName) payload.sheetName = currentJob;
 
             try {
                 const response = await fetch(WEB_APP_URL, {
@@ -2998,7 +2995,7 @@
         }
 
         let lastActiveSection = 'v23-home';
-        const APP_VERSION = "v26.3";
+        const APP_VERSION = "v26.4";
 
         function normalizeJobName(name) {
             if (!name) return "";
@@ -4701,7 +4698,9 @@
             const name = nameInput.value.trim();
             if (!name) return alert("Enter Job Name/Number First");
 
-            // UI Status Sequence
+            // v26.4: Strict Normalization
+            const normalizedName = normalizeJobName(name);
+
             const originalText = shellBtn.innerText;
             const originalBg = shellBtn.style.background;
 
@@ -4713,28 +4712,22 @@
 
                 const res = await callAppsScript({
                     action: "createJob",
-                    name: name,
+                    name: name, // Script handles its own inner naming logic, we pass the raw name
                     date: new Date().toISOString().split('T')[0]
                 });
 
                 if (res && res.status === "success" && res.data.status === "success") {
                     shellBtn.innerText = "🔗 BUILDING BACKLINKS...";
 
-                    // v26.3: Strict Normalization for perfect Hooking
-                    const finalName = normalizeJobName(name); 
-                    const folderId = res.data.folderId;
-
-                    localStorage.setItem('hvacActiveJob', finalName);
-                    localStorage.setItem('hvacActiveFolderId', folderId);
-                    window.currentJob = finalName;
+                    // v26.4: Store the normalized name to guarantee alignment
+                    localStorage.setItem('hvacActiveJob', normalizedName);
+                    localStorage.setItem('hvacActiveFolderId', res.data.folderId);
+                    window.currentJob = normalizedName;
 
                     shellBtn.innerText = "✅ JOB HOOKED!";
                     shellBtn.style.background = "var(--emerald-green)";
-
-                    // Refresh UI
                     updateUniversalJobHeaders();
-                    if (typeof fetchMirrorSync === "function") fetchMirrorSync();
-
+                    
                     setTimeout(() => {
                         shellBtn.disabled = false;
                         shellBtn.innerText = originalText;
@@ -4742,7 +4735,6 @@
                         shellBtn.style.color = "white";
                         nameInput.value = "";
                     }, 3000);
-
                 } else {
                     throw new Error(res.data ? res.data.message : "Creation Failed");
                 }
