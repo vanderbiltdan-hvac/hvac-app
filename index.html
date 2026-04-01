@@ -1080,22 +1080,24 @@
         }
 
         .btn-full {
-             width: 100%;
-             height: 75px;
-             border-radius: 20px;
-             font-size: 18px;
-             font-weight: 900;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             gap: 12px;
-             border: 2px solid rgba(255,255,255,0.1);
-             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-             cursor: pointer;
-             transition: 0.2s;
+            width: 100%;
+            height: 75px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .btn-full:active { transform: scale(0.96); }
+        .btn-full:active {
+            transform: scale(0.96);
+        }
 
         .v23-sub-grid {
             display: grid;
@@ -1112,10 +1114,11 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #ccc;
         }
+
         .v23-pwr-btn:active,
         .v23-sub-btn:active {
             transform: scale(0.95);
@@ -1214,17 +1217,15 @@
 
     <!-- v25.2.0 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+        <div class="universal-job-indicator" style="margin-bottom:12px;">
+            <div class="job-indicator-box" style="background:rgba(255,23,68,0.05); border:1px solid var(--crimson-red); padding:10px; border-radius:12px; text-align:center;">
+                <span class="job-indicator-text" style="font-size:16px; font-weight:900; color:var(--crimson-red); display:block;">UNHOOKED</span>
+            </div>
+        </div>
+
         <!-- GLOBAL CONFLICT BADGE -->
         <div id="conflictBadgeHeader"
             style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
-        </div>
-
-        <div id="activeJobIndicatorHome" style="margin-bottom:12px; display:none;">
-            <div style="background:rgba(0,229,255,0.05); border:1px solid var(--electric-blue); padding:10px; border-radius:12px; text-align:center;">
-                <span style="font-size:10px; color:#aaa; font-weight:900; letter-spacing:1px;">HOOKED JOB:</span>
-                <span id="hookedJobNameHome" style="font-size:16px; font-weight:900; color:var(--electric-blue); display:block;">--</span>
-            </div>
         </div>
 
         <div
@@ -1257,21 +1258,27 @@
 
         <div class="v23-launcher-grid">
             <!-- SLOT 1: NEW JOB (FULL WIDTH) -->
-            <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
-                <input type="text" id="custName" placeholder="Enter Name / Job #" style="margin-bottom:8px; background:#000;">
-                <button class="btn-full" id="shellBtn" onclick="startJob()" style="background:var(--emerald-green); color:#000;">
-                    🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${new Date().toISOString().split('T')[0]}</span>
+            <div
+                style="background:rgba(255,255,255,0.03); padding:14px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
+                <input type="text" id="custName" placeholder="Enter Name / Job #"
+                    style="margin-bottom:8px; background:#000;">
+                <button class="btn-full" id="shellBtn" onclick="startJob()"
+                    style="background:var(--emerald-green); color:#000;">
+                    🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">2026-04-01</span>
                 </button>
             </div>
 
             <!-- SLOT 2: UPLOAD PHOTOS (FULL WIDTH) -->
-            <button class="btn-full" onclick="document.getElementById('fileInput').click()" style="background:var(--electric-blue); color:#000;">
+            <button class="btn-full" onclick="document.getElementById('fileInput').click()"
+                style="background:var(--electric-blue); color:#000;">
                 📸 UPLOAD PHOTOS
             </button>
-            <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+            <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple
+                onchange="handleMultiPhotos(this)">
 
             <!-- SLOT 3: GALLERY (FULL WIDTH) -->
-            <button class="btn-full" onclick="openGallery()" style="background:#222; color:var(--electric-blue); border-color:var(--electric-blue);">
+            <button class="btn-full" onclick="openGallery()"
+                style="background:#222; color:var(--electric-blue); border-color:var(--electric-blue);">
                 🖼️ PHOTO HOARD (GALLERY)
             </button>
 
@@ -1296,12 +1303,13 @@
             </div>
 
             <!-- SLOT 10: PORTAL (FULL WIDTH BOTTOM) -->
-            <button class="btn-full" onclick="openJobPortal()" style="background:#333; color:var(--amber-orange); border-color:var(--amber-orange); margin-top:20px;">
+            <button class="btn-full" onclick="openJobPortal()"
+                style="background:#333; color:var(--amber-orange); border-color:var(--amber-orange); margin-top:20px;">
                 📂 JOB PORTAL (SWITCHER)
             </button>
         </div>
     </div>
- </div>
+    </div>
 
     <!-- NEW READINGS HUB SECTION -->
     <div class="container" id="section-readings" style="padding-bottom:100px; display:none;">
@@ -1440,7 +1448,11 @@
 
     <!-- ORIGINAL HOME (RENAMED TO SPECS) -->
     <div class="container" id="section-specs" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+        <div class="universal-job-indicator" style="margin-bottom:12px;">
+            <div class="job-indicator-box" style="background:rgba(255,23,68,0.05); border:1px solid var(--crimson-red); padding:10px; border-radius:12px; text-align:center;">
+                <span class="job-indicator-text" style="font-size:16px; font-weight:900; color:var(--crimson-red); display:block;">UNHOOKED</span>
+            </div>
+        </div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; padding-top:2px;">
             <div>
@@ -1515,6 +1527,11 @@
 
     <!-- VOICE MODAL (V2 LAYOUT - REWORKED) -->
     <div id="voiceModal" class="modal-overlay">
+        <div class="universal-job-indicator" style="margin:10px; width:calc(100% - 20px);">
+            <div class="job-indicator-box" style="background:rgba(255,23,68,0.05); border:1px solid var(--crimson-red); padding:6px; border-radius:10px; text-align:center;">
+                <span class="job-indicator-text" style="font-size:12px; font-weight:900; color:var(--crimson-red); display:block;">UNHOOKED</span>
+            </div>
+        </div>
         <!-- TOP NAV -->
         <div class="step-nav" id="stepNav"></div>
 
@@ -1543,16 +1560,16 @@
             <div id="liveCheck"></div>
 
             <div class="dual-inputs">
-                <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')">
-                    <span style="font-size:9px; color:#aaa; font-weight:bold;">HERM</span>
+                <div id="hermWrap" class="cap-cell active" onclick="selectRating('herm')" style="padding:6px; height:auto;">
+                    <span style="font-size:8px; color:#aaa; font-weight:bold;">HERM</span>
                     <input type="number" id="hermRating" value="45" oninput="manualRatingInput()"
-                        style="pointer-events: auto;">
+                        style="pointer-events: auto; font-size:18px;">
                 </div>
-                <span style="font-size:24px; font-weight:bold; color:var(--amber-orange); margin-top:15px;">+</span>
-                <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')">
-                    <span style="font-size:9px; color:#aaa; font-weight:bold;">FAN</span>
+                <span style="font-size:20px; font-weight:bold; color:var(--amber-orange); margin-top:8px;">+</span>
+                <div id="fanWrap" class="cap-cell" onclick="selectRating('fan')" style="padding:6px; height:auto;">
+                    <span style="font-size:8px; color:#aaa; font-weight:bold;">FAN</span>
                     <input type="number" id="fanRating" value="5" oninput="manualRatingInput()"
-                        style="pointer-events: auto;">
+                        style="pointer-events: auto; font-size:18px;">
                 </div>
                 <div id="tolSelector" style="display:flex; flex-direction:column; gap:4px; margin-left:10px;">
                     <div class="tolerance-pill" id="tol5" onclick="setTol(5)">5%</div>
@@ -1563,11 +1580,11 @@
 
             <div class="rating-reel" id="capReel"></div>
 
-            <div class="btn-main-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:16px;">
+            <div class="btn-main-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:12px;">
                 <button id="micTrigger" class="btn btn-primary" onclick="toggleGlobalMic()"
-                    style="padding:16px; font-size:18px; color: white !important;">🎙 START MIC</button>
+                    style="padding:10px; font-size:14px; color: white !important;">🎙 START MIC</button>
                 <button onclick="confirmReading()" class="btn btn-green"
-                    style="padding:16px; font-size:18px; color: black !important;">✔
+                    style="padding:10px; font-size:14px; color: black !important;">✔
                     COMMIT</button>
             </div>
         </div>
@@ -1853,7 +1870,11 @@
 
     <!-- SECTION: MIRROR (COLUMN W TRUTH - v25.2.1) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+1873:         <div class="universal-job-indicator" style="margin-bottom:12px;">
+1874:             <div class="job-indicator-box" style="background:rgba(255,23,68,0.05); border:1px solid var(--crimson-red); padding:10px; border-radius:12px; text-align:center;">
+1875:                 <span class="job-indicator-text" style="font-size:16px; font-weight:900; color:var(--crimson-red); display:block;">UNHOOKED</span>
+1876:             </div>
+1877:         </div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:4px;">
             <h1 style="font-size:20px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🪞 MIRROR</h1>
@@ -1903,7 +1924,11 @@
 
     <!-- SECTION: DATA BLOCK (PRE-PUSH) -->
     <div class="container" id="section-datablock" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+1923:         <div class="universal-job-indicator" style="margin-bottom:12px;">
+1924:             <div class="job-indicator-box" style="background:rgba(255,23,68,0.05); border:1px solid var(--crimson-red); padding:10px; border-radius:12px; text-align:center;">
+1925:                 <span class="job-indicator-text" style="font-size:16px; font-weight:900; color:var(--crimson-red); display:block;">UNHOOKED</span>
+1926:             </div>
+1927:         </div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:var(--emerald-green); font-weight:900;">📦
@@ -1934,7 +1959,11 @@
 
     <!-- SECTION: PMI (FULL SCREEN TECH NOTES) -->
     <div class="container" id="section-pmi" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+1954:         <div class="universal-job-indicator" style="margin-bottom:12px;">
+1955:             <div class="job-indicator-box" style="background:rgba(255,23,68,0.05); border:1px solid var(--crimson-red); padding:10px; border-radius:12px; text-align:center;">
+1956:                 <span class="job-indicator-text" style="font-size:16px; font-weight:900; color:var(--crimson-red); display:block;">UNHOOKED</span>
+1957:             </div>
+1958:         </div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:var(--amber-orange); font-weight:900;">🛠 PMI
@@ -1985,7 +2014,11 @@
 
     <!-- REFRIGERANT DATA HUB -->
     <div class="container" id="section-refrig" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+2004:         <div class="universal-job-indicator" style="margin-bottom:12px;">
+2005:             <div class="job-indicator-box" style="background:rgba(255,23,68,0.05); border:1px solid var(--crimson-red); padding:10px; border-radius:12px; text-align:center;">
+2006:                 <span class="job-indicator-text" style="font-size:16px; font-weight:900; color:var(--crimson-red); display:block;">UNHOOKED</span>
+2007:             </div>
+2008:         </div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🌡 REFRIGERANT DATA
@@ -2301,7 +2334,7 @@
             const photos = await getAllPhotos();
             const ph = photos.find(p => p.id === id);
             if (!ph) return;
-            
+
             const targetFolderId = localStorage.getItem('hvacActiveFolderId');
             if (!targetFolderId) return alert("No active job hooked. Create a shell first.");
 
@@ -2363,16 +2396,16 @@
             for (let ph of toProcess) {
                 try {
                     status.innerText = `Analyzing: ${ph.filename}...`;
-                    
+
                     // v25.9: Deep Hooking - use active folder if we have it
                     const targetFolderId = localStorage.getItem('hvacActiveFolderId') || null;
 
-                    const result = await callAppsScript({ 
-                        action: "uploadPhotoAI", 
-                        data: ph.data, 
-                        filename: ph.filename, 
+                    const result = await callAppsScript({
+                        action: "uploadPhotoAI",
+                        data: ph.data,
+                        filename: ph.filename,
                         mimeType: ph.mime,
-                        folderId: targetFolderId 
+                        folderId: targetFolderId
                     });
 
                     if (result && result.status === "success" && result.data && result.data.extractedData) {
@@ -2919,19 +2952,25 @@
     <script>
         function updateUniversalJobHeaders() {
             const currentJob = localStorage.getItem('hvacActiveJob');
-            const bars = document.querySelectorAll('.job-header');
-            const hookTexts = document.querySelectorAll('.job-header-text, #hookedJobName');
+            const indicators = document.querySelectorAll('.universal-job-indicator');
 
-            bars.forEach(b => b.style.display = currentJob ? 'flex' : 'none');
-            hookTexts.forEach(t => t.innerText = currentJob || '--');
-
-            // v26.0: Home Page Mission Control Indicator
-            const homeIndicator = document.getElementById('activeJobIndicatorHome');
-            const homeHookText = document.getElementById('hookedJobNameHome');
-            if (homeIndicator && homeHookText) {
-                homeIndicator.style.display = currentJob ? 'block' : 'none';
-                homeHookText.innerText = currentJob || '--';
-            }
+            indicators.forEach(container => {
+                const box = container.querySelector('.job-indicator-box');
+                const text = container.querySelector('.job-indicator-text');
+                if (box && text) {
+                    if (currentJob) {
+                        box.style.background = "rgba(0,229,255,0.05)";
+                        box.style.borderColor = "var(--electric-blue)";
+                        text.style.color = "var(--electric-blue)";
+                        text.innerText = currentJob;
+                    } else {
+                        box.style.background = "rgba(255,23,68,0.05)";
+                        box.style.borderColor = "var(--crimson-red)";
+                        text.style.color = "var(--crimson-red)";
+                        text.innerText = "UNHOOKED";
+                    }
+                }
+            });
             updateShellButton();
         }
 
@@ -4638,33 +4677,33 @@
             // UI Status Sequence
             const originalText = shellBtn.innerText;
             const originalBg = shellBtn.style.background;
-            
+
             try {
                 shellBtn.disabled = true;
                 shellBtn.innerText = "⏳ DUPLICATING TEMPLATE...";
                 shellBtn.style.background = "var(--amber-orange)";
                 shellBtn.style.color = "black";
 
-                const res = await callAppsScript({ 
-                    action: "createJob", 
-                    name: name, 
-                    date: new Date().toISOString().split('T')[0] 
+                const res = await callAppsScript({
+                    action: "createJob",
+                    name: name,
+                    date: new Date().toISOString().split('T')[0]
                 });
 
                 if (res && res.status === "success" && res.data.status === "success") {
                     shellBtn.innerText = "🔗 BUILDING BACKLINKS...";
-                    
+
                     // Deep Hooking: Store both Name and Folder ID
                     const finalName = res.data.sheetName;
                     const folderId = res.data.folderId;
-                    
+
                     localStorage.setItem('hvacActiveJob', finalName);
                     localStorage.setItem('hvacActiveFolderId', folderId);
                     window.currentJob = finalName;
 
                     shellBtn.innerText = "✅ JOB HOOKED!";
                     shellBtn.style.background = "var(--emerald-green)";
-                    
+
                     // Refresh UI
                     updateUniversalJobHeaders();
                     if (typeof fetchMirrorSync === "function") fetchMirrorSync();
