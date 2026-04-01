@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v26.0</title>
+    <title>HVAC Master Pro v26.1</title>
     <!-- 
         BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1215,12 +1215,24 @@
     <!-- v25.2.0 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
         <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
+        <!-- GLOBAL CONFLICT BADGE -->
+        <div id="conflictBadgeHeader"
+            style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
+        </div>
+
+        <div id="activeJobIndicatorHome" style="margin-bottom:12px; display:none;">
+            <div style="background:rgba(0,229,255,0.05); border:1px solid var(--electric-blue); padding:10px; border-radius:12px; text-align:center;">
+                <span style="font-size:10px; color:#aaa; font-weight:900; letter-spacing:1px;">HOOKED JOB:</span>
+                <span id="hookedJobNameHome" style="font-size:16px; font-weight:900; color:var(--electric-blue); display:block;">--</span>
+            </div>
+        </div>
+
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.0</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.1</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1241,17 +1253,6 @@
                 style="background:var(--electric-blue); color:black; border:none; border-radius:16px; width:50px; height:50px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0, 229, 255, 0.4);">
                 <span style="font-size:24px;">🎙</span>
             </button>
-        </div>
-        <!-- GLOBAL CONFLICT BADGE -->
-        <div id="conflictBadgeHeader"
-            style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
-        </div>
-
-        <div id="activeJobIndicatorHome" style="margin-bottom:12px; display:none;">
-            <div style="background:rgba(0,229,255,0.05); border:1px solid var(--electric-blue); padding:10px; border-radius:12px; text-align:center;">
-                <span style="font-size:10px; color:#aaa; font-weight:900; letter-spacing:1px;">HOOKED JOB:</span>
-                <span id="hookedJobNameHome" style="font-size:16px; font-weight:900; color:var(--electric-blue); display:block;">--</span>
-            </div>
         </div>
 
         <div class="v23-launcher-grid">
@@ -1448,7 +1449,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v26.0</div>
+                        v26.1</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -2073,6 +2074,12 @@
                 if (el) el.style.display = 'none';
             });
 
+            // Sync Safe Sync Checkboxes and Job Headers on enter
+            updateUniversalJobHeaders();
+            if (id !== 'galleryOverlay' && id !== 'syncErrorModal' && id !== 'aiModal') {
+                lastActiveSection = id; // v26.1: Track entry source
+            }
+
             const target = document.getElementById(id);
             if (target) {
                 target.style.display = (target.classList.contains('container') ? 'block' : 'flex');
@@ -2139,7 +2146,8 @@
         function closeManuals() { showSection('v23-home'); }
         function closeSettings() { showSection('v23-home'); }
         function closeReport() { showSection('v23-home'); }
-        function closeAllModals() { showSection('v23-home'); }
+        function closeSettings() { showSection(lastActiveSection || 'v23-home'); }
+        function closeAllModals() { showSection(lastActiveSection || 'v23-home'); }
 
         async function initIndexedDB() {
             return new Promise((resolve, reject) => {
@@ -2244,7 +2252,6 @@
 
         async function openGallery() {
             localStorage.setItem('galleryOpen', 'true');
-            closeAllModals();
             document.getElementById('galleryOverlay').style.display = 'flex';
             currentShelf = 'ALL';
             renderGallery();
@@ -2252,7 +2259,7 @@
         function closeGallery() {
             localStorage.removeItem('galleryOpen');
             document.getElementById('galleryOverlay').style.display = 'none';
-            showSection('section-specs');
+            showSection(lastActiveSection || 'v23-home');
         }
 
         async function switchShelf(shelfName) {
@@ -2769,7 +2776,7 @@
         async function openJobPortal() {
             document.getElementById('jobPortalModal').style.display = 'flex';
             const list = document.getElementById('jobListContainer');
-            list.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">Fetching Jobs from Spreadsheet...</div>';
+            list.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">Fetching Job Tabs...</div>';
 
             try {
                 const res = await callAppsScript({ action: "getJobList" });
@@ -2911,7 +2918,7 @@
 
     <script>
         function updateUniversalJobHeaders() {
-            const currentJob = localStorage.getItem('hvacActiveJobName');
+            const currentJob = localStorage.getItem('hvacActiveJob');
             const bars = document.querySelectorAll('.job-header');
             const hookTexts = document.querySelectorAll('.job-header-text, #hookedJobName');
 
@@ -2938,7 +2945,8 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v26.0";
+        let lastActiveSection = 'v23-home';
+        const APP_VERSION = "v26.1";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -3310,15 +3318,6 @@
         initV2Controls();
         updateShellButton();
         if (localStorage.getItem('galleryOpen') === 'true') openGallery();
-
-        // ── Change #2: Date on CREATE SHELL (yyyy-mm-dd) ─────────────────
-        function updateShellButton() {
-            const d = new Date();
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            document.getElementById('shellBtn').innerText = `CREATE SHELL  ${yyyy}-${mm}-${dd}`;
-        }
 
         async function initSplash() {
             console.log("HVAC Master Pro v26.0 Mission Control - NEW ERA Start");
