@@ -2795,6 +2795,7 @@
             localStorage.setItem('hvacActiveJob', jobName);
             isJobMode = true; // Auto-Enable Sync on selection
             refreshSyncUI();
+            updateUniversalJobHeaders(); // Instant visual bridge (v26.11)
             closeJobPortal();
             fetchMirrorSync(); // Immediate pull
         }
@@ -2913,14 +2914,14 @@
 
     <script>
         function updateUniversalJobHeaders() {
-            const currentJob = localStorage.getItem('hvacActiveJobName');
+            const currentJob = localStorage.getItem('hvacActiveJob');
             const bars = document.querySelectorAll('.job-header');
             const hookTexts = document.querySelectorAll('.job-header-text, #hookedJobName');
 
             bars.forEach(b => b.style.display = currentJob ? 'flex' : 'none');
             hookTexts.forEach(t => t.innerText = currentJob || '--');
 
-            // v26.0: Home Page Mission Control Indicator
+            // v26.11: Unified Home Page Mission Control Indicator
             const homeIndicator = document.getElementById('activeJobIndicatorHome');
             const homeHookText = document.getElementById('hookedJobNameHome');
             if (homeIndicator && homeHookText) {
@@ -2940,7 +2941,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v26.10";
+        const APP_VERSION = "v26.11";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
