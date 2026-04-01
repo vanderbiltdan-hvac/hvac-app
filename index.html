@@ -2831,10 +2831,20 @@
                         </div>
                     `).join('');
                 } else {
-                    list.innerHTML = `<div style="color:var(--crimson-red); text-align:center; padding:20px;">Error: ${res.message || 'Failed to sync list'}</div>`;
+                    // v26.5: Detailed UI feedback on failure
+                    const errorMsg = res.message || "Unknown Script Error";
+                    list.innerHTML = `
+                        <div style="color:var(--crimson-red); text-align:center; padding:20px;">
+                            <div style="font-weight:900; margin-bottom:8px;">CONNECTION REJECTED</div>
+                            <div style="font-size:11px; opacity:0.8; word-break:break-all;">${errorMsg}</div>
+                        </div>`;
                 }
             } catch (err) {
-                list.innerHTML = '<div style="color:var(--crimson-red); text-align:center; padding:20px;">Connection Failed. Check Internet/Script URL.</div>';
+                list.innerHTML = `
+                    <div style="color:var(--crimson-red); text-align:center; padding:20px;">
+                        <div style="font-weight:900; margin-bottom:8px;">NETWORK FAILURE</div>
+                        <div style="font-size:11px; opacity:0.8;">${err.message || 'Check Firewall/Script URL'}</div>
+                    </div>`;
             }
         }
 
@@ -2883,10 +2893,22 @@
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
-                const json = await response.json();
-                return json; // Returns {status, data}
+                
+                const text = await response.text();
+                try {
+                    const json = JSON.parse(text);
+                    return json; 
+                } catch (parseErr) {
+                    // v26.5: Transparent Error reporting
+                    console.error("Malformed JSON from GAS. Raw Content:", text);
+                    return { status: "error", message: "Server returned non-JSON: " + text.substring(0, 100) };
+                }
             } catch (err) {
                 clearTimeout(timeoutId);
+                // v26.5: Differentiate timeout from other errors
+                if (err.name === 'AbortError') {
+                    return { status: "error", message: "Connection Timeout (30s)" };
+                }
                 throw err;
             }
         }
@@ -2995,7 +3017,7 @@
         }
 
         let lastActiveSection = 'v23-home';
-        const APP_VERSION = "v26.4";
+        const APP_VERSION = "v26.5";
 
         function normalizeJobName(name) {
             if (!name) return "";
