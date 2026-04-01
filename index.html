@@ -5,22 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HVAC Master Pro v26.13</title>
-    <meta name="apple-mobile-web-app-title" content="HVAC Master Pro v26.13">
+    <!-- 
+        BUILD: index_v26_2026_04_01_1525.html
     <script>
         const APP_VERSION = "26.13";
-        function wipeLocalStorage() {
-            localStorage.clear();
-            console.log("Local storage wiped.");
-            location.reload();
-        }
-        function wipeSessionStorage() {
-            sessionStorage.clear();
-            console.log("Session storage wiped.");
-            location.reload();
-        }
     </script>
-    <!-- 
-        BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1226,9 +1215,19 @@
 
     <div id="masterIndicator" class="master-indicator"></div>
 
+    <div id="section-pmi" class="container" style="display:none; padding-bottom:90px;">
+        <div class="job-header" id="activeJobIndicatorPMI" style="display:flex;">
+            <span>ACTIVE JOB:</span>
+            <span class="job-header-text" id="activeJobNameHeaderPMI">--</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>PMI HUB</h2>
+            <button class="btn-utility danger" onclick="wipePMI()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE PMI</button>
+        </div>
+
     <!-- v25.2.0 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
@@ -1447,7 +1446,7 @@
 
     <!-- ORIGINAL HOME (RENAMED TO SPECS) -->
     <div class="container" id="section-specs" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-shrink: 0; padding-top:2px;">
             <div>
@@ -1522,7 +1521,6 @@
 
     <!-- VOICE MODAL (V2 LAYOUT - REWORKED) -->
     <div id="voiceModal" class="modal-overlay">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
         <!-- TOP NAV -->
         <div class="step-nav" id="stepNav"></div>
 
@@ -1601,8 +1599,8 @@
     <!-- MANUALS OVERLAY (RENAMED TO SECTION-MANUALS) -->
     <div id="section-manuals" class="modal-overlay" style="background:#0f0f0f; display:none;">
 
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">📄 SYSTEM MANUALS</h2>
             <button onclick="closeManuals()"
                 style="background:transparent; border:none; color:white; font-size:24px;">&times;</button>
@@ -1622,8 +1620,8 @@
     <!-- REPORT COMPILER (v20.32) -->
     <div id="reportModal" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
 
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
+        <div
+            style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📋 COMPILER</h2>
             <div style="display:flex; gap:12px; align-items:center;">
                 <button id="compilerMicBtn" onclick="toggleGlobalMic()"
@@ -1649,12 +1647,9 @@
         <div style="text-align:center; font-size:9px; color:#555; margin:4px 0; flex-shrink:0;">TAP ANY LINE TO REMOVE
             IT</div>
 
-        <div style="padding-top:15px; border-top:1px solid #333; flex-shrink:0; display:flex; flex-direction:column; gap:10px;">
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-green" onclick="copyCompilerReport()" style="flex:1;">📝 COPY INVOICE</button>
-                <button class="btn btn-outline" onclick="closeReport()" style="flex:1;">CLOSE</button>
-            </div>
-            <button class="btn btn-stop" onclick="wipeTotalSession()" style="background:#442222; border-color:#884444; color:#ff8888; font-size:10px; width:100%;">☢️ WIPE TOTAL SESSION (FULL RESET)</button>
+        <div style="padding-top:15px; border-top:1px solid #333; flex-shrink:0; display:flex; gap:10px;">
+            <button class="btn btn-green" onclick="copyCompilerReport()">📝 COPY INVOICE</button>
+            <button class="btn btn-outline" onclick="closeReport()">CLOSE</button>
         </div>
     </div>
 
@@ -1864,7 +1859,7 @@
 
     <!-- SECTION: MIRROR (COLUMN W TRUTH - v25.2.1) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:4px;">
             <h1 style="font-size:20px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🪞 MIRROR</h1>
@@ -1914,7 +1909,7 @@
 
     <!-- SECTION: DATA BLOCK (PRE-PUSH) -->
     <div class="container" id="section-datablock" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:var(--emerald-green); font-weight:900;">📦
@@ -1945,18 +1940,18 @@
 
     <!-- SECTION: PMI (FULL SCREEN TECH NOTES) -->
     <div class="container" id="section-pmi" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:var(--amber-orange); font-weight:900;">🛠 PMI
                 HUB</h1>
             <div style="display:flex; gap:8px;">
                 <button onclick="applyMirrorToHub('pmi')" class="btn-utility"
-                    style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">⚡ MIRROR SYNC</button>
-                <button onclick="wipePMI()" class="btn-utility danger"
-                    style="font-size:10px;">WIPE PMI</button>
+                    style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">⚡ MIRROR
+                    SYNC</button>
                 <button onclick="showSection('reportModal')" class="btn-utility"
-                    style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">VIEW REPORT</button>
+                    style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">VIEW
+                    REPORT</button>
             </div>
         </div>
         <div style="font-size:10px; color:#666; font-weight:900; margin-bottom:15px; letter-spacing:1px;">SELECT
@@ -1996,18 +1991,18 @@
 
     <!-- REFRIGERANT DATA HUB -->
     <div class="container" id="section-refrig" style="padding-bottom:100px; display:none;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span><button onclick="openJobPortal()" class="btn-utility" style="padding:2px 8px; font-size:9px; border-color:#c5a059; color:#c5a059; margin-left:auto;">PORTAL</button></div>
+        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-top:4px;">
             <h1 style="font-size:22px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900;">🌡 REFRIGERANT DATA
             </h1>
             <div style="display:flex; gap:8px;">
                 <button onclick="applyMirrorToHub('refrig')" class="btn-utility"
-                    style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">⚡ MIRROR SYNC</button>
-                <button onclick="wipeRefrig()" class="btn-utility danger"
-                    style="font-size:10px;">WIPE REFRIG</button>
+                    style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">⚡ MIRROR
+                    SYNC</button>
                 <button onclick="showSection('reportModal')" class="btn-utility"
-                    style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">VIEW REPORT</button>
+                    style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">VIEW
+                    REPORT</button>
             </div>
         </div>
 
@@ -3093,25 +3088,6 @@
             renderRefrigRows();
             renderCompiler();
             renderDraftBlock();
-        }
-
-        function wipeTotalSession() {
-            if (!confirm("☢️ NUCLEAR RESET: Clear ALL local session data (Readings, PMI, Refrig)?")) return;
-            buffer = {};
-            techNotes = [];
-            refData = {};
-            localStorage.removeItem('hvacStagingBufferV20');
-            localStorage.removeItem('hvacTechNotesV20');
-            localStorage.removeItem('hvacRefDataV20');
-            
-            // UI Sync
-            syncLogToUI();
-            renderPMIGrid();
-            renderRefrigRows();
-            renderCompiler();
-            renderDraftBlock();
-            
-            alert("Session Wiped.");
         }
 
         function copyToClipboard(text) {
