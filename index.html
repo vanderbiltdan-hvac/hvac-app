@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v26.13</title>
+    <title>HVAC Master Pro v26.14</title>
     <!-- 
-        BUILD: index_v26_2026_04_01_1525.html
+        BUILD: index_v26_2026_04_01_1570.html
     <script>
-        const APP_VERSION = "26.13";
+        const APP_VERSION = "26.14";
     </script>
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1222,7 +1222,10 @@
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h2>REFRIGERANT HUB</h2>
-            <button class="btn-utility danger" onclick="wipeRefrig()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE REFRIG</button>
+            <div style="display:flex; gap:8px;">
+                <button onclick="applyMirrorToHub('refrig')" class="btn-utility" style="width:auto; padding:6px 12px; font-size:10px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ MIRROR SYNC</button>
+                <button class="btn-utility danger" onclick="wipeRefrig()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE REFRIG</button>
+            </div>
         </div>
         <div id="refrigInputList" class="v23-launcher-grid"></div>
     </div>
@@ -1234,7 +1237,10 @@
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h2>PMI HUB</h2>
-            <button class="btn-utility danger" onclick="wipePMI()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE PMI</button>
+            <div style="display:flex; gap:8px;">
+                <button onclick="applyMirrorToHub('pmi')" class="btn-utility" style="width:auto; padding:6px 12px; font-size:10px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ MIRROR SYNC</button>
+                <button class="btn-utility danger" onclick="wipePMI()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE PMI</button>
+            </div>
         </div>
         <div id="pmiCategoryGrid" class="v23-launcher-grid"></div>
     </div>
@@ -1247,7 +1253,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.13</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.14</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1468,7 +1474,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v26.13</div>
+                        v26.14</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
