@@ -7,19 +7,7 @@
     <title>HVAC Master Pro v25.2.12</title>
     <!-- 
         BUILD: index_v25_2026_03_31_0530.html
-        VERSION: v25.5 (S26 & iPhone Ultra Polish)
-        SOP: Vertical Scroll Fix + Fuzzy Mirror Sync + Name Alignment
-    -->
-
-    <!-- PWA NATIVE FEEL -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HVAC PRO v25.5">
-
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#121212">
-
-    <!-- v25.5: Mobile Scroll Restore, Fuzzy Sync Match, DRAIN AND PAN Alignment -->
+    <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
         :root {
@@ -140,6 +128,16 @@
         .job-card:hover {
             border-color: var(--electric-blue);
             background: rgba(0, 229, 255, 0.1);
+        }
+
+        .flash-pulse {
+            animation: flash-border 0.5s ease-out;
+        }
+
+        @keyframes flash-border {
+            0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); border-color: var(--electric-blue); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
         }
 
         .job-card.active {
@@ -309,6 +307,19 @@
             -webkit-overflow-scrolling: touch;
         }
 
+        .modal-content {
+            width: 100%;
+            max-width: 480px;
+            margin: auto; /* v25.6: True vertical centering */
+            background: var(--card-bg);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
         #jobListContainer {
             width: 100%;
             max-height: 70vh;
@@ -320,13 +331,15 @@
 
         /* STEP NAV */
         .step-nav {
-            display: flex;
+            display: inline-flex; /* v25.6: Fix swipe lock */
             gap: 8px;
-            overflow-x: auto;
+            overflow-x: auto !important;
             padding: 8px 0;
             margin-bottom: 6px;
             scrollbar-width: none;
             -ms-overflow-style: none;
+            width: 100%;
+            touch-action: pan-x; /* v25.6: Force horizontal swipe */
         }
 
         .step-nav::-webkit-scrollbar {
@@ -1899,17 +1912,27 @@
             <!-- Rendered via renderPMIGrid() -->
         </div>
 
-        <!-- Inline Note Selector (Hidden by default) -->
+        <!-- Inline Note Selector (Redesigned v25.7 - ROW LOGIC) -->
         <div id="pmiNoteOverlay"
-            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:20000; flex-direction:column; padding:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 id="pmiActiveCat" style="color:var(--amber-orange); margin:0;">CATEGORY</h2>
-                <button onclick="closePMINotes()"
-                    style="background:none; border:none; color:white; font-size:30px;">&times;</button>
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.96); z-index:20000; flex-direction:column; padding:12px; justify-content:flex-start;">
+            
+            <div class="modal-content" style="max-height:92vh; padding:18px; border-radius:28px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h2 id="pmiActiveCat" style="color:var(--amber-orange); margin:0; font-size:16px; letter-spacing:1px; font-weight:900;">SELECT OPTION</h2>
+                    <button onclick="closePMINotes()" style="background:none; border:none; color:white; font-size:32px; line-height:1; padding:0 8px;">&times;</button>
+                </div>
+
+                <div id="pmiNoteList" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1; padding-right:4px;">
+                    <!-- Rendered Rows -->
+                </div>
+
+                <div style="padding-top:12px; margin-top:auto;">
+                    <button onclick="closePMINotes()" class="btn btn-primary"
+                        style="width:100%; padding:16px; font-weight:900; letter-spacing:2px; font-size:14px; background:var(--electric-blue); color:black; border-radius:15px; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3);">
+                        ✔ DONE & RETURN
+                    </button>
+                </div>
             </div>
-            <div id="pmiNoteList" style="display:grid; gap:10px; overflow-y:auto; flex:1;"></div>
-            <button onclick="closePMINotes()" class="btn btn-primary"
-                style="margin-top:20px; padding:15px; font-weight:900; letter-spacing:1px;">✔ BACK TO GRID</button>
         </div>
     </div>
 
@@ -2583,7 +2606,7 @@
         }
 
         function addMirrorToCompiler(label, val) {
-            // v25.2.11: Silent Clean Extraction
+            // v25.2.11: Silent Clean Extraction (Ensure Raw Numbers for Math)
             let cleanVal = String(val).replace(/[°%']+/g, '').trim();
             const noteStr = `${label}: ${cleanVal}`;
             const idx = techNotes.indexOf(noteStr);
@@ -2591,6 +2614,12 @@
                 techNotes.splice(idx, 1);
             } else {
                 techNotes.push(noteStr);
+                // v25.7: Visual Confirmation of Adding
+                const hubBtn = document.getElementById('btn-nav-report');
+                if (hubBtn) {
+                   hubBtn.classList.add('flash-pulse');
+                   setTimeout(() => hubBtn.classList.remove('flash-pulse'), 500);
+                }
             }
             localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
             renderMirrorTruth();
@@ -2802,7 +2831,7 @@
             });
         }
 
-        const APP_VERSION = "v25.5";
+        const APP_VERSION = "v25.7";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -2890,24 +2919,24 @@
                 // If note has ◘, it's already a KV pair
                 if (note.includes('◘')) {
                     const parts = note.split('◘');
-                    list.push({ label: findSheetLabelFor(parts[0]), val: parts[1] });
+                    list.push({ label: findSheetLabelFor(parts[0]), val: cleanNum(parts[1]) });
                 } else if (note.includes(':')) {
                     const parts = note.split(':');
-                    list.push({ label: findSheetLabelFor(parts[0]), val: parts[1].trim() });
+                    list.push({ label: findSheetLabelFor(parts[0]), val: cleanNum(parts[1].trim()) });
                 } else if (note.includes('→')) {
                     const parts = note.split('→');
-                    list.push({ label: findSheetLabelFor(parts[0]), val: parts[1].trim() });
+                    list.push({ label: findSheetLabelFor(parts[0]), val: cleanNum(parts[1].trim()) });
                 }
             });
 
-            // 2. All Manual Refrig Data
+            // 2. All Manual Refrig Data (Forced RAW for Spreadsheet Math)
             for (let k in refData) {
-                list.push({ label: findSheetLabelFor(k), val: refData[k] });
+                list.push({ label: findSheetLabelFor(k), val: cleanNum(refData[k]) });
             }
 
-            // 3. Staging Buffer (Diagnostic readings)
+            // 3. Staging Buffer (Diagnostic readings - Forced RAW)
             Object.values(buffer).forEach(b => {
-                if (b.val && b.field) list.push({ label: findSheetLabelFor(b.field), val: b.val });
+                if (b.val && b.field) list.push({ label: findSheetLabelFor(b.field), val: cleanNum(b.val) });
             });
 
             return list;
@@ -2979,17 +3008,18 @@
             const list = document.getElementById('pmiNoteList');
             const options = techNotesMaster[cat] || [];
 
-            // Redesigned: Compact 3-Column Pill Grid (Phase 4)
-            list.style.display = 'grid';
-            list.style.gridTemplateColumns = '1fr 1fr 1fr';
-            list.style.gap = '6px';
+            // Redesigned: Full-Width Row Logic (v25.7)
+            list.style.display = 'flex';
+            list.style.flexDirection = 'column';
+            list.style.gap = '8px';
 
             list.innerHTML = options.map(opt => {
-                const noteStr = `${cat} → ${opt}`;
+                const noteStr = `${pmiActiveCategory} → ${opt}`;
                 const isSelected = techNotes.includes(noteStr);
                 return `
-                <button onclick="togglePMINote('${opt}')" class="btn btn-outline" style="padding:4px; font-size:10px; min-height:40px; border-color:${isSelected ? 'var(--electric-blue)' : '#444'}; background:${isSelected ? 'rgba(0,229,255,0.1)' : 'transparent'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; display:flex; justify-content:center; align-items:center; text-align:center;">
-                    <span style="overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; word-break:break-word;">${opt}</span>
+                <button onclick="togglePMINote('${opt.replace(/'/g, "\\'")}')" class="btn btn-outline" style="width:100%; padding:15px; font-size:13px; text-align:left; border-color:${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.06)'}; background:${isSelected ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.03)'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; border-radius:12px; font-weight:900; display:flex; justify-content:space-between; align-items:center;">
+                    <span>${opt}</span>
+                    ${isSelected ? '<span style="font-size:16px;">✔</span>' : ''}
                 </button>`;
             }).join('');
             document.getElementById('pmiNoteOverlay').style.display = 'flex';
@@ -3116,7 +3146,8 @@
         let refData = JSON.parse(localStorage.getItem('hvacRefDataV20')) || {};
         let techNotes = JSON.parse(localStorage.getItem('hvacTechNotesV20')) || [];
         let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV20'));
-        if (!techNotesMaster || techNotesMaster.ah) { // Migration check
+        // Migration Check: If DRAIN AND PAN is missing from current notes master, force a reset
+        if (!techNotesMaster || !techNotesMaster["DRAIN AND PAN"]) { // v25.7: Multi-migration check
             techNotesMaster = {
                 "Filter": ["Clean", "Dirty / Changed"],
                 "Evap Coil": ["Clean", "Minor buildup", "Needs Pull & Clean"],
@@ -4343,7 +4374,14 @@
                 i++;
             };
 
-            // SPECS (Full PM only)
+            // 1. DATE & CUSTOMER (v25.6 Logical Top)
+            if (currentJob) {
+                const dateHeader = new Date().toLocaleDateString();
+                pushLine(`Date: ${dateHeader}`);
+                pushLine(`Job Hook: ${currentJob.toUpperCase()}`);
+            }
+
+            // 2. SYSTEM SPECS (Logical Sequence)
             if (activeTemplate === 'full') {
                 ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
                     const obj = systemSpecs[tab];
@@ -4362,7 +4400,6 @@
                         pushLine(`[${obj.TYPE.toUpperCase()}] → ${parts.join(' | ')}`);
                     }
 
-                    // Render nested coil for indoor
                     if (tab === 'indoor' && obj.C_BRAND !== undefined && (obj.C_BRAND !== '--' || obj.C_MDL !== '--' || obj.C_SER !== '--')) {
                         let cParts = [];
                         if (obj.C_BRAND !== "--") cParts.push(`Brand: ${obj.C_BRAND}`);
@@ -4374,24 +4411,24 @@
                 });
             }
 
-            // NOTES (Full PM only)
+            // 3. MAINTENANCE (PMI) NOTES
             if (activeTemplate === 'full') {
                 techNotes.forEach(note => pushLine(note));
             }
 
-            // CAPACITOR (Full PM only)
+            // 4. DIAGNOSTIC RESULTS (Capacitors / Amps)
             if (activeTemplate === 'full' && Object.keys(buffer).length > 0) {
-                // Find Comp Amps to check vs RLA
                 let cAmps = null, odfAmps = null;
                 Object.values(buffer).forEach(item => {
                     if (item.field === 'Comp Amps') cAmps = item;
                     if (item.field === 'ODF Amps') odfAmps = item;
                 });
 
-                // Capacitor evaluation (Dual Cap Fix)
-                let hVolts = 0, hAmps = 0, fVolts = 0, fAmps = 0, hRating = parseFloat(document.getElementById('hermRating').value), fRating = parseFloat(document.getElementById('fanRating').value);
-                const bArr = Object.values(buffer);
-                bArr.forEach(item => {
+                let hVolts = 0, hAmps = 0, fVolts = 0, fAmps = 0, 
+                    hRating = parseFloat(document.getElementById('hermRating').value), 
+                    fRating = parseFloat(document.getElementById('fanRating').value);
+                
+                Object.values(buffer).forEach(item => {
                     if (item.field === "Herm Volts") hVolts = item.val;
                     if (item.field === "Herm Amps") hAmps = item.val;
                     if (item.field === "Fan Volts") fVolts = item.val;
@@ -4434,7 +4471,7 @@
                 }
             }
 
-            // REFRIGERANT PAIRS
+            // 5. REFRIGERANT & PSYCHROMETRY (v25.7 Symbols: Degree Only, no F)
             if (activeTemplate === 'full' || activeTemplate === 'refrig') {
                 if (refData['ODAT']) pushLine(`ODAT → ${cleanNum(refData['ODAT'])}°`);
 
@@ -4467,10 +4504,7 @@
                     const flag = (parseFloat(cSC) < 5 || parseFloat(cSC) > 20) ? '<span class="c-flag">🔴</span>' : '';
                     pushLine(`SC → ${cSC}°`, flag);
                 }
-            }
 
-            // TEMP PAIRS
-            if (activeTemplate === 'full' || activeTemplate === 'refrig' || activeTemplate === 'heat') {
                 if (refData['RETURN'] && refData['SUPPLY']) pushLine(`Return / Supply Temp → ${cleanNum(refData['RETURN'])}° / ${cleanNum(refData['SUPPLY'])}°`);
                 else if (refData['RETURN']) pushLine(`Return Temp → ${cleanNum(refData['RETURN'])}°`);
                 else if (refData['SUPPLY']) pushLine(`Supply Temp → ${cleanNum(refData['SUPPLY'])}°`);
