@@ -2441,6 +2441,7 @@
 
         async function fetchMirrorSync() {
             if (!currentJob) {
+                console.warn("SYNC: No job hooked. Aborting mirror pull.");
                 return;
             }
 
@@ -2452,7 +2453,12 @@
             });
 
             try {
-                const response = await callAppsScript({ action: "getJobData" });
+                // Ensure we pass the current job explicitly
+                const response = await callAppsScript({ 
+                    action: "getJobData",
+                    sheetName: currentJob 
+                });
+
                 if (response.status === "success" && response.data) {
                     if (response.data.error) {
                         throw new Error(response.data.error);
@@ -2484,9 +2490,11 @@
                     throw new Error(response.message || "Invalid Response");
                 }
             } catch (err) {
-                console.error("Sync Error:", err);
+                console.error("Sync Error Detailed:", err);
                 const detail = document.getElementById('syncErrorDetail');
-                if (detail) detail.innerText = "REASON: " + err.message.toUpperCase();
+                if (detail) {
+                    detail.innerText = `REASON: ${err.message.toUpperCase()}\nTARGET: ${currentJob.toUpperCase()}`;
+                }
                 openSyncErrorModal();
             } finally {
                 syncButtons.forEach(btn => {
@@ -2497,11 +2505,13 @@
         }
 
         function openSyncErrorModal() {
-            document.getElementById('syncErrorModal').style.display = 'flex';
+            const modal = document.getElementById('syncErrorModal');
+            if (modal) modal.style.display = 'flex';
         }
 
         function closeSyncError() {
-            document.getElementById('syncErrorModal').style.display = 'none';
+            const modal = document.getElementById('syncErrorModal');
+            if (modal) modal.style.display = 'none';
         }
 
         function processJobDataResults(data) {
@@ -2985,9 +2995,9 @@
         }
 
         let lastActiveSection = 'v23-home';
-        const APP_VERSION = "v26.1";
+        const APP_VERSION = "v26.2";
 
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_C6H9j-P0LhI7pUe2pM2xJ1Z1y9_Q_8f_Z_x_v_O_0_v/exec"; // Placeholder for verified GAS endpoint - User should verify deployment URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
         const DIAG_SYNC_MAP = {
