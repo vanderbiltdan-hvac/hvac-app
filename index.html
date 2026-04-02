@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v26.0</title>
+    <title>HVAC Master Pro v26.3</title>
     <!-- 
         BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1220,7 +1220,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.0</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.3</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1443,7 +1443,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v26.0</div>
+                        v26.3</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1506,6 +1506,7 @@
 
     <!-- VOICE MODAL (V2 LAYOUT - REWORKED) -->
     <div id="voiceModal" class="modal-overlay">
+        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <!-- TOP NAV -->
         <div class="step-nav" id="stepNav"></div>
 
@@ -1583,6 +1584,7 @@
 
     <!-- MANUALS OVERLAY (RENAMED TO SECTION-MANUALS) -->
     <div id="section-manuals" class="modal-overlay" style="background:#0f0f0f; display:none;">
+        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span></div>
 
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
@@ -1604,6 +1606,7 @@
 
     <!-- REPORT COMPILER (v20.32) -->
     <div id="reportModal" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
+        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span></div>
 
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
@@ -2925,7 +2928,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v26.0";
+        const APP_VERSION = "v26.3";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
