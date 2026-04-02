@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v26.5</title>
+    <title>HVAC Master Pro v27.0</title>
     <!-- 
         BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1220,7 +1220,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.5</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.0</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1443,7 +1443,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v26.5</div>
+                        v27.0</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2929,7 +2929,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v26.5";
+        const APP_VERSION = "v27.0";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -2944,8 +2944,24 @@
         let currentJob = localStorage.getItem('hvacActiveJob') || null;
 
         let localDrafts = {}; // Input fields that haven't sync'd yet
+        let hiddenFields = JSON.parse(localStorage.getItem('hvacHiddenFieldsV27')) || { full: [], refrig: [], heat: [] };
         let mirrorState = {}; // Live from I12:W199
         let mirrorPMI = []; // Targeted AE55:AF84 Context (v25.2.3)
+
+        function toggleVisibility(key) {
+            let arr = hiddenFields[activeTemplate] || [];
+            if (arr.includes(key)) {
+                arr.splice(arr.indexOf(key), 1);
+            } else {
+                arr.push(key);
+            }
+            hiddenFields[activeTemplate] = arr;
+            localStorage.setItem('hvacHiddenFieldsV27', JSON.stringify(hiddenFields));
+            
+            if (typeof renderRefrigRows === 'function') renderRefrigRows();
+            if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+            if (typeof renderCompiler === 'function') renderCompiler();
+        }
 
 
         let buffer = JSON.parse(localStorage.getItem('hvacStagingBufferV20')) || {};
@@ -3167,11 +3183,12 @@
                 const val = refData[key] || (sheetVal && sheetVal !== "--" ? sheetVal : '--');
                 const isSynced = (refData[key] !== undefined && refData[key] !== null);
                 const mirrorAvailable = isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== "--";
+                const isHidden = (hiddenFields[activeTemplate] || []).includes(key);
 
                 return `
-                <div onclick="openRefrigKeypad('${key}')" class="refrig-card ${mirrorAvailable ? 'mirror-blue-glow' : ''}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
-                    <span style="font-weight:900; color:#aaa; font-size:12px;">${label.toUpperCase()}</span>
-                    <span style="font-size:20px; font-weight:900; color:${isSynced ? 'var(--electric-blue)' : 'white'}">${val}</span>
+                <div class="refrig-card ${mirrorAvailable ? 'mirror-blue-glow' : ''}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
+                    <span onclick="toggleVisibility('${key}')" style="font-weight:900; color:${isHidden ? '#444' : (isSynced ? 'var(--electric-blue)' : '#aaa')}; font-size:12px; cursor:pointer;">${label.toUpperCase()} ${isHidden ? ' (HIDDEN)' : ''}</span>
+                    <span onclick="openRefrigKeypad('${key}')" style="font-size:20px; font-weight:900; color:${isHidden ? 'rgba(255,255,255,0.2)' : 'white'}; cursor:pointer;">${val}</span>
                 </div>`;
             }).join('');
         }
@@ -3322,7 +3339,9 @@
                     const res = await callAppsScript({ action: "getJobData" });
                     if (res.status === "success" && res.data && !res.data.error) {
                         isJobMode = true;
-                        processJobDataResults(res.data.fields);
+                        mirrorState = res.data.fields || {};
+                        mirrorPMI = res.data.pmi || []; // FIX: Capture PMI data on refresh
+                        processJobDataResults(mirrorState);
                         refreshSyncUI();
                     } else {
                         throw new Error(res.data ? res.data.error : "Connection Failed");
@@ -3370,6 +3389,7 @@
                 return schemaList.map(f => {
                     const val = systemSpecs[tab][f.id] || '--';
                     const shrinkClass = String(val).length > 10 ? ' shrink' : '';
+                    const isHidden = (hiddenFields[activeTemplate] || []).includes(f.id);
 
                     let extraClass = '';
                     if (mirrorState[f.label] && String(val).toUpperCase() === String(mirrorState[f.label]).toUpperCase()) {
@@ -3379,9 +3399,9 @@
                     }
 
                     return `
-                    <div class="spec-cell${extraClass}" id="spec-${f.id}" onclick="openSpecVoice('${f.id}')">
-                        <span class="spec-label">${f.label}</span>
-                        <span id="val-${f.id}" class="spec-val${shrinkClass}">${val}</span>
+                    <div class="spec-cell${extraClass}" id="spec-${f.id}">
+                        <span class="spec-label" onclick="toggleVisibility('${f.id}')" style="cursor:pointer; color:${isHidden ? '#444' : ''}">${f.label} ${isHidden ? '(HIDDEN)' : ''}</span>
+                        <span id="val-${f.id}" class="spec-val${shrinkClass}" onclick="openSpecVoice('${f.id}')" style="cursor:pointer; color:${isHidden ? 'rgba(255,255,255,0.2)' : ''}">${val}</span>
                     </div>`;
                 }).join('');
             }
@@ -4452,10 +4472,13 @@ function wipeTotalSession() {
             document.getElementById('btn-show-refrig').style.color = view === 'refrig' ? 'var(--electric-blue)' : 'white';
         }
 
-        function removeReportLine(id) {
-            // Temporary removal from current view (not permanent delete)
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
+        function removeReportLine(key, id) {
+            if (key && key !== 'null' && key !== 'undefined') {
+                toggleVisibility(key);
+            } else {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            }
         }
 
         function getDeltaFlagHtml(dt, rh) {
@@ -4488,12 +4511,15 @@ function wipeTotalSession() {
             let lines = [];
             let i = 0;
 
-            const pushLine = (text, htmlFlag = '') => {
+            const pushLine = (text, dataKey = null, htmlFlag = '') => {
+                const arr = hiddenFields[activeTemplate] || [];
+                if (dataKey && arr.includes(dataKey)) return;
+
                 lines.push(`
                 <div class="compiler-line" id="cline-${i}" style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <button onclick="moveCompilerLine(this, -1)" style="flex-shrink:0; background:transparent; border:1px solid #444; color:white; font-size:10px; padding:4px; border-radius:4px; margin-right:8px; cursor:pointer;">▲</button>
                     
-                    <div style="flex:1; display:flex; align-items:flex-start;" onclick="removeReportLine('cline-${i}')">
+                    <div style="flex:1; display:flex; align-items:flex-start;" onclick="removeReportLine('${dataKey}', 'cline-${i}')">
                         <span class="c-bullet" style="margin-right:6px;">►</span><span class="c-text">${text}</span>${htmlFlag}
                     </div>
 
@@ -4525,7 +4551,7 @@ function wipeTotalSession() {
                             if (obj.FLA !== '--') parts.push(`FLA: ${obj.FLA}`);
                             if (obj.REF !== '--') parts.push(`Ref: ${obj.REF}`);
                         }
-                        pushLine(`[${obj.TYPE.toUpperCase()}] → ${parts.join(' | ')}`);
+                        pushLine(`[${obj.TYPE.toUpperCase()}] → ${parts.join(' | ')}`, 'EQUIP_' + tab.toUpperCase());
                     }
 
                     if (tab === 'indoor' && obj.C_BRAND !== undefined && (obj.C_BRAND !== '--' || obj.C_MDL !== '--' || obj.C_SER !== '--')) {
@@ -4534,14 +4560,14 @@ function wipeTotalSession() {
                         if (obj.C_MDL !== "--") cParts.push(`Model: ${obj.C_MDL}`);
                         if (obj.C_SER !== "--") cParts.push(`Serial: ${obj.C_SER}`);
                         if (obj.C_TON !== "--") cParts.push(`${obj.C_TON} TON`);
-                        pushLine(`[EVAP COIL] → ${cParts.join(' | ')}`);
+                        pushLine(`[EVAP COIL] → ${cParts.join(' | ')}`, 'EQUIP_COIL');
                     }
                 });
             }
 
             // 3. MAINTENANCE (PMI) NOTES
             if (activeTemplate === 'full') {
-                techNotes.forEach(note => pushLine(note));
+                techNotes.forEach(note => pushLine(note, 'PMI_NOTES'));
             }
 
             // 4. DIAGNOSTIC RESULTS (Capacitors / Amps)
@@ -4583,38 +4609,38 @@ function wipeTotalSession() {
                     const isPass = isHermPass && isFanPass;
                     const flagHtml = !isPass ? '<span class="c-flag">🔴 FAIL</span>' : '';
                     let ratingStr = hRating + (fRating ? " + " + fRating : "");
-                    pushLine(`Capacitor Results → ${ratingStr} MFD ± ${tolerance * 100}% Capacitor ${isPass ? 'passed' : 'failed'}. ${capStrParts.join(' | ')}`, flagHtml);
+                    pushLine(`Capacitor Results → ${ratingStr} MFD ± ${tolerance * 100}% Capacitor ${isPass ? 'passed' : 'failed'}. ${capStrParts.join(' | ')}`, 'CAP_RESULTS', flagHtml);
                 }
 
                 if (cAmps && systemSpecs.outdoor.RLA && systemSpecs.outdoor.RLA !== "--") {
                     const pct = (cAmps.val / parseFloat(systemSpecs.outdoor.RLA)) * 100;
                     const flagHtml = pct > 100 ? '<span class="c-flag">🔴 HIGH AMPS</span>' : '';
-                    pushLine(`Compressor Amps → ${cAmps.val.toFixed(2)} A (${pct.toFixed(1)}% RLA)`, flagHtml);
+                    pushLine(`Compressor Amps → ${cAmps.val.toFixed(2)} A (${pct.toFixed(1)}% RLA)`, 'Comp Amps', flagHtml);
                 }
 
                 if (odfAmps && systemSpecs.outdoor.FLA && systemSpecs.outdoor.FLA !== "--") {
                     const pct = (odfAmps.val / parseFloat(systemSpecs.outdoor.FLA)) * 100;
                     const flagHtml = pct > 100 ? '<span class="c-flag">🔴 HIGH AMPS</span>' : '';
-                    pushLine(`ODF Amps → ${odfAmps.val.toFixed(2)} A (${pct.toFixed(1)}% FLA)`, flagHtml);
+                    pushLine(`ODF Amps → ${odfAmps.val.toFixed(2)} A (${pct.toFixed(1)}% FLA)`, 'ODF Amps', flagHtml);
                 }
             }
 
             // 5. REFRIGERANT & PSYCHROMETRY (v25.7 Symbols: Degree Only, no F)
             if (activeTemplate === 'full' || activeTemplate === 'refrig') {
-                if (refData['ODAT']) pushLine(`ODAT → ${cleanNum(refData['ODAT'])}°`);
+                if (refData['ODAT']) pushLine(`ODAT → ${cleanNum(refData['ODAT'])}°`, 'ODAT');
 
                 if (refData['SUCT_P'] && refData['LIQ_P']) {
-                    pushLine(`Suction / Liquid Pressure → ${cleanNum(refData['SUCT_P'])} psis / ${cleanNum(refData['LIQ_P'])} psig`);
+                    pushLine(`Suction / Liquid Pressure → ${cleanNum(refData['SUCT_P'])} psis / ${cleanNum(refData['LIQ_P'])} psig`, 'REFRIG_PRESS');
                 } else {
-                    if (refData['SUCT_P']) pushLine(`Suction Pressure → ${cleanNum(refData['SUCT_P'])} psig`);
-                    if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${cleanNum(refData['LIQ_P'])} psig`);
+                    if (refData['SUCT_P']) pushLine(`Suction Pressure → ${cleanNum(refData['SUCT_P'])} psig`, 'SUCT_P');
+                    if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${cleanNum(refData['LIQ_P'])} psig`, 'LIQ_P');
                 }
 
                 if (refData['VAPOR_SAT'] && refData['LIQ_SAT']) {
-                    pushLine(`Vapor Sat / Liquid Sat → ${cleanNum(refData['VAPOR_SAT'])}° / ${cleanNum(refData['LIQ_SAT'])}°`);
+                    pushLine(`Vapor Sat / Liquid Sat → ${cleanNum(refData['VAPOR_SAT'])}° / ${cleanNum(refData['LIQ_SAT'])}°`, 'REFRIG_SAT');
                 } else {
-                    if (refData['VAPOR_SAT']) pushLine(`Vapor Saturation → ${cleanNum(refData['VAPOR_SAT'])}°`);
-                    if (refData['LIQ_SAT']) pushLine(`Liquid Saturation → ${cleanNum(refData['LIQ_SAT'])}°`);
+                    if (refData['VAPOR_SAT']) pushLine(`Vapor Saturation → ${cleanNum(refData['VAPOR_SAT'])}°`, 'VAPOR_SAT');
+                    if (refData['LIQ_SAT']) pushLine(`Liquid Saturation → ${cleanNum(refData['LIQ_SAT'])}°`, 'LIQ_SAT');
                 }
 
                 if (refData['SH'] && refData['SC']) {
@@ -4622,26 +4648,26 @@ function wipeTotalSession() {
                     const cSH = cleanNum(refData['SH']);
                     const cSC = cleanNum(refData['SC']);
                     if (parseFloat(cSH) < 5 || parseFloat(cSH) > 25 || parseFloat(cSC) < 5 || parseFloat(cSC) > 20) flag = '<span class="c-flag">🔴</span>';
-                    pushLine(`SH / SC → ${cSH}° / ${cSC}°`, flag);
+                    pushLine(`SH / SC → ${cSH}° / ${cSC}°`, 'REFRIG_SHSC', flag);
                 } else if (refData['SH']) {
                     const cSH = cleanNum(refData['SH']);
                     const flag = (parseFloat(cSH) < 5 || parseFloat(cSH) > 25) ? '<span class="c-flag">🔴</span>' : '';
-                    pushLine(`SH → ${cSH}°`, flag);
+                    pushLine(`SH → ${cSH}°`, 'SH', flag);
                 } else if (refData['SC']) {
                     const cSC = cleanNum(refData['SC']);
                     const flag = (parseFloat(cSC) < 5 || parseFloat(cSC) > 20) ? '<span class="c-flag">🔴</span>' : '';
-                    pushLine(`SC → ${cSC}°`, flag);
+                    pushLine(`SC → ${cSC}°`, 'SC', flag);
                 }
 
-                if (refData['RETURN'] && refData['SUPPLY']) pushLine(`Return / Supply Temp → ${cleanNum(refData['RETURN'])}° / ${cleanNum(refData['SUPPLY'])}°`);
-                else if (refData['RETURN']) pushLine(`Return Temp → ${cleanNum(refData['RETURN'])}°`);
-                else if (refData['SUPPLY']) pushLine(`Supply Temp → ${cleanNum(refData['SUPPLY'])}°`);
+                if (refData['RETURN'] && refData['SUPPLY']) pushLine(`Return / Supply Temp → ${cleanNum(refData['RETURN'])}° / ${cleanNum(refData['SUPPLY'])}°`, 'REFRIG_TEMPS');
+                else if (refData['RETURN']) pushLine(`Return Temp → ${cleanNum(refData['RETURN'])}°`, 'RETURN');
+                else if (refData['SUPPLY']) pushLine(`Supply Temp → ${cleanNum(refData['SUPPLY'])}°`, 'SUPPLY');
 
-                if (refData['RH']) pushLine(`Return Humidity → ${cleanNum(refData['RH'])}%`);
+                if (refData['RH']) pushLine(`Return Humidity → ${cleanNum(refData['RH'])}%`, 'RH');
                 if (refData['DELTA_T']) {
                     const cDT = cleanNum(refData['DELTA_T']);
                     const cRH = cleanNum(refData['RH']);
-                    pushLine(`ΔT → ${cDT}°`, getDeltaFlagHtml(parseFloat(cDT), parseFloat(cRH)));
+                    pushLine(`ΔT → ${cDT}°`, 'DELTA_T', getDeltaFlagHtml(parseFloat(cDT), parseFloat(cRH)));
                 }
             }
 
