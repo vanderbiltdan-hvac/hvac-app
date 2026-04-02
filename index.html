@@ -1247,12 +1247,7 @@
             style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
         </div>
 
-        <div id="activeJobIndicatorHome" style="margin-bottom:12px; display:none;">
-            <div style="background:rgba(0,229,255,0.05); border:1px solid var(--electric-blue); padding:10px; border-radius:12px; text-align:center;">
-                <span style="font-size:10px; color:#aaa; font-weight:900; letter-spacing:1px;">HOOKED JOB:</span>
-                <span id="hookedJobNameHome" style="font-size:16px; font-weight:900; color:var(--electric-blue); display:block;">--</span>
-            </div>
-        </div>
+
 
         <div class="v23-launcher-grid">
             <!-- SLOT 1: NEW JOB (FULL WIDTH) -->
@@ -1449,10 +1444,7 @@
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
                         v26.0</div>
-                    <div id="activeJobIndicator"
-                        style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
-                        <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
-                    </div>
+
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
 
@@ -1942,6 +1934,7 @@
                 <button onclick="applyMirrorToHub('pmi')" class="btn-utility"
                     style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">⚡ MIRROR
                     SYNC</button>
+                <button onclick="clearPMINotes()" class="btn-utility danger" style="font-size:10px;">☢️ WIPE PMI</button>
                 <button onclick="showSection('reportModal')" class="btn-utility"
                     style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">VIEW
                     REPORT</button>
@@ -1993,6 +1986,7 @@
                 <button onclick="applyMirrorToHub('refrig')" class="btn-utility"
                     style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">⚡ MIRROR
                     SYNC</button>
+                <button onclick="clearRefrigData()" class="btn-utility danger" style="font-size:10px;">☢️ WIPE REFRIG</button>
                 <button onclick="showSection('reportModal')" class="btn-utility"
                     style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">VIEW
                     REPORT</button>
@@ -2911,22 +2905,15 @@
 
     <script>
         function updateUniversalJobHeaders() {
-            const currentJob = localStorage.getItem('hvacActiveJobName');
-            const bars = document.querySelectorAll('.job-header');
-            const hookTexts = document.querySelectorAll('.job-header-text, #hookedJobName');
+    const currentJob = localStorage.getItem('hvacActiveJob');
+    const bars = document.querySelectorAll('.job-header');
+    const hookTexts = document.querySelectorAll('.job-header-text, #hookedJobName');
 
-            bars.forEach(b => b.style.display = currentJob ? 'flex' : 'none');
-            hookTexts.forEach(t => t.innerText = currentJob || '--');
+    bars.forEach(b => b.style.display = currentJob ? 'flex' : 'none');
+    hookTexts.forEach(t => t.innerText = currentJob || '--');
 
-            // v26.0: Home Page Mission Control Indicator
-            const homeIndicator = document.getElementById('activeJobIndicatorHome');
-            const homeHookText = document.getElementById('hookedJobNameHome');
-            if (homeIndicator && homeHookText) {
-                homeIndicator.style.display = currentJob ? 'block' : 'none';
-                homeHookText.innerText = currentJob || '--';
-            }
-            updateShellButton();
-        }
+    updateShellButton();
+}
 
         function updateShellButton() {
             const btn = document.getElementById('shellBtn');
@@ -3810,6 +3797,24 @@
         // openSpecVoice now defined above (tap-cell listener)
 
         // Duplicate Legacy Navigation Block Removed for v23.1 GOLD
+function clearPMINotes() {
+    if(!confirm("WIPE ALL PMI NOTES?")) return;
+    techNotes = [];
+    localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+    renderPMIGrid();
+    renderCompiler();
+    renderDraftBlock();
+}
+
+function clearRefrigData() {
+    if(!confirm("WIPE ALL REFRIGERANT DATA?")) return;
+    refData = {};
+    localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+    renderRefrigRows();
+    renderCompiler();
+    renderDraftBlock();
+}
+
         function toggleSetting(key) {
             appSettings[key] = !appSettings[key];
             localStorage.setItem('hvacSettingsV20', JSON.stringify(appSettings));
