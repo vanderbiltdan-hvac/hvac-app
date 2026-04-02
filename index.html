@@ -4,12 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v26.14</title>
+    <title>HVAC Master Pro v26.0</title>
     <!-- 
-        BUILD: index_v26_2026_04_01_1570.html
-    <script>
-        const APP_VERSION = "26.14";
-    </script>
+        BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1215,37 +1212,7 @@
 
     <div id="masterIndicator" class="master-indicator"></div>
 
-    <div id="section-refrig" class="container" style="display:none; padding-bottom:90px;">
-        <div class="job-header" id="activeJobIndicatorRefrig" style="display:flex;">
-            <span>ACTIVE JOB:</span>
-            <span class="job-header-text" id="activeJobNameHeaderRefrig">--</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>REFRIGERANT HUB</h2>
-            <div style="display:flex; gap:8px;">
-                <button onclick="applyMirrorToHub('refrig')" class="btn-utility" style="width:auto; padding:6px 12px; font-size:10px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ MIRROR SYNC</button>
-                <button class="btn-utility danger" onclick="wipeRefrig()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE REFRIG</button>
-            </div>
-        </div>
-        <div id="refrigInputList" class="v23-launcher-grid"></div>
-    </div>
-
-    <div id="section-pmi" class="container" style="display:none; padding-bottom:90px;">
-        <div class="job-header" id="activeJobIndicatorPMI" style="display:flex;">
-            <span>ACTIVE JOB:</span>
-            <span class="job-header-text" id="activeJobNameHeaderPMI">--</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>PMI HUB</h2>
-            <div style="display:flex; gap:8px;">
-                <button onclick="applyMirrorToHub('pmi')" class="btn-utility" style="width:auto; padding:6px 12px; font-size:10px; border-color:var(--electric-blue); color:var(--electric-blue);">⚡ MIRROR SYNC</button>
-                <button class="btn-utility danger" onclick="wipePMI()" style="width:auto; padding:6px 12px; font-size:10px;">☢️ WIPE PMI</button>
-            </div>
-        </div>
-        <div id="pmiCategoryGrid" class="v23-launcher-grid"></div>
-    </div>
-
-    <!-- v26.13 LAUNCHER SECTION (HOME) -->
+    <!-- v25.2.0 LAUNCHER SECTION (HOME) -->
     <div class="container" id="v23-home" style="padding-bottom:100px;">
         <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
@@ -1253,7 +1220,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.14</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.0</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1280,6 +1247,12 @@
             style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
         </div>
 
+        <div id="activeJobIndicatorHome" style="margin-bottom:12px; display:none;">
+            <div style="background:rgba(0,229,255,0.05); border:1px solid var(--electric-blue); padding:10px; border-radius:12px; text-align:center;">
+                <span style="font-size:10px; color:#aaa; font-weight:900; letter-spacing:1px;">HOOKED JOB:</span>
+                <span id="hookedJobNameHome" style="font-size:16px; font-weight:900; color:var(--electric-blue); display:block;">--</span>
+            </div>
+        </div>
 
         <div class="v23-launcher-grid">
             <!-- SLOT 1: NEW JOB (FULL WIDTH) -->
@@ -1327,6 +1300,7 @@
             </button>
         </div>
     </div>
+ </div>
 
     <!-- NEW READINGS HUB SECTION -->
     <div class="container" id="section-readings" style="padding-bottom:100px; display:none;">
@@ -1474,7 +1448,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v26.14</div>
+                        v26.0</div>
                     <div id="activeJobIndicator"
                         style="font-size:10px; color:var(--emerald-green); font-weight:900; margin-left:8px; display:none;">
                         <span style="opacity:0.6;">JOB:</span> <span id="hookedJobName">--</span>
@@ -2821,20 +2795,27 @@
             localStorage.setItem('hvacActiveJob', jobName);
             isJobMode = true; // Auto-Enable Sync on selection
             refreshSyncUI();
-            updateUniversalJobHeaders(); // Instant visual bridge (v26.12)
             closeJobPortal();
             fetchMirrorSync(); // Immediate pull
         }
 
         function updateJobUI() {
-            const bars = document.querySelectorAll('.job-header');
+            const indHome = document.getElementById('activeJobIndicatorHome');
+            const nameHome = document.getElementById('hookedJobNameHome');
+            const indSpecs = document.getElementById('activeJobIndicator');
             const nameSpecs = document.getElementById('hookedJobName');
 
             if (currentJob) {
-                bars.forEach(b => b.style.display = 'flex');
+                if (indHome) indHome.style.display = 'block';
+                if (nameHome) {
+                    nameHome.innerText = currentJob.toUpperCase();
+                    nameHome.style.color = 'var(--electric-blue)';
+                }
+                if (indSpecs) indSpecs.style.display = 'block';
                 if (nameSpecs) nameSpecs.innerText = currentJob.toUpperCase();
             } else {
-                bars.forEach(b => b.style.display = 'none');
+                if (indHome) indHome.style.display = 'none';
+                if (indSpecs) indSpecs.style.display = 'none';
             }
         }
 
@@ -2930,12 +2911,20 @@
 
     <script>
         function updateUniversalJobHeaders() {
-            const currentJob = localStorage.getItem('hvacActiveJob');
+            const currentJob = localStorage.getItem('hvacActiveJobName');
             const bars = document.querySelectorAll('.job-header');
             const hookTexts = document.querySelectorAll('.job-header-text, #hookedJobName');
 
             bars.forEach(b => b.style.display = currentJob ? 'flex' : 'none');
             hookTexts.forEach(t => t.innerText = currentJob || '--');
+
+            // v26.0: Home Page Mission Control Indicator
+            const homeIndicator = document.getElementById('activeJobIndicatorHome');
+            const homeHookText = document.getElementById('hookedJobNameHome');
+            if (homeIndicator && homeHookText) {
+                homeIndicator.style.display = currentJob ? 'block' : 'none';
+                homeHookText.innerText = currentJob || '--';
+            }
             updateShellButton();
         }
 
@@ -2949,7 +2938,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v26.12";
+        const APP_VERSION = "v26.0";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -3087,26 +3076,6 @@
             localStorage.removeItem('hvacRefDataV20');
             renderDraftBlock();
             renderCompiler();
-            if (typeof renderPMIGrid === "function") renderPMIGrid();
-            if (typeof renderRefrigRows === "function") renderRefrigRows();
-        }
-
-        function wipePMI() {
-            if (!confirm("Wipe all Tech Notes for this session?")) return;
-            techNotes = [];
-            localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
-            renderPMIGrid();
-            renderCompiler();
-            renderDraftBlock();
-        }
-
-        function wipeRefrig() {
-            if (!confirm("Wipe all Refrigerant Data for this session?")) return;
-            refData = {};
-            localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
-            renderRefrigRows();
-            renderCompiler();
-            renderDraftBlock();
         }
 
         function copyToClipboard(text) {
