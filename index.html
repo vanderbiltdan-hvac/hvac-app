@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v26.4</title>
+    <title>HVAC Master Pro v26.5</title>
     <!-- 
         BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1220,7 +1220,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.4</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v26.5</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1443,7 +1443,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v26.4</div>
+                        v26.5</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2929,7 +2929,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v26.4";
+        const APP_VERSION = "v26.5";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -3802,7 +3802,6 @@
 
         // Duplicate Legacy Navigation Block Removed for v23.1 GOLD
 function clearPMINotes() {
-    if(!confirm("WIPE ALL PMI NOTES?")) return;
     techNotes = [];
     localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
     renderPMIGrid();
@@ -3811,7 +3810,6 @@ function clearPMINotes() {
 }
 
 function clearRefrigData() {
-    if(!confirm("WIPE ALL REFRIGERANT DATA?")) return;
     refData = {};
     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
     renderRefrigRows();
@@ -3820,7 +3818,6 @@ function clearRefrigData() {
 }
 
 function wipeTotalSession() {
-    if(!confirm("⚠️ WARNING: This will WIPE ALL session data (PMI, Refrigerant, and Diagnostics). Proceed?")) return;
     buffer = {};
     techNotes = [];
     refData = {};
