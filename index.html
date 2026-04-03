@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.23</title>
-    <!-- BUILD: index_v27_22_2026_04_03_1840.html -->
+    <title>HVAC Master Pro v27.24</title>
+    <!-- BUILD: index_v27_23_2026_04_03_1855.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.23</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.24</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.23</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.24</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2117,7 +2117,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v27.23";
+        const APP_VERSION = "v27.24";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2673,7 +2673,6 @@
             if (!grid) return;
             grid.style.display = 'flex'; grid.style.flexDirection = 'column'; grid.style.gap = '8px';
             grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
-                const isHidden = (hiddenFields[activeTemplate] || []).some(k => k.toLowerCase() === cat.toLowerCase());
                 const activeNotesInCat = techNotes.filter(n => {
                     let noteCat = n;
                     if (n.includes('\u2192')) noteCat = n.split('\u2192')[0].trim();
@@ -2681,21 +2680,25 @@
                     return noteCat.toLowerCase().includes(cat.toLowerCase()) || cat.toLowerCase().includes(noteCat.toLowerCase());
                 });
                 const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim() || m.label.toUpperCase().includes(cat.toUpperCase()));
-                const isSynced = activeNotesInCat.length > 0;
-                const noteDisplay = isSynced ? activeNotesInCat.map(n => {
+
+                // --- THE TWO-FLAG SYSTEM ---
+                const isInCompiler = activeNotesInCat.length > 0;
+                const isFromMirror = !!mirrorMatch;
+
+                const textColor = isInCompiler ? 'var(--electric-blue)' : 'white';
+                const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
+
+                const noteDisplay = isInCompiler ? activeNotesInCat.map(n => {
                     let val = n;
                     if (n.includes('\u2192')) val = n.split('\u2192')[1]?.trim() || val;
                     else if (n.includes(':')) val = n.split(':')[1]?.trim() || val;
                     return `<span style="background:rgba(0,229,255,0.15); padding:2px 8px; border-radius:6px; margin-bottom:3px; display:inline-block; border:1px solid rgba(0,229,255,0.2);">\u2192 \u2705 ${val}</span>`;
-                }).join('') : (mirrorMatch ? `<span style="opacity:0.5;">\u2192 \u2705 ${mirrorMatch.value}</span>` : '<span style="opacity:0.3;">ADD +</span>');
-                // v27.23: Dynamic PMI styling — matches Refrigerant screen glow UI
-                const labelColor = isHidden ? 'white' : (isSynced ? 'var(--electric-blue)' : 'white');
-                const borderColor = isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
-                const opacityStyle = isHidden ? 'opacity:0.5;' : 'opacity:1;';
+                }).join('') : (mirrorMatch ? `<span style="color:white; opacity:0.8;">\u2192 \u2705 ${mirrorMatch.value}</span>` : '<span style="opacity:0.3; color:white;">ADD +</span>');
+
                 return `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${borderColor}; ${opacityStyle}">
-                    <span onclick="toggleVisibility('${cat}', 'pmi')" style="font-size:13px; font-weight:900; color:${labelColor}; cursor:pointer;">${cat.toUpperCase()}${isHidden ? ' (HIDDEN)' : ''}</span>
-                    <div onclick="openPMINotes('${cat}')" style="font-size:10px; font-weight:900; max-width:65%; text-align:right; display:flex; flex-direction:column; align-items:flex-end; cursor:pointer; color:${labelColor};">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px 15px; border-radius:12px; border:1px solid ${borderColor}; min-height:60px;">
+                    <span onclick="openPMINotes('${cat}')" style="font-size:13px; font-weight:900; color:${textColor}; cursor:pointer;">${cat.toUpperCase()}</span>
+                    <div onclick="openPMINotes('${cat}')" style="font-size:10px; font-weight:900; max-width:65%; text-align:right; display:flex; flex-direction:column; align-items:flex-end; cursor:pointer; color:${textColor};">
                         ${noteDisplay}
                     </div>
                 </div>`;
@@ -2712,7 +2715,7 @@
                 const noteStr = `${pmiActiveCategory} \u2192 ${opt}`;
                 const isSelected = techNotes.includes(noteStr);
                 return `
-                <button onclick="togglePMINote('${opt.replace(/'/g, "\\'")}')" class="btn btn-outline" style="width:100%; padding:15px; font-size:13px; text-align:left; border-color:${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.06)'}; background:${isSelected ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.03)'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; border-radius:12px; font-weight:900; display:flex; justify-content:space-between; align-items:center;">
+                <button onclick="togglePMINote('${opt.replace(/'/g, "\\'")}')" class="btn-outline" style="width:100%; padding:15px; font-size:13px; text-align:left; border-color:${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.06)'}; background:${isSelected ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.03)'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; border-radius:12px; font-weight:900; display:flex; justify-content:space-between; align-items:center;">
                 <span>${opt}</span>${isSelected ? '<span style="font-size:16px;">\u2714</span>' : ''}
                 </button>`;
             }).join('');
@@ -2737,16 +2740,18 @@
                 const sheetField = mapKeys[key] || findSheetLabelFor(label);
                 const sheetVal = isJobMode ? mirrorState[sheetField] : null;
                 const val = refData[key] || (sheetVal && sheetVal !== "--" ? sheetVal : '--');
-                const isSynced = (refData[key] !== undefined && refData[key] !== null);
-                const mirrorAvailable = isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== "--";
-                const isHidden = (hiddenFields[activeTemplate] || []).some(k => k.toLowerCase() === key.toLowerCase());
-                const labelColor = isHidden ? 'white' : (isSynced ? 'var(--electric-blue)' : 'white');
-                const valColor = isHidden ? 'white' : (isSynced ? 'var(--electric-blue)' : 'white');
-                const opacityStyle = isHidden ? 'opacity:0.5;' : 'opacity:1;';
+
+                // --- THE TWO-FLAG SYSTEM ---
+                const isInCompiler = (refData[key] !== undefined && refData[key] !== null);
+                const isFromMirror = isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== "--";
+
+                const textColor = isInCompiler ? 'var(--electric-blue)' : 'white';
+                const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
+
                 return `
-                <div class="refrig-card ${mirrorAvailable ? 'mirror-blue-glow' : ''}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'}; ${opacityStyle}">
-                <span onclick="toggleVisibility('${key}', 'refrig', '${sheetField}')" style="font-weight:900; color:${labelColor}; font-size:12px; cursor:pointer;">${label.toUpperCase()}${isHidden ? ' (HIDDEN)' : ''}</span>
-                <span onclick="openRefrigKeypad('${key}')" style="font-size:20px; font-weight:900; color:${valColor}; cursor:pointer;">${val}</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${borderColor};">
+                    <span onclick="openRefrigKeypad('${key}')" style="font-weight:900; color:${textColor}; font-size:12px; cursor:pointer;">${label.toUpperCase()}</span>
+                    <span onclick="openRefrigKeypad('${key}')" style="font-size:20px; font-weight:900; color:${textColor}; cursor:pointer;">${val}</span>
                 </div>`;
             }).join('');
         }
@@ -2805,7 +2810,7 @@
                         throw new Error("Missing Data Fields");
                     }
 
-                    // --- v25.2.4: Targeted Context Storage ---
+                    // --- v27.24: Targeted Context Storage ---
                     mirrorState = response.data.fields;
                     mirrorPMI = response.data.pmi || []; // Capture the AE55:AF84 scan
 
@@ -2821,7 +2826,7 @@
                         }
                     }
                     refreshSyncUI();
-                    renderMirrorTruth(); // v25.4: Instant Refresh
+                    renderMirrorTruth(); // v27.24: Instant Refresh
                     if (typeof renderMirrorGrid === 'function') renderMirrorGrid();
                     closeSyncError(); // Close modal if open on success
                 } else {
@@ -2913,19 +2918,19 @@
                             'DELTA_T': '∆T',
                             'RETURN': 'Return Temp',
                             'SUPPLY': 'Supply Temp',
-                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal match to spreadsheet Column I (v25.2.6)
+                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal match to spreadsheet Column I (v27.24)
                         };
                         const sheetField = map[key] || findSheetLabelFor(label);
                         let val = mirrorState[sheetField];
 
-                        // Fuzzy fallback if exact map fails (v25.2.3 Literal Priority)
+                        // Fuzzy fallback if exact map fails (v27.24 Literal Priority)
                         if (!val || val === '--') {
                             const fuzzyKey = Object.keys(mirrorState).find(k => k.toLowerCase() === label.toLowerCase() || k.toLowerCase().includes(label.toLowerCase()));
                             if (fuzzyKey) val = mirrorState[fuzzyKey];
                         }
 
                         if (val && val !== '--') {
-                            refData[key] = val; // Store literal from Mirror (v25.2.8)
+                            refData[key] = val; // Store literal from Mirror (v27.24)
                         }
                     });
                     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
@@ -2934,10 +2939,10 @@
 
 
                 if (hubType === 'pmi' || hubType === 'all') {
-                    // v25.2.3: Targeted Scan Injection from AE55:AF84
+                    // v27.24: Targeted Scan Injection from AE55:AF84
                     if (mirrorPMI && mirrorPMI.length > 0) {
                         mirrorPMI.forEach(item => {
-                            const newNote = `${item.label} → ${item.value}`; // v27.12: Arrow Sync
+                            const newNote = `${item.label} → ${item.value}`; // v27.24: Arrow Sync
                             if (!techNotes.includes(newNote)) techNotes.push(newNote);
                         });
                     }
@@ -2960,9 +2965,9 @@
                         if (val && val !== '--') buffer[i] = { field: f, val: parseFloat(val), volts: 0 };
                     });
 
-                    // Capacitor & Measured Amps Sync (v25.2.4 Literal Explicit Catch)
+                    // Capacitor & Measured Amps Sync (v27.24 Literal Explicit Catch)
                     for (const [id, keyword] of Object.entries(DIAG_SYNC_MAP)) {
-                        // v25.2.9: Case-Insensitive Keyword Search (RLA (Measured) match)
+                        // v27.24: Case-Insensitive Keyword Search (RLA (Measured) match)
                         const mirrorKey = Object.keys(mirrorState).find(k => k.toLowerCase().trim() === keyword.toLowerCase().trim());
                         const val = mirrorKey ? mirrorState[mirrorKey] : null;
 
@@ -2978,7 +2983,7 @@
                             }
 
                             // 2. Update the measurement buffer (Amps / Volts / Caps)
-                            // v25.4 Fix: Map 'RLA (MEASURED)' -> 'Comp Amps' and 'FLA ODF (MEASURED)' -> 'ODF Amps'
+                            // v27.24 Fix: Map 'RLA (MEASURED)' -> 'Comp Amps' and 'FLA ODF (MEASURED)' -> 'ODF Amps'
                             let bufferKey = keyword;
                             if (keyword === 'RLA (MEASURED)') bufferKey = 'Comp Amps';
                             if (keyword === 'FLA ODF (MEASURED)') bufferKey = 'ODF Amps';
@@ -2986,7 +2991,7 @@
                             const bufIdx = FIELD_CYCLE.indexOf(bufferKey);
                             if (bufIdx !== -1) {
                                 buffer[bufIdx] = { field: bufferKey, val: numVal, volts: 0 };
-                                // v25.2.5: Force "active" display update
+                                // v27.24: Force "active" display update
                                 if (fieldIndex === bufIdx) {
                                     document.getElementById('bigDisplay').innerText = numVal.toFixed(1);
                                     syncLogToUI();
@@ -3007,7 +3012,7 @@
             doSync();
         }
 
-        // v25.5: Normalizes text for better mirror matching (Fuzzy Matching)
+        // v27.24: Normalizes text for better mirror matching (Fuzzy Matching)
         function normalizeText(str) {
             if (!str) return "";
             // Lowercase, strip punctuation (slashes, dashes, dots), and collapse spaces
@@ -3033,7 +3038,7 @@
 
             list.innerHTML = populated.map(k => {
                 const val = formatVal(state[k]);
-                // v25.5: Fuzzy match logic
+                // v27.24: Fuzzy match logic
                 const normK = normalizeText(k);
                 const normVal = normalizeText(val.toString());
                 const isSelected = techNotes.some(n => {
@@ -3058,7 +3063,7 @@
                 list.innerHTML += `<div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin:12px 0;"></div>`;
                 list.innerHTML += `<div style="font-size:10px; color:var(--electric-blue); font-weight:900; margin-bottom:8px; text-align:center;">--- TARGETED PMI (AE55:AF84) ---</div>`;
                 list.innerHTML += mirrorPMI.map(item => {
-                    // v25.5: Fuzzy match logic
+                    // v27.24: Fuzzy match logic
                     const normK = normalizeText(item.label);
                     const normVal = normalizeText(item.value);
                     const isSelected = techNotes.some(n => {
@@ -3081,10 +3086,9 @@
         }
 
         function addMirrorToCompiler(label, val) {
-            // v25.2.11: Silent Clean Extraction (Ensure Raw Numbers for Math)
             let cleanVal = String(val).replace(/[\u00b0%']+/g, '').trim();
 
-            // v27.22: REFRIG ROUTING TRAP — catch refrigerant fields before they hit Tech Notes
+            // REFRIGERANT ROUTING TRAP WITH SMART UNDO
             let refKey = null;
             if (typeof REFRIG_FIELDS !== 'undefined') {
                 for (let k in REFRIG_FIELDS) {
@@ -3092,7 +3096,11 @@
                 }
             }
             if (refKey) {
-                refData[refKey] = cleanVal;
+                if (refData[refKey] !== undefined && refData[refKey] !== null) {
+                    delete refData[refKey]; // Undo: Remove from compiler
+                } else {
+                    refData[refKey] = cleanVal; // Add: Push to compiler
+                }
                 localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
                 renderMirrorTruth();
                 if (typeof renderRefrigRows === 'function') renderRefrigRows();
@@ -3100,24 +3108,22 @@
                 renderDraftBlock();
                 return;
             }
-            
-            // FIX: Smart case-insensitive, fuzzy Undo search
+
+            // REGULAR PMI LOGIC WITH SMART UNDO
             const idx = techNotes.findIndex(n => {
                 let catPart = n, valPart = "";
-                if (n.includes('→')) { [catPart, valPart] = n.split('→').map(s => s.trim()); }
+                if (n.includes('\u2192')) { [catPart, valPart] = n.split('\u2192').map(s => s.trim()); }
                 else if (n.includes(':')) { [catPart, valPart] = n.split(':').map(s => s.trim()); }
-                
-                // Smart Match: Case-insensitive, trimmed, and handles arrow-check symbols
+
                 const catMatch = catPart.toUpperCase().includes(label.toUpperCase()) || label.toUpperCase().includes(catPart.toUpperCase());
-                const valMatch = valPart.replace(/^[→ ✅\s]+/, "").toUpperCase().includes(cleanVal.toUpperCase()) || cleanVal.toUpperCase().includes(valPart.replace(/^[→ ✅\s]+/, "").toUpperCase());
+                const valMatch = valPart.replace(/^[\u2192 \u2705\s]+/, "").toUpperCase().includes(cleanVal.toUpperCase()) || cleanVal.toUpperCase().includes(valPart.replace(/^[\u2192 \u2705\s]+/, "").toUpperCase());
                 return catMatch && valMatch;
             });
 
             if (idx > -1) {
                 techNotes.splice(idx, 1);
             } else {
-                techNotes.push(`${label} → ${cleanVal}`);
-                // v25.7: Visual Confirmation of Adding
+                techNotes.push(`${label} \u2192 ${cleanVal}`);
                 const hubBtn = document.getElementById('btn-nav-report');
                 if (hubBtn) {
                     hubBtn.classList.add('flash-pulse');
