@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.0</title>
+    <title>HVAC Master Pro v27.1</title>
     <!-- 
         BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1220,7 +1220,7 @@
             <div>
                 <h1
                     style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.0</span></h1>
+                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.1</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1443,7 +1443,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v27.0</div>
+                        v27.1</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2021,8 +2021,10 @@
                 <button class="btn-numpad" onclick="numIn('.')">.</button><button class="btn-numpad"
                     onclick="numIn(0)">0</button><button class="btn-numpad danger" onclick="numIn('C')">CLR</button>
             </div>
-            <button class="btn btn-green" onclick="saveRefrigNum()"
-                style="width:100%; margin-top:15px; padding:15px; font-weight:900;">✔ COMMIT READING</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
+                <button class="btn btn-green" onclick="saveRefrigNum()" style="padding:15px; font-weight:900; margin:0;">✔ COMMIT</button>
+                <button class="btn btn-outline" onclick="document.getElementById('refrigKeypad').style.display='none'" style="padding:15px; font-weight:900; margin:0;">CANCEL</button>
+            </div>
         </div>
     </div>
 
@@ -2929,7 +2931,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v27.0";
+        const APP_VERSION = "v27.1";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -2948,16 +2950,23 @@
         let mirrorState = {}; // Live from I12:W199
         let mirrorPMI = []; // Targeted AE55:AF84 Context (v25.2.3)
 
-        function toggleVisibility(key) {
+        function toggleVisibility(key, category = null, sheetField = null) {
             let arr = hiddenFields[activeTemplate] || [];
-            if (arr.includes(key)) {
-                arr.splice(arr.indexOf(key), 1);
+            
+            if (category === 'refrig' && sheetField && (!refData[key] || refData[key] === '--')) {
+                if (isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== '--') {
+                    refData[key] = mirrorState[sheetField];
+                    localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+                    if (arr.includes(key)) arr.splice(arr.indexOf(key), 1);
+                } else {
+                    if (arr.includes(key)) arr.splice(arr.indexOf(key), 1); else arr.push(key);
+                }
             } else {
-                arr.push(key);
+                if (arr.includes(key)) arr.splice(arr.indexOf(key), 1); else arr.push(key);
             }
+            
             hiddenFields[activeTemplate] = arr;
             localStorage.setItem('hvacHiddenFieldsV27', JSON.stringify(hiddenFields));
-            
             if (typeof renderRefrigRows === 'function') renderRefrigRows();
             if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             if (typeof renderCompiler === 'function') renderCompiler();
@@ -3107,9 +3116,9 @@
                 const noteText = activeNotesInCat.length > 0 ? activeNotesInCat[0].split(/[→:]/)[1].trim() : (mirrorMatch ? mirrorMatch.value : 'TAP TO ADD');
 
                 return `
-                <div onclick="openPMINotes('${cat}')" class="btn-utility" style="justify-content:space-between; padding:12px 15px; border-color:${hasSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.1)'}; background:${hasSelected ? 'rgba(0,229,255,0.05)' : 'transparent'}">
-                    <span style="font-size:14px; font-weight:900; color:${hasSelected ? 'var(--electric-blue)' : 'white'}">${cat.toUpperCase()}</span>
-                    <span style="color:${hasSelected ? 'var(--electric-blue)' : '#444'}; font-size:11px; font-weight:900; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                <div class="btn-utility" style="justify-content:space-between; padding:12px 15px; border-color:${hasSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.1)'}; background:${hasSelected ? 'rgba(0,229,255,0.05)' : 'transparent'}">
+                    <span onclick="toggleVisibility('${cat}')" style="font-size:14px; font-weight:900; color:${hasSelected ? 'var(--electric-blue)' : 'white'}; cursor:pointer;">${cat.toUpperCase()}</span>
+                    <span onclick="openPMINotes('${cat}')" style="color:${hasSelected ? 'var(--electric-blue)' : '#444'}; font-size:11px; font-weight:900; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;">
                         ${hasSelected ? `✅ ${noteText}` : 'ADD +'}
                     </span>
                 </div>`;
@@ -3187,8 +3196,8 @@
 
                 return `
                 <div class="refrig-card ${mirrorAvailable ? 'mirror-blue-glow' : ''}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
-                    <span onclick="toggleVisibility('${key}')" style="font-weight:900; color:${isHidden ? '#444' : (isSynced ? 'var(--electric-blue)' : '#aaa')}; font-size:12px; cursor:pointer;">${label.toUpperCase()} ${isHidden ? ' (HIDDEN)' : ''}</span>
-                    <span onclick="openRefrigKeypad('${key}')" style="font-size:20px; font-weight:900; color:${isHidden ? 'rgba(255,255,255,0.2)' : 'white'}; cursor:pointer;">${val}</span>
+                    <span onclick="toggleVisibility('${key}', 'refrig', '${sheetField}')" style="font-weight:900; color:${isHidden ? '#444' : (isSynced ? 'var(--electric-blue)' : '#aaa')}; font-size:12px; cursor:pointer;">${label.toUpperCase()}${isHidden ? ' (HIDDEN)' : ''}</span>
+                    <span onclick="openRefrigKeypad('${key}')" style="font-size:20px; font-weight:900; color:${isHidden ? 'white' : (isSynced ? 'var(--electric-blue)' : 'white')}; cursor:pointer;">${val}</span>
                 </div>`;
             }).join('');
         }
@@ -3202,8 +3211,15 @@
         }
 
         function numIn(val) {
-            if (val === 'C') keypadString = "";
-            else keypadString += val;
+            if (val === 'C') {
+                delete refData[activeRefrigKey];
+                localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+                if (typeof renderRefrigRows === 'function') renderRefrigRows();
+                if (typeof renderCompiler === 'function') renderCompiler();
+                document.getElementById('refrigKeypad').style.display = 'none';
+                return;
+            }
+            keypadString += val;
             document.getElementById('keypadValue').innerText = keypadString || "0.0";
         }
 
@@ -4511,29 +4527,24 @@ function wipeTotalSession() {
             let lines = [];
             let i = 0;
 
-            const pushLine = (text, dataKey = null, htmlFlag = '') => {
+            const pushLine = (text, dataKey = null, htmlFlag = '', isAudited = false, isSkeleton = false) => {
                 const arr = hiddenFields[activeTemplate] || [];
                 if (dataKey && arr.includes(dataKey)) return;
-
+                const borderStyle = isAudited ? 'border:1px solid var(--electric-blue);' : 'border:1px solid transparent;';
+                const skelClass = isSkeleton ? 'skeleton-line' : '';
+                const skelStyle = isSkeleton ? 'opacity:0.4;' : '';
                 lines.push(`
-                <div class="compiler-line" id="cline-${i}" style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div class="compiler-line ${skelClass}" id="cline-${i}" style="display:flex; justify-content:space-between; align-items:flex-start; ${borderStyle} ${skelStyle} padding:4px; border-radius:6px; margin:2px 0;">
                     <button onclick="moveCompilerLine(this, -1)" style="flex-shrink:0; background:transparent; border:1px solid #444; color:white; font-size:10px; padding:4px; border-radius:4px; margin-right:8px; cursor:pointer;">▲</button>
-                    
                     <div style="flex:1; display:flex; align-items:flex-start;" onclick="removeReportLine('${dataKey}', 'cline-${i}')">
                         <span class="c-bullet" style="margin-right:6px;">►</span><span class="c-text">${text}</span>${htmlFlag}
                     </div>
-
                     <button onclick="moveCompilerLine(this, 1)" style="flex-shrink:0; background:transparent; border:1px solid #444; color:white; font-size:10px; padding:4px; border-radius:4px; margin-left:8px; cursor:pointer;">▼</button>
                 </div>`);
                 i++;
             };
 
-            // 1. DATE & CUSTOMER (v25.6 Logical Top)
-            if (currentJob) {
-                const dateHeader = new Date().toLocaleDateString();
-                pushLine(`Date: ${dateHeader}`);
-                pushLine(`Job Hook: ${currentJob.toUpperCase()}`);
-            }
+
 
             // 2. SYSTEM SPECS (Logical Sequence)
             if (activeTemplate === 'full') {
@@ -4567,7 +4578,10 @@ function wipeTotalSession() {
 
             // 3. MAINTENANCE (PMI) NOTES
             if (activeTemplate === 'full') {
-                techNotes.forEach(note => pushLine(note, 'PMI_NOTES'));
+                techNotes.forEach(note => {
+                    const cat = note.split('→')[0].trim();
+                     pushLine(note, cat, '', isJobMode && mirrorState[cat]);
+                });
             }
 
             // 4. DIAGNOSTIC RESULTS (Capacitors / Amps)
@@ -4626,49 +4640,29 @@ function wipeTotalSession() {
             }
 
             // 5. REFRIGERANT & PSYCHROMETRY (v25.7 Symbols: Degree Only, no F)
+            const checkAud = (key, label) => isJobMode && mirrorState[findSheetLabelFor(label)] && String(mirrorState[findSheetLabelFor(label)]) === String(refData[key]);
             if (activeTemplate === 'full' || activeTemplate === 'refrig') {
-                if (refData['ODAT']) pushLine(`ODAT → ${cleanNum(refData['ODAT'])}°`, 'ODAT');
+                if (refData['ODAT']) pushLine(`ODAT → ${cleanNum(refData['ODAT'])}°`, 'ODAT', '', checkAud('ODAT', 'Outdoor Air Temp (ODAT)'));
+                if (refData['SUCT_P']) pushLine(`Suction Pressure → ${cleanNum(refData['SUCT_P'])} psig`, 'SUCT_P', '', checkAud('SUCT_P', 'Suction Pressure'));
+                if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${cleanNum(refData['LIQ_P'])} psig`, 'LIQ_P', '', checkAud('LIQ_P', 'Liquid Pressure'));
+                if (refData['VAPOR_SAT']) pushLine(`Vapor Saturation → ${cleanNum(refData['VAPOR_SAT'])}°`, 'VAPOR_SAT', '', checkAud('VAPOR_SAT', 'Vapor Saturation'));
+                if (refData['LIQ_SAT']) pushLine(`Liquid Saturation → ${cleanNum(refData['LIQ_SAT'])}°`, 'LIQ_SAT', '', checkAud('LIQ_SAT', 'Liquid Saturation'));
+                if (refData['SH']) pushLine(`SH → ${cleanNum(refData['SH'])}°`, 'SH', (parseFloat(cleanNum(refData['SH'])) < 5 || parseFloat(cleanNum(refData['SH'])) > 25) ? '<span class="c-flag">🔴</span>' : '', checkAud('SH', 'Superheat (SH)'));
+                if (refData['SC']) pushLine(`SC → ${cleanNum(refData['SC'])}°`, 'SC', (parseFloat(cleanNum(refData['SC'])) < 5 || parseFloat(cleanNum(refData['SC'])) > 20) ? '<span class="c-flag">🔴</span>' : '', checkAud('SC', 'Subcool (SC)'));
+                if (refData['RETURN']) pushLine(`Return Temp → ${cleanNum(refData['RETURN'])}°`, 'RETURN', '', checkAud('RETURN', 'Return Temp'));
+                if (refData['SUPPLY']) pushLine(`Supply Temp → ${cleanNum(refData['SUPPLY'])}°`, 'SUPPLY', '', checkAud('SUPPLY', 'Supply Temp'));
+                if (refData['RH']) pushLine(`Return Humidity → ${cleanNum(refData['RH'])}%`, 'RH', '', checkAud('RH', 'Return Humidity'));
+                if (refData['DELTA_T']) pushLine(`ΔT → ${cleanNum(refData['DELTA_T'])}°`, 'DELTA_T', getDeltaFlagHtml(parseFloat(cleanNum(refData['DELTA_T'])), parseFloat(cleanNum(refData['RH']))), checkAud('DELTA_T', 'Delta T (ΔT)'));
+            }
 
-                if (refData['SUCT_P'] && refData['LIQ_P']) {
-                    pushLine(`Suction / Liquid Pressure → ${cleanNum(refData['SUCT_P'])} psis / ${cleanNum(refData['LIQ_P'])} psig`, 'REFRIG_PRESS');
-                } else {
-                    if (refData['SUCT_P']) pushLine(`Suction Pressure → ${cleanNum(refData['SUCT_P'])} psig`, 'SUCT_P');
-                    if (refData['LIQ_P']) pushLine(`Liquid Pressure → ${cleanNum(refData['LIQ_P'])} psig`, 'LIQ_P');
+            const renderSkel = (label, dataKey) => {
+                if (!lines.some(l => l.includes(`'${dataKey}'`)) && !(hiddenFields[activeTemplate] || []).includes(dataKey)) {
+                    pushLine(`[ ${label} : MISSING ]`, dataKey, '', false, true);
                 }
-
-                if (refData['VAPOR_SAT'] && refData['LIQ_SAT']) {
-                    pushLine(`Vapor Sat / Liquid Sat → ${cleanNum(refData['VAPOR_SAT'])}° / ${cleanNum(refData['LIQ_SAT'])}°`, 'REFRIG_SAT');
-                } else {
-                    if (refData['VAPOR_SAT']) pushLine(`Vapor Saturation → ${cleanNum(refData['VAPOR_SAT'])}°`, 'VAPOR_SAT');
-                    if (refData['LIQ_SAT']) pushLine(`Liquid Saturation → ${cleanNum(refData['LIQ_SAT'])}°`, 'LIQ_SAT');
-                }
-
-                if (refData['SH'] && refData['SC']) {
-                    let flag = '';
-                    const cSH = cleanNum(refData['SH']);
-                    const cSC = cleanNum(refData['SC']);
-                    if (parseFloat(cSH) < 5 || parseFloat(cSH) > 25 || parseFloat(cSC) < 5 || parseFloat(cSC) > 20) flag = '<span class="c-flag">🔴</span>';
-                    pushLine(`SH / SC → ${cSH}° / ${cSC}°`, 'REFRIG_SHSC', flag);
-                } else if (refData['SH']) {
-                    const cSH = cleanNum(refData['SH']);
-                    const flag = (parseFloat(cSH) < 5 || parseFloat(cSH) > 25) ? '<span class="c-flag">🔴</span>' : '';
-                    pushLine(`SH → ${cSH}°`, 'SH', flag);
-                } else if (refData['SC']) {
-                    const cSC = cleanNum(refData['SC']);
-                    const flag = (parseFloat(cSC) < 5 || parseFloat(cSC) > 20) ? '<span class="c-flag">🔴</span>' : '';
-                    pushLine(`SC → ${cSC}°`, 'SC', flag);
-                }
-
-                if (refData['RETURN'] && refData['SUPPLY']) pushLine(`Return / Supply Temp → ${cleanNum(refData['RETURN'])}° / ${cleanNum(refData['SUPPLY'])}°`, 'REFRIG_TEMPS');
-                else if (refData['RETURN']) pushLine(`Return Temp → ${cleanNum(refData['RETURN'])}°`, 'RETURN');
-                else if (refData['SUPPLY']) pushLine(`Supply Temp → ${cleanNum(refData['SUPPLY'])}°`, 'SUPPLY');
-
-                if (refData['RH']) pushLine(`Return Humidity → ${cleanNum(refData['RH'])}%`, 'RH');
-                if (refData['DELTA_T']) {
-                    const cDT = cleanNum(refData['DELTA_T']);
-                    const cRH = cleanNum(refData['RH']);
-                    pushLine(`ΔT → ${cDT}°`, 'DELTA_T', getDeltaFlagHtml(parseFloat(cDT), parseFloat(cRH)));
-                }
+            };
+            if (activeTemplate === 'refrig' || activeTemplate === 'full') {
+                renderSkel('Suction Pressure', 'SUCT_P'); renderSkel('Liquid Pressure', 'LIQ_P');
+                renderSkel('Superheat', 'SH'); renderSkel('Subcool', 'SC');
             }
 
             preview.innerHTML = lines.join('');
@@ -4793,7 +4787,7 @@ function wipeTotalSession() {
         }
 
         function copyCompilerReport() {
-            const lines = document.querySelectorAll('#compilerPreview .compiler-line');
+            const lines = document.querySelectorAll('#compilerPreview .compiler-line:not(.skeleton-line)');
             if (lines.length === 0) return alert("Nothing to copy!");
 
             let block = "";
