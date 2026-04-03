@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.17</title>
-    <!-- BUILD: index_v27_13_2026_04_03_1548.html -->
+    <title>HVAC Master Pro v27.21</title>
+    <!-- BUILD: index_v27_20_2026_04_03_1752.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.17</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.21</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1318,16 +1318,14 @@
             <!-- SLOT 1: NEW JOB (FULL WIDTH) -->
             <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
                 <input type="text" id="custName" placeholder="Enter Name / Job #" style="margin-bottom:8px; background:#000;">
-                <button class="btn-full" id="shellBtn" onclick="startJob()" style="background:var(--emerald-green); color:#000;">
-                    🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${new Date().toISOString().split('T')[0]}</span>
-                </button>
+                <button class="btn-full" id="shellBtn" onclick="startJob()" style="background:var(--emerald-green); color:#000;">🚀 CREATE SHELL</button>
             </div>
 
             <!-- SLOT 2: UPLOAD PHOTOS (FULL WIDTH) -->
-            <button class="btn-full" onclick="document.getElementById('fileInput').click()" style="background:var(--electric-blue); color:#000;">
+            <button class="btn-full" onclick="document.getElementById('fileInputHome').click()" style="background:var(--electric-blue); color:#000;">
                 📸 UPLOAD PHOTOS
             </button>
-            <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+            <input type="file" id="fileInputHome" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
 
             <!-- SLOT 3: GALLERY (FULL WIDTH) -->
             <button class="btn-full" onclick="openGallery()" style="background:#222; color:var(--electric-blue); border-color:var(--electric-blue);">
@@ -1360,7 +1358,6 @@
             </button>
         </div>
     </div>
- </div>
 
     <!-- NEW READINGS HUB SECTION -->
     <div class="container" id="section-readings" style="padding-bottom:100px; display:none;">
@@ -1399,7 +1396,7 @@
                     <div class="toggle-container" style="border:none; padding:0; background:none;">
                         <span style="font-size:9px; color:var(--amber-orange); font-weight:900;">SAFE SYNC</span>
                         <label class="switch">
-                            <input type="checkbox" id="safeSyncToggleMirror" onchange="toggleSafeSync(this.checked)">
+                            <input type="checkbox" id="safeSyncToggleReadings" onchange="toggleSafeSync(this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -1507,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.17</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.21</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1557,9 +1554,9 @@
         <div class="rig-grid" id="subSpecGrid" style="display:none;"></div>
 
         <div style="margin-bottom:12px;">
-            <button onclick="document.getElementById('fileInput').click()" class="btn btn-outline"
+            <button onclick="document.getElementById('fileInputSpecs').click()" class="btn btn-outline"
                 style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
-            <input type="file" id="fileInput" style="display:none;" accept="image/*" multiple
+            <input type="file" id="fileInputSpecs" style="display:none;" accept="image/*" multiple
                 onchange="handleMultiPhotos(this)">
             <div id="photoStatus">Processing Photos...</div>
         </div>
@@ -2120,7 +2117,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v27.17";
+        const APP_VERSION = "v27.21";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2202,6 +2199,7 @@
         let techNotes = JSON.parse(localStorage.getItem('hvacTechNotesV20')) || [];
         let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV20'));
         let activeTemplate = 'full';
+        let previousSection = 'v23-home';
 
         // 🛑 ==========================================
         // 🛑 ZONE 2: UI ENGINE
@@ -2236,6 +2234,16 @@
 
         function showSection(id) {
             const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig'];
+            
+            // Track navigation history - find current visible section
+            const currentVisible = sections.find(s => {
+                const el = document.getElementById(s);
+                return el && el.style.display !== 'none';
+            });
+            if (currentVisible && currentVisible !== 'galleryOverlay') {
+                previousSection = currentVisible;
+            }
+
             sections.forEach(s => {
                 const el = document.getElementById(s);
                 if (el) el.style.display = 'none';
@@ -2253,6 +2261,10 @@
                 const cbMirror = document.getElementById('safeSyncToggleMirror');
                 if (cbHome) cbHome.checked = appSettings.safeSync;
                 if (cbMirror) cbMirror.checked = appSettings.safeSync;
+            }
+            if (id === 'section-readings') {
+                const cbReadings = document.getElementById('safeSyncToggleReadings');
+                if (cbReadings) cbReadings.checked = appSettings.safeSync;
             }
 
             // Reset sub-pages if switching main navigation
@@ -2300,7 +2312,7 @@
 
         // --- Backward Compatibility Shims ---
         function openVoiceConsole() { showSection('voiceModal'); }
-        function openReport() { showSection('reportModal'); }
+        // openReport() defined below in Zone 2 — this shim is removed
         function openSettings() { showSection('settingsModal'); }
         function openManuals() { showSection('section-manuals'); }
         function closeVoiceModal() { showSection('v23-home'); }
@@ -2418,9 +2430,8 @@
             renderGallery();
         }
         function closeGallery() {
-            localStorage.removeItem('galleryOpen');
             document.getElementById('galleryOverlay').style.display = 'none';
-            showSection('section-specs');
+            showSection(previousSection);
         }
 
         async function switchShelf(shelfName) {
@@ -2658,8 +2669,10 @@
             // Sync all UI checkboxes
             const cbHome = document.getElementById('safeSyncToggleHome');
             const cbMirror = document.getElementById('safeSyncToggleMirror');
+            const cbReadings = document.getElementById('safeSyncToggleReadings');
             if (cbHome) cbHome.checked = val;
             if (cbMirror) cbMirror.checked = val;
+            if (cbReadings) cbReadings.checked = val;
         }
 
         // Helper to format raw spreadsheet floats cleanly
@@ -3408,8 +3421,8 @@
             if (tLower.includes('manuals')) { openManuals(); return; }
 
             // Compiler Context Jumps
-            if (tLower.includes('refrigeration data') || tLower.includes('refrigeration view')) { switchCompilerView('refrig'); return; }
-            if (tLower.includes('tech notes') || tLower.includes('tech note')) { switchCompilerView('notes'); return; }
+            if (tLower.includes('refrigeration data') || tLower.includes('refrigeration view')) { showSection('reportModal'); return; }
+            if (tLower.includes('tech notes') || tLower.includes('tech note')) { showSection('reportModal'); return; }
             if (tLower.includes('full p m') || tLower.includes('full pm')) { switchTemplate('full'); return; }
             if (tLower.includes('refrigeration') && !tLower.includes('data') && !tLower.includes('view') && !refData.SUCT_P) { switchTemplate('refrig'); return; }
             if (tLower.includes('heat template')) { switchTemplate('heat'); return; }
@@ -3518,18 +3531,13 @@
                             loadRefInputs();
 
                             // Visual flash to confirm intake without switching screens
-                            const btn = document.getElementById('btn-show-refrig');
-                            if (btn && document.getElementById('reportOverlay').style.display === 'flex') {
-                                btn.style.boxShadow = "0 0 20px var(--emerald-green)";
-                                btn.style.color = "var(--emerald-green)";
-                                setTimeout(() => { btn.style.boxShadow = "none"; btn.style.color = "white"; }, 800);
-                            }
+                            // v27.19: Visual flash removed (dead ID)
                         } else {
                             // Focus field if no number was spoken
                             let elMap = { 'SUCT_P': 'in-suct', 'LIQ_P': 'in-liq', 'SH': 'in-sh', 'SC': 'in-sc', 'RETURN': 'in-ret', 'SUPPLY': 'in-sup', 'RH': 'in-rh', 'DELTA_T': 'in-dt', 'ODAT': 'in-odat' };
                             const inTarget = document.getElementById(elMap[masterTarget]);
-                            if (inTarget && document.getElementById('reportOverlay').style.display === 'flex') {
-                                switchCompilerView('refrig');
+                            if (inTarget) {
+                                showSection('reportModal');
                                 inTarget.focus();
                                 inTarget.style.border = "2px solid var(--electric-blue)";
                                 setTimeout(() => inTarget.style.border = "1px solid rgba(0,229,255,0.4)", 2000);
@@ -4205,23 +4213,17 @@ function wipeTotalSession() {
             document.getElementById('tab-' + tmpl).classList.add('active');
             renderCompiler();
         }
-        function switchCompilerView(view) {
-            document.getElementById('view-tech-notes').style.display = view === 'notes' ? 'block' : 'none';
-            document.getElementById('view-refrig-data').style.display = view === 'refrig' ? 'block' : 'none';
-            document.getElementById('btn-show-notes').style.borderColor = view === 'notes' ? 'var(--electric-blue)' : 'rgba(255,255,255,0.2)';
-            document.getElementById('btn-show-notes').style.color = view === 'notes' ? 'var(--electric-blue)' : 'white';
-            document.getElementById('btn-show-refrig').style.borderColor = view === 'refrig' ? 'var(--electric-blue)' : 'rgba(255,255,255,0.2)';
-            document.getElementById('btn-show-refrig').style.color = view === 'refrig' ? 'var(--electric-blue)' : 'white';
+        // v27.19: KEEP ONLY the fast-path version (instant hide first)
+        function removeReportLine(key, id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+            if (key && key !== 'null' && key !== 'undefined') { toggleVisibility(key); }
         }
 
-        function removeReportLine(key, id) {
-            if (key && key !== 'null' && key !== 'undefined') {
-                toggleVisibility(key);
-            } else {
-                const el = document.getElementById(id);
-                if (el) el.style.display = 'none';
-            }
-        }
+        // v27.19: Zone 2 Stubs — prevent breakpoints on dead button calls
+        function retrySync() { fetchMirrorSync(); }
+        function sendShelfToDrive() { alert('Drive sync coming soon.'); }
+        function clearMasterReadings() { alert('Wipe coming soon.'); }
 
         function getDeltaFlagHtml(dt, rh) {
             if (!dt || !rh) return '';
@@ -4232,13 +4234,13 @@ function wipeTotalSession() {
             return '';
         }
 
+        // v27.19: Modern openReport — replaces dead updateNavUI/reportOverlay architecture
         function openReport() {
             closeAllModals();
-            updateNavUI('nav-report');
             initTechNotes();
             loadRefInputs();
             renderCompiler();
-            document.getElementById('reportOverlay').style.display = 'flex';
+            showSection('reportModal');
         }
 
 
