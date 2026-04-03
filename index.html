@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.1</title>
+    <title>HVAC Master Pro v27.2</title>
     <!-- 
         BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1218,9 +1218,8 @@
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
-                <h1
-                    style="font-size:28px; margin:0; letter-spacing:1px; color:#FFF; font-weight:900; text-shadow:0 0 10px rgba(255,255,255,0.3);">
-                    HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.1</span></h1>
+                <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
+                HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.2</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1443,7 +1442,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v27.1</div>
+                        v27.2</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2656,10 +2655,10 @@
                 });
 
                 return `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'};">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
                     <div style="display:flex; flex-direction:column; gap:2px;">
                         <span style="font-size:12px; color:#bbb; font-weight:900; text-transform:uppercase; letter-spacing:0.5px;">${k}</span>
-                        <span style="font-size:16px; font-weight:900; color:var(--text-primary);">${val}</span>
+                        <span style="font-size:16px; font-weight:900; color:${isSelected ? 'var(--electric-blue)' : 'var(--text-primary)'};">${val}</span>
                     </div>
                     <button onclick="addMirrorToCompiler('${k}', '${val.toString().replace(/'/g, "\\'")}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px; padding:6px 12px;">
                         ${isSelected ? '✅ UNDO' : '➕ ADD'}
@@ -2681,10 +2680,10 @@
                     });
 
                     return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,229,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid ${isSelected ? 'var(--electric-blue)' : 'rgba(0,229,255,0.1)'};">
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,229,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid rgba(0,229,255,0.1);">
                         <div style="display:flex; flex-direction:column; gap:2px;">
                             <span style="font-size:12px; color:#bbb; font-weight:900; text-transform:uppercase;">${item.label}</span>
-                            <span style="font-size:16px; font-weight:900; color:var(--text-primary);">${item.value}</span>
+                            <span style="font-size:16px; font-weight:900; color:${isSelected ? 'var(--electric-blue)' : 'var(--text-primary)'};">${item.value}</span>
                         </div>
                         <button onclick="addMirrorToCompiler('${item.label}', '${item.value.toString().replace(/'/g, "\\'")}')" class="btn-utility" style="border-color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; color:${isSelected ? 'var(--electric-blue)' : 'var(--emerald-green)'}; font-size:10px; padding:6px 12px;">
                             ${isSelected ? '✅ UNDO' : '➕ ADD'}
@@ -2931,7 +2930,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v27.1";
+        const APP_VERSION = "v27.2";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -2969,7 +2968,9 @@
             localStorage.setItem('hvacHiddenFieldsV27', JSON.stringify(hiddenFields));
             if (typeof renderRefrigRows === 'function') renderRefrigRows();
             if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+            if (typeof renderPMIGrid === 'function') renderPMIGrid();
             if (typeof renderCompiler === 'function') renderCompiler();
+            if (typeof renderDraftBlock === 'function') renderDraftBlock();
         }
 
 
@@ -3110,15 +3111,19 @@
             grid.style.gap = '8px';
 
             grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
+                const isHidden = (hiddenFields[activeTemplate] || []).includes(cat);
                 const activeNotesInCat = techNotes.filter(n => n.toLowerCase().startsWith(cat.toLowerCase() + ' →') || n.toLowerCase().startsWith(cat.toLowerCase() + ':'));
                 const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim() || m.label.toUpperCase().includes(cat.toUpperCase()));
                 const hasSelected = activeNotesInCat.length > 0 || mirrorMatch;
                 const noteText = activeNotesInCat.length > 0 ? activeNotesInCat[0].split(/[→:]/)[1].trim() : (mirrorMatch ? mirrorMatch.value : 'TAP TO ADD');
 
+                const labelStyle = isHidden ? 'color:#444;' : `color:${hasSelected ? 'var(--electric-blue)' : 'white'};`;
+                const valStyle = isHidden ? 'color:rgba(255,255,255,0.2);' : `color:${hasSelected ? 'var(--electric-blue)' : '#444'};`;
+
                 return `
                 <div class="btn-utility" style="justify-content:space-between; padding:12px 15px; border-color:${hasSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.1)'}; background:${hasSelected ? 'rgba(0,229,255,0.05)' : 'transparent'}">
-                    <span onclick="toggleVisibility('${cat}')" style="font-size:14px; font-weight:900; color:${hasSelected ? 'var(--electric-blue)' : 'white'}; cursor:pointer;">${cat.toUpperCase()}</span>
-                    <span onclick="openPMINotes('${cat}')" style="color:${hasSelected ? 'var(--electric-blue)' : '#444'}; font-size:11px; font-weight:900; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;">
+                    <span onclick="toggleVisibility('${cat}')" style="font-size:14px; font-weight:900; ${labelStyle} cursor:pointer;">${cat.toUpperCase()}</span>
+                    <span onclick="openPMINotes('${cat}')" style="${valStyle} font-size:11px; font-weight:900; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;">
                         ${hasSelected ? `✅ ${noteText}` : 'ADD +'}
                     </span>
                 </div>`;
@@ -4640,7 +4645,12 @@ function wipeTotalSession() {
             }
 
             // 5. REFRIGERANT & PSYCHROMETRY (v25.7 Symbols: Degree Only, no F)
-            const checkAud = (key, label) => isJobMode && mirrorState[findSheetLabelFor(label)] && String(mirrorState[findSheetLabelFor(label)]) === String(refData[key]);
+            const checkAud = (key, label) => {
+                let sheetKey = findSheetLabelFor(label);
+                const map = { 'ODAT': 'ODAT', 'SH': 'SH', 'SC': 'SC', 'DELTA_T': '∆T' };
+                if (map[key]) sheetKey = map[key];
+                return isJobMode && mirrorState[sheetKey] && String(mirrorState[sheetKey]) === String(refData[key]);
+            };
             if (activeTemplate === 'full' || activeTemplate === 'refrig') {
                 if (refData['ODAT']) pushLine(`ODAT → ${cleanNum(refData['ODAT'])}°`, 'ODAT', '', checkAud('ODAT', 'Outdoor Air Temp (ODAT)'));
                 if (refData['SUCT_P']) pushLine(`Suction Pressure → ${cleanNum(refData['SUCT_P'])} psig`, 'SUCT_P', '', checkAud('SUCT_P', 'Suction Pressure'));
