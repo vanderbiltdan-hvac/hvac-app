@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.7</title>
+    <title>HVAC Master Pro v27.12</title>
     <!-- 
         BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1219,7 +1219,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.7</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.12</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1441,8 +1441,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v27.7</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.12</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2550,7 +2549,7 @@
                     // v25.2.3: Targeted Scan Injection from AE55:AF84
                     if (mirrorPMI && mirrorPMI.length > 0) {
                         mirrorPMI.forEach(item => {
-                            const newNote = `${item.label}: ${item.value}`;
+                            const newNote = `${item.label} → ${item.value}`; // v27.12: Arrow Sync
                             if (!techNotes.includes(newNote)) techNotes.push(newNote);
                         });
                     }
@@ -2696,12 +2695,23 @@
         function addMirrorToCompiler(label, val) {
             // v25.2.11: Silent Clean Extraction (Ensure Raw Numbers for Math)
             let cleanVal = String(val).replace(/[°%']+/g, '').trim();
-            const noteStr = `${label} → ${cleanVal}`;
-            const idx = techNotes.indexOf(noteStr);
+            
+            // FIX: Smart case-insensitive, fuzzy Undo search
+            const idx = techNotes.findIndex(n => {
+                let catPart = n, valPart = "";
+                if (n.includes('→')) { [catPart, valPart] = n.split('→').map(s => s.trim()); }
+                else if (n.includes(':')) { [catPart, valPart] = n.split(':').map(s => s.trim()); }
+                
+                // Smart Match: Case-insensitive, trimmed, and handles arrow-check symbols
+                const catMatch = catPart.toUpperCase() === label.toUpperCase();
+                const valMatch = valPart.replace(/^[→ ✅\s]+/, "").toUpperCase() === cleanVal.toUpperCase();
+                return catMatch && valMatch;
+            });
+
             if (idx > -1) {
                 techNotes.splice(idx, 1);
             } else {
-                techNotes.push(noteStr);
+                techNotes.push(`${label} → ${cleanVal}`);
                 // v25.7: Visual Confirmation of Adding
                 const hubBtn = document.getElementById('btn-nav-report');
                 if (hubBtn) {
@@ -2930,7 +2940,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v27.7";
+        const APP_VERSION = "v27.12";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -3126,26 +3136,27 @@
 
             grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
                 const isHidden = (hiddenFields[activeTemplate] || []).some(k => k.toLowerCase() === cat.toLowerCase());
-                const activeNotesInCat = techNotes.filter(n => n.toLowerCase().startsWith(cat.toLowerCase() + ' →') || n.toLowerCase().startsWith(cat.toLowerCase() + ':'));
+                const activeNotesInCat = techNotes.filter(n => {
+                    let noteCat = n;
+                    if (n.includes('→')) noteCat = n.split('→')[0].trim();
+                    else if (n.includes(':')) noteCat = n.split(':')[0].trim();
+                    return noteCat.toLowerCase() === cat.toLowerCase();
+                });
                 const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim() || m.label.toUpperCase().includes(cat.toUpperCase()));
                 const isSynced = activeNotesInCat.length > 0;
                 
-                // Strict Binary Colors: Blue if active on Compiler, White if local but hidden. No Gray.
-                const isActiveOnCompiler = isSynced && !isHidden;
-                const labelStyle = `color:${isActiveOnCompiler ? 'var(--electric-blue)' : 'white'};`;
-                const valStyle = `color:${isActiveOnCompiler ? 'var(--electric-blue)' : 'white'};`;
-                
-                // Borders are strictly Spreadsheet Truth
-                const borderStyle = mirrorMatch ? 'border-color:var(--electric-blue);' : 'border-color:rgba(255,255,255,0.1);';
-                const bgStyle = isActiveOnCompiler ? 'background:rgba(0,229,255,0.05);' : 'background:transparent;';
-                const noteText = isSynced ? activeNotesInCat[0].split(/[→:]/)[1].trim() : (mirrorMatch ? mirrorMatch.value : 'TAP TO ADD');
+                // v27.12: Refactored PMI Flag Layout (Stacked Wrap-Text)
+                const noteDisplay = isSynced ? activeNotesInCat.map(n => {
+                    const val = n.includes('→') ? n.split('→')[1].trim() : n.split(':')[1].trim();
+                    return `<span style="background:rgba(0,229,255,0.15); padding:2px 8px; border-radius:6px; margin-bottom:3px; display:inline-block; border:1px solid rgba(0,229,255,0.2);">→ ✅ ${val}</span>`;
+                }).join('') : (mirrorMatch ? `<span style="opacity:0.5;">→ ✅ ${mirrorMatch.value}</span>` : '<span style="opacity:0.3;">ADD +</span>');
 
                 return `
-                <div class="btn-utility" style="justify-content:space-between; padding:12px 15px; ${borderStyle} ${bgStyle}">
-                    <span onclick="toggleVisibility('${cat}', 'pmi')" style="font-size:14px; font-weight:900; ${labelStyle} cursor:pointer;">${cat.toUpperCase()}${isHidden ? ' (HIDDEN)' : ''}</span>
-                    <span onclick="openPMINotes('${cat}')" style="${valStyle} font-size:11px; font-weight:900; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;">
-                        ${isSynced || mirrorMatch ? `✅ ${noteText}` : 'ADD +'}
-                    </span>
+                <div class="btn-utility" style="justify-content:space-between; padding:14px 15px; min-height:60px; ${borderStyle} ${bgStyle}">
+                    <span onclick="toggleVisibility('${cat}', 'pmi')" style="font-size:13px; font-weight:900; ${labelStyle} cursor:pointer;">${cat.toUpperCase()}${isHidden ? ' (HIDDEN)' : ''}</span>
+                    <div onclick="openPMINotes('${cat}')" style="${valStyle} font-size:10px; font-weight:900; max-width:65%; text-align:right; display:flex; flex-direction:column; align-items:flex-end; cursor:pointer;">
+                        ${noteDisplay}
+                    </div>
                 </div>`;
             }).join('');
         }
@@ -4618,16 +4629,22 @@ function wipeTotalSession() {
                 });
             }
 
-            // 3. MAINTENANCE (PMI) NOTES
+            // 3. MAINTENANCE (PMI) NOTES (v27.12: Grouped by Category)
             if (activeTemplate === 'full') {
+                let groupedNotes = {};
                 techNotes.forEach(note => {
-                    let cat = note;
-                    if (note.includes('→')) cat = note.split('→')[0].trim();
-                    else if (note.includes(':')) cat = note.split(':')[0].trim();
+                    let cat = "MISC", val = note;
+                    if (note.includes('→')) { [cat, val] = note.split('→').map(s => s.trim()); }
+                    else if (note.includes(':')) { [cat, val] = note.split(':').map(s => s.trim()); }
                     
-                    // FIX: Bidirectional fuzzy match to forgive trailing spaces
-                    const isAudited = isJobMode && (mirrorPMI || []).some(m => m.label.toUpperCase().includes(cat.toUpperCase()) || cat.toUpperCase().includes(m.label.toUpperCase()));
-                    pushLine(note, cat, '', isAudited);
+                    if (!groupedNotes[cat]) groupedNotes[cat] = [];
+                    groupedNotes[cat].push(val.replace(/^[→ ✅\s]+/, ""));
+                });
+
+                Object.keys(groupedNotes).forEach(cat => {
+                    const combinedVals = [...new Set(groupedNotes[cat])].join(', ');
+                    const isAudited = isJobMode && (mirrorPMI || []).some(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim());
+                    pushLine(`${cat} → ${combinedVals}`, cat, '', isAudited);
                 });
             }
 
