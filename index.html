@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.3</title>
+    <title>HVAC Master Pro v27.4</title>
     <!-- 
         BUILD: index_v26_2026_04_01_0445.html
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1219,7 +1219,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.3</span></h1>
+                HVAC PRO <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.4</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1442,7 +1442,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v27.3</div>
+                        v27.4</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2930,7 +2930,7 @@
             btn.innerHTML = `🚀 CREATE SHELL <span style="opacity:0.6; font-size:12px;">${yyyy}-${mm}-${dd}</span>`;
         }
 
-        const APP_VERSION = "v27.3";
+        const APP_VERSION = "v27.4";
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
@@ -2956,26 +2956,26 @@
                 if (isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== '--') {
                     refData[key] = mirrorState[sheetField];
                     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
-                    if (arr.includes(key)) arr.splice(arr.indexOf(key), 1);
+                    if (arr.some(k => k.toLowerCase() === key.toLowerCase())) arr = arr.filter(k => k.toLowerCase() !== key.toLowerCase());
                 } else {
-                    if (arr.includes(key)) arr.splice(arr.indexOf(key), 1); else arr.push(key);
+                    if (arr.some(k => k.toLowerCase() === key.toLowerCase())) arr = arr.filter(k => k.toLowerCase() !== key.toLowerCase()); else arr.push(key);
                 }
             } else if (category === 'pmi') {
                 const isSynced = techNotes.some(n => n.toLowerCase().startsWith(key.toLowerCase() + ' →') || n.toLowerCase().startsWith(key.toLowerCase() + ':'));
                 if (!isSynced) {
                     const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === key.toUpperCase().trim() || m.label.toUpperCase().includes(key.toUpperCase()));
                     if (mirrorMatch) {
-                        techNotes.push(`${mirrorMatch.label}: ${mirrorMatch.value}`);
+                        techNotes.push(`${key} → ${mirrorMatch.value}`); // FIX: Use Arrow instead of Colon
                         localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
-                        if (arr.includes(key)) arr.splice(arr.indexOf(key), 1);
+                        if (arr.some(k => k.toLowerCase() === key.toLowerCase())) arr = arr.filter(k => k.toLowerCase() !== key.toLowerCase());
                     } else {
-                        if (arr.includes(key)) arr.splice(arr.indexOf(key), 1); else arr.push(key);
+                        if (arr.some(k => k.toLowerCase() === key.toLowerCase())) arr = arr.filter(k => k.toLowerCase() !== key.toLowerCase()); else arr.push(key);
                     }
                 } else {
-                    if (arr.includes(key)) arr.splice(arr.indexOf(key), 1); else arr.push(key);
+                    if (arr.some(k => k.toLowerCase() === key.toLowerCase())) arr = arr.filter(k => k.toLowerCase() !== key.toLowerCase()); else arr.push(key);
                 }
             } else {
-                if (arr.includes(key)) arr.splice(arr.indexOf(key), 1); else arr.push(key);
+                if (arr.some(k => k.toLowerCase() === key.toLowerCase())) arr = arr.filter(k => k.toLowerCase() !== key.toLowerCase()); else arr.push(key);
             }
             
             hiddenFields[activeTemplate] = arr;
@@ -3125,17 +3125,23 @@
             grid.style.gap = '8px';
 
             grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
-                const isHidden = (hiddenFields[activeTemplate] || []).includes(cat);
+                const isHidden = (hiddenFields[activeTemplate] || []).some(k => k.toLowerCase() === cat.toLowerCase());
                 const activeNotesInCat = techNotes.filter(n => n.toLowerCase().startsWith(cat.toLowerCase() + ' →') || n.toLowerCase().startsWith(cat.toLowerCase() + ':'));
                 const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim() || m.label.toUpperCase().includes(cat.toUpperCase()));
                 const isSynced = activeNotesInCat.length > 0;
+                
+                // Strict Binary Colors: Blue if active on Compiler, White if local but hidden. No Gray.
+                const isActiveOnCompiler = isSynced && !isHidden;
+                const labelStyle = `color:${isActiveOnCompiler ? 'var(--electric-blue)' : 'white'};`;
+                const valStyle = `color:${isActiveOnCompiler ? 'var(--electric-blue)' : 'white'};`;
+                
+                // Borders are strictly Spreadsheet Truth
+                const borderStyle = mirrorMatch ? 'border-color:var(--electric-blue);' : 'border-color:rgba(255,255,255,0.1);';
+                const bgStyle = isActiveOnCompiler ? 'background:rgba(0,229,255,0.05);' : 'background:transparent;';
                 const noteText = isSynced ? activeNotesInCat[0].split(/[→:]/)[1].trim() : (mirrorMatch ? mirrorMatch.value : 'TAP TO ADD');
 
-                const labelStyle = isHidden ? 'color:#444;' : `color:${isSynced ? 'var(--electric-blue)' : '#aaa'};`;
-                const valStyle = isHidden ? 'color:white;' : `color:${isSynced ? 'var(--electric-blue)' : 'white'};`;
-
                 return `
-                <div class="btn-utility" style="justify-content:space-between; padding:12px 15px; border-color:${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.1)'}; background:${isSynced ? 'rgba(0,229,255,0.05)' : 'transparent'}">
+                <div class="btn-utility" style="justify-content:space-between; padding:12px 15px; ${borderStyle} ${bgStyle}">
                     <span onclick="toggleVisibility('${cat}', 'pmi')" style="font-size:14px; font-weight:900; ${labelStyle} cursor:pointer;">${cat.toUpperCase()}${isHidden ? ' (HIDDEN)' : ''}</span>
                     <span onclick="openPMINotes('${cat}')" style="${valStyle} font-size:11px; font-weight:900; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;">
                         ${isSynced || mirrorMatch ? `✅ ${noteText}` : 'ADD +'}
@@ -4548,7 +4554,7 @@ function wipeTotalSession() {
 
             const pushLine = (text, dataKey = null, htmlFlag = '', isAudited = false, isSkeleton = false) => {
                 const arr = hiddenFields[activeTemplate] || [];
-                if (dataKey && arr.includes(dataKey)) return;
+                if (dataKey && arr.some(k => k.toLowerCase() === dataKey.toLowerCase())) return;
                 const borderStyle = isAudited ? 'border:1px solid var(--electric-blue);' : 'border:1px solid transparent;';
                 const skelClass = isSkeleton ? 'skeleton-line' : '';
                 const skelStyle = isSkeleton ? 'opacity:0.4;' : '';
@@ -4570,7 +4576,7 @@ function wipeTotalSession() {
                 ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
                     const obj = systemSpecs[tab];
                     const hasData = (tab === 'thermostat') 
-                        ? (obj.BRAND !== '--' || obj.MDL !== '--') 
+                        ? (obj.BRAND !== '--' || obj.MDL !== '--' || obj.WIRE !== '--' || obj.BATT !== '--' || obj.SCHED !== '--') 
                         : (obj.BRAND !== '--' || obj.MDL !== '--' || (obj.SER && obj.SER !== '--'));
 
                     if (hasData) {
@@ -4606,7 +4612,8 @@ function wipeTotalSession() {
                     if (note.includes('→')) cat = note.split('→')[0].trim();
                     else if (note.includes(':')) cat = note.split(':')[0].trim();
                     
-                    pushLine(note, cat, '', isJobMode && mirrorState[cat]);
+                    const isAudited = isJobMode && (mirrorPMI || []).some(m => m.label.toUpperCase() === cat.toUpperCase());
+                    pushLine(note, cat, '', isAudited);
                 });
             }
 
