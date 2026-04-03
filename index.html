@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.21</title>
-    <!-- BUILD: index_v27_20_2026_04_03_1752.html -->
+    <title>HVAC Master Pro v27.22</title>
+    <!-- BUILD: index_v27_21_2026_04_03_1757.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.21</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.22</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.21</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.22</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2117,7 +2117,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v27.21";
+        const APP_VERSION = "v27.22";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2579,6 +2579,204 @@
         }
 
         // 🛑 ==========================================
+        // 🛑 ZONE 2.5: RECOVERED ENGINE FUNCTIONS (v27.22)
+        // 🛑 ==========================================
+
+        const REFRIG_FIELDS = {
+            'ODAT': 'Outdoor Air Temp (ODAT)', 'SUCT_P': 'Suction Pressure', 'LIQ_P': 'Liquid Pressure',
+            'VAPOR_SAT': 'Vapor Saturation', 'LIQ_SAT': 'Liquid Saturation', 'SH': 'Superheat (SH)', 'SC': 'Subcool (SC)',
+            'RETURN': 'Return Temp', 'RH': 'Return Humidity', 'SUPPLY': 'Supply Temp', 'DELTA_T': 'Delta T (\u0394T)'
+        };
+        let activeRefrigKey = null;
+        let keypadString = "";
+        let pmiActiveCategory = null;
+
+        function findSheetLabelFor(appLabel) {
+            if (!appLabel) return "UNKNOWN";
+            const clean = appLabel.toLowerCase().trim();
+            for (let tab in EQUIP_SCHEMA) {
+                const match = EQUIP_SCHEMA[tab].find(f => f.label.toLowerCase() === clean);
+                if (match) return match.label;
+            }
+            const keys = Object.keys(mirrorState);
+            const exact = keys.find(k => k.toLowerCase() === clean);
+            if (exact) return exact;
+            if (clean === 'outdoor temp' || clean === 'outdoor air temp') return 'ODAT';
+            if (clean === 'superheat') return 'SH';
+            if (clean === 'subcool') return 'SC';
+            const keywords = clean.split(' ');
+            const bestMatch = keys.find(k => {
+                const kLower = k.toLowerCase();
+                if (keywords.length === 1) return kLower.split(' ').includes(clean);
+                return keywords.every(kw => kLower.includes(kw));
+            });
+            return bestMatch || appLabel;
+        }
+
+        function renderDraftBlock() {
+            const preview = document.getElementById('blockDraftPreview');
+            if (!preview) return;
+            const data = getDraftData();
+            if (data.length === 0) { preview.innerText = "(EMPTY DRAFT)"; return; }
+            preview.innerText = data.map(d => `${d.label}\u25D8${d.val}`).join('|');
+        }
+
+        function getDraftData() {
+            let list = [];
+            techNotes.forEach(note => {
+                if (note.includes('\u25D8')) {
+                    const parts = note.split('\u25D8');
+                    list.push({ label: findSheetLabelFor(parts[0]), val: cleanNum(parts[1]) });
+                } else if (note.includes(':')) {
+                    const parts = note.split(':');
+                    list.push({ label: findSheetLabelFor(parts[0]), val: cleanNum(parts[1].trim()) });
+                } else if (note.includes('\u2192')) {
+                    const parts = note.split('\u2192');
+                    list.push({ label: findSheetLabelFor(parts[0]), val: cleanNum(parts[1].trim()) });
+                }
+            });
+            for (let k in refData) { list.push({ label: findSheetLabelFor(k), val: cleanNum(refData[k]) }); }
+            Object.values(buffer).forEach(b => {
+                if (b.val && b.field) list.push({ label: findSheetLabelFor(b.field), val: cleanNum(b.val) });
+            });
+            return list;
+        }
+
+        async function pushToDataBlock() {
+            const block = document.getElementById('blockDraftPreview').innerText;
+            if (block === "(EMPTY DRAFT)") return alert("Draft is empty!");
+            try {
+                const res = await callAppsScript({ action: "writeToNextDataBlock", dataString: block });
+                if (res.status === "success") {
+                    alert("Data Block Successfully Pushed to AA7:AA16!");
+                    clearDraftBlock();
+                    fetchMirrorSync();
+                } else { alert("Push Failed: " + res.message); }
+            } catch (e) { alert("Push Error: " + e.message); }
+        }
+
+        function clearDraftBlock() {
+            buffer = {}; techNotes = []; refData = {};
+            localStorage.removeItem('hvacStagingBufferV20');
+            localStorage.removeItem('hvacTechNotesV20');
+            localStorage.removeItem('hvacRefDataV20');
+            renderDraftBlock(); renderCompiler();
+        }
+
+        function copyToClipboard(text) {
+            if (text === "(EMPTY DRAFT)") return;
+            navigator.clipboard.writeText(text).then(() => alert("Copied to Clipboard!"));
+        }
+
+        function renderPMIGrid() {
+            const grid = document.getElementById('pmiCategoryGrid');
+            if (!grid) return;
+            grid.style.display = 'flex'; grid.style.flexDirection = 'column'; grid.style.gap = '8px';
+            grid.innerHTML = Object.keys(techNotesMaster).map(cat => {
+                const isHidden = (hiddenFields[activeTemplate] || []).some(k => k.toLowerCase() === cat.toLowerCase());
+                const activeNotesInCat = techNotes.filter(n => {
+                    let noteCat = n;
+                    if (n.includes('\u2192')) noteCat = n.split('\u2192')[0].trim();
+                    else if (n.includes(':')) noteCat = n.split(':')[0].trim();
+                    return noteCat.toLowerCase().includes(cat.toLowerCase()) || cat.toLowerCase().includes(noteCat.toLowerCase());
+                });
+                const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim() || m.label.toUpperCase().includes(cat.toUpperCase()));
+                const isSynced = activeNotesInCat.length > 0;
+                const noteDisplay = isSynced ? activeNotesInCat.map(n => {
+                    let val = n;
+                    if (n.includes('\u2192')) val = n.split('\u2192')[1]?.trim() || val;
+                    else if (n.includes(':')) val = n.split(':')[1]?.trim() || val;
+                    return `<span style="background:rgba(0,229,255,0.15); padding:2px 8px; border-radius:6px; margin-bottom:3px; display:inline-block; border:1px solid rgba(0,229,255,0.2);">\u2192 \u2705 ${val}</span>`;
+                }).join('') : (mirrorMatch ? `<span style="opacity:0.5;">\u2192 \u2705 ${mirrorMatch.value}</span>` : '<span style="opacity:0.3;">ADD +</span>');
+                return `
+                <div class="btn-utility" style="justify-content:space-between; padding:14px 15px; min-height:60px;">
+                <span onclick="toggleVisibility('${cat}', 'pmi')" style="font-size:13px; font-weight:900; cursor:pointer;">${cat.toUpperCase()}${isHidden ? ' (HIDDEN)' : ''}</span>
+                <div onclick="openPMINotes('${cat}')" style="font-size:10px; font-weight:900; max-width:65%; text-align:right; display:flex; flex-direction:column; align-items:flex-end; cursor:pointer;">
+                ${noteDisplay}
+                </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openPMINotes(cat) {
+            pmiActiveCategory = cat;
+            document.getElementById('pmiActiveCat').innerText = cat;
+            const list = document.getElementById('pmiNoteList');
+            const options = techNotesMaster[cat] || [];
+            list.style.display = 'flex'; list.style.flexDirection = 'column'; list.style.gap = '8px';
+            list.innerHTML = options.map(opt => {
+                const noteStr = `${pmiActiveCategory} \u2192 ${opt}`;
+                const isSelected = techNotes.includes(noteStr);
+                return `
+                <button onclick="togglePMINote('${opt.replace(/'/g, "\\'")}')" class="btn btn-outline" style="width:100%; padding:15px; font-size:13px; text-align:left; border-color:${isSelected ? 'var(--electric-blue)' : 'rgba(255,255,255,0.06)'}; background:${isSelected ? 'rgba(0,229,255,0.08)' : 'rgba(255,255,255,0.03)'}; color:${isSelected ? 'var(--electric-blue)' : 'white'}; border-radius:12px; font-weight:900; display:flex; justify-content:space-between; align-items:center;">
+                <span>${opt}</span>${isSelected ? '<span style="font-size:16px;">\u2714</span>' : ''}
+                </button>`;
+            }).join('');
+            document.getElementById('pmiNoteOverlay').style.display = 'flex';
+        }
+
+        function togglePMINote(opt) {
+            const noteStr = `${pmiActiveCategory} \u2192 ${opt}`;
+            const idx = techNotes.indexOf(noteStr);
+            if (idx > -1) techNotes.splice(idx, 1); else techNotes.push(noteStr);
+            localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+            openPMINotes(pmiActiveCategory); renderPMIGrid(); renderCompiler(); renderDraftBlock();
+        }
+
+        function closePMINotes() { document.getElementById('pmiNoteOverlay').style.display = 'none'; }
+
+        function renderRefrigRows() {
+            const list = document.getElementById('refrigInputList');
+            if (!list) return;
+            const mapKeys = { 'ODAT': 'ODAT', 'SH': 'SH', 'SC': 'SC', 'DELTA_T': '\u2206T' };
+            list.innerHTML = Object.entries(REFRIG_FIELDS).map(([key, label]) => {
+                const sheetField = mapKeys[key] || findSheetLabelFor(label);
+                const sheetVal = isJobMode ? mirrorState[sheetField] : null;
+                const val = refData[key] || (sheetVal && sheetVal !== "--" ? sheetVal : '--');
+                const isSynced = (refData[key] !== undefined && refData[key] !== null);
+                const mirrorAvailable = isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== "--";
+                const isHidden = (hiddenFields[activeTemplate] || []).some(k => k.toLowerCase() === key.toLowerCase());
+                const labelColor = isHidden ? 'white' : (isSynced ? 'var(--electric-blue)' : 'white');
+                const valColor = isHidden ? 'white' : (isSynced ? 'var(--electric-blue)' : 'white');
+                const opacityStyle = isHidden ? 'opacity:0.5;' : 'opacity:1;';
+                return `
+                <div class="refrig-card ${mirrorAvailable ? 'mirror-blue-glow' : ''}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${isSynced ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)'}; ${opacityStyle}">
+                <span onclick="toggleVisibility('${key}', 'refrig', '${sheetField}')" style="font-weight:900; color:${labelColor}; font-size:12px; cursor:pointer;">${label.toUpperCase()}${isHidden ? ' (HIDDEN)' : ''}</span>
+                <span onclick="openRefrigKeypad('${key}')" style="font-size:20px; font-weight:900; color:${valColor}; cursor:pointer;">${val}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function openRefrigKeypad(key) {
+            activeRefrigKey = key; keypadString = "";
+            document.getElementById('keypadLabel').innerText = REFRIG_FIELDS[key].toUpperCase();
+            document.getElementById('keypadValue').innerText = "0.0";
+            document.getElementById('refrigKeypad').style.display = 'block';
+        }
+
+        function numIn(val) {
+            if (val === 'C') {
+                delete refData[activeRefrigKey]; localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+                if (typeof renderRefrigRows === 'function') renderRefrigRows();
+                if (typeof renderCompiler === 'function') renderCompiler();
+                document.getElementById('refrigKeypad').style.display = 'none';
+                return;
+            }
+            keypadString += val;
+            document.getElementById('keypadValue').innerText = keypadString || "0.0";
+        }
+
+        function saveRefrigNum() {
+            const val = parseFloat(keypadString);
+            if (!isNaN(val)) {
+                refData[activeRefrigKey] = val;
+                localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+                renderRefrigRows(); renderCompiler(); renderDraftBlock();
+            }
+            document.getElementById('refrigKeypad').style.display = 'none';
+        }
+
+        // 🛑 ==========================================
         // 🛑 ZONE 3: THE SYNC ENGINE (DO NOT TOUCH)
         // 🛑 ==========================================
         async function fetchMirrorSync() {
@@ -2880,7 +3078,24 @@
 
         function addMirrorToCompiler(label, val) {
             // v25.2.11: Silent Clean Extraction (Ensure Raw Numbers for Math)
-            let cleanVal = String(val).replace(/[°%']+/g, '').trim();
+            let cleanVal = String(val).replace(/[\u00b0%']+/g, '').trim();
+
+            // v27.22: REFRIG ROUTING TRAP — catch refrigerant fields before they hit Tech Notes
+            let refKey = null;
+            if (typeof REFRIG_FIELDS !== 'undefined') {
+                for (let k in REFRIG_FIELDS) {
+                    if (REFRIG_FIELDS[k] === label || (label === '\u2206T' && k === 'DELTA_T')) refKey = k;
+                }
+            }
+            if (refKey) {
+                refData[refKey] = cleanVal;
+                localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+                renderMirrorTruth();
+                if (typeof renderRefrigRows === 'function') renderRefrigRows();
+                renderCompiler();
+                renderDraftBlock();
+                return;
+            }
             
             // FIX: Smart case-insensitive, fuzzy Undo search
             const idx = techNotes.findIndex(n => {
