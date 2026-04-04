@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.1</title>
-    <!-- BUILD: index_v28_0_2026_04_03_2100.html -->
+    <title>HVAC PRO v28.2</title>
+    <!-- BUILD: index_v28_1_2026_04_04_0125.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.1</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.2</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.1</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.2</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2117,7 +2117,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.1";
+        const APP_VERSION = "v28.2";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2806,6 +2806,34 @@
             }
             localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
             renderRefrigRows(); renderCompiler(); renderDraftBlock();
+        }
+
+        // v28.2: Native Typing Entry for Specs
+        function openSpecManualEntry(tab, id) {
+            const f = EQUIP_SCHEMA[tab].find(x => x.id === id);
+            if (!f) return;
+            let currentVal = systemSpecs[tab][id] || "";
+            if (currentVal === '--') currentVal = "";
+
+            const newVal = prompt(`ENTER VALUE FOR ${f.label.toUpperCase()}:`, currentVal);
+            if (newVal !== null) {
+                let cleanVal = newVal.trim();
+                systemSpecs[tab][id] = cleanVal || '--';
+                localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+
+                const key = tab + '_' + id;
+                if (cleanVal !== "" && cleanVal !== "--" && !stagedSpecs.includes(key)) {
+                    stagedSpecs.push(key);
+                } else if ((cleanVal === "" || cleanVal === "--") && stagedSpecs.includes(key)) {
+                    const idx = stagedSpecs.indexOf(key);
+                    if (idx > -1) stagedSpecs.splice(idx, 1);
+                }
+                localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
+
+                if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+                if (typeof renderCompiler === 'function') renderCompiler();
+                if (typeof renderDraftBlock === 'function') renderDraftBlock();
+            }
         }
 
         // v28.0: Staging Logic & toggleSpecCompiler
@@ -3546,13 +3574,13 @@
                     const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
                     const displayVal = val !== '--' ? val : (isFromMirror ? sheetVal : '--');
 
-                    // v28.1: Corrected Split-Row ID anchor
+                    // v28.2: SPLIT CLICK ZONES — label toggles compiler, value opens manual entry keyboard
                     return `
                     <div id="spec-${f.id}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${borderColor}; margin-bottom:8px;">
                         <span onclick="toggleSpecCompiler('${tab}', '${f.id}')"
-                              style="font-weight:900; color:${textColor}; font-size:13px; cursor:pointer; flex:1; padding:10px 0;">${f.label.toUpperCase()}</span>
-                        <span onclick="event.stopPropagation(); openSpecVoice('${f.id}')"
-                              style="font-size:18px; font-weight:900; color:${textColor}; cursor:pointer; padding-left:20px; text-align:right; word-break:break-all;">${displayVal}</span>
+                              style="font-weight:900; color:${textColor}; font-size:13px; cursor:pointer; flex:1; padding:10px 0; user-select:none; -webkit-user-select:none;">${f.label.toUpperCase()}</span>
+                        <span onclick="event.stopPropagation(); openSpecManualEntry('${tab}', '${f.id}')"
+                              style="font-size:18px; font-weight:900; color:${textColor}; cursor:pointer; padding-left:20px; text-align:right; word-break:break-all; user-select:none; -webkit-user-select:none;">${displayVal}</span>
                     </div>`;
                 }).join('');
             }
@@ -4627,20 +4655,23 @@ function wipeTotalSession() {
                     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
                     if (typeof renderRefrigRows === 'function') renderRefrigRows();
                 }
-                // PMI KEY: delete all matching notes from techNotes and re-render PMI screen
-                else if (typeof techNotesMaster !== 'undefined' && techNotesMaster[key]) {
-                    const toRemove = [];
-                    techNotes.forEach((n, idx) => {
-                        let noteCat = n;
-                        if (n.includes('\u2192')) noteCat = n.split('\u2192')[0].trim();
-                        else if (n.includes(':')) noteCat = n.split(':')[0].trim();
-                        if (noteCat.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(noteCat.toLowerCase())) {
-                            toRemove.push(idx);
-                        }
-                    });
-                    toRemove.reverse().forEach(idx => techNotes.splice(idx, 1));
-                    localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
-                    if (typeof renderPMIGrid === 'function') renderPMIGrid();
+                // PMI KEY: delete all matching notes from techNotes and re-render PMI screen (v28.2: case-insensitive)
+                else if (typeof techNotesMaster !== 'undefined') {
+                    const matchingKey = Object.keys(techNotesMaster).find(k => k.toLowerCase() === key.toLowerCase());
+                    if (matchingKey) {
+                        const toRemove = [];
+                        techNotes.forEach((n, idx) => {
+                            let noteCat = n;
+                            if (n.includes('\u2192')) noteCat = n.split('\u2192')[0].trim();
+                            else if (n.includes(':')) noteCat = n.split(':')[0].trim();
+                            if (noteCat.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(noteCat.toLowerCase())) {
+                                toRemove.push(idx);
+                            }
+                        });
+                        toRemove.reverse().forEach(idx => techNotes.splice(idx, 1));
+                        localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+                        if (typeof renderPMIGrid === 'function') renderPMIGrid();
+                    }
                 }
             }
             renderCompiler();
