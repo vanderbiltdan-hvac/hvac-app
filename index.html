@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.11</title>
-    <!-- BUILD: index_v28_11_2026_04_04_1020.html -->
+    <title>HVAC PRO v28.12</title>
+    <!-- BUILD: index_v28_12_2026_04_04_1042.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1204,7 +1204,7 @@
             background: rgba(255, 23, 68, 0.2);
             color: #ff1744;
         }
-        /* GALLERY & SHELF STYLES (Migrated v28.11) */
+        /* GALLERY & SHELF STYLES (Migrated v28.12) */
         .shelf-pill {
             background: #222;
             color: #777;
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.11</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.12</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.11</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.12</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1666,7 +1666,7 @@
         </div>
     </div>
 
-    <!-- REPORT COMPILER (v28.11) -->
+    <!-- REPORT COMPILER (v28.12) -->
     <div id="reportModal" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
         <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span></div>
 
@@ -1746,7 +1746,7 @@
         </div>
     </div>
 
-    <!-- SYNC ERROR MODAL (v28.11) -->
+    <!-- SYNC ERROR MODAL (v28.12) -->
     <div id="syncErrorModal" class="modal-overlay" style="display:none; z-index:35000; background:rgba(0,0,0,0.85);">
         <div class="container"
             style="background:#222; border:1px solid var(--crimson-red); max-width:320px; padding:25px; text-align:center; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
@@ -1865,7 +1865,7 @@
         </div>
     </div>
 
-    <!-- PHOTO GALLERY OVERLAY (V28.11) -->
+    <!-- PHOTO GALLERY OVERLAY (V28.12) -->
     <div id="galleryOverlay" class="modal-overlay"
         style="background:#000; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; top:0; z-index:10000;">
         <div
@@ -1903,8 +1903,12 @@
             <div style="display:flex; gap:10px;">
                 <button onclick="moveSelectedToShelf()" class="btn btn-outline"
                     style="flex:1; border-color:var(--amber-orange); color:var(--amber-orange);">📁 TO SHELF</button>
-                <button id="driveBatchBtn" onclick="sendShelfToDrive()" class="btn btn-outline"
-                    style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green); transition:0.3s;">☁️ DRIVE</button>
+                <div style="flex:1; display:flex;">
+                    <button id="driveBatchBtn" onclick="sendShelfToDrive()" class="btn btn-outline"
+                        style="flex:3; border-color:var(--emerald-green); color:var(--emerald-green); border-radius:12px 0 0 12px; transition:0.3s;">☁️ DRIVE</button>
+                    <button onclick="openRoutingModal()" class="btn btn-outline"
+                        style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green); border-left:none; border-radius:0 12px 12px 0;">•••</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1919,7 +1923,24 @@
             style="max-width:95vw; max-height:85vh; object-fit:contain; border:2px solid var(--electric-blue); border-radius:10px; pointer-events:none;">
     </div>
 
-    <!-- SECTION: MIRROR (COLUMN W TRUTH - v28.9) -->
+    <!-- DRIVE ROUTING MODAL (v28.12) -->
+    <div id="routingModal" class="modal-overlay"
+        style="background:rgba(0,0,0,0.95); display:none; flex-direction:column; z-index:16000; padding:20px; justify-content:center;">
+        <div class="container"
+            style="background:#222; border:1px solid var(--emerald-green); max-width:400px; padding:20px; border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">ROUTE PHOTOS TO...</h2>
+                <button onclick="closeRoutingModal()"
+                    style="background:transparent; border:none; color:white; font-size:28px; padding:0;">&times;</button>
+            </div>
+            <div style="font-size:11px; color:#aaa; font-weight:900; margin-bottom:10px;">RECENT DESTINATIONS</div>
+            <div id="recentFoldersList" style="display:flex; flex-direction:column; gap:8px; max-height:40vh; overflow-y:auto;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION: MIRROR (COLUMN W TRUTH - v28.12) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
         <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
@@ -2101,7 +2122,7 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (v28.9) -->
+    <!-- UNIVERSAL FIXED FOOTER (v28.12) -->
     <nav class="app-nav">
         <div class="nav-fixed-home">
             <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
@@ -2129,7 +2150,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.11";
+        const APP_VERSION = "v28.12";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2159,7 +2180,7 @@
             thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
 
-        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_11')) || {
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_12')) || {
             'outdoor': [
                 { id: 'BRAND', label: 'Brand', type: 'text' },
                 { id: 'MDL', label: 'Model', type: 'text' },
@@ -2258,14 +2279,14 @@
         }
 
         function showSection(id) {
-            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig', 'photoViewerModal'];
+            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig', 'photoViewerModal', 'routingModal'];
             
             // Track navigation history - find current visible section
             const currentVisible = sections.find(s => {
                 const el = document.getElementById(s);
                 return el && el.style.display !== 'none';
             });
-            if (currentVisible && currentVisible !== 'galleryOverlay' && currentVisible !== 'photoViewerModal') {
+            if (currentVisible && currentVisible !== 'galleryOverlay' && currentVisible !== 'photoViewerModal' && currentVisible !== 'routingModal') {
                 previousSection = currentVisible;
             }
 
@@ -2506,13 +2527,77 @@
             document.getElementById('fullSizeImage').src = "";
         }
 
+        function saveRecentFolder(name, id) {
+            if (!name || !id) return;
+            let recents = JSON.parse(localStorage.getItem('hvacRecentFolders') || '[]');
+            recents = recents.filter(f => f.id !== id);
+            recents.unshift({ name: name, id: id });
+            if (recents.length > 10) recents.pop();
+            localStorage.setItem('hvacRecentFolders', JSON.stringify(recents));
+        }
+
+        function openRoutingModal() {
+            if (selectedPhotoIds.size === 0) return alert("Select photos first.");
+            const list = document.getElementById('recentFoldersList');
+            const recents = JSON.parse(localStorage.getItem('hvacRecentFolders') || '[]');
+            if (recents.length === 0) {
+                list.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">No recent destinations. Upload to active job first to save it here.</div>';
+            } else {
+                list.innerHTML = recents.map(f => `<button onclick="routeToFolder('${f.id}')" class="btn btn-outline" style="text-align:left; padding:12px; border-color:#444; color:white;"><span style="color:var(--emerald-green); margin-right:8px;">📂</span> ${f.name}</button>`).join('');
+            }
+            document.getElementById('routingModal').style.display = 'flex';
+        }
+
+        function closeRoutingModal() { document.getElementById('routingModal').style.display = 'none'; }
+
+        async function routeToFolder(folderId) {
+            closeRoutingModal();
+            if (selectedPhotoIds.size === 0) return;
+            const photos = await getAllPhotos();
+            const toProcess = photos.filter(p => selectedPhotoIds.has(p.id));
+
+            const btn = document.getElementById('driveBatchBtn');
+            const origText = btn.innerHTML;
+            btn.innerHTML = "⏳ UPLOADING...";
+            btn.style.borderColor = "var(--electric-blue)";
+            btn.style.color = "var(--electric-blue)";
+            btn.classList.add('sync-active');
+
+            closeGallery();
+            const status = document.getElementById('photoStatus');
+            status.style.display = 'block';
+
+            for (let i = 0; i < toProcess.length; i++) {
+                let ph = toProcess[i];
+                status.innerText = "Routing to Destination [" + (i + 1) + "/" + toProcess.length + "]: " + ph.filename;
+                try {
+                    await callAppsScript({ action: "uploadPhoto", data: ph.data, filename: ph.filename, mimeType: ph.mime, folderId: folderId });
+                } catch (e) { console.error("Upload error:", e); }
+            }
+
+            status.innerText = "Uploads Complete!";
+            btn.classList.remove('sync-active');
+            btn.innerHTML = "✅ DONE";
+            btn.style.backgroundColor = "rgba(0, 200, 83, 0.2)";
+            btn.style.borderColor = "var(--emerald-green)";
+            btn.style.color = "var(--emerald-green)";
+
+            setTimeout(() => {
+                status.style.display = 'none';
+                btn.innerHTML = origText;
+                btn.style.backgroundColor = "transparent";
+            }, 3000);
+        }
+
         async function uploadPhotoToDrive(id) {
             const photos = await getAllPhotos();
             const ph = photos.find(p => p.id === id);
             if (!ph) return;
-            
+
             const targetFolderId = localStorage.getItem('hvacActiveFolderId');
             if (!targetFolderId) return alert("No active job hooked. Create a shell first.");
+
+            saveRecentFolder(currentJob, targetFolderId);
 
             const status = document.getElementById('photoStatus');
             status.style.display = 'block';
@@ -3550,7 +3635,7 @@
                 });
             });
             if (updated) {
-                localStorage.setItem('hvacEquipSchemaV28_11', JSON.stringify(EQUIP_SCHEMA));
+                localStorage.setItem('hvacEquipSchemaV28_12', JSON.stringify(EQUIP_SCHEMA));
                 if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             }
         }
@@ -4793,6 +4878,8 @@ function wipeTotalSession() {
             const targetFolderId = localStorage.getItem('hvacActiveFolderId');
             if (!targetFolderId) return alert("No active job hooked. Create a shell first.");
 
+            saveRecentFolder(currentJob, targetFolderId);
+
             const photos = await getAllPhotos();
             const toProcess = photos.filter(p => selectedPhotoIds.has(p.id));
 
@@ -5043,6 +5130,8 @@ function wipeTotalSession() {
                     localStorage.setItem('hvacActiveJob', finalName);
                     localStorage.setItem('hvacActiveFolderId', folderId);
                     window.currentJob = finalName;
+
+                    saveRecentFolder(finalName, folderId);
 
                     shellBtn.innerHTML = "✅ JOB HOOKED!";
                     shellBtn.style.background = "var(--emerald-green)";
