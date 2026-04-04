@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.25</title>
-    <!-- BUILD: index_v27_24_2026_04_03_1918.html -->
+    <title>HVAC Master Pro v27.26</title>
+    <!-- BUILD: index_v27_25_2026_04_03_1938.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.25</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.26</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.25</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.26</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2117,7 +2117,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v27.25";
+        const APP_VERSION = "v27.26";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -3095,10 +3095,23 @@
                 // v27.24: Fuzzy match logic
                 const normK = normalizeText(k);
                 const normVal = normalizeText(val.toString());
-                const isSelected = techNotes.some(n => {
+                // v27.26: Check BOTH techNotes AND refData for mirror selection state
+                let isSelected = false;
+                if (techNotes.some(n => {
                     const normNote = normalizeText(n);
                     return normNote.includes(normK) && normNote.includes(normVal);
-                });
+                })) { isSelected = true; }
+                if (!isSelected && typeof REFRIG_FIELDS !== 'undefined') {
+                    const mapKeys = { 'ODAT': 'ODAT', 'SH': 'SH', 'SC': 'SC', 'DELTA_T': '\u2206T' };
+                    for (let rKey in REFRIG_FIELDS) {
+                        if (refData[rKey] !== undefined && refData[rKey] !== null) {
+                            const sheetField = mapKeys[rKey] || findSheetLabelFor(REFRIG_FIELDS[rKey]);
+                            if (normalizeText(sheetField) === normK && normalizeText(String(refData[rKey])) === normVal) {
+                                isSelected = true; break;
+                            }
+                        }
+                    }
+                }
 
                 return `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
@@ -3120,10 +3133,23 @@
                     // v27.24: Fuzzy match logic
                     const normK = normalizeText(item.label);
                     const normVal = normalizeText(item.value);
-                    const isSelected = techNotes.some(n => {
+                    // v27.26: Check BOTH techNotes AND refData for mirror selection state
+                    let isSelected = false;
+                    if (techNotes.some(n => {
                         const normNote = normalizeText(n);
                         return normNote.includes(normK) && normNote.includes(normVal);
-                    });
+                    })) { isSelected = true; }
+                    if (!isSelected && typeof REFRIG_FIELDS !== 'undefined') {
+                        const mapKeys = { 'ODAT': 'ODAT', 'SH': 'SH', 'SC': 'SC', 'DELTA_T': '\u2206T' };
+                        for (let rKey in REFRIG_FIELDS) {
+                            if (refData[rKey] !== undefined && refData[rKey] !== null) {
+                                const sheetField = mapKeys[rKey] || findSheetLabelFor(REFRIG_FIELDS[rKey]);
+                                if (normalizeText(sheetField) === normK && normalizeText(String(refData[rKey])) === normVal) {
+                                    isSelected = true; break;
+                                }
+                            }
+                        }
+                    }
 
                     return `
                     <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,229,255,0.03); padding:10px 12px; border-radius:12px; border:1px solid rgba(0,229,255,0.1);">
@@ -3142,11 +3168,12 @@
         function addMirrorToCompiler(label, val) {
             let cleanVal = String(val).replace(/[\u00b0%']+/g, '').trim();
 
-            // REFRIGERANT ROUTING TRAP WITH SMART UNDO
+            // REFRIGERANT ROUTING TRAP WITH SMART UNDO (v27.26: CASE-INSENSITIVE)
             let refKey = null;
             if (typeof REFRIG_FIELDS !== 'undefined') {
                 for (let k in REFRIG_FIELDS) {
-                    if (REFRIG_FIELDS[k] === label || (label === '\u2206T' && k === 'DELTA_T')) refKey = k;
+                    if (REFRIG_FIELDS[k].toLowerCase() === label.toLowerCase() ||
+                        (label.toLowerCase() === '\u2206t' && k === 'DELTA_T')) refKey = k;
                 }
             }
             if (refKey) {
@@ -4559,9 +4586,8 @@ function wipeTotalSession() {
             let lines = [];
             let i = 0;
 
+            // v27.26: hiddenFields blocking removed — compiler shows all live data
             const pushLine = (text, dataKey = null, htmlFlag = '', isAudited = false, isSkeleton = false) => {
-                const arr = hiddenFields[activeTemplate] || [];
-                if (dataKey && arr.some(k => k.toLowerCase() === dataKey.toLowerCase())) return;
                 const borderStyle = isAudited ? 'border:1px solid var(--electric-blue);' : 'border:1px solid transparent;';
                 const skelClass = isSkeleton ? 'skeleton-line' : '';
                 const skelStyle = isSkeleton ? 'opacity:0.4;' : '';
