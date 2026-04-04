@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.2</title>
-    <!-- BUILD: index_v28_1_2026_04_04_0125.html -->
+    <title>HVAC PRO v28.3</title>
+    <!-- BUILD: index_v28_2_2026_04_04_0744.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.2</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.3</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1322,7 +1322,7 @@
             </div>
 
             <!-- SLOT 2: UPLOAD PHOTOS (FULL WIDTH) -->
-            <button class="btn-full" onclick="document.getElementById('fileInputHome').click()" style="background:var(--electric-blue); color:#000;">
+            <button class="btn-full" onclick="history.pushState(null, null, '#picker'); document.getElementById('fileInputHome').click()" style="background:var(--electric-blue); color:#000;">
                 📸 UPLOAD PHOTOS
             </button>
             <input type="file" id="fileInputHome" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.2</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.3</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1554,7 +1554,7 @@
         <div class="rig-grid" id="subSpecGrid" style="display:none;"></div>
 
         <div style="margin-bottom:12px;">
-            <button onclick="document.getElementById('fileInputSpecs').click()" class="btn btn-outline"
+            <button onclick="history.pushState(null, null, '#picker'); document.getElementById('fileInputSpecs').click()" class="btn btn-outline"
                 style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
             <input type="file" id="fileInputSpecs" style="display:none;" accept="image/*" multiple
                 onchange="handleMultiPhotos(this)">
@@ -2117,7 +2117,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.2";
+        const APP_VERSION = "v28.3";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2147,22 +2147,35 @@
             thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
 
-        const EQUIP_SCHEMA = {
-            outdoor: [
-                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
-                { id: 'RLA', label: 'COMP RLA' }, { id: 'LRA', label: 'LRA' }, { id: 'FLA', label: 'FAN FLA' }, { id: 'VOLT', label: 'VOLTAGE' },
-                { id: 'SUB', label: 'TARGET SC' }, { id: 'REF', label: 'REFRIGERANT' }, { id: 'METER', label: 'METERING' }, { id: 'TON', label: 'TONNAGE' }
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_3')) || {
+            'outdoor': [
+                { id: 'BRAND', label: 'Brand', type: 'text' },
+                { id: 'MDL', label: 'Model', type: 'text' },
+                { id: 'SER', label: 'Serial', type: 'text' },
+                { id: 'YEAR', label: 'Year', type: 'text' },
+                { id: 'TON', label: 'Tonnage', type: 'text' },
+                { id: 'RLA', label: 'Comp RLA', type: 'text' },
+                { id: 'FLA', label: 'Fan FLA', type: 'Num' },
+                { id: 'REF', label: 'Ref Type', type: 'text' },
+                { id: 'TYPE', label: 'Unit Type', type: 'text' }
             ],
-            indoor: [
-                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'SER', label: 'SERIAL #' }, { id: 'YEAR', label: 'YEAR' },
-                { id: 'KBTU', label: 'GAS KBTU' }, { id: 'KW', label: 'HEAT KW' }, { id: 'BLOWER', label: 'BLOWER HP' }, { id: 'INDUCER', label: 'INDUCER AMPS' },
-                { id: 'VOLT', label: 'VOLTAGE' }, { id: 'FILTER', label: 'FILTER' }, { id: 'GAS_V', label: 'GAS VALVE' }, { id: 'TON', label: 'TONNAGE' },
-                { id: 'C_BRAND', label: 'COIL BRAND' }, { id: 'C_MDL', label: 'COIL MDL #' }, { id: 'C_SER', label: 'COIL SER #' }, { id: 'C_YEAR', label: 'COIL YEAR' },
-                { id: 'C_TON', label: 'COIL TONNAGE' }, { id: 'C_METER', label: 'COIL METER' }, { id: 'C_TRAY', label: 'DRAIN TRAY' }, { id: 'C_AIR_DIR', label: 'AIRFLOW' }
+            'indoor': [
+                { id: 'BRAND', label: 'Brand', type: 'text' },
+                { id: 'MDL', label: 'Model', type: 'text' },
+                { id: 'SER', label: 'Serial', type: 'text' },
+                { id: 'C_BRAND', label: 'Coil Brand', type: 'text' },
+                { id: 'C_MDL', label: 'Coil Model', type: 'text' },
+                { id: 'C_SER', label: 'Coil Serial', type: 'text' },
+                { id: 'C_TON', label: 'Coil Tonnage', type: 'text' },
+                { id: 'TYPE', label: 'Section Type', type: 'text' }
             ],
-            thermostat: [
-                { id: 'BRAND', label: 'BRAND' }, { id: 'MDL', label: 'MODEL #' }, { id: 'YEAR', label: 'YEAR' },
-                { id: 'WIRE', label: 'WIRING' }, { id: 'BATT', label: 'BATTERIES' }, { id: 'SCHED', label: 'SCHEDULE' }
+            'thermostat': [
+                { id: 'BRAND', label: 'Brand', type: 'text' },
+                { id: 'MDL', label: 'Model', type: 'text' },
+                { id: 'WIRE', label: 'Wire Count', type: 'text' },
+                { id: 'BATT', label: 'Batteries', type: 'text' },
+                { id: 'SCHED', label: 'Schedule', type: 'text' },
+                { id: 'TYPE', label: 'Device Type', type: 'text' }
             ]
         };
 
@@ -2934,6 +2947,9 @@
                         }
                     }
                     refreshSyncUI();
+                    if (response.data.schema && response.data.schema.length > 0) {
+                        alignSchemaLabels(response.data.schema);
+                    }
                     renderMirrorTruth(); // v27.24: Instant Refresh
                     if (typeof renderMirrorGrid === 'function') renderMirrorGrid();
                     closeSyncError(); // Close modal if open on success
@@ -3452,8 +3468,27 @@
             }
         }
 
-
-
+        // v28.3: Dynamic Schema Aligner — matches app labels to spreadsheet labels (W232)
+        function alignSchemaLabels(schemaArray) {
+            let updated = false;
+            ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
+                EQUIP_SCHEMA[tab].forEach(f => {
+                    const cleanAppLabel = f.label.toLowerCase().replace(/[^a-z0-9]/g, "");
+                    const match = schemaArray.find(s => {
+                        const cleanS = s.toLowerCase().replace(/[^a-z0-9]/g, "");
+                        return cleanS === cleanAppLabel || (cleanS.includes(cleanAppLabel) && cleanAppLabel.length > 3) || (cleanAppLabel.includes(cleanS) && cleanS.length > 3);
+                    });
+                    if (match && f.label !== match) {
+                        f.label = match;
+                        updated = true;
+                    }
+                });
+            });
+            if (updated) {
+                localStorage.setItem('hvacEquipSchemaV28_3', JSON.stringify(EQUIP_SCHEMA));
+                if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+            }
+        }
 
         function toggleVisibility(key, category = null, sheetField = null) {
             let arr = hiddenFields[activeTemplate] || [];
@@ -3500,7 +3535,7 @@
 
 
         async function initSplash() {
-            console.log("HVAC Master Pro v28.1 Mission Control - NEW ERA Start");
+            console.log(APP_VERSION + " Start - Vault SOP Verified");
             document.title = "HVAC Master Pro v" + APP_VERSION;
 
             renderSystemSpecs();
@@ -3513,6 +3548,9 @@
                         mirrorState = res.data.fields || {};
                         mirrorPMI = res.data.pmi || []; // FIX: Capture PMI data on refresh
                         processJobDataResults(mirrorState);
+                        if (res.data.schema && res.data.schema.length > 0) {
+                            alignSchemaLabels(res.data.schema);
+                        }
                         refreshSyncUI();
                     } else {
                         throw new Error(res.data ? res.data.error : "Connection Failed");
@@ -4466,7 +4504,7 @@ function wipeTotalSession() {
             }
             closeManualEntry();
         }
-        function closeManualEntry() { document.getElementById('manualOverlay').classList.remove('visible'); }
+        function closeManualEntry() { overlay.classList.remove('visible'); }
 
         function confirmReading() {
             if (isCapturing) return;
@@ -4663,7 +4701,7 @@ function wipeTotalSession() {
                         techNotes.forEach((n, idx) => {
                             let noteCat = n;
                             if (n.includes('\u2192')) noteCat = n.split('\u2192')[0].trim();
-                            else if (n.includes(':')) noteCat = n.split(':')[0].trim();
+                            else if (n.includes(':')) noteCat = n.split(':').map(s => s.trim())[0];
                             if (noteCat.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(noteCat.toLowerCase())) {
                                 toRemove.push(idx);
                             }
@@ -4680,7 +4718,37 @@ function wipeTotalSession() {
 
         // v27.19: Zone 2 Stubs — prevent breakpoints on dead button calls
         function retrySync() { fetchMirrorSync(); }
-        function sendShelfToDrive() { alert('Drive sync coming soon.'); }
+        // v28.3: Fully Implemented Drive photo upload pipeline
+        async function sendShelfToDrive() {
+            if (selectedPhotoIds.size === 0) return alert("Select photos first.");
+            const targetFolderId = localStorage.getItem('hvacActiveFolderId');
+            if (!targetFolderId) return alert("No active job hooked. Create a shell first.");
+
+            const photos = await getAllPhotos();
+            const toProcess = photos.filter(p => selectedPhotoIds.has(p.id));
+            
+            closeGallery();
+            const status = document.getElementById('photoStatus');
+            status.style.display = 'block';
+
+            for (let i = 0; i < toProcess.length; i++) {
+                let ph = toProcess[i];
+                status.innerText = `Uploading to Drive [${i + 1}/${toProcess.length}]: ${ph.filename}`;
+                try {
+                    await callAppsScript({
+                        action: "uploadPhoto",
+                        data: ph.data,
+                        filename: ph.filename,
+                        mimeType: ph.mime,
+                        folderId: targetFolderId
+                    });
+                } catch (e) {
+                    console.error("Upload error:", e);
+                }
+            }
+            status.innerText = "Uploads Complete!";
+            setTimeout(() => status.style.display = 'none', 3000);
+        }
         function clearMasterReadings() { alert('Wipe coming soon.'); }
 
         function getDeltaFlagHtml(dt, rh) {
