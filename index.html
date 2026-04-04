@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.10</title>
-    <!-- BUILD: index_v28_10_2026_04_04_1010.html -->
+    <title>HVAC PRO v28.11</title>
+    <!-- BUILD: index_v28_11_2026_04_04_1020.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1204,7 +1204,7 @@
             background: rgba(255, 23, 68, 0.2);
             color: #ff1744;
         }
-        /* GALLERY & SHELF STYLES (Migrated v27.17) */
+        /* GALLERY & SHELF STYLES (Migrated v28.11) */
         .shelf-pill {
             background: #222;
             color: #777;
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.10</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.11</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1329,7 +1329,7 @@
 
             <!-- SLOT 3: GALLERY (FULL WIDTH) -->
             <button class="btn-full" onclick="openGallery()" style="background:#222; color:var(--electric-blue); border-color:var(--electric-blue);">
-                🖼️ PHOTO HOARD (GALLERY)
+                🖼️ GALLERY
             </button>
 
             <!-- SLOTS 4 & 5: TWO COLUMNS -->
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.10</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.11</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1666,7 +1666,7 @@
         </div>
     </div>
 
-    <!-- REPORT COMPILER (v20.32) -->
+    <!-- REPORT COMPILER (v28.11) -->
     <div id="reportModal" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
         <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span></div>
 
@@ -1746,7 +1746,7 @@
         </div>
     </div>
 
-    <!-- SYNC ERROR MODAL (v25.2.0) -->
+    <!-- SYNC ERROR MODAL (v28.11) -->
     <div id="syncErrorModal" class="modal-overlay" style="display:none; z-index:35000; background:rgba(0,0,0,0.85);">
         <div class="container"
             style="background:#222; border:1px solid var(--crimson-red); max-width:320px; padding:25px; text-align:center; border-radius:20px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
@@ -1865,12 +1865,12 @@
         </div>
     </div>
 
-    <!-- PHOTO GALLERY OVERLAY (V28.9) -->
+    <!-- PHOTO GALLERY OVERLAY (V28.11) -->
     <div id="galleryOverlay" class="modal-overlay"
         style="background:#000; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; top:0; z-index:10000;">
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
-            <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 PHOTO HOARD</h2>
+            <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 GALLERY</h2>
             <div style="display:flex; gap:12px; align-items:center;">
                 <button onclick="triggerAppParser(this)" class="btn-utility" style="border-color:#888; color:#888; font-size:10px; padding:6px 10px;">⚙️ PARSER</button>
                 <button onclick="closeGallery()" style="background:transparent; border:none; color:white; font-size:28px; padding:0;">&times;</button>
@@ -2129,7 +2129,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.10";
+        const APP_VERSION = "v28.11";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2159,7 +2159,7 @@
             thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
 
-        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_10')) || {
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_11')) || {
             'outdoor': [
                 { id: 'BRAND', label: 'Brand', type: 'text' },
                 { id: 'MDL', label: 'Model', type: 'text' },
@@ -3550,7 +3550,7 @@
                 });
             });
             if (updated) {
-                localStorage.setItem('hvacEquipSchemaV28_10', JSON.stringify(EQUIP_SCHEMA));
+                localStorage.setItem('hvacEquipSchemaV28_11', JSON.stringify(EQUIP_SCHEMA));
                 if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             }
         }
