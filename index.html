@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v28.0</title>
-    <!-- BUILD: index_v27_26_2026_04_03_2012.html -->
+    <title>HVAC PRO v28.1</title>
+    <!-- BUILD: index_v28_0_2026_04_03_2100.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.0</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.1</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.0</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.1</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2117,7 +2117,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.0";
+        const APP_VERSION = "v28.1";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2687,15 +2687,13 @@
                 const textColor = isInCompiler ? 'var(--electric-blue)' : 'white';
                 const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
 
-                // v27.25: BUG FIX — split()[1] not split()[7]
                 const noteDisplay = isInCompiler ? activeNotesInCat.map(n => {
                     let val = n;
                     if (n.includes('\u2192')) val = n.split('\u2192')[1]?.trim() || val;
                     else if (n.includes(':')) val = n.split(':')[1]?.trim() || val;
-                    return `<span style="background:rgba(0,229,255,0.15); padding:4px 10px; border-radius:6px; margin-bottom:3px; display:inline-block; border:1px solid rgba(0,229,255,0.2); font-size:13px;">\u2192 \u2705 ${val}</span>`;
-                }).join('') : (mirrorMatch ? `<span style="color:white; opacity:0.8; font-size:13px;">\u2192 \u2705 ${mirrorMatch.value}</span>` : '<span style="opacity:0.3; color:white; font-size:12px;">ADD +</span>');
+                    return `<span style="background:rgba(0,229,255,0.15); padding:4px 10px; border-radius:6px; margin-bottom:3px; display:inline-block; border:1px solid rgba(0,229,255,0.2); font-size:13px;">\u2705 ${val}</span>`;
+                }).join('') : (mirrorMatch ? `<span style="color:white; opacity:0.8; font-size:13px;">\u2705 ${mirrorMatch.value}</span>` : '<span style="opacity:0.3; color:white; font-size:12px;">ADD +</span>');
 
-                // v27.25: SPLIT CLICK ZONES — label toggles compiler, value opens notes
                 return `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px 15px; border-radius:12px; border:1px solid ${borderColor}; min-height:60px;">
                     <span onclick="togglePMICompiler('${cat.replace(/'/g, "\\'")}')"
@@ -3474,7 +3472,7 @@
 
 
         async function initSplash() {
-            console.log("HVAC Master Pro v26.0 Mission Control - NEW ERA Start");
+            console.log("HVAC Master Pro v28.1 Mission Control - NEW ERA Start");
             document.title = "HVAC Master Pro v" + APP_VERSION;
 
             renderSystemSpecs();
@@ -3548,9 +3546,9 @@
                     const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
                     const displayVal = val !== '--' ? val : (isFromMirror ? sheetVal : '--');
 
-                    // v28.0: SPLIT CLICK ZONES — label toggles compiler, value opens voice entry
+                    // v28.1: Corrected Split-Row ID anchor
                     return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${borderColor}; margin-bottom:8px;">
+                    <div id="spec-${f.id}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${borderColor}; margin-bottom:8px;">
                         <span onclick="toggleSpecCompiler('${tab}', '${f.id}')"
                               style="font-weight:900; color:${textColor}; font-size:13px; cursor:pointer; flex:1; padding:10px 0;">${f.label.toUpperCase()}</span>
                         <span onclick="event.stopPropagation(); openSpecVoice('${f.id}')"
@@ -4701,14 +4699,14 @@ function wipeTotalSession() {
             };
 
 
-            // v28.0: SYSTEM SPECS (Individual Line Logic)
+            // v28.1: SYSTEM SPECS (Standardized Evaporator Coil prefix)
             if (activeTemplate === 'full') {
                 ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
                     EQUIP_SCHEMA[tab].forEach(f => {
                         if (stagedSpecs.includes(tab + '_' + f.id)) {
                             const val = systemSpecs[tab][f.id];
-                            const prefix = tab === 'outdoor' ? systemSpecs.outdoor.TYPE : (tab === 'indoor' && f.id.startsWith('C_') ? 'EVAP COIL' : (tab === 'indoor' ? systemSpecs.indoor.TYPE : 'THERMOSTAT'));
-                            pushLine(`[${prefix.toUpperCase()}] ${f.label} → ${val}`, 'SPEC_' + tab + '_' + f.id);
+                            const prefix = tab === 'outdoor' ? systemSpecs.outdoor.TYPE : (tab === 'indoor' && f.id.startsWith('C_') ? 'EVAPORATOR COIL' : (tab === 'indoor' ? systemSpecs.indoor.TYPE : 'THERMOSTAT'));
+                            pushLine(`[${prefix.toUpperCase()}] ${f.label} \u2192 ${val}`, 'SPEC_' + tab + '_' + f.id);
                         }
                     });
                 });
@@ -4891,14 +4889,32 @@ function wipeTotalSession() {
 
         window.onload = async () => {
             console.log(APP_VERSION + " Start - Vault SOP Verified");
-            document.title = "HVAC PRO " + APP_VERSION;
+            document.title = "HVAC Master Pro " + APP_VERSION;
             const metaTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
             if (metaTitle) metaTitle.setAttribute("content", "HVAC PRO " + APP_VERSION);
 
             // Sync UI Version Badges
             const lVer = document.getElementById('launcherVerBadge'); if (lVer) lVer.innerText = APP_VERSION;
             const sVer = document.getElementById('specsVerBadge'); if (sVer) sVer.innerText = APP_VERSION;
-            const aTitle = document.getElementById('appTitle'); if (aTitle) aTitle.innerText = "HVAC Master Pro " + APP_VERSION;
+            const aTitle = document.getElementById('appTitle'); if (aTitle) aTitle.innerText = "HVAC PRO " + APP_VERSION;
+
+            // v28.1 Data Migration: Permanently rename 'Evap Coil' to 'Evaporator Coil'
+            if (typeof techNotesMaster !== 'undefined' && techNotesMaster['Evap Coil']) {
+                techNotesMaster['Evaporator Coil'] = techNotesMaster['Evap Coil'];
+                delete techNotesMaster['Evap Coil'];
+                localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
+            }
+            if (typeof techNotes !== 'undefined') {
+                let updatedNotes = false;
+                techNotes = techNotes.map(n => {
+                    if (n.startsWith('Evap Coil \u2192')) {
+                        updatedNotes = true;
+                        return n.replace('Evap Coil \u2192', 'Evaporator Coil \u2192');
+                    }
+                    return n;
+                });
+                if (updatedNotes) localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+            }
 
             // Standardize Hidden sections
             const overlays = document.querySelectorAll('.modal-overlay');
