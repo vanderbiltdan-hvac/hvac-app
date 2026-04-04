@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.6</title>
-    <!-- BUILD: index_v28_5_2026_04_04_0740.html -->
+    <title>HVAC PRO v28.7</title>
+    <!-- BUILD: index_v28_6_2026_04_04_0841.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.6</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.7</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.6</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.7</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1864,14 +1864,16 @@
         </div>
     </div>
 
-    <!-- PHOTO GALLERY OVERLAY (V21.4 - SHELF EDITION) -->
+    <!-- PHOTO GALLERY OVERLAY (V28.7 - SHELF EDITION) -->
     <div id="galleryOverlay" class="modal-overlay"
         style="background:#000; display:none; flex-direction:column; height:88vh; top:0; z-index:10000; padding-bottom:10px;">
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 PHOTO HOARD</h2>
-            <button onclick="closeGallery()"
-                style="background:transparent; border:none; color:white; font-size:28px;">&times;</button>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <button onclick="triggerAppParser(this)" class="btn-utility" style="border-color:#888; color:#888; font-size:10px; padding:6px 10px;">⚙️ PARSER</button>
+                <button onclick="closeGallery()" style="background:transparent; border:none; color:white; font-size:28px; padding:0;">&times;</button>
+            </div>
         </div>
 
         <!-- SHELF DRAWER -->
@@ -1890,8 +1892,7 @@
         <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">Selected shelf is
             empty. Hoard some more!</div>
 
-        <div
-<div style="padding:15px; border-top:1px solid #333; display:flex; flex-direction:column; gap:10px; background:#111; flex-shrink:0;">
+        <div style="padding:15px; border-top:1px solid #333; display:flex; flex-direction:column; gap:10px; background:#111; flex-shrink:0; padding-bottom:env(safe-area-inset-bottom, 20px);">
             <div style="display:flex; gap:10px;">
                 <button onclick="processSelectedPhotos()" class="btn btn-primary"
                     style="flex:2; padding:12px; font-size:14px;">⚡ PARSE AI</button>
@@ -1901,14 +1902,13 @@
             <div style="display:flex; gap:10px;">
                 <button onclick="moveSelectedToShelf()" class="btn btn-outline"
                     style="flex:1; border-color:var(--amber-orange); color:var(--amber-orange);">📁 TO SHELF</button>
-                <button onclick="sendShelfToDrive()" class="btn btn-outline"
-                    style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green);">☁️ DRIVE</button>
+                <button id="driveBatchBtn" onclick="sendShelfToDrive()" class="btn btn-outline"
+                    style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green); transition:0.3s;">☁️ DRIVE</button>
             </div>
-            <button onclick="triggerAppParser()" class="btn btn-outline" style="width:100%; border-color:#888; color:#888;">⚙️ RUN SPREADSHEET PARSER</button>
         </div>
     </div>
 
-    <!-- SECTION: MIRROR (COLUMN W TRUTH - v25.2.1) -->
+    <!-- SECTION: MIRROR (COLUMN W TRUTH - v28.7) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
         <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
@@ -2090,7 +2090,7 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (v25.2.0) -->
+    <!-- UNIVERSAL FIXED FOOTER (v28.7) -->
     <nav class="app-nav">
         <div class="nav-fixed-home">
             <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
@@ -2118,7 +2118,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.6";
+        const APP_VERSION = "v28.7";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2148,7 +2148,7 @@
             thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
 
-        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_6')) || {
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_7')) || {
             'outdoor': [
                 { id: 'BRAND', label: 'Brand', type: 'text' },
                 { id: 'MDL', label: 'Model', type: 'text' },
@@ -2577,8 +2577,16 @@
             setTimeout(() => status.style.display = 'none', 2000);
         }
 
-        async function triggerAppParser() {
+        async function triggerAppParser(btnElement) {
             const status = document.getElementById('photoStatus');
+            const origHtml = btnElement ? btnElement.innerHTML : "⚙️ PARSER";
+
+            if (btnElement) {
+                btnElement.innerHTML = "⏳...";
+                btnElement.style.color = "var(--electric-blue)";
+                btnElement.style.borderColor = "var(--electric-blue)";
+            }
+
             status.style.display = 'block';
             status.innerText = "Commanding Spreadsheet Parser...";
             try {
@@ -2591,7 +2599,13 @@
             } catch (e) {
                 alert("Network Error: " + e.message);
             }
+
             status.style.display = 'none';
+            if (btnElement) {
+                btnElement.innerHTML = origHtml;
+                btnElement.style.color = "#888";
+                btnElement.style.borderColor = "#888";
+            }
         }
 
         function refreshSyncUI() {
@@ -3507,7 +3521,7 @@
                 });
             });
             if (updated) {
-                localStorage.setItem('hvacEquipSchemaV28_6', JSON.stringify(EQUIP_SCHEMA));
+                localStorage.setItem('hvacEquipSchemaV28_7', JSON.stringify(EQUIP_SCHEMA));
                 if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             }
         }
@@ -4752,7 +4766,15 @@ function wipeTotalSession() {
 
             const photos = await getAllPhotos();
             const toProcess = photos.filter(p => selectedPhotoIds.has(p.id));
-            
+
+            // Visual Indicator Start
+            const btn = document.getElementById('driveBatchBtn');
+            const origText = btn.innerHTML;
+            btn.innerHTML = "⏳ UPLOADING...";
+            btn.style.borderColor = "var(--electric-blue)";
+            btn.style.color = "var(--electric-blue)";
+            btn.classList.add('sync-active');
+
             closeGallery();
             const status = document.getElementById('photoStatus');
             status.style.display = 'block';
@@ -4772,8 +4794,20 @@ function wipeTotalSession() {
                     console.error("Upload error:", e);
                 }
             }
+
+            // Visual Indicator Success State
             status.innerText = "Uploads Complete!";
-            setTimeout(() => status.style.display = 'none', 3000);
+            btn.classList.remove('sync-active');
+            btn.innerHTML = "✅ DONE";
+            btn.style.backgroundColor = "rgba(0, 200, 83, 0.2)";
+            btn.style.borderColor = "var(--emerald-green)";
+            btn.style.color = "var(--emerald-green)";
+
+            setTimeout(() => {
+                status.style.display = 'none';
+                btn.innerHTML = origText;
+                btn.style.backgroundColor = "transparent";
+            }, 3000);
         }
         function clearMasterReadings() { alert('Wipe coming soon.'); }
 
