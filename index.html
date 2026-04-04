@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.7</title>
-    <!-- BUILD: index_v28_6_2026_04_04_0841.html -->
+    <title>HVAC PRO v28.8</title>
+    <!-- BUILD: index_v28_7_2026_04_04_0902.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.7</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.8</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.7</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.8</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1864,9 +1864,9 @@
         </div>
     </div>
 
-    <!-- PHOTO GALLERY OVERLAY (V28.7 - SHELF EDITION) -->
+    <!-- PHOTO GALLERY OVERLAY (V28.8 - SHELF EDITION) -->
     <div id="galleryOverlay" class="modal-overlay"
-        style="background:#000; display:none; flex-direction:column; height:88vh; top:0; z-index:10000; padding-bottom:10px;">
+        style="background:#000; display:none; flex-direction:column; height:100dvh; max-height:100%; top:0; z-index:10000; box-sizing:border-box;">
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 PHOTO HOARD</h2>
@@ -1886,7 +1886,7 @@
         </div>
 
         <div id="galleryGrid"
-            style="flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:1fr 1fr; gap:12px; align-content:start;">
+            style="flex:1; overflow-y:auto; padding:12px; display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; align-content:start;">
             <!-- Thumbnails inserted here -->
         </div>
         <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">Selected shelf is
@@ -2118,7 +2118,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.7";
+        const APP_VERSION = "v28.8";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2148,7 +2148,7 @@
             thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
 
-        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_7')) || {
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_8')) || {
             'outdoor': [
                 { id: 'BRAND', label: 'Brand', type: 'text' },
                 { id: 'MDL', label: 'Model', type: 'text' },
@@ -3521,7 +3521,7 @@
                 });
             });
             if (updated) {
-                localStorage.setItem('hvacEquipSchemaV28_7', JSON.stringify(EQUIP_SCHEMA));
+                localStorage.setItem('hvacEquipSchemaV28_8', JSON.stringify(EQUIP_SCHEMA));
                 if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             }
         }
