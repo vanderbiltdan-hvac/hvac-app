@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.8</title>
-    <!-- BUILD: index_v28_8_2026_04_04_0925.html -->
+    <title>HVAC PRO v28.9</title>
+    <!-- BUILD: index_v28_9_2026_04_04_0940.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.8</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.9</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.8</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.9</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1864,7 +1864,7 @@
         </div>
     </div>
 
-    <!-- PHOTO GALLERY OVERLAY (V28.8) -->
+    <!-- PHOTO GALLERY OVERLAY (V28.9) -->
     <div id="galleryOverlay" class="modal-overlay"
         style="background:#000; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; top:0; z-index:10000;">
         <div
@@ -1908,7 +1908,17 @@
         </div>
     </div>
 
-    <!-- SECTION: MIRROR (COLUMN W TRUTH - v28.7) -->
+    <!-- FULL SIZE PHOTO VIEWER -->
+    <div id="photoViewerModal" class="modal-overlay"
+        style="background:rgba(0,0,0,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:15000;"
+        onclick="closeFullSizePhoto()">
+        <button onclick="closeFullSizePhoto()"
+            style="position:absolute; top:20px; right:20px; background:transparent; border:none; color:white; font-size:35px; z-index:15001; cursor:pointer;">&times;</button>
+        <img id="fullSizeImage"
+            style="max-width:95vw; max-height:85vh; object-fit:contain; border:2px solid var(--electric-blue); border-radius:10px; pointer-events:none;">
+    </div>
+
+    <!-- SECTION: MIRROR (COLUMN W TRUTH - v28.9) -->
     <div class="container" id="section-mirror" style="padding-bottom:100px; display:none;">
         <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
         <div
@@ -2090,7 +2100,7 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (v28.7) -->
+    <!-- UNIVERSAL FIXED FOOTER (v28.9) -->
     <nav class="app-nav">
         <div class="nav-fixed-home">
             <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
@@ -2118,7 +2128,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.8";
+        const APP_VERSION = "v28.9";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2148,7 +2158,7 @@
             thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
 
-        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_8')) || {
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_9')) || {
             'outdoor': [
                 { id: 'BRAND', label: 'Brand', type: 'text' },
                 { id: 'MDL', label: 'Model', type: 'text' },
@@ -2247,14 +2257,14 @@
         }
 
         function showSection(id) {
-            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig'];
+            const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig', 'photoViewerModal'];
             
             // Track navigation history - find current visible section
             const currentVisible = sections.find(s => {
                 const el = document.getElementById(s);
                 return el && el.style.display !== 'none';
             });
-            if (currentVisible && currentVisible !== 'galleryOverlay') {
+            if (currentVisible && currentVisible !== 'galleryOverlay' && currentVisible !== 'photoViewerModal') {
                 previousSection = currentVisible;
             }
 
@@ -2326,7 +2336,6 @@
 
         // --- Backward Compatibility Shims ---
         function openVoiceConsole() { showSection('voiceModal'); }
-        // openReport() defined below in Zone 2 — this shim is removed
         function openSettings() { showSection('settingsModal'); }
         function openManuals() { showSection('section-manuals'); }
         function closeVoiceModal() { showSection('v23-home'); }
@@ -2477,10 +2486,23 @@
                 <div id="photo-card-${p.id}" class="gallery-card" onclick="event.stopPropagation(); togglePhotoSelection(${p.id})">
                     <img src="data:${p.mime};base64,${p.data}" pointer-events="none">
                     <div class="card-check">✔</div>
+                    <div onclick="event.stopPropagation(); openFullSizePhoto('${p.mime}', '${p.data}')" style="position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.7); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid #888; font-size:14px; cursor:pointer;">🔍</div>
                     <div onclick="event.stopPropagation(); uploadPhotoToDrive(${p.id})" style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.7); width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid var(--electric-blue); font-size:16px;">☁️</div>
                     <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.6); font-size:8px; color:#aaa; padding:2px; text-align:center;">${p.shelf || 'UNSORTED'}</div>
                 </div>
             `).join('');
+        }
+
+        function openFullSizePhoto(mime, data) {
+            const viewer = document.getElementById('photoViewerModal');
+            const img = document.getElementById('fullSizeImage');
+            img.src = "data:" + mime + ";base64," + data;
+            viewer.style.display = 'flex';
+        }
+
+        function closeFullSizePhoto() {
+            document.getElementById('photoViewerModal').style.display = 'none';
+            document.getElementById('fullSizeImage').src = "";
         }
 
         async function uploadPhotoToDrive(id) {
@@ -3521,7 +3543,7 @@
                 });
             });
             if (updated) {
-                localStorage.setItem('hvacEquipSchemaV28_8', JSON.stringify(EQUIP_SCHEMA));
+                localStorage.setItem('hvacEquipSchemaV28_9', JSON.stringify(EQUIP_SCHEMA));
                 if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             }
         }
