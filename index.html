@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Master Pro v27.26</title>
-    <!-- BUILD: index_v27_25_2026_04_03_1938.html -->
+    <title>HVAC Master Pro v28.0</title>
+    <!-- BUILD: index_v27_26_2026_04_03_2012.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v27.26</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--amber-orange);">v28.0</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1504,7 +1504,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v27.26</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.0</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2117,7 +2117,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v27.26";
+        const APP_VERSION = "v28.0";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2810,6 +2810,34 @@
             renderRefrigRows(); renderCompiler(); renderDraftBlock();
         }
 
+        // v28.0: Staging Logic & toggleSpecCompiler
+        let stagedSpecs = JSON.parse(localStorage.getItem('hvacStagedSpecsV28')) || [];
+
+        function toggleSpecCompiler(tab, id) {
+            const key = tab + '_' + id;
+            const idx = stagedSpecs.indexOf(key);
+            if (idx > -1) {
+                stagedSpecs.splice(idx, 1);
+            } else {
+                const val = systemSpecs[tab][id];
+                if (val && val !== '--') {
+                    stagedSpecs.push(key);
+                } else {
+                    const f = EQUIP_SCHEMA[tab].find(x => x.id === id);
+                    if (f && isJobMode) {
+                        const sheetField = findSheetLabelFor(f.label);
+                        if (mirrorState[sheetField] && mirrorState[sheetField] !== '--') {
+                            systemSpecs[tab][id] = mirrorState[sheetField];
+                            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+                            stagedSpecs.push(key);
+                        } else return;
+                    } else return; 
+                }
+            }
+            localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
+            renderSystemSpecs(); renderCompiler(); renderDraftBlock();
+        }
+
         function openRefrigKeypad(key) {
             activeRefrigKey = key; keypadString = "";
             document.getElementById('keypadLabel').innerText = REFRIG_FIELDS[key].toUpperCase();
@@ -2952,11 +2980,17 @@
                 if (hubType === 'specs' || hubType === 'all') {
                     for (let tab in EQUIP_SCHEMA) {
                         EQUIP_SCHEMA[tab].forEach(f => {
-                            const val = mirrorState[f.label];
-                            if (val && val !== '--') systemSpecs[tab][f.id] = formatVal(val);
+                            const sheetField = findSheetLabelFor(f.label);
+                            const val = mirrorState[sheetField];
+                            if (val && val !== '--') {
+                                systemSpecs[tab][f.id] = formatVal(val);
+                                const key = tab + '_' + f.id;
+                                if (!stagedSpecs.includes(key)) stagedSpecs.push(key);
+                            }
                         });
                     }
                     localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+                    localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
                     renderSystemSpecs();
                 }
 
@@ -3095,18 +3129,30 @@
                 // v27.24: Fuzzy match logic
                 const normK = normalizeText(k);
                 const normVal = normalizeText(val.toString());
-                // v27.26: Check BOTH techNotes AND refData for mirror selection state
+                // Check selection state (v28.0: Multi-Hub check)
                 let isSelected = false;
                 if (techNotes.some(n => {
                     const normNote = normalizeText(n);
                     return normNote.includes(normK) && normNote.includes(normVal);
                 })) { isSelected = true; }
+
                 if (!isSelected && typeof REFRIG_FIELDS !== 'undefined') {
                     const mapKeys = { 'ODAT': 'ODAT', 'SH': 'SH', 'SC': 'SC', 'DELTA_T': '\u2206T' };
                     for (let rKey in REFRIG_FIELDS) {
                         if (refData[rKey] !== undefined && refData[rKey] !== null) {
                             const sheetField = mapKeys[rKey] || findSheetLabelFor(REFRIG_FIELDS[rKey]);
                             if (normalizeText(sheetField) === normK && normalizeText(String(refData[rKey])) === normVal) {
+                                isSelected = true; break;
+                            }
+                        }
+                    }
+                }
+
+                if (!isSelected && typeof EQUIP_SCHEMA !== 'undefined') {
+                    for (let tab in EQUIP_SCHEMA) {
+                        const found = EQUIP_SCHEMA[tab].find(f => normalizeText(f.label) === normK);
+                        if (found && stagedSpecs.includes(tab + '_' + found.id)) {
+                            if (normalizeText(String(systemSpecs[tab][found.id])) === normVal) {
                                 isSelected = true; break;
                             }
                         }
@@ -3133,18 +3179,30 @@
                     // v27.24: Fuzzy match logic
                     const normK = normalizeText(item.label);
                     const normVal = normalizeText(item.value);
-                    // v27.26: Check BOTH techNotes AND refData for mirror selection state
+                    // Check selection state (v28.0: Multi-Hub check)
                     let isSelected = false;
                     if (techNotes.some(n => {
                         const normNote = normalizeText(n);
                         return normNote.includes(normK) && normNote.includes(normVal);
                     })) { isSelected = true; }
+
                     if (!isSelected && typeof REFRIG_FIELDS !== 'undefined') {
                         const mapKeys = { 'ODAT': 'ODAT', 'SH': 'SH', 'SC': 'SC', 'DELTA_T': '\u2206T' };
                         for (let rKey in REFRIG_FIELDS) {
                             if (refData[rKey] !== undefined && refData[rKey] !== null) {
                                 const sheetField = mapKeys[rKey] || findSheetLabelFor(REFRIG_FIELDS[rKey]);
                                 if (normalizeText(sheetField) === normK && normalizeText(String(refData[rKey])) === normVal) {
+                                    isSelected = true; break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!isSelected && typeof EQUIP_SCHEMA !== 'undefined') {
+                        for (let tab in EQUIP_SCHEMA) {
+                            const found = EQUIP_SCHEMA[tab].find(f => normalizeText(f.label) === normK);
+                            if (found && stagedSpecs.includes(tab + '_' + found.id)) {
+                                if (normalizeText(String(systemSpecs[tab][found.id])) === normVal) {
                                     isSelected = true; break;
                                 }
                             }
@@ -3167,6 +3225,32 @@
 
         function addMirrorToCompiler(label, val) {
             let cleanVal = String(val).replace(/[\u00b0%']+/g, '').trim();
+
+            // v28.0: SPECS ROUTING TRAP WITH SMART UNDO
+            let specMatch = null;
+            if (typeof EQUIP_SCHEMA !== 'undefined') {
+                for (let tab in EQUIP_SCHEMA) {
+                    const found = EQUIP_SCHEMA[tab].find(f => f.label.toLowerCase() === label.toLowerCase());
+                    if (found) { specMatch = { tab: tab, id: found.id }; break; }
+                }
+            }
+            if (specMatch) {
+                const key = specMatch.tab + '_' + specMatch.id;
+                const idx = stagedSpecs.indexOf(key);
+                if (idx > -1) {
+                    stagedSpecs.splice(idx, 1); // Undo
+                } else {
+                    systemSpecs[specMatch.tab][specMatch.id] = cleanVal;
+                    localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+                    stagedSpecs.push(key); // Add
+                }
+                localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
+                renderMirrorTruth();
+                if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+                renderCompiler();
+                renderDraftBlock();
+                return;
+            }
 
             // REFRIGERANT ROUTING TRAP WITH SMART UNDO (v27.26: CASE-INSENSITIVE)
             let refKey = null;
@@ -3446,38 +3530,42 @@
             drop.innerHTML = EQUIP_TYPES[tab].map(t => `<option value="${t}">${t}</option>`).join('');
             drop.value = systemSpecs[tab].TYPE || EQUIP_TYPES[tab][0];
 
+            const grid = document.getElementById('mainSpecGrid');
+            const subGrid = document.getElementById('subSpecGrid');
+            grid.className = ''; grid.style.display = 'block';
+            subGrid.className = ''; subGrid.style.display = 'block';
+
             function buildCells(schemaList) {
                 return schemaList.map(f => {
                     const val = systemSpecs[tab][f.id] || '--';
-                    const shrinkClass = String(val).length > 10 ? ' shrink' : '';
-                    const isHidden = (hiddenFields[activeTemplate] || []).includes(f.id);
+                    const sheetField = findSheetLabelFor(f.label);
+                    const sheetVal = isJobMode ? mirrorState[sheetField] : null;
 
-                    let extraClass = '';
-                    if (mirrorState[f.label] && String(val).toUpperCase() === String(mirrorState[f.label]).toUpperCase()) {
-                        extraClass = ' mirror-blue';
-                    } else if (val === '--' || !val) {
-                        extraClass = ' amber-glow';
-                    }
+                    // --- v28.0: The Two-Flag System for Specs ---
+                    const isInCompiler = stagedSpecs.includes(tab + '_' + f.id);
+                    const isFromMirror = isJobMode && sheetVal && sheetVal !== '--';
+                    const textColor = isInCompiler ? 'var(--electric-blue)' : 'white';
+                    const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
+                    const displayVal = val !== '--' ? val : (isFromMirror ? sheetVal : '--');
 
+                    // v28.0: SPLIT CLICK ZONES — label toggles compiler, value opens voice entry
                     return `
-                    <div class="spec-cell${extraClass}" id="spec-${f.id}">
-                        <span class="spec-label" onclick="toggleVisibility('${f.id}')" style="cursor:pointer; color:${isHidden ? '#444' : ''}">${f.label} ${isHidden ? '(HIDDEN)' : ''}</span>
-                        <span id="val-${f.id}" class="spec-val${shrinkClass}" onclick="openSpecVoice('${f.id}')" style="cursor:pointer; color:${isHidden ? 'rgba(255,255,255,0.2)' : ''}">${val}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${borderColor}; margin-bottom:8px;">
+                        <span onclick="toggleSpecCompiler('${tab}', '${f.id}')"
+                              style="font-weight:900; color:${textColor}; font-size:13px; cursor:pointer; flex:1; padding:10px 0;">${f.label.toUpperCase()}</span>
+                        <span onclick="event.stopPropagation(); openSpecVoice('${f.id}')"
+                              style="font-size:18px; font-weight:900; color:${textColor}; cursor:pointer; padding-left:20px; text-align:right; word-break:break-all;">${displayVal}</span>
                     </div>`;
                 }).join('');
             }
 
-            // Render Grid
-            const grid = document.getElementById('mainSpecGrid');
+            // Render Grids
             grid.innerHTML = buildCells(EQUIP_SCHEMA[tab].filter(f => !f.id.startsWith('C_')));
 
-            const subGrid = document.getElementById('subSpecGrid');
             if (tab === 'indoor' && ['Furnace', 'Boiler'].includes(systemSpecs[tab].TYPE)) {
-                subGrid.style.display = 'grid';
                 document.getElementById('subSpecHeader').style.display = 'block';
                 subGrid.innerHTML = buildCells(EQUIP_SCHEMA['indoor'].filter(f => f.id.startsWith('C_')));
             } else {
-                subGrid.style.display = 'none';
                 document.getElementById('subSpecHeader').style.display = 'none';
                 subGrid.innerHTML = '';
             }
@@ -4525,8 +4613,18 @@ function wipeTotalSession() {
             if (el) el.style.display = 'none';
 
             if (key && key !== 'null' && key !== 'undefined') {
+                // v28.0: SPEC KEY removal
+                if (key.startsWith('SPEC_')) {
+                    const specKey = key.replace('SPEC_', '');
+                    const idx = stagedSpecs.indexOf(specKey);
+                    if (idx > -1) {
+                        stagedSpecs.splice(idx, 1);
+                        localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
+                        if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+                    }
+                }
                 // REFRIG KEY: delete from refData and re-render Refrig screen
-                if (typeof REFRIG_FIELDS !== 'undefined' && REFRIG_FIELDS[key]) {
+                else if (typeof REFRIG_FIELDS !== 'undefined' && REFRIG_FIELDS[key]) {
                     delete refData[key];
                     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
                     if (typeof renderRefrigRows === 'function') renderRefrigRows();
@@ -4603,46 +4701,16 @@ function wipeTotalSession() {
             };
 
 
-
-            // 2. SYSTEM SPECS (Logical Sequence)
+            // v28.0: SYSTEM SPECS (Individual Line Logic)
             if (activeTemplate === 'full') {
                 ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
-                    const obj = systemSpecs[tab];
-                    const hasData = (tab === 'thermostat') 
-                        ? (obj.BRAND !== '--' || obj.MDL !== '--' || obj.WIRE !== '--' || obj.BATT !== '--' || obj.SCHED !== '--') 
-                        : (obj.BRAND !== '--' || obj.MDL !== '--' || (obj.SER && obj.SER !== '--'));
-
-                    if (hasData) {
-                        let parts = [];
-                        if (obj.BRAND && obj.BRAND !== "--") parts.push(`Brand: ${obj.BRAND}`);
-                        if (obj.MDL && obj.MDL !== "--") parts.push(`Model: ${obj.MDL}`);
-                        if (obj.SER && obj.SER !== "--") parts.push(`Serial: ${obj.SER}`);
-                        if (obj.TON !== undefined && obj.TON !== "--") parts.push(`${obj.TON} TON`);
-                        
-                        // FIX: Add Thermostat fields to the print array
-                        if (tab === 'thermostat') {
-                            if (obj.WIRE && obj.WIRE !== '--') parts.push(`Wiring: ${obj.WIRE}`);
-                            if (obj.BATT && obj.BATT !== '--') parts.push(`Batts: ${obj.BATT}`);
-                            if (obj.SCHED && obj.SCHED !== '--') parts.push(`Sched: ${obj.SCHED}`);
+                    EQUIP_SCHEMA[tab].forEach(f => {
+                        if (stagedSpecs.includes(tab + '_' + f.id)) {
+                            const val = systemSpecs[tab][f.id];
+                            const prefix = tab === 'outdoor' ? systemSpecs.outdoor.TYPE : (tab === 'indoor' && f.id.startsWith('C_') ? 'EVAP COIL' : (tab === 'indoor' ? systemSpecs.indoor.TYPE : 'THERMOSTAT'));
+                            pushLine(`[${prefix.toUpperCase()}] ${f.label} → ${val}`, 'SPEC_' + tab + '_' + f.id);
                         }
-                        
-                        if (tab === 'outdoor') {
-                            if (obj.YEAR !== '--') parts.push(`Year: ${obj.YEAR}`);
-                            if (obj.RLA !== '--') parts.push(`RLA: ${obj.RLA}`);
-                            if (obj.FLA !== '--') parts.push(`FLA: ${obj.FLA}`);
-                            if (obj.REF !== '--') parts.push(`Ref: ${obj.REF}`);
-                        }
-                        pushLine(`[${obj.TYPE.toUpperCase()}] → ${parts.join(' | ')}`, 'EQUIP_' + tab.toUpperCase());
-                    }
-
-                    if (tab === 'indoor' && obj.C_BRAND !== undefined && (obj.C_BRAND !== '--' || obj.C_MDL !== '--' || obj.C_SER !== '--')) {
-                        let cParts = [];
-                        if (obj.C_BRAND !== "--") cParts.push(`Brand: ${obj.C_BRAND}`);
-                        if (obj.C_MDL !== "--") cParts.push(`Model: ${obj.C_MDL}`);
-                        if (obj.C_SER !== "--") cParts.push(`Serial: ${obj.C_SER}`);
-                        if (obj.C_TON !== "--") cParts.push(`${obj.C_TON} TON`);
-                        pushLine(`[EVAP COIL] → ${cParts.join(' | ')}`, 'EQUIP_COIL');
-                    }
+                    });
                 });
             }
 
