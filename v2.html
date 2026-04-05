@@ -1,78 +1,118 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HVAC PRO V2</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    <title>HVAC Voice Console</title>
     <style>
-        body { background: #f0f2f5; padding-bottom: 50px; }
-        .app-header { background: #1a2a6c; color: white; padding: 1rem; margin-bottom: 1rem; }
-        .card { margin-bottom: 12px; border-radius: 8px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card.is-success { border-top: 5px solid #48c774; background-color: #effaf3; }
-        .card.is-info { border-top: 5px solid #3298dc; background-color: #f0f6fc; }
-        .card.is-warning { border-top: 5px solid #ffdd57; background-color: #fffbeb; }
-        .card.is-danger { border-top: 5px solid #f14668; background-color: #feecf0; }
-        .mic-btn { cursor: pointer; color: #3298dc; float: right; font-size: 1.2rem; }
-        .is-listening { color: #f14668; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        :root { --bg: #0f172a; --card: #1e293b; --blue: #00e5ff; --green: #00c853; --text: #f8fafc; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding-bottom: 50px; }
+        .navbar { background: #000; border-bottom: 2px solid var(--blue); padding: 10px; font-weight: bold; }
+        .tabs.is-boxed a { color: #94a3b8; border: none !important; }
+        .tabs.is-boxed li.is-active a { background: var(--blue) !important; color: #000 !important; font-weight: bold; }
+        .field-box { background: var(--card); border-radius: 8px; padding: 12px; margin: 5px; border-left: 5px solid var(--blue); }
+        .label { color: var(--text) !important; font-size: 0.85rem; margin-bottom: 5px; }
+        .input, .select select { background: #334155; color: #fff; border: 1px solid #475569; }
+        .is-half-custom { width: calc(50% - 10px); float: left; }
+        .is-full-custom { width: calc(100% - 10px); float: left; }
+        .mic-btn { background: none; border: none; color: var(--blue); font-size: 1.2rem; cursor: pointer; }
+        .calc-box { background: #111; border-color: var(--green); color: var(--green) !important; font-weight: bold; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div class="app-header"><h1 class="title is-5 has-text-white" id="main-title">Loading...</h1></div>
-    <div class="tabs is-centered is-toggle is-toggle-rounded is-small"><ul id="tab-menu"></ul></div>
-    <div class="container px-3"><div id="app-container" class="columns is-multiline is-mobile"></div></div>
+    <nav class="navbar"><div id="app-title">HVAC PRO V2</div></nav>
+    <div class="tabs is-boxed is-fullwidth"><ul id="tab-list"></ul></div>
+    <div class="container p-2"><div id="main-content" class="columns is-multiline is-mobile"></div></div>
 
     <script>
-        // PASTE YOUR NEW WEB APP URL BETWEEN THESE QUOTES
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyga0xQiAsxtaSwo7rR7cBwh1zalop1yly0n1dphlc-k4aoEnGwRgk5awU7p9FOavMQ/exec';
-        let allData = [];
+        const API_URL = "YOUR_SCRIPT_URL_HERE"; // PASTE YOUR WEB APP URL HERE
+        let appData = [];
 
         async function init() {
-            const response = await fetch(API_URL);
-            const data = await response.json();
-            document.getElementById('main-title').innerText = data.title;
-            allData = data.rows;
-            const pages = [...new Set(allData.map(row => row.Page))];
-            buildMenu(pages);
-            renderPage(pages[0]);
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            appData = data.rows;
+            renderTabs();
+            renderFields();
         }
 
-        function buildMenu(pages) {
-            const menu = document.getElementById('tab-menu');
-            pages.forEach(page => {
+        function renderTabs() {
+            const pages = [...new Set(appData.map(r => r.Page))];
+            const list = document.getElementById('tab-list');
+            pages.forEach((p, i) => {
                 const li = document.createElement('li');
-                li.id = `tab-${page}`;
-                li.innerHTML = `<a onclick="renderPage('${page}')">${page}</a>`;
-                menu.appendChild(li);
+                if(i===0) li.className = 'is-active';
+                li.innerHTML = `<a onclick="showPage('${p}', this)">${p}</a>`;
+                list.appendChild(li);
             });
         }
 
-        function renderPage(pageName) {
-            const container = document.getElementById('app-container');
-            container.innerHTML = '';
-            document.querySelectorAll('#tab-menu li').forEach(li => li.classList.remove('is-active'));
-            document.getElementById(`tab-${pageName}`).classList.add('is-active');
-            const filtered = allData.filter(row => row.Page === pageName);
-            filtered.forEach(item => {
-                const col = document.createElement('div');
-                col.className = `column is-${item.Width || 12}`;
-                col.innerHTML = `<div class="card p-3 ${item.Style || ''}"><label class="label is-size-7">${item.Label} <span class="mic-btn" onclick="startVoice('${item.ID}')" id="mic-${item.ID}">🎤</span></label><input class="input is-small" type="text" id="${item.ID}"></div>`;
-                container.appendChild(col);
+        function renderFields() {
+            const container = document.getElementById('main-content');
+            appData.forEach(row => {
+                const div = document.createElement('div');
+                div.id = `field-${row.ID}`;
+                div.className = `field-box ${row.Width === 'is-half' ? 'is-half-custom' : 'is-full-custom'}`;
+                div.style.borderLeftColor = getColor(row.Style);
+                
+                let input = `<input class="input" type="${row.Type}" id="${row.ID}" oninput="runLogic()" placeholder="${row.EXP_1 || ''}">`;
+                if(row.Type === 'select') {
+                    const opts = row.Options.split(',').map(o => `<option>${o.trim()}</option>`).join('');
+                    input = `<div class="select is-fullwidth"><select id="${row.ID}" onchange="runLogic()">${opts}</select></div>`;
+                }
+                if(row.Display === 'Calculated') input = `<input class="input calc-box" id="${row.ID}" readonly>`;
+
+                div.innerHTML = `
+                    <label class="label">${row.Label} <button class="mic-btn" onclick="startVoice('${row.ID}','${row.Audio}')">🎤</button></label>
+                    <div class="control">${input}</div>`;
+                container.appendChild(div);
+            });
+            showPage(appData[0].Page);
+        }
+
+        function showPage(page, el) {
+            if(el) {
+                document.querySelectorAll('#tab-list li').forEach(l => l.classList.remove('is-active'));
+                el.parentElement.classList.add('is-active');
+            }
+            appData.forEach(row => {
+                const el = document.getElementById(`field-${row.ID}`);
+                el.style.display = (row.Page === page) ? 'block' : 'none';
+            });
+            runLogic();
+        }
+
+        function runLogic() {
+            appData.forEach(row => {
+                // Logic: Hide/Show
+                if(row.Logic) {
+                    const condition = row.Logic.replace(/\[(.*?)\]/g, (m, id) => `"${document.getElementById(id).value}"`);
+                    const isVisible = eval(condition);
+                    document.getElementById(`field-${row.ID}`).classList.toggle('hidden', !isVisible);
+                }
+                // Math: Formulas
+                if(row.Formula && row.Display === 'Calculated') {
+                    const formula = row.Formula.replace(/\[(.*?)\]/g, (m, id) => parseFloat(document.getElementById(id).value) || 0);
+                    document.getElementById(row.ID).value = eval(formula).toFixed(2);
+                }
             });
         }
 
-        function startVoice(inputId) {
-            const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new Speech();
-            const icon = document.getElementById('mic-' + inputId);
-            recognition.onstart = () => icon.classList.add('is-listening');
-            recognition.onend = () => icon.classList.remove('is-listening');
-            recognition.onresult = (event) => { 
-                let text = event.results[0][0].transcript;
-                document.getElementById(inputId).value = text.charAt(0).toUpperCase() + text.slice(1); 
-            };
-            recognition.start();
+        function startVoice(id, cue) {
+            const synth = window.speechSynthesis;
+            if(cue) synth.speak(new SpeechSynthesisUtterance(cue));
+            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            rec.onresult = (e) => { document.getElementById(id).value = e.results[0][0].transcript; runLogic(); };
+            rec.start();
         }
+
+        function getColor(s) {
+            const colors = {'is-info':'#00e5ff','is-success':'#00c853','is-warning':'#ffab00','is-danger':'#ff1744','is-dark':'#94a3b8'};
+            return colors[s] || '#fff';
+        }
+
         init();
     </script>
 </body>
