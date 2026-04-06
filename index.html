@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.12</title>
-    <!-- BUILD: index_v28_12_2026_04_04_1042.html -->
+    <title>HVAC PRO v28.13</title>
+    <!-- BUILD: index_v28_13_2026_04_05_2253.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.12</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.13</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.12</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.13</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2150,7 +2150,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.12";
+        const APP_VERSION = "v28.13";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2180,7 +2180,7 @@
             thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', YEAR: '--', WIRE: '--', BATT: '--', SCHED: '--' }
         };
 
-        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_12')) || {
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_13')) || {
             'outdoor': [
                 { id: 'BRAND', label: 'Brand', type: 'text' },
                 { id: 'MDL', label: 'Model', type: 'text' },
@@ -3635,7 +3635,7 @@
                 });
             });
             if (updated) {
-                localStorage.setItem('hvacEquipSchemaV28_12', JSON.stringify(EQUIP_SCHEMA));
+                localStorage.setItem('hvacEquipSchemaV28_13', JSON.stringify(EQUIP_SCHEMA));
                 if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             }
         }
@@ -3932,8 +3932,42 @@
             const response = await callAppsScript({ action: "fetchManuals" });
             if (response.status === "success" && response.data) {
                 const links = response.data;
-                if (links.length === 0) { linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>'; }
-                else { linksDiv.innerHTML = links.map(l => `<a href="${l.url}" target="_blank" class="manual-link">📄 ${l.title}</a>`).join(''); }
+                if (links.length === 0) { 
+                    linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>'; 
+                } else { 
+                    // Smart Sorter Logic
+                    function getPrefix(val) {
+                        if (!val || val === '--') return null;
+                        const clean = String(val).replace(/[^a-zA-Z0-9]/g, '');
+                        return clean.length >= 3 ? clean.substring(0, 3).toLowerCase() : null;
+                    }
+
+                    const outPrefix = getPrefix(systemSpecs.outdoor.MDL);
+                    const inPrefix = getPrefix(systemSpecs.indoor.MDL);
+                    const coilPrefix = getPrefix(systemSpecs.indoor.C_MDL);
+
+                    let outHtml = '', inHtml = '', otherHtml = '';
+
+                    links.forEach(l => {
+                        const tLower = l.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        const linkHtml = '<a href="' + l.url + '" target="_blank" class="manual-link">📄 ' + l.title + '</a>';
+
+                        if (outPrefix && tLower.includes(outPrefix)) {
+                            outHtml += linkHtml;
+                        } else if ((inPrefix && tLower.includes(inPrefix)) || (coilPrefix && tLower.includes(coilPrefix))) {
+                            inHtml += linkHtml;
+                        } else {
+                            otherHtml += linkHtml;
+                        }
+                    });
+
+                    let finalHtml = '';
+                    if (outHtml) finalHtml += '<div style="color:var(--electric-blue); font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">🌬️ OUTDOOR UNIT</div>' + outHtml;
+                    if (inHtml) finalHtml += '<div style="color:var(--emerald-green); font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">🏠 INDOOR UNIT</div>' + inHtml;
+                    if (otherHtml) finalHtml += '<div style="color:#888; font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">📁 OTHER MANUALS</div>' + otherHtml;
+
+                    linksDiv.innerHTML = finalHtml;
+                }
             }
         }
 
