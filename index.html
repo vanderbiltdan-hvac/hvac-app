@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HVAC PRO v28.15</title>
-    <!-- BUILD: index_v28_15_2026_04_06_1841.html -->
+    <!-- BUILD: index_v28_15_2026_04_06_1848.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -2785,13 +2785,13 @@
             techNotes.forEach(note => {
                 if (note.includes('\u25D8')) {
                     const parts = note.split('\u25D8');
-                    list.push({ label: findSheetLabelFor(parts[0].trim()), val: cleanNum(parts[1]) });
+                    list.push({ label: findSheetLabelFor(parts[0].trim()), val: cleanNum(parts[1] ? parts[1] : "") });
                 } else if (note.includes(':')) {
                     const parts = note.split(':');
-                    list.push({ label: findSheetLabelFor(parts[0].trim()), val: cleanNum(parts[1].trim()) });
+                    list.push({ label: findSheetLabelFor(parts[0].trim()), val: cleanNum(parts[1] ? parts[1] : "") });
                 } else if (note.includes('\u2192')) {
                     const parts = note.split('\u2192');
-                    list.push({ label: findSheetLabelFor(parts[0].trim()), val: cleanNum(parts[1].trim()) });
+                    list.push({ label: findSheetLabelFor(parts[0].trim()), val: cleanNum(parts[1] ? parts[1] : "") });
                 }
             });
             for (let k in refData) { list.push({ label: findSheetLabelFor(k.trim()), val: cleanNum(refData[k]) }); }
