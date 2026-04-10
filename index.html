@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.20</title>
-    <!-- BUILD: index_v28_20_2026_04_10_0406.html -->
+    <title>HVAC PRO v28.21</title>
+    <!-- BUILD: index_v28_21_2026_04_10_0423.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.20</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.21</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.20</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.21</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2150,7 +2150,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.20";
+        const APP_VERSION = "v28.21";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2942,16 +2942,14 @@
             });
 
             if (existingIdxs.length > 0) {
-                // Undo: Remove all matching notes from compiler
                 existingIdxs.reverse().forEach(idx => techNotes.splice(idx, 1));
             } else {
-                // Add: Prioritize mirrorPMI, then mirrorState, then bail
                 const mirrorMatch = (mirrorPMI || []).find(m => m.label.toUpperCase().trim() === cat.toUpperCase().trim() || m.label.toUpperCase().includes(cat.toUpperCase()));
-                if (mirrorMatch) {
+                if (mirrorMatch && mirrorMatch.value && mirrorMatch.value.toString().trim() !== "" && mirrorMatch.value !== "--") {
                     techNotes.push(`${cat} \u2192 ${mirrorMatch.value}`);
                 } else {
                     const sheetVal = mirrorState[cat];
-                    if (sheetVal && sheetVal !== '--') techNotes.push(`${cat} \u2192 ${formatVal(sheetVal)}`);
+                    if (sheetVal && sheetVal !== '--' && sheetVal.toString().trim() !== '') techNotes.push(`${cat} \u2192 ${formatVal(sheetVal)}`);
                     else return; // No data to add — silent bail
                 }
             }
@@ -3090,7 +3088,6 @@
 
                     // --- v27.24: Targeted Context Storage ---
                     mirrorState = response.data.fields;
-                    mirrorPMI = response.data.pmi || []; // Capture the AE55:AF84 scan
                     mirrorPMI = response.data.pmi || []; 
                     isJobMode = true;
 
@@ -3110,6 +3107,9 @@
                     refreshSyncUI();
                     if (response.data.schema && response.data.schema.length > 0) {
                         alignSchemaLabels(response.data.schema);
+                    }
+                    if (mirrorPMI && mirrorPMI.length > 0) {
+                        alignPMIDictionary(mirrorPMI);
                     }
                     renderMirrorTruth(); // v27.24: Instant Refresh
                     if (typeof renderMirrorGrid === 'function') renderMirrorGrid();
@@ -3230,19 +3230,21 @@
 
 
                 if (hubType === 'pmi' || hubType === 'all') {
-                    // v27.24: Targeted Scan Injection from AE55:AF84
                     if (mirrorPMI && mirrorPMI.length > 0) {
                         mirrorPMI.forEach(item => {
-                            const newNote = `${item.label} → ${item.value}`; // v27.24: Arrow Sync
-                            if (!techNotes.includes(newNote)) techNotes.push(newNote);
+                            if (item.value && item.value.toString().trim() !== "" && item.value !== "--") {
+                                const newNote = `${item.label} \u2192 ${item.value}`;
+                                techNotes = techNotes.filter(n => !n.startsWith(item.label + ' \u2192') && !n.startsWith(item.label + ':'));
+                                if (!techNotes.includes(newNote)) techNotes.push(newNote);
+                            }
                         });
                     }
 
-                    // Fallback to Column W notes if they contain keywords
                     Object.keys(techNotesMaster).forEach(cat => {
                         const sheetVal = mirrorState[cat];
-                        if (sheetVal && sheetVal !== '--') {
-                            const newNote = `${cat} → ${formatVal(sheetVal)}`;
+                        if (sheetVal && sheetVal !== '--' && sheetVal.toString().trim() !== "") {
+                            const newNote = `${cat} \u2192 ${formatVal(sheetVal)}`;
+                            techNotes = techNotes.filter(n => !n.startsWith(cat + ' \u2192') && !n.startsWith(cat + ':'));
                             if (!techNotes.includes(newNote)) techNotes.push(newNote);
                         }
                     });
@@ -3652,40 +3654,25 @@
             }
         }
 
-        // v28.20: Dynamic PMI Dictionary Aligner
+        // v28.21: Dynamic PMI Dictionary Aligner (Strict Match & Failsafe)
         function alignPMIDictionary(pmiArray) {
-            if (!pmiArray || !techNotesMaster) return;
+            if (!pmiArray) return;
+            if (!techNotesMaster) techNotesMaster = {};
             let updated = false;
 
             pmiArray.forEach(item => {
                 const sheetLabel = item.label.trim();
                 if (!sheetLabel) return;
 
-                const existingKey = Object.keys(techNotesMaster).find(k =>
-                    k.toLowerCase() === sheetLabel.toLowerCase() ||
-                    k.toLowerCase().includes(sheetLabel.toLowerCase()) ||
-                    sheetLabel.toLowerCase().includes(k.toLowerCase())
-                );
-
+                const existingKey = Object.keys(techNotesMaster).find(k => k.toLowerCase() === sheetLabel.toLowerCase());
                 if (!existingKey) {
                     techNotesMaster[sheetLabel] = [];
-                    updated = true;
-                } else if (existingKey !== sheetLabel) {
-                    techNotesMaster[sheetLabel] = techNotesMaster[existingKey];
-                    delete techNotesMaster[existingKey];
-                    techNotes = techNotes.map(n => {
-                        if (n.startsWith(existingKey + ' \u2192') || n.startsWith(existingKey + ':')) {
-                            return n.replace(existingKey, sheetLabel);
-                        }
-                        return n;
-                    });
                     updated = true;
                 }
             });
 
             if (updated) {
                 localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
-                localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
                 if (typeof renderPMIGrid === 'function') renderPMIGrid();
             }
         }
