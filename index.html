@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.18</title>
-    <!-- BUILD: index_v28_18_2026_04_10_0320.html -->
+    <title>HVAC PRO v28.19</title>
+    <!-- BUILD: index_v28_19_2026_04_10_0333.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.18</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.19</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.18</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.19</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2150,7 +2150,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.18";
+        const APP_VERSION = "v28.19";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2794,6 +2794,17 @@
                     list.push({ label: findSheetLabelFor(lbl), val: cleanNum(val) });
                 }
             });
+
+            if (typeof EQUIP_SCHEMA !== 'undefined') {
+                for (let tab in EQUIP_SCHEMA) {
+                    EQUIP_SCHEMA[tab].forEach(f => {
+                        if (stagedSpecs.includes(tab + '_' + f.id)) {
+                            list.push({ label: findSheetLabelFor(f.label), val: cleanNum(systemSpecs[tab][f.id]) });
+                        }
+                    });
+                }
+            }
+
             for (let k in refData) { list.push({ label: findSheetLabelFor(k.trim()), val: cleanNum(refData[k]) }); }
             Object.values(buffer).forEach(b => {
                 if (b.val && b.field) list.push({ label: findSheetLabelFor(b.field.trim()), val: cleanNum(b.val) });
@@ -5009,14 +5020,13 @@ function wipeTotalSession() {
             };
 
 
-            // v28.1: SYSTEM SPECS (Standardized Evaporator Coil prefix)
+            // v28.1: SYSTEM SPECS (Standardized Evaporator Coil prefix removed for dynamic labels)
             if (activeTemplate === 'full') {
                 ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
                     EQUIP_SCHEMA[tab].forEach(f => {
                         if (stagedSpecs.includes(tab + '_' + f.id)) {
                             const val = systemSpecs[tab][f.id];
-                            const prefix = tab === 'outdoor' ? systemSpecs.outdoor.TYPE : (tab === 'indoor' && f.id.startsWith('C_') ? 'EVAPORATOR COIL' : (tab === 'indoor' ? systemSpecs.indoor.TYPE : 'THERMOSTAT'));
-                            pushLine(`[${prefix.toUpperCase()}] ${f.label} \u2192 ${val}`, 'SPEC_' + tab + '_' + f.id);
+                            pushLine(`${f.label} \u2192 ${val}`, 'SPEC_' + tab + '_' + f.id);
                         }
                     });
                 });
