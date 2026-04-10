@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.22</title>
-    <!-- BUILD: index_v28_22_2026_04_10_0449.html -->
+    <title>HVAC PRO v28.23</title>
+    <!-- BUILD: index_v28_23_2026_04_10_0516.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.22</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.23</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.22</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.23</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2150,7 +2150,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.22";
+        const APP_VERSION = "v28.23";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2853,16 +2853,16 @@
 
                 // --- THE TWO-FLAG SYSTEM ---
                 const isInCompiler = activeNotesInCat.length > 0;
-                const isFromMirror = !!mirrorMatch;
+                const hasMirrorData = mirrorMatch && mirrorMatch.value && mirrorMatch.value.toString().trim() !== "";
                 const textColor = isInCompiler ? 'var(--electric-blue)' : 'white';
-                const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
+                const borderColor = hasMirrorData ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
 
                 const noteDisplay = isInCompiler ? activeNotesInCat.map(n => {
                     let val = n;
                     if (n.includes('\u2192')) val = n.split('\u2192')[1]?.trim() || val;
                     else if (n.includes(':')) val = n.split(':')[1]?.trim() || val;
                     return `<span style="background:rgba(0,229,255,0.15); padding:4px 10px; border-radius:6px; margin-bottom:3px; display:inline-block; border:1px solid rgba(0,229,255,0.2); font-size:13px;">\u2705 ${val}</span>`;
-                }).join('') : (mirrorMatch ? `<span style="color:white; opacity:0.8; font-size:13px;">\u2705 ${mirrorMatch.value}</span>` : '<span style="opacity:0.3; color:white; font-size:12px;">ADD +</span>');
+                }).join('') : (hasMirrorData ? `<span style="color:white; opacity:0.8; font-size:13px;">\u2705 ${mirrorMatch.value}</span>` : '<span style="opacity:0.3; color:white; font-size:12px;">ADD +</span>');
 
                 return `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px 15px; border-radius:12px; border:1px solid ${borderColor}; min-height:60px;">
@@ -2918,7 +2918,7 @@
                 const textColor = isInCompiler ? 'var(--electric-blue)' : 'white';
                 const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
 
-                // v27.25: SPLIT CLICK ZONES — label toggles compiler, value opens keypad
+                // v28.23: SPLIT CLICK ZONES — label toggles compiler, value opens keypad
                 return `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${borderColor};">
                     <span onclick="toggleRefrigCompiler('${key}')"
@@ -2929,8 +2929,8 @@
             }).join('');
         }
 
-        // v27.25: PMI label-side compiler toggle with mirror/sheet fallback
-        // v28.22: PMI label-side compiler toggle with strict mirror clone
+        // v28.23: PMI label-side compiler toggle with mirror/sheet fallback
+        // v28.23: PMI label-side compiler toggle with strict mirror clone
         function togglePMICompiler(cat) {
             const existingIdxs = [];
             techNotes.forEach((n, idx) => {
@@ -2956,7 +2956,7 @@
             renderPMIGrid(); renderCompiler(); renderDraftBlock();
         }
 
-        // v28.22: Refrig label-side compiler toggle with mirror fallback
+        // v28.23: Refrig label-side compiler toggle with mirror fallback
         function toggleRefrigCompiler(key) {
             if (refData[key] !== undefined && refData[key] !== null) {
                 delete refData[key]; // Undo: Remove from compiler
@@ -2975,7 +2975,7 @@
             renderRefrigRows(); renderCompiler(); renderDraftBlock();
         }
 
-        // v28.22: Native Typing Entry for Specs
+        // v28.23: Native Typing Entry for Specs
         function openSpecManualEntry(tab, id) {
             const f = EQUIP_SCHEMA[tab].find(x => x.id === id);
             if (!f) return;
@@ -3003,7 +3003,7 @@
             }
         }
 
-        // v28.22: Staging Logic & toggleSpecCompiler
+        // v28.23: Staging Logic & toggleSpecCompiler
         let stagedSpecs = JSON.parse(localStorage.getItem('hvacStagedSpecsV28')) || [];
 
         function toggleSpecCompiler(tab, id) {
@@ -3085,7 +3085,7 @@
                         throw new Error("Missing Data Fields");
                     }
 
-                    // --- v28.22: Targeted Context Storage ---
+                    // --- v28.23: Targeted Context Storage ---
                     mirrorState = response.data.fields;
                     mirrorPMI = response.data.pmi || []; 
                     isJobMode = true;
@@ -3110,7 +3110,7 @@
                     if (mirrorPMI && mirrorPMI.length > 0) {
                         alignPMIDictionary(mirrorPMI);
                     }
-                    renderMirrorTruth(); // v28.22: Instant Refresh
+                    renderMirrorTruth(); // v28.23: Instant Refresh
                     if (typeof renderMirrorGrid === 'function') renderMirrorGrid();
                     closeSyncError(); // Close modal if open on success
                 } else {
@@ -3208,19 +3208,19 @@
                             'DELTA_T': '∆T',
                             'RETURN': 'Return Temp',
                             'SUPPLY': 'Supply Temp',
-                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal match to spreadsheet Column I (v27.24)
+                            'RETURN_HUMID': 'RETURN HUMIDITY' // Literal match to spreadsheet Column I (v28.23)
                         };
                         const sheetField = map[key] || findSheetLabelFor(label);
                         let val = mirrorState[sheetField];
 
-                        // Fuzzy fallback if exact map fails (v27.24 Literal Priority)
+                        // Fuzzy fallback if exact map fails (v28.23 Literal Priority)
                         if (!val || val === '--') {
                             const fuzzyKey = Object.keys(mirrorState).find(k => k.toLowerCase() === label.toLowerCase() || k.toLowerCase().includes(label.toLowerCase()));
                             if (fuzzyKey) val = mirrorState[fuzzyKey];
                         }
 
                         if (val && val !== '--') {
-                            refData[key] = val; // Store literal from Mirror (v27.24)
+                            refData[key] = val; // Store literal from Mirror (v28.23)
                         }
                     });
                     localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
@@ -3248,9 +3248,9 @@
                         if (val && val !== '--') buffer[i] = { field: f, val: parseFloat(val), volts: 0 };
                     });
 
-                    // Capacitor & Measured Amps Sync (v27.24 Literal Explicit Catch)
+                    // Capacitor & Measured Amps Sync (v28.23 Literal Explicit Catch)
                     for (const [id, keyword] of Object.entries(DIAG_SYNC_MAP)) {
-                        // v27.24: Case-Insensitive Keyword Search (RLA (Measured) match)
+                        // v28.23: Case-Insensitive Keyword Search (RLA (Measured) match)
                         const mirrorKey = Object.keys(mirrorState).find(k => k.toLowerCase().trim() === keyword.toLowerCase().trim());
                         const val = mirrorKey ? mirrorState[mirrorKey] : null;
 
@@ -3266,7 +3266,7 @@
                             }
 
                             // 2. Update the measurement buffer (Amps / Volts / Caps)
-                            // v27.24 Fix: Map 'RLA (MEASURED)' -> 'Comp Amps' and 'FLA ODF (MEASURED)' -> 'ODF Amps'
+                            // v28.23 Fix: Map 'RLA (MEASURED)' -> 'Comp Amps' and 'FLA ODF (MEASURED)' -> 'ODF Amps'
                             let bufferKey = keyword;
                             if (keyword === 'RLA (MEASURED)') bufferKey = 'Comp Amps';
                             if (keyword === 'FLA ODF (MEASURED)') bufferKey = 'ODF Amps';
@@ -3274,7 +3274,7 @@
                             const bufIdx = FIELD_CYCLE.indexOf(bufferKey);
                             if (bufIdx !== -1) {
                                 buffer[bufIdx] = { field: bufferKey, val: numVal, volts: 0 };
-                                // v27.24: Force "active" display update
+                                // v28.23: Force "active" display update
                                 if (fieldIndex === bufIdx) {
                                     document.getElementById('bigDisplay').innerText = numVal.toFixed(1);
                                     syncLogToUI();
@@ -3295,7 +3295,7 @@
             doSync();
         }
 
-        // v27.24: Normalizes text for better mirror matching (Fuzzy Matching)
+        // v28.23: Normalizes text for better mirror matching (Fuzzy Matching)
         function normalizeText(str) {
             if (!str) return "";
             // Lowercase, strip punctuation (slashes, dashes, dots), and collapse spaces
@@ -3321,10 +3321,10 @@
 
             list.innerHTML = populated.map(k => {
                 const val = formatVal(state[k]);
-                // v27.24: Fuzzy match logic
+                // v28.23: Fuzzy match logic
                 const normK = normalizeText(k);
                 const normVal = normalizeText(val.toString());
-                // Check selection state (v28.0: Multi-Hub check)
+                // Check selection state (v28.23: Multi-Hub check)
                 let isSelected = false;
                 if (techNotes.some(n => {
                     const normNote = normalizeText(n);
@@ -3372,10 +3372,10 @@
                 list.innerHTML += `<div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin:12px 0;"></div>`;
                 list.innerHTML += `<div style="font-size:10px; color:var(--electric-blue); font-weight:900; margin-bottom:8px; text-align:center;">--- TARGETED PMI (AE55:AF84) ---</div>`;
                 list.innerHTML += populatedPMI.map(item => {
-                    // v27.24: Fuzzy match logic
+                    // v28.23: Fuzzy match logic
                     const normK = normalizeText(item.label);
                     const normVal = normalizeText(item.value);
-                    // Check selection state (v28.0: Multi-Hub check)
+                    // Check selection state (v28.23: Multi-Hub check)
                     let isSelected = false;
                     if (techNotes.some(n => {
                         const normNote = normalizeText(n);
@@ -3422,7 +3422,7 @@
         function addMirrorToCompiler(label, val) {
             let cleanVal = String(val).replace(/[\u00b0%']+/g, '').trim();
 
-            // v28.0: SPECS ROUTING TRAP WITH SMART UNDO
+            // v28.23: SPECS ROUTING TRAP WITH SMART UNDO
             let specMatch = null;
             if (typeof EQUIP_SCHEMA !== 'undefined') {
                 for (let tab in EQUIP_SCHEMA) {
@@ -3448,7 +3448,7 @@
                 return;
             }
 
-            // REFRIGERANT ROUTING TRAP WITH SMART UNDO (v27.26: CASE-INSENSITIVE)
+            // REFRIGERANT ROUTING TRAP WITH SMART UNDO (v28.23: CASE-INSENSITIVE)
             let refKey = null;
             if (typeof REFRIG_FIELDS !== 'undefined') {
                 for (let k in REFRIG_FIELDS) {
@@ -3508,7 +3508,7 @@
                 const val = document.getElementById('ovr-val' + i).value.trim();
                 // Check if either exists. Sending empty label/val clears the slot.
                 if (label || val || document.getElementById('ovr-slot' + i).dataset.synced) {
-                    // v25.2.9: Strip existing symbols before adding compiler ones to prevent double symbols
+                    // v28.23: Strip existing symbols before adding compiler ones to prevent double symbols
                     batch.push({ label: label, value: val, index: i - 1 });
                     document.getElementById('ovr-slot' + i).dataset.synced = "true";
                 }
@@ -3604,7 +3604,7 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-            // Inject Sheet Context (v23.1 GOLD0)
+            // Inject Sheet Context (v28.23 GOLD0)
             if (currentJob) payload.sheetName = currentJob;
 
             try {
@@ -3622,7 +3622,7 @@
             }
         }
 
-        // v28.3: Dynamic Schema Aligner — matches app labels to spreadsheet labels (W232)
+        // v28.23: Dynamic Schema Aligner — matches app labels to spreadsheet labels (W232)
         function alignSchemaLabels(schemaArray) {
             let updated = false;
             ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
@@ -3644,7 +3644,7 @@
             }
         }
 
-        // v28.22: Strict Ordered Dictionary Rebuild
+        // v28.23: Strict Ordered Dictionary Rebuild
         function alignPMIDictionary(pmiArray) {
             if (!pmiArray) return;
             let newMaster = {};
