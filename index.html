@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.19</title>
-    <!-- BUILD: index_v28_19_2026_04_10_0333.html -->
+    <title>HVAC PRO v28.20</title>
+    <!-- BUILD: index_v28_20_2026_04_10_0406.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
     <style>
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.19</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.20</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.19</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.20</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2150,7 +2150,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.19";
+        const APP_VERSION = "v28.20";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -3375,10 +3375,11 @@
             }).join('');
 
             // Targeted AE55 PMI Chips
-            if (mirrorPMI && mirrorPMI.length > 0) {
+            const populatedPMI = (mirrorPMI || []).filter(m => m.value && m.value !== "" && m.value !== "--");
+            if (populatedPMI.length > 0) {
                 list.innerHTML += `<div style="width:100%; height:1px; background:rgba(255,255,255,0.1); margin:12px 0;"></div>`;
                 list.innerHTML += `<div style="font-size:10px; color:var(--electric-blue); font-weight:900; margin-bottom:8px; text-align:center;">--- TARGETED PMI (AE55:AF84) ---</div>`;
-                list.innerHTML += mirrorPMI.map(item => {
+                list.innerHTML += populatedPMI.map(item => {
                     // v27.24: Fuzzy match logic
                     const normK = normalizeText(item.label);
                     const normVal = normalizeText(item.value);
@@ -3648,6 +3649,44 @@
             if (updated) {
                 localStorage.setItem('hvacEquipSchemaV28_18', JSON.stringify(EQUIP_SCHEMA));
                 if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+            }
+        }
+
+        // v28.20: Dynamic PMI Dictionary Aligner
+        function alignPMIDictionary(pmiArray) {
+            if (!pmiArray || !techNotesMaster) return;
+            let updated = false;
+
+            pmiArray.forEach(item => {
+                const sheetLabel = item.label.trim();
+                if (!sheetLabel) return;
+
+                const existingKey = Object.keys(techNotesMaster).find(k =>
+                    k.toLowerCase() === sheetLabel.toLowerCase() ||
+                    k.toLowerCase().includes(sheetLabel.toLowerCase()) ||
+                    sheetLabel.toLowerCase().includes(k.toLowerCase())
+                );
+
+                if (!existingKey) {
+                    techNotesMaster[sheetLabel] = [];
+                    updated = true;
+                } else if (existingKey !== sheetLabel) {
+                    techNotesMaster[sheetLabel] = techNotesMaster[existingKey];
+                    delete techNotesMaster[existingKey];
+                    techNotes = techNotes.map(n => {
+                        if (n.startsWith(existingKey + ' \u2192') || n.startsWith(existingKey + ':')) {
+                            return n.replace(existingKey, sheetLabel);
+                        }
+                        return n;
+                    });
+                    updated = true;
+                }
+            });
+
+            if (updated) {
+                localStorage.setItem('hvacTechMnstrV20', JSON.stringify(techNotesMaster));
+                localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+                if (typeof renderPMIGrid === 'function') renderPMIGrid();
             }
         }
 
