@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.31</title>
+    <title>HVAC PRO v28.32</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1290,7 +1290,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.31</span>
+                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.32</span>
                 </h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
@@ -1520,7 +1520,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v28.31</div>
+                        v28.32</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2181,7 +2181,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.31";
+        const APP_VERSION = "v28.32";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -5298,6 +5298,25 @@
                     window.currentJob = finalName;
 
                     saveRecentFolder(finalName, folderId);
+
+                    // v28.32: Fix Ghosting by Wiping Local Memory for the new shell
+                    wipeTotalSession();
+                    systemSpecs = {
+                        activeTab: 'customer',
+                        customer: { TYPE: 'Residential', NAME: '--', ADDR: '--', PHONE: '--', EMAIL: '--' },
+                        outdoor: { TYPE: 'Condenser', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--', TON: '--' },
+                        indoor: {
+                            TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--', METER: '--',
+                            C_BRAND: '--', C_MDL: '--', C_SER: '--', C_YEAR: '--', C_TON: '--', C_METER: '--', C_TRAY: '--', C_AIR_DIR: '--'
+                        },
+                        thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', TYPE: 'Smart' }
+                    };
+                    localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+                    stagedSpecs = [];
+                    localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
+
+                    // v28.32: Auto-Trigger Pipeline to Fix Missing Drive/Doc Links instantly
+                    await callAppsScript({ action: "runPipeline", sheetName: finalName });
 
                     shellBtn.innerHTML = "✅ JOB HOOKED!";
                     shellBtn.style.background = "var(--emerald-green)";
