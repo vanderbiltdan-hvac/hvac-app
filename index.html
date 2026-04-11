@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.35</title>
+    <title>HVAC PRO v28.37</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1290,7 +1290,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.35</span>
+                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.37</span>
                 </h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
@@ -1347,7 +1347,7 @@
 
             <!-- SLOTS 4 & 5: TWO COLUMNS -->
             <div class="v23-sub-grid">
-                <button class="btn-half" onclick="runLibrarianInApp()">
+                <button id="librarianBtn" class="btn-half" onclick="runLibrarianInApp()">
                     🔍 LIBRARIAN
                 </button>
                 <button class="btn-half" onclick="showSection('section-manuals')">
@@ -1520,7 +1520,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v28.35</div>
+                        v28.37</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2182,7 +2182,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.35";
+        const APP_VERSION = "v28.37";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -4046,24 +4046,44 @@
         function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; document.getElementById('photoStatus').style.display = 'none'; }
 
         async function runLibrarianInApp() {
+            const btn = document.getElementById('librarianBtn');
+            const originalText = btn.innerHTML;
             const linksDiv = document.getElementById('manualLinks');
+
+            // 1. Enter "Thinking" State
+            btn.disabled = true;
+            btn.style.background = "var(--amber-orange, #f39c12)";
+            btn.innerHTML = "⏳ PIPELINE RUNNING...";
+            
             linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center;">Searching Manuals...</div>';
 
-            const pipeRes = await callAppsScript({ action: "runPipeline" });
-            if (pipeRes.status !== "success" || (pipeRes.data && typeof pipeRes.data === 'string' && pipeRes.data.includes("Error"))) {
-                linksDiv.innerHTML = `<div style="color:var(--crimson-red); text-align:center; padding:20px;"><b>Pipeline Error:</b><br>${pipeRes.data || pipeRes.message}</div>`;
-                return; // Strict bail to prevent silent failures
-            }
+            try {
+                const pipeRes = await callAppsScript({ action: "runPipeline" });
+                if (pipeRes.status !== "success" || (pipeRes.data && typeof pipeRes.data === 'string' && pipeRes.data.includes("Error"))) {
+                    linksDiv.innerHTML = `<div style="color:var(--crimson-red); text-align:center; padding:20px;"><b>Pipeline Error:</b><br>${pipeRes.data || pipeRes.message}</div>`;
+                    
+                    btn.disabled = false;
+                    btn.style.background = "var(--crimson-red)";
+                    btn.innerHTML = "❌ FAILED";
+                    setTimeout(() => { btn.style.background = ""; btn.innerHTML = originalText; }, 3000);
+                    return;
+                }
 
-            // v28.33: Dynamic Tab Name Linker
-            if (pipeRes.data && pipeRes.data.newName) {
-                currentJob = pipeRes.data.newName;
-                localStorage.setItem('hvacActiveJob', currentJob);
-                updateUniversalJobHeaders();
-            }
+                // v28.33: Dynamic Tab Name Linker
+                if (pipeRes.data && pipeRes.data.newName) {
+                    currentJob = pipeRes.data.newName;
+                    localStorage.setItem('hvacActiveJob', currentJob);
+                    updateUniversalJobHeaders();
+                }
 
-            const response = await callAppsScript({ action: "fetchManuals" });
-            if (response.status === "success" && response.data) {
+                const response = await callAppsScript({ action: "fetchManuals" });
+                
+                // Restore Button State
+                btn.disabled = false;
+                btn.style.background = "";
+                btn.innerHTML = originalText;
+
+                if (response.status === "success" && response.data) {
                 const links = response.data;
                 if (links.length === 0) {
                     linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>';
@@ -5321,8 +5341,8 @@
                 if (res && res.status === "success" && res.data.status === "success") {
                     shellBtn.innerHTML = "🔗 BUILDING BACKLINKS...";
 
-                    // Deep Hooking: Store both Name and Folder ID
-                    const finalName = res.data.sheetName;
+                    // v28.36: PIVOT - Target the exact name returned by the script for immediate Hook
+                    const finalName = res.data.newSheetName;
                     const folderId = res.data.folderId;
 
                     localStorage.setItem('hvacActiveJob', finalName);
@@ -5331,8 +5351,9 @@
 
                     saveRecentFolder(finalName, folderId);
 
-                    // v28.32: Fix Ghosting by Wiping Local Memory for the new shell
-                    wipeTotalSession();
+                    // v28.36: Pivot complete - shield the mirror for the new session
+                    wipeTotalSession(true); 
+
                     systemSpecs = {
                         activeTab: 'customer',
                         customer: { TYPE: 'Residential', NAME: '--', ADDR: '--', PHONE: '--', EMAIL: '--' },
