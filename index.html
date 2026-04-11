@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.26</title>
+    <title>HVAC PRO v28.27</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.26</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.27</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.26</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.27</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2150,7 +2150,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.26";
+        const APP_VERSION = "v28.27";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2752,6 +2752,13 @@
         function findSheetLabelFor(appLabel) {
             if (!appLabel) return "UNKNOWN";
             const clean = appLabel.toLowerCase().trim();
+
+            // v28.27: Map Customer Info UI fields
+            if (clean === 'name' || clean === 'customer name') return 'Customer Name';
+            if (clean === 'address') return 'Address';
+            if (clean === 'phone') return 'Phone';
+            if (clean === 'email') return 'Email';
+
             for (let tab in EQUIP_SCHEMA) {
                 const match = EQUIP_SCHEMA[tab].find(f => f.label.toLowerCase() === clean);
                 if (match) return match.label;
@@ -3030,13 +3037,14 @@
                 } else {
                     const f = EQUIP_SCHEMA[tab].find(x => x.id === id);
                     if (f && isJobMode) {
-                        const sheetField = findSheetLabelFor(f.label);
+                        const smartLabel = getSmartLabel(tab, f.label);
+                        const sheetField = findSheetLabelFor(smartLabel);
                         if (mirrorState[sheetField] && mirrorState[sheetField] !== '--') {
                             systemSpecs[tab][id] = mirrorState[sheetField];
                             localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
                             stagedSpecs.push(key);
                         } else return;
-                    } else return; 
+                    } else return;
                 }
             }
             localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
@@ -3194,7 +3202,8 @@
                 if (hubType === 'specs' || hubType === 'all') {
                     for (let tab in EQUIP_SCHEMA) {
                         EQUIP_SCHEMA[tab].forEach(f => {
-                            const sheetField = findSheetLabelFor(f.label);
+                            const smartLabel = getSmartLabel(tab, f.label);
+                            const sheetField = findSheetLabelFor(smartLabel);
                             const val = mirrorState[sheetField];
                             if (val && val !== '--') {
                                 systemSpecs[tab][f.id] = formatVal(val);
@@ -3782,14 +3791,15 @@
             const tab = systemSpecs.activeTab;
 
             // UI Button Active State
-            ['outdoor', 'indoor', 'thermostat'].forEach(t => {
-                document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+            ['customer', 'indoor', 'thermostat', 'outdoor'].forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                if (btn) btn.classList.toggle('active', t === tab);
             });
 
             // Populate Dropdown
             const drop = document.getElementById('equipTypeDrop');
             drop.innerHTML = EQUIP_TYPES[tab].map(t => `<option value="${t}">${t}</option>`).join('');
-            drop.value = systemSpecs[tab].TYPE || EQUIP_TYPES[tab][0];
+            drop.value = systemSpecs[tab].TYPE || EQUIP_TYPES[tab];
 
             const grid = document.getElementById('mainSpecGrid');
             const subGrid = document.getElementById('subSpecGrid');
@@ -3799,7 +3809,8 @@
             function buildCells(schemaList) {
                 return schemaList.map(f => {
                     const val = systemSpecs[tab][f.id] || '--';
-                    const sheetField = findSheetLabelFor(f.label);
+                    const smartLabel = getSmartLabel(tab, f.label);
+                    const sheetField = findSheetLabelFor(smartLabel);
                     const sheetVal = isJobMode ? mirrorState[sheetField] : null;
 
                     // --- v28.0: The Two-Flag System for Specs ---
@@ -3809,11 +3820,11 @@
                     const borderColor = isFromMirror ? 'var(--electric-blue)' : 'rgba(255,255,255,0.05)';
                     const displayVal = val !== '--' ? val : (isFromMirror ? sheetVal : '--');
 
-                    // v28.2: SPLIT CLICK ZONES — label toggles compiler, value opens manual entry keyboard
+                    // v28.2: SPLIT CLICK ZONES
                     return `
                     <div id="spec-${f.id}" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:14px; border-radius:12px; border:1px solid ${borderColor}; margin-bottom:8px;">
                         <span onclick="toggleSpecCompiler('${tab}', '${f.id}')"
-                              style="font-weight:900; color:${textColor}; font-size:13px; cursor:pointer; flex:1; padding:10px 0; user-select:none; -webkit-user-select:none;">${f.label.toUpperCase()}</span>
+                              style="font-weight:900; color:${textColor}; font-size:13px; cursor:pointer; flex:1; padding:10px 0; user-select:none; -webkit-user-select:none;">${smartLabel.toUpperCase()}</span>
                         <span onclick="event.stopPropagation(); openSpecManualEntry('${tab}', '${f.id}')"
                               style="font-size:18px; font-weight:900; color:${textColor}; cursor:pointer; padding-left:20px; text-align:right; word-break:break-all; user-select:none; -webkit-user-select:none;">${displayVal}</span>
                     </div>`;
@@ -5060,11 +5071,12 @@ function wipeTotalSession() {
 
             // v28.1: SYSTEM SPECS (Standardized Evaporator Coil prefix removed for dynamic labels)
             if (activeTemplate === 'full') {
-                ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
+                ['customer', 'indoor', 'thermostat', 'outdoor'].forEach(tab => {
                     EQUIP_SCHEMA[tab].forEach(f => {
                         if (stagedSpecs.includes(tab + '_' + f.id)) {
                             const val = systemSpecs[tab][f.id];
-                            pushLine(`${f.label} \u2192 ${val}`, 'SPEC_' + tab + '_' + f.id);
+                            const smartLabel = getSmartLabel(tab, f.label);
+                            pushLine(`${smartLabel.toUpperCase()} \u2192 ${val}`, 'SPEC_' + tab + '_' + f.id);
                         }
                     });
                 });
@@ -5354,5 +5366,47 @@ function wipeTotalSession() {
         }
     </script>
 </body>
+
+<!-- VAULT: v28.26 Legacy Blocks Replaced in v28.27 -->
+<!--
+// --- BEGIN REPLACED 1 (index.html) ---
+        <!-- EQUIPMENT TABS -->
+        <div class="step-nav" id="equipNav" style="margin-bottom:8px;">
+            <button class="step-btn active" id="tab-customer" onclick="switchEquipTab('customer')" style="flex:1;">CUSTOMER</button>
+            <button class="step-btn" id="tab-indoor" onclick="switchEquipTab('indoor')" style="flex:1;">INDOOR</button>
+            <button class="step-btn" id="tab-thermostat" onclick="switchEquipTab('thermostat')" style="flex:1;">STAT</button>
+            <button class="step-btn" id="tab-outdoor" onclick="switchEquipTab('outdoor')" style="flex:1;">OUTDOOR</button>
+        </div>
+// --- END REPLACED 1 (index.html) ---
+
+// --- BEGIN REPLACED 2 (index.html) ---
+        let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV21_0')) || {
+            activeTab: 'customer',
+            customer: { 'Customer Name': '--', 'Address': '--', 'Phone': '--', 'Email': '--' },
+            outdoor: { TYPE: 'Condenser', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--', TON: '--' },
+            indoor: {
+                TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--', METER: '--',
+                C_BRAND: '--', C_MDL: '--', C_SER: '--', C_YEAR: '--', C_TON: '--', C_METER: '--', C_TRAY: '--', C_AIR_DIR: '--'
+            },
+            thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', TYPE: 'Smart' }
+        };
+
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_18')) || {
+            'outdoor': [ ... ],
+            'indoor': [ ... ],
+            'thermostat': [ ... ]
+        };
+
+        const EQUIP_TYPES = {
+            outdoor: ['Condenser', 'Heat Pump', 'Package Unit'],
+            indoor: ['Air Handler', 'Furnace', 'Mini Split', 'Boiler', 'None'],
+            thermostat: ['Smart', 'Programmable', 'Non-Programmable']
+        };
+// --- END REPLACED 2 (index.html) ---
+
+// --- BEGIN REPLACED 3 (index.html) ---
+        function renderSystemSpecs() { ... }
+// --- END REPLACED 3 (index.html) ---
+-->
 
 </html>
