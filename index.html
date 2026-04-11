@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.29</title>
+    <title>HVAC PRO v28.30</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -39,7 +39,8 @@
         .container {
             width: 100%;
             max-width: 500px;
-            margin: 0 auto; /* Forces strict horizontal centering */
+            margin: 0 auto;
+            /* Forces strict horizontal centering */
             padding: 8px 16px 16px 16px;
             background: var(--card-bg);
             border-radius: 20px;
@@ -1080,22 +1081,24 @@
         }
 
         .btn-full {
-             width: 100%;
-             height: 75px;
-             border-radius: 20px;
-             font-size: 18px;
-             font-weight: 900;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             gap: 12px;
-             border: 2px solid rgba(255,255,255,0.1);
-             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-             cursor: pointer;
-             transition: 0.2s;
+            width: 100%;
+            height: 75px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: 0.2s;
         }
 
-        .btn-full:active { transform: scale(0.96); }
+        .btn-full:active {
+            transform: scale(0.96);
+        }
 
         .v23-sub-grid {
             display: grid;
@@ -1112,10 +1115,11 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #ccc;
         }
+
         .v23-pwr-btn:active,
         .v23-sub-btn:active {
             transform: scale(0.95);
@@ -1204,6 +1208,7 @@
             background: rgba(255, 23, 68, 0.2);
             color: #ff1744;
         }
+
         /* GALLERY & SHELF STYLES (Migrated v28.12) */
         .shelf-pill {
             background: #222;
@@ -1285,7 +1290,8 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.29</span></h1>
+                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.30</span>
+                </h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1316,19 +1322,26 @@
 
         <div class="v23-launcher-grid">
             <!-- SLOT 1: NEW JOB (FULL WIDTH) -->
-            <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
-                <input type="text" id="custName" placeholder="Enter Name / Job #" style="margin-bottom:8px; background:#000;">
-                <button class="btn-full" id="shellBtn" onclick="startJob()" style="background:var(--emerald-green); color:#000;">🚀 CREATE SHELL</button>
+            <div
+                style="background:rgba(255,255,255,0.03); padding:14px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
+                <input type="text" id="custName" placeholder="Enter Name / Job #"
+                    style="margin-bottom:8px; background:#000;">
+                <button class="btn-full" id="shellBtn" onclick="startJob()"
+                    style="background:var(--emerald-green); color:#000;">🚀 CREATE SHELL</button>
             </div>
 
             <!-- SLOT 2: UPLOAD PHOTOS (FULL WIDTH) -->
-            <button class="btn-full" onclick="history.pushState(null, null, '#picker'); document.getElementById('fileInputHome').click()" style="background:var(--electric-blue); color:#000;">
+            <button class="btn-full"
+                onclick="history.pushState(null, null, '#picker'); document.getElementById('fileInputHome').click()"
+                style="background:var(--electric-blue); color:#000;">
                 📸 UPLOAD PHOTOS
             </button>
-            <input type="file" id="fileInputHome" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+            <input type="file" id="fileInputHome" style="display:none;" accept="image/*" multiple
+                onchange="handleMultiPhotos(this)">
 
             <!-- SLOT 3: GALLERY (FULL WIDTH) -->
-            <button class="btn-full" onclick="openGallery()" style="background:#222; color:var(--electric-blue); border-color:var(--electric-blue);">
+            <button class="btn-full" onclick="openGallery()"
+                style="background:#222; color:var(--electric-blue); border-color:var(--electric-blue);">
                 🖼️ GALLERY
             </button>
 
@@ -1354,7 +1367,8 @@
             </div>
 
             <!-- SLOT 10: PORTAL (FULL WIDTH BOTTOM) -->
-            <button class="btn-full" onclick="openJobPortal()" style="background:#333; color:var(--amber-orange); border-color:var(--amber-orange); margin-top:20px;">
+            <button class="btn-full" onclick="openJobPortal()"
+                style="background:#333; color:var(--amber-orange); border-color:var(--amber-orange); margin-top:20px;">
                 📂 JOB PORTAL (SWITCHER)
             </button>
         </div>
@@ -1505,7 +1519,8 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.29</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
+                        v28.30</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -1531,10 +1546,13 @@
 
         <!-- EQUIPMENT TABS -->
         <div class="step-nav" id="equipNav" style="margin-bottom:8px;">
-            <button class="step-btn active" id="tab-customer" onclick="switchEquipTab('customer')" style="flex:1;">CUSTOMER</button>
+            <button class="step-btn active" id="tab-customer" onclick="switchEquipTab('customer')"
+                style="flex:1;">CUSTOMER</button>
             <button class="step-btn" id="tab-indoor" onclick="switchEquipTab('indoor')" style="flex:1;">INDOOR</button>
-            <button class="step-btn" id="tab-thermostat" onclick="switchEquipTab('thermostat')" style="flex:1;">STAT</button>
-            <button class="step-btn" id="tab-outdoor" onclick="switchEquipTab('outdoor')" style="flex:1;">OUTDOOR</button>
+            <button class="step-btn" id="tab-thermostat" onclick="switchEquipTab('thermostat')"
+                style="flex:1;">STAT</button>
+            <button class="step-btn" id="tab-outdoor" onclick="switchEquipTab('outdoor')"
+                style="flex:1;">OUTDOOR</button>
         </div>
         <div style="margin-bottom:12px; text-align:center;">
             <select id="equipTypeDrop" onchange="updateEquipType(this.value)"
@@ -1554,8 +1572,9 @@
         <div class="rig-grid" id="subSpecGrid" style="display:none;"></div>
 
         <div style="margin-bottom:12px;">
-            <button onclick="history.pushState(null, null, '#picker'); document.getElementById('fileInputSpecs').click()" class="btn btn-outline"
-                style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
+            <button
+                onclick="history.pushState(null, null, '#picker'); document.getElementById('fileInputSpecs').click()"
+                class="btn btn-outline" style="padding:12px; font-size:14px;">📷 BATCH PHOTO TAGS (Multi)</button>
             <input type="file" id="fileInputSpecs" style="display:none;" accept="image/*" multiple
                 onchange="handleMultiPhotos(this)">
             <div id="photoStatus">Processing Photos...</div>
@@ -1567,7 +1586,8 @@
 
     <!-- VOICE MODAL (V2 LAYOUT - REWORKED) -->
     <div id="voiceModal" class="modal-overlay">
-        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span></div>
+        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span>
+        </div>
         <!-- TOP NAV -->
         <div class="step-nav" id="stepNav"></div>
 
@@ -1645,7 +1665,8 @@
 
     <!-- MANUALS OVERLAY (RENAMED TO SECTION-MANUALS) -->
     <div id="section-manuals" class="modal-overlay" style="background:#0f0f0f; display:none;">
-        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span></div>
+        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span>
+        </div>
 
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333;">
@@ -1667,13 +1688,15 @@
 
     <!-- REPORT COMPILER (v28.12) -->
     <div id="reportModal" class="modal-overlay" style="background:#0f0f0f; display:none; padding-bottom: 20px;">
-        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span></div>
+        <div class="job-header" style="margin-bottom:10px;"><span>JOB:</span> <span class="job-header-text">--</span>
+        </div>
 
         <div
             style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--emerald-green);">📋 COMPILER</h2>
             <div style="display:flex; gap:12px; align-items:center;">
-                <button onclick="wipeTotalSession()" class="btn-utility danger" style="font-size:10px; padding:6px 10px;">☢️ WIPE ALL</button>
+                <button onclick="wipeTotalSession()" class="btn-utility danger"
+                    style="font-size:10px; padding:6px 10px;">☢️ WIPE ALL</button>
                 <button id="compilerMicBtn" onclick="toggleGlobalMic()"
                     style="background:var(--electric-blue); color:black; border:none; border-radius:12px; padding:10px 16px; font-weight:900; font-size:14px; box-shadow:0 0 15px rgba(0, 229, 255, 0.3); display:flex; align-items:center; gap:8px;">
                     <span style="font-size:18px;">🎙</span> INTAKE AUTO
@@ -1871,8 +1894,10 @@
             style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
             <h2 style="margin:0; font-size:18px; color:var(--electric-blue);">🖼 GALLERY</h2>
             <div style="display:flex; gap:12px; align-items:center;">
-                <button onclick="triggerAppParser(this)" class="btn-utility" style="border-color:#888; color:#888; font-size:10px; padding:6px 10px;">⚙️ PARSER</button>
-                <button onclick="closeGallery()" style="background:transparent; border:none; color:white; font-size:28px; padding:0;">&times;</button>
+                <button onclick="triggerAppParser(this)" class="btn-utility"
+                    style="border-color:#888; color:#888; font-size:10px; padding:6px 10px;">⚙️ PARSER</button>
+                <button onclick="closeGallery()"
+                    style="background:transparent; border:none; color:white; font-size:28px; padding:0;">&times;</button>
             </div>
         </div>
 
@@ -1892,7 +1917,8 @@
         <div id="galleryEmptyHint" style="display:none; text-align:center; color:#555; padding:40px;">Selected shelf is
             empty. Hoard some more!</div>
 
-        <div style="padding:15px; border-top:1px solid #333; display:flex; flex-direction:column; gap:10px; background:#111; flex-shrink:0; padding-bottom:80px;">
+        <div
+            style="padding:15px; border-top:1px solid #333; display:flex; flex-direction:column; gap:10px; background:#111; flex-shrink:0; padding-bottom:80px;">
             <div style="display:flex; gap:10px;">
                 <button onclick="processSelectedPhotos()" class="btn btn-primary"
                     style="flex:2; padding:12px; font-size:14px;">⚡ PARSE AI</button>
@@ -1904,7 +1930,8 @@
                     style="flex:1; border-color:var(--amber-orange); color:var(--amber-orange);">📁 TO SHELF</button>
                 <div style="flex:1; display:flex;">
                     <button id="driveBatchBtn" onclick="sendShelfToDrive()" class="btn btn-outline"
-                        style="flex:3; border-color:var(--emerald-green); color:var(--emerald-green); border-radius:12px 0 0 12px; transition:0.3s;">☁️ DRIVE</button>
+                        style="flex:3; border-color:var(--emerald-green); color:var(--emerald-green); border-radius:12px 0 0 12px; transition:0.3s;">☁️
+                        DRIVE</button>
                     <button onclick="openRoutingModal()" class="btn btn-outline"
                         style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green); border-left:none; border-radius:0 12px 12px 0;">•••</button>
                 </div>
@@ -1933,7 +1960,8 @@
                     style="background:transparent; border:none; color:white; font-size:28px; padding:0;">&times;</button>
             </div>
             <div style="font-size:11px; color:#aaa; font-weight:900; margin-bottom:10px;">RECENT DESTINATIONS</div>
-            <div id="recentFoldersList" style="display:flex; flex-direction:column; gap:8px; max-height:40vh; overflow-y:auto;">
+            <div id="recentFoldersList"
+                style="display:flex; flex-direction:column; gap:8px; max-height:40vh; overflow-y:auto;">
                 <!-- Filled by JS -->
             </div>
         </div>
@@ -2031,7 +2059,8 @@
                 <button onclick="applyMirrorToHub('pmi')" class="btn-utility"
                     style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">⚡ MIRROR
                     SYNC</button>
-                <button onclick="clearPMINotes()" class="btn-utility danger" style="font-size:10px;">☢️ WIPE PMI</button>
+                <button onclick="clearPMINotes()" class="btn-utility danger" style="font-size:10px;">☢️ WIPE
+                    PMI</button>
                 <button onclick="showSection('reportModal')" class="btn-utility"
                     style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">VIEW
                     REPORT</button>
@@ -2083,7 +2112,8 @@
                 <button onclick="applyMirrorToHub('refrig')" class="btn-utility"
                     style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">⚡ MIRROR
                     SYNC</button>
-                <button onclick="clearRefrigData()" class="btn-utility danger" style="font-size:10px;">☢️ WIPE REFRIG</button>
+                <button onclick="clearRefrigData()" class="btn-utility danger" style="font-size:10px;">☢️ WIPE
+                    REFRIG</button>
                 <button onclick="showSection('reportModal')" class="btn-utility"
                     style="border-color:var(--emerald-green); color:var(--emerald-green); font-size:10px;">VIEW
                     REPORT</button>
@@ -2115,8 +2145,10 @@
                     onclick="numIn(0)">0</button><button class="btn-numpad danger" onclick="numIn('C')">CLR</button>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;">
-                <button class="btn btn-green" onclick="saveRefrigNum()" style="padding:15px; font-weight:900; margin:0;">✔ COMMIT</button>
-                <button class="btn btn-outline" onclick="document.getElementById('refrigKeypad').style.display='none'" style="padding:15px; font-weight:900; margin:0;">CANCEL</button>
+                <button class="btn btn-green" onclick="saveRefrigNum()"
+                    style="padding:15px; font-weight:900; margin:0;">✔ COMMIT</button>
+                <button class="btn btn-outline" onclick="document.getElementById('refrigKeypad').style.display='none'"
+                    style="padding:15px; font-weight:900; margin:0;">CANCEL</button>
             </div>
         </div>
     </div>
@@ -2149,7 +2181,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.29";
+        const APP_VERSION = "v28.30";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -2184,7 +2216,7 @@
         if (!systemSpecs.customer) systemSpecs.customer = { TYPE: 'Residential', NAME: '--', ADDR: '--', PHONE: '--', EMAIL: '--' };
         if (!systemSpecs.indoor.METER) systemSpecs.indoor.METER = '--';
 
-        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_29')) || {
+        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_30')) || {
             'customer': [
                 { id: 'NAME', label: 'Name', type: 'text' },
                 { id: 'ADDR', label: 'Address', type: 'text' },
@@ -2226,11 +2258,12 @@
             thermostat: ['Smart', 'Programmable', 'Non-Programmable']
         };
 
-        // v28.29: Smart Label Generator for Dynamic Spreadsheet Matching
-        function getSmartLabel(tab, fLabel) {
-            if (['Brand', 'Model', 'Serial'].includes(fLabel)) {
-                if (tab === 'indoor' || tab === 'outdoor') return systemSpecs[tab].TYPE + ' ' + fLabel;
-                if (tab === 'thermostat') return 'Thermostat ' + fLabel;
+        // v28.30: Smart Label Generator - Strict ID evaluation to beat corruption
+        function getSmartLabel(tab, fLabel, fId) {
+            if (['BRAND', 'MDL', 'SER'].includes(fId)) {
+                const base = fId === 'BRAND' ? 'Brand' : (fId === 'MDL' ? 'Model' : 'Serial');
+                if (tab === 'indoor' || tab === 'outdoor') return systemSpecs[tab].TYPE + ' ' + base;
+                if (tab === 'thermostat') return 'Thermostat ' + base;
             }
             return fLabel;
         }
@@ -2297,7 +2330,7 @@
 
         function showSection(id) {
             const sections = ['v23-home', 'section-mirror', 'voiceModal', 'section-specs', 'section-manuals', 'reportModal', 'section-datablock', 'settingsModal', 'jobPortalModal', 'galleryOverlay', 'section-readings', 'section-pmi', 'section-refrig', 'photoViewerModal', 'routingModal'];
-            
+
             // Track navigation history - find current visible section
             const currentVisible = sections.find(s => {
                 const el = document.getElementById(s);
@@ -2674,16 +2707,16 @@
             for (let ph of toProcess) {
                 try {
                     status.innerText = `Analyzing: ${ph.filename}...`;
-                    
+
                     // v25.9: Deep Hooking - use active folder if we have it
                     const targetFolderId = localStorage.getItem('hvacActiveFolderId') || null;
 
-                    const result = await callAppsScript({ 
-                        action: "uploadPhotoAI", 
-                        data: ph.data, 
-                        filename: ph.filename, 
+                    const result = await callAppsScript({
+                        action: "uploadPhotoAI",
+                        data: ph.data,
+                        filename: ph.filename,
                         mimeType: ph.mime,
-                        folderId: targetFolderId 
+                        folderId: targetFolderId
                     });
 
                     if (result && result.status === "success" && result.data && result.data.extractedData) {
@@ -2770,19 +2803,19 @@
         function findSheetLabelFor(appLabel) {
             if (!appLabel) return "UNKNOWN";
             const clean = appLabel.toLowerCase().trim();
+            const keys = Object.keys(mirrorState || {});
 
-            // v28.27: Map Customer Info UI fields
-            if (clean === 'name' || clean === 'customer name') return 'Customer Name';
-            if (clean === 'address') return 'Address';
-            if (clean === 'phone') return 'Phone';
-            if (clean === 'email') return 'Email';
+            // v28.30: Fuzzy Map Customer Info UI fields to bypass trailing spaces
+            if (clean === 'name' || clean === 'customer name') return keys.find(k => k.toLowerCase().includes('customer name')) || 'Customer Name';
+            if (clean === 'address') return keys.find(k => k.toLowerCase().trim() === 'address') || 'Address';
+            if (clean === 'phone') return keys.find(k => k.toLowerCase().trim() === 'phone') || 'Phone';
+            if (clean === 'email') return keys.find(k => k.toLowerCase().trim() === 'email') || 'Email';
 
             for (let tab in EQUIP_SCHEMA) {
                 const match = EQUIP_SCHEMA[tab].find(f => f.label.toLowerCase() === clean);
                 if (match) return match.label;
             }
-            const keys = Object.keys(mirrorState);
-            const exact = keys.find(k => k.toLowerCase() === clean);
+            const exact = keys.find(k => k.toLowerCase().trim() === clean);
             if (exact) return exact;
             if (clean === 'outdoor temp' || clean === 'outdoor air temp') return 'ODAT';
             if (clean === 'superheat') return 'SH';
@@ -2806,6 +2839,31 @@
 
         function getDraftData() {
             let list = [];
+
+            // 1. SPECS (Customer & Equipment Priority)
+            if (typeof EQUIP_SCHEMA !== 'undefined') {
+                ['customer', 'indoor', 'thermostat', 'outdoor'].forEach(tab => {
+                    if (EQUIP_SCHEMA[tab]) {
+                        EQUIP_SCHEMA[tab].forEach(f => {
+                            if (stagedSpecs.includes(tab + '_' + f.id)) {
+                                const smartLabel = getSmartLabel(tab, f.label, f.id);
+                                list.push({ label: findSheetLabelFor(smartLabel), val: cleanNum(systemSpecs[tab][f.id]) });
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 2. REFRIGERANT (Literal Translation for K12 formula)
+            for (let k in refData) {
+                const label = REFRIG_FIELDS[k] ? REFRIG_FIELDS[k] : k.trim();
+                list.push({ label: findSheetLabelFor(label), val: cleanNum(refData[k]) });
+            }
+            Object.values(buffer).forEach(b => {
+                if (b.val && b.field) list.push({ label: findSheetLabelFor(b.field.trim()), val: cleanNum(b.val) });
+            });
+
+            // 3. PMI TECH NOTES
             techNotes.forEach(note => {
                 let sep = '';
                 if (note.includes('\u25D8')) sep = '\u25D8';
@@ -2820,20 +2878,6 @@
                 }
             });
 
-            if (typeof EQUIP_SCHEMA !== 'undefined') {
-                for (let tab in EQUIP_SCHEMA) {
-                    EQUIP_SCHEMA[tab].forEach(f => {
-                        if (stagedSpecs.includes(tab + '_' + f.id)) {
-                            list.push({ label: findSheetLabelFor(f.label), val: cleanNum(systemSpecs[tab][f.id]) });
-                        }
-                    });
-                }
-            }
-
-            for (let k in refData) { list.push({ label: findSheetLabelFor(k.trim()), val: cleanNum(refData[k]) }); }
-            Object.values(buffer).forEach(b => {
-                if (b.val && b.field) list.push({ label: findSheetLabelFor(b.field.trim()), val: cleanNum(b.val) });
-            });
             return list;
         }
 
@@ -3055,7 +3099,7 @@
                 } else {
                     const f = EQUIP_SCHEMA[tab].find(x => x.id === id);
                     if (f && isJobMode) {
-                        const smartLabel = getSmartLabel(tab, f.label);
+                        const smartLabel = getSmartLabel(tab, f.label, f.id);
                         const sheetField = findSheetLabelFor(smartLabel);
                         if (mirrorState[sheetField] && mirrorState[sheetField] !== '--') {
                             systemSpecs[tab][id] = mirrorState[sheetField];
@@ -3125,7 +3169,7 @@
 
                     // --- v28.23: Targeted Context Storage ---
                     mirrorState = response.data.fields;
-                    mirrorPMI = response.data.pmi || []; 
+                    mirrorPMI = response.data.pmi || [];
                     isJobMode = true;
 
                     if (response.data.folderId && response.data.folderId !== "") {
@@ -3220,7 +3264,7 @@
                 if (hubType === 'specs' || hubType === 'all') {
                     for (let tab in EQUIP_SCHEMA) {
                         EQUIP_SCHEMA[tab].forEach(f => {
-                            const smartLabel = getSmartLabel(tab, f.label);
+                            const smartLabel = getSmartLabel(tab, f.label, f.id);
                             const sheetField = findSheetLabelFor(smartLabel);
                             const val = mirrorState[sheetField];
                             if (val && val !== '--') {
@@ -3678,6 +3722,9 @@
             let updated = false;
             ['outdoor', 'indoor', 'thermostat'].forEach(tab => {
                 EQUIP_SCHEMA[tab].forEach(f => {
+                    // v28.30: Shield Core Fields from generic cross-contamination
+                    if (['MDL', 'SER', 'BRAND'].includes(f.id)) return;
+
                     const cleanAppLabel = f.label.toLowerCase().replace(/[^a-z0-9]/g, "");
                     const match = schemaArray.find(s => {
                         const cleanS = s.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -3690,7 +3737,7 @@
                 });
             });
             if (updated) {
-                localStorage.setItem('hvacEquipSchemaV28_18', JSON.stringify(EQUIP_SCHEMA));
+                localStorage.setItem('hvacEquipSchemaV28_30', JSON.stringify(EQUIP_SCHEMA));
                 if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             }
         }
@@ -3712,7 +3759,7 @@
 
         function toggleVisibility(key, category = null, sheetField = null) {
             let arr = hiddenFields[activeTemplate] || [];
-            
+
             if (category === 'refrig' && sheetField && (!refData[key] || refData[key] === '--')) {
                 if (isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== '--') {
                     refData[key] = mirrorState[sheetField];
@@ -3738,7 +3785,7 @@
             } else {
                 if (arr.some(k => k.toLowerCase() === key.toLowerCase())) arr = arr.filter(k => k.toLowerCase() !== key.toLowerCase()); else arr.push(key);
             }
-            
+
             hiddenFields[activeTemplate] = arr;
             localStorage.setItem('hvacHiddenFieldsV27', JSON.stringify(hiddenFields));
             if (typeof renderRefrigRows === 'function') renderRefrigRows();
@@ -3827,7 +3874,7 @@
             function buildCells(schemaList) {
                 return schemaList.map(f => {
                     const val = systemSpecs[tab][f.id] || '--';
-                    const smartLabel = getSmartLabel(tab, f.label);
+                    const smartLabel = getSmartLabel(tab, f.label, f.id);
                     const sheetField = findSheetLabelFor(smartLabel);
                     const sheetVal = isJobMode ? mirrorState[sheetField] : null;
 
@@ -4010,9 +4057,9 @@
             const response = await callAppsScript({ action: "fetchManuals" });
             if (response.status === "success" && response.data) {
                 const links = response.data;
-                if (links.length === 0) { 
-                    linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>'; 
-                } else { 
+                if (links.length === 0) {
+                    linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>';
+                } else {
                     // Smart Sorter Logic
                     function getPrefix(val) {
                         if (!val || val === '--') return null;
@@ -4295,35 +4342,35 @@
         // openSpecVoice now defined above (tap-cell listener)
 
         // Duplicate Legacy Navigation Block Removed for v23.1 GOLD
-function clearPMINotes() {
-    techNotes = [];
-    localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
-    renderPMIGrid();
-    renderCompiler();
-    renderDraftBlock();
-}
+        function clearPMINotes() {
+            techNotes = [];
+            localStorage.setItem('hvacTechNotesV20', JSON.stringify(techNotes));
+            renderPMIGrid();
+            renderCompiler();
+            renderDraftBlock();
+        }
 
-function clearRefrigData() {
-    refData = {};
-    localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
-    renderRefrigRows();
-    renderCompiler();
-    renderDraftBlock();
-}
+        function clearRefrigData() {
+            refData = {};
+            localStorage.setItem('hvacRefDataV20', JSON.stringify(refData));
+            renderRefrigRows();
+            renderCompiler();
+            renderDraftBlock();
+        }
 
-function wipeTotalSession() {
-    buffer = {};
-    techNotes = [];
-    refData = {};
-    localStorage.removeItem('hvacStagingBufferV20');
-    localStorage.removeItem('hvacTechNotesV20');
-    localStorage.removeItem('hvacRefDataV20');
-    renderDraftBlock();
-    renderCompiler();
-    renderPMIGrid();
-    renderRefrigRows();
-    syncLogToUI();
-}
+        function wipeTotalSession() {
+            buffer = {};
+            techNotes = [];
+            refData = {};
+            localStorage.removeItem('hvacStagingBufferV20');
+            localStorage.removeItem('hvacTechNotesV20');
+            localStorage.removeItem('hvacRefDataV20');
+            renderDraftBlock();
+            renderCompiler();
+            renderPMIGrid();
+            renderRefrigRows();
+            syncLogToUI();
+        }
 
         function toggleSetting(key) {
             appSettings[key] = !appSettings[key];
@@ -5093,7 +5140,7 @@ function wipeTotalSession() {
                     EQUIP_SCHEMA[tab].forEach(f => {
                         if (stagedSpecs.includes(tab + '_' + f.id)) {
                             const val = systemSpecs[tab][f.id];
-                            const smartLabel = getSmartLabel(tab, f.label);
+                            const smartLabel = getSmartLabel(tab, f.label, f.id);
                             pushLine(`${smartLabel.toUpperCase()} \u2192 ${val}`, 'SPEC_' + tab + '_' + f.id);
                         }
                     });
@@ -5107,7 +5154,7 @@ function wipeTotalSession() {
                     let cat = "MISC", val = note;
                     if (note.includes('→')) { [cat, val] = note.split('→').map(s => s.trim()); }
                     else if (note.includes(':')) { [cat, val] = note.split(':').map(s => s.trim()); }
-                    
+
                     if (!groupedNotes[cat]) groupedNotes[cat] = [];
                     groupedNotes[cat].push(val.replace(/^[→ ✅\s]+/, ""));
                 });
@@ -5220,26 +5267,26 @@ function wipeTotalSession() {
             // UI Status Sequence
             const originalText = shellBtn.innerHTML;
             const originalBg = shellBtn.style.background;
-            
+
             try {
                 shellBtn.disabled = true;
                 shellBtn.innerHTML = "⏳ DUPLICATING TEMPLATE...";
                 shellBtn.style.background = "var(--amber-orange)";
                 shellBtn.style.color = "black";
 
-                const res = await callAppsScript({ 
-                    action: "createJob", 
-                    name: name, 
-                    date: new Date().toISOString().split('T')[0] 
+                const res = await callAppsScript({
+                    action: "createJob",
+                    name: name,
+                    date: new Date().toISOString().split('T')[0]
                 });
 
                 if (res && res.status === "success" && res.data.status === "success") {
                     shellBtn.innerHTML = "🔗 BUILDING BACKLINKS...";
-                    
+
                     // Deep Hooking: Store both Name and Folder ID
                     const finalName = res.data.sheetName;
                     const folderId = res.data.folderId;
-                    
+
                     localStorage.setItem('hvacActiveJob', finalName);
                     localStorage.setItem('hvacActiveFolderId', folderId);
                     window.currentJob = finalName;
@@ -5248,7 +5295,7 @@ function wipeTotalSession() {
 
                     shellBtn.innerHTML = "✅ JOB HOOKED!";
                     shellBtn.style.background = "var(--emerald-green)";
-                    
+
                     // Refresh UI
                     updateUniversalJobHeaders();
                     if (typeof fetchMirrorSync === "function") fetchMirrorSync();
@@ -5384,4 +5431,5 @@ function wipeTotalSession() {
         }
     </script>
 </body>
+
 </html>
