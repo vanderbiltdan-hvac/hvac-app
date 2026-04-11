@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.30</title>
+    <title>HVAC PRO v28.31</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1290,7 +1290,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.30</span>
+                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.31</span>
                 </h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
@@ -1520,7 +1520,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v28.30</div>
+                        v28.31</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2181,7 +2181,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.30";
+        const APP_VERSION = "v28.31";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -5135,13 +5135,19 @@
 
 
             // v28.1: SYSTEM SPECS (Standardized Evaporator Coil prefix removed for dynamic labels)
+            // v28.31: SYSTEM SPECS (Added isAudited check to restore Compiler Blue Borders)
             if (activeTemplate === 'full') {
                 ['customer', 'indoor', 'thermostat', 'outdoor'].forEach(tab => {
                     EQUIP_SCHEMA[tab].forEach(f => {
                         if (stagedSpecs.includes(tab + '_' + f.id)) {
                             const val = systemSpecs[tab][f.id];
                             const smartLabel = getSmartLabel(tab, f.label, f.id);
-                            pushLine(`${smartLabel.toUpperCase()} \u2192 ${val}`, 'SPEC_' + tab + '_' + f.id);
+
+                            // v28.31: Check mirror state for blue border rendering
+                            const sheetField = findSheetLabelFor(smartLabel);
+                            const isAudited = isJobMode && mirrorState[sheetField] && mirrorState[sheetField] !== '--' && String(mirrorState[sheetField]).trim() !== '';
+
+                            pushLine(`${smartLabel.toUpperCase()} \u2192 ${val}`, 'SPEC_' + tab + '_' + f.id, '', isAudited);
                         }
                     });
                 });
