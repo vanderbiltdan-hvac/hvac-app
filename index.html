@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.37</title>
+    <title>HVAC PRO v28.39</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1290,7 +1290,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.37</span>
+                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.39</span>
                 </h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
@@ -1520,7 +1520,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v28.37</div>
+                        v28.39</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2182,7 +2182,20 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.37";
+        const APP_VERSION = "v28.39";
+        var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
+
+        // Restoration Helpers (v28.39)
+        function showToast(msg) {
+            const status = document.getElementById('photoStatus');
+            if (status) {
+                status.style.display = 'block';
+                status.innerText = msg;
+                setTimeout(() => status.style.display = 'none', 3000);
+            } else { alert(msg); }
+        }
+        function updateJobBadge() { if (typeof updateUniversalJobHeaders === 'function') updateUniversalJobHeaders(); }
+        function pullMirror() { if (typeof fetchMirrorSync === 'function') fetchMirrorSync(); }
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -4045,82 +4058,86 @@
         }
         function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; document.getElementById('photoStatus').style.display = 'none'; }
 
+        function runPipeline() {
+          const btn = document.getElementById('librarianBtn');
+          if (!btn) return;
+          
+          const originalText = btn.innerHTML;
+          btn.disabled = true;
+          btn.style.background = "#f39c12"; // Orange Thinking State
+          btn.innerHTML = "⏳ PIPELINE RUNNING...";
+
+          google.script.run
+            .withSuccessHandler(res => {
+              btn.disabled = false;
+              btn.style.background = ""; // Restore
+              btn.innerHTML = originalText;
+              showToast(res);
+              pullMirror(); 
+            })
+            .withFailureHandler(err => {
+              btn.disabled = false;
+              btn.style.background = "#e74c3c"; // Danger Red
+              btn.innerHTML = "❌ FAILED";
+              alert("System Error: " + err.message);
+            })
+            .processPipeline();
+        }
+
+        // v28.39: Restoration Wrapper - handles both Pipeline and Manuals Search
         async function runLibrarianInApp() {
             const btn = document.getElementById('librarianBtn');
             const originalText = btn.innerHTML;
             const linksDiv = document.getElementById('manualLinks');
 
-            // 1. Enter "Thinking" State
-            btn.disabled = true;
-            btn.style.background = "var(--amber-orange, #f39c12)";
-            btn.innerHTML = "⏳ PIPELINE RUNNING...";
-            
+            // 1. Trigger Manual Pipeline
+            runPipeline();
+
+            // 2. Search Manuals (Legacy Action)
             linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center;">Searching Manuals...</div>';
-
             try {
-                const pipeRes = await callAppsScript({ action: "runPipeline" });
-                if (pipeRes.status !== "success" || (pipeRes.data && typeof pipeRes.data === 'string' && pipeRes.data.includes("Error"))) {
-                    linksDiv.innerHTML = `<div style="color:var(--crimson-red); text-align:center; padding:20px;"><b>Pipeline Error:</b><br>${pipeRes.data || pipeRes.message}</div>`;
-                    
-                    btn.disabled = false;
-                    btn.style.background = "var(--crimson-red)";
-                    btn.innerHTML = "❌ FAILED";
-                    setTimeout(() => { btn.style.background = ""; btn.innerHTML = originalText; }, 3000);
-                    return;
-                }
-
-                // v28.33: Dynamic Tab Name Linker
-                if (pipeRes.data && pipeRes.data.newName) {
-                    currentJob = pipeRes.data.newName;
-                    localStorage.setItem('hvacActiveJob', currentJob);
-                    updateUniversalJobHeaders();
-                }
-
                 const response = await callAppsScript({ action: "fetchManuals" });
-                
-                // Restore Button State
-                btn.disabled = false;
-                btn.style.background = "";
-                btn.innerHTML = originalText;
-
                 if (response.status === "success" && response.data) {
-                const links = response.data;
-                if (links.length === 0) {
-                    linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>';
-                } else {
-                    // Smart Sorter Logic
-                    function getPrefix(val) {
-                        if (!val || val === '--') return null;
-                        const clean = String(val).replace(/[^a-zA-Z0-9]/g, '');
-                        return clean.length >= 3 ? clean.substring(0, 3).toLowerCase() : null;
-                    }
-
-                    const outPrefix = getPrefix(systemSpecs.outdoor.MDL);
-                    const inPrefix = getPrefix(systemSpecs.indoor.MDL);
-                    const coilPrefix = getPrefix(systemSpecs.indoor.C_MDL);
-
-                    let outHtml = '', inHtml = '', otherHtml = '';
-
-                    links.forEach(l => {
-                        const tLower = l.title.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        const linkHtml = '<a href="' + l.url + '" target="_blank" class="manual-link">📄 ' + l.title + '</a>';
-
-                        if (outPrefix && tLower.includes(outPrefix)) {
-                            outHtml += linkHtml;
-                        } else if ((inPrefix && tLower.includes(inPrefix)) || (coilPrefix && tLower.includes(coilPrefix))) {
-                            inHtml += linkHtml;
-                        } else {
-                            otherHtml += linkHtml;
+                    const links = response.data;
+                    if (links.length === 0) {
+                        linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>';
+                    } else {
+                        // Smart Sorter Logic
+                        function getPrefix(val) {
+                            if (!val || val === '--') return null;
+                            const clean = String(val).replace(/[^a-zA-Z0-9]/g, '');
+                            return clean.length >= 3 ? clean.substring(0, 3).toLowerCase() : null;
                         }
-                    });
 
-                    let finalHtml = '';
-                    if (outHtml) finalHtml += '<div style="color:var(--electric-blue); font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">🌬️ OUTDOOR UNIT</div>' + outHtml;
-                    if (inHtml) finalHtml += '<div style="color:var(--emerald-green); font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">🏠 INDOOR UNIT</div>' + inHtml;
-                    if (otherHtml) finalHtml += '<div style="color:#888; font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">📁 OTHER MANUALS</div>' + otherHtml;
+                        const outPrefix = getPrefix(systemSpecs.outdoor.MDL);
+                        const inPrefix = getPrefix(systemSpecs.indoor.MDL);
+                        const coilPrefix = getPrefix(systemSpecs.indoor.C_MDL);
 
-                    linksDiv.innerHTML = finalHtml;
+                        let outHtml = '', inHtml = '', otherHtml = '';
+
+                        links.forEach(l => {
+                            const tLower = l.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            const linkHtml = '<a href="' + l.url + '" target="_blank" class="manual-link">📄 ' + l.title + '</a>';
+
+                            if (outPrefix && tLower.includes(outPrefix)) {
+                                outHtml += linkHtml;
+                            } else if ((inPrefix && tLower.includes(inPrefix)) || (coilPrefix && tLower.includes(coilPrefix))) {
+                                inHtml += linkHtml;
+                            } else {
+                                otherHtml += linkHtml;
+                            }
+                        });
+
+                        let finalHtml = '';
+                        if (outHtml) finalHtml += '<div style="color:var(--electric-blue); font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">🌬️ OUTDOOR UNIT</div>' + outHtml;
+                        if (inHtml) finalHtml += '<div style="color:var(--emerald-green); font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">🏠 INDOOR UNIT</div>' + inHtml;
+                        if (otherHtml) finalHtml += '<div style="color:#888; font-size:11px; font-weight:900; margin:10px 0 4px 0; letter-spacing:1px;">📁 OTHER MANUALS</div>' + otherHtml;
+
+                        linksDiv.innerHTML = finalHtml;
+                    }
                 }
+            } catch (e) {
+                linksDiv.innerHTML = '<div style="color:var(--crimson-red); text-align:center;">Manuals Search Failed.</div>';
             }
         }
 
@@ -5339,40 +5356,20 @@
                 });
 
                 if (res && res.status === "success" && res.data.status === "success") {
-                    shellBtn.innerHTML = "🔗 BUILDING BACKLINKS...";
+                    const response = res.data;
+                    if (response && response.status === "success") {
+                        currentJobTab = response.newSheetName;
+                        localStorage.setItem('hvacCurrentJobTabV20', currentJobTab);
+                        localStorage.setItem('hvacActiveJob', currentJobTab); // Sync legacy
+                        
+                        // v28.39: Restoration Handshake (Folder Hooks)
+                        localStorage.setItem('hvacActiveFolderId', response.folderId);
+                        saveRecentFolder(currentJobTab, response.folderId);
 
-                    // v28.36: PIVOT - Target the exact name returned by the script for immediate Hook
-                    const finalName = res.data.newSheetName;
-                    const folderId = res.data.folderId;
-
-                    localStorage.setItem('hvacActiveJob', finalName);
-                    localStorage.setItem('hvacActiveFolderId', folderId);
-                    window.currentJob = finalName;
-
-                    saveRecentFolder(finalName, folderId);
-
-                    // v28.36: Pivot complete - shield the mirror for the new session
-                    wipeTotalSession(true); 
-
-                    systemSpecs = {
-                        activeTab: 'customer',
-                        customer: { TYPE: 'Residential', NAME: '--', ADDR: '--', PHONE: '--', EMAIL: '--' },
-                        outdoor: { TYPE: 'Condenser', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--', TON: '--' },
-                        indoor: {
-                            TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--', METER: '--',
-                            C_BRAND: '--', C_MDL: '--', C_SER: '--', C_YEAR: '--', C_TON: '--', C_METER: '--', C_TRAY: '--', C_AIR_DIR: '--'
-                        },
-                        thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', TYPE: 'Smart' }
-                    };
-                    localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
-                    stagedSpecs = [];
-                    localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
-
-                    // v28.32: Auto-Trigger Pipeline to Fix Missing Drive/Doc Links instantly
-                    await callAppsScript({ action: "runPipeline", sheetName: finalName });
-
-                    shellBtn.innerHTML = "✅ JOB HOOKED!";
-                    shellBtn.style.background = "var(--emerald-green)";
+                        updateJobBadge();
+                        showToast("Hooked: " + currentJobTab);
+                        wipeTotalSession(true);
+                    }
 
                     // Refresh UI
                     updateUniversalJobHeaders();
