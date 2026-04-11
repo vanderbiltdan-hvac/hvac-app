@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.32</title>
+    <title>HVAC PRO v28.33</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1290,7 +1290,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.32</span>
+                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.33</span>
                 </h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
@@ -1520,7 +1520,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v28.32</div>
+                        v28.33</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2181,7 +2181,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.32";
+        const APP_VERSION = "v28.33";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -4049,9 +4049,16 @@
             linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center;">Searching Manuals...</div>';
 
             const pipeRes = await callAppsScript({ action: "runPipeline" });
-            if (pipeRes.status !== "success" || (pipeRes.data && pipeRes.data.toString().includes("Error"))) {
+            if (pipeRes.status !== "success" || (pipeRes.data && typeof pipeRes.data === 'string' && pipeRes.data.includes("Error"))) {
                 linksDiv.innerHTML = `<div style="color:var(--crimson-red); text-align:center; padding:20px;"><b>Pipeline Error:</b><br>${pipeRes.data || pipeRes.message}</div>`;
                 return; // Strict bail to prevent silent failures
+            }
+
+            // v28.33: Dynamic Tab Name Linker
+            if (pipeRes.data && pipeRes.data.newName) {
+                currentJob = pipeRes.data.newName;
+                localStorage.setItem('hvacActiveJob', currentJob);
+                updateUniversalJobHeaders();
             }
 
             const response = await callAppsScript({ action: "fetchManuals" });
@@ -4362,6 +4369,8 @@
             buffer = {};
             techNotes = [];
             refData = {};
+            mirrorState = {};
+            mirrorPMI = [];
             localStorage.removeItem('hvacStagingBufferV20');
             localStorage.removeItem('hvacTechNotesV20');
             localStorage.removeItem('hvacRefDataV20');
