@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.27</title>
+    <title>HVAC PRO v28.28</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1285,7 +1285,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.27</span></h1>
+                  <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.28</span></h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
                     <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
@@ -1505,7 +1505,7 @@
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
-                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.27</div>
+                    <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">v28.28</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2150,7 +2150,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.27";
+        const APP_VERSION = "v28.28";
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec"; // Re-synced v25.2.3 URL
 
         // Internal Map to link UI fields to Spreadsheet Labels for Diagnostics
@@ -5366,47 +5366,4 @@ function wipeTotalSession() {
         }
     </script>
 </body>
-
-<!-- VAULT: v28.26 Legacy Blocks Replaced in v28.27 -->
-<!--
-// --- BEGIN REPLACED 1 (index.html) ---
-        <!-- EQUIPMENT TABS -->
-        <div class="step-nav" id="equipNav" style="margin-bottom:8px;">
-            <button class="step-btn active" id="tab-customer" onclick="switchEquipTab('customer')" style="flex:1;">CUSTOMER</button>
-            <button class="step-btn" id="tab-indoor" onclick="switchEquipTab('indoor')" style="flex:1;">INDOOR</button>
-            <button class="step-btn" id="tab-thermostat" onclick="switchEquipTab('thermostat')" style="flex:1;">STAT</button>
-            <button class="step-btn" id="tab-outdoor" onclick="switchEquipTab('outdoor')" style="flex:1;">OUTDOOR</button>
-        </div>
-// --- END REPLACED 1 (index.html) ---
-
-// --- BEGIN REPLACED 2 (index.html) ---
-        let systemSpecs = JSON.parse(localStorage.getItem('hvacSystemV21_0')) || {
-            activeTab: 'customer',
-            customer: { 'Customer Name': '--', 'Address': '--', 'Phone': '--', 'Email': '--' },
-            outdoor: { TYPE: 'Condenser', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--', TON: '--' },
-            indoor: {
-                TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--', METER: '--',
-                C_BRAND: '--', C_MDL: '--', C_SER: '--', C_YEAR: '--', C_TON: '--', C_METER: '--', C_TRAY: '--', C_AIR_DIR: '--'
-            },
-            thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--', TYPE: 'Smart' }
-        };
-
-        let EQUIP_SCHEMA = JSON.parse(localStorage.getItem('hvacEquipSchemaV28_18')) || {
-            'outdoor': [ ... ],
-            'indoor': [ ... ],
-            'thermostat': [ ... ]
-        };
-
-        const EQUIP_TYPES = {
-            outdoor: ['Condenser', 'Heat Pump', 'Package Unit'],
-            indoor: ['Air Handler', 'Furnace', 'Mini Split', 'Boiler', 'None'],
-            thermostat: ['Smart', 'Programmable', 'Non-Programmable']
-        };
-// --- END REPLACED 2 (index.html) ---
-
-// --- BEGIN REPLACED 3 (index.html) ---
-        function renderSystemSpecs() { ... }
-// --- END REPLACED 3 (index.html) ---
--->
-
 </html>
