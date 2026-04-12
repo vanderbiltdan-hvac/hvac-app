@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.41</title>
+    <title>HVAC PRO v28.42</title>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1290,7 +1290,7 @@
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
             <div>
                 <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.41</span>
+                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.42</span>
                 </h1>
                 <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
                     <!-- MIRROR PULL (SHEET) -->
@@ -1520,7 +1520,7 @@
                     SYSTEM SPECS</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
-                        v28.41</div>
+                        v28.42</div>
 
                 </div>
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
@@ -2182,10 +2182,10 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.41";
+        const APP_VERSION = "v28.42";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
-        // Restoration Helpers (v28.41)
+        // Restoration Helpers (v28.42)
         function showToast(msg) {
             const status = document.getElementById('photoStatus');
             if (status) {
@@ -4067,35 +4067,38 @@
           btn.style.background = "#f39c12"; // Orange Thinking State
           btn.innerHTML = "⏳ PIPELINE RUNNING...";
 
-          google.script.run
-            .withSuccessHandler(res => {
+          callAppsScript({ action: "runPipeline" })
+            .then(res => {
               btn.disabled = false;
               btn.style.background = ""; // Restore original
               btn.innerHTML = originalText;
 
-              if (res && res.message) {
-                showToast(res.message);
-                if (res.newName) {
-                  currentJob = res.newName;
+              if (res && res.status === "success" && res.data) {
+                showToast(res.data.message || "Pipeline Complete");
+                if (res.data.newName) {
+                  currentJob = res.data.newName;
                   localStorage.setItem('hvacActiveJob', currentJob);
                   updateUniversalJobHeaders();
                 }
               } else {
-                showToast(res || "Pipeline Complete");
+                showToast(res.message || "Pipeline Complete");
               }
 
               pullMirror(); // Trigger clean UI refresh
             })
-            .withFailureHandler(err => {
+            .catch(err => {
               btn.disabled = false;
               btn.style.background = "#e74c3c"; // Red Danger State
               btn.innerHTML = "❌ FAILED";
               alert("System Error: " + err.message);
-            })
-            .triggerRunPipeline(currentJob);
+              setTimeout(() => {
+                btn.style.background = "";
+                btn.innerHTML = originalText;
+              }, 3000);
+            });
         }
 
-        // v28.41: Restoration Wrapper - handles both Pipeline and Manuals Search
+        // v28.42: Restoration Wrapper - handles both Pipeline and Manuals Search
         async function runLibrarianInApp() {
             const btn = document.getElementById('librarianBtn');
             const originalText = btn.innerHTML;
@@ -5373,7 +5376,7 @@
                         localStorage.setItem('hvacCurrentJobTabV20', currentJobTab);
                         localStorage.setItem('hvacActiveJob', currentJobTab); // Sync legacy
                         
-                        // v28.41: Restoration Handshake (Folder Hooks)
+                        // v28.42: Restoration Handshake (Folder Hooks)
                         localStorage.setItem('hvacActiveFolderId', response.folderId);
                         saveRecentFolder(currentJobTab, response.folderId);
 
@@ -5384,7 +5387,7 @@
 
                     // Refresh UI
                     updateUniversalJobHeaders();
-                    pullMirror(); // v28.41 Standardization
+                    pullMirror(); // v28.42 Standardization
 
                     setTimeout(() => {
                         shellBtn.disabled = false;
