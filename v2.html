@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <!-- v0.4: Cleaned up dead EXP_1 placeholder references; fully synchronized text inputs with the Compiler Map data structure. -->
+    <!-- v5: Integrated automated audio confirmation chimes, fixed input targeting for individual microphones, added a master mic navbar button, and built a data dictation fallback loop for hands-free field updates. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HVAC COMPILER PRO v0.4</title>
+    <title>HVAC COMPILER PRO v5</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
         :root {
@@ -101,9 +101,11 @@
 
 <body>
     <nav class="navbar is-flex is-justify-content-space-between is-align-items-center">
-        <div id="app-title">HVAC COMPILER PRO <span id="navbarVerBadge" class="tag is-info is-light">v0.4</span></div>
-        <label class="checkbox has-text-info is-size-7 mr-2"><input type="checkbox" id="earbud-mode"> Earbud
-            Mode</label>
+        <div id="app-title">HVAC COMPILER PRO <span id="navbarVerBadge" class="tag is-info is-light">v5</span></div>
+        <div>
+            <label class="checkbox has-text-info is-size-7 mr-2"><input type="checkbox" id="earbud-mode"> Earbud Mode</label>
+            <button id="masterMicBtn" class="button is-small is-info ml-2" onclick="toggleMicListener()">🎙️ Mic: OFF</button>
+        </div>
     </nav>
     <div class="tabs is-boxed is-fullwidth">
         <ul id="tab-list"></ul>
@@ -114,10 +116,17 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyga0xQiAsxtaSwo7rR7cBwh1zalop1yly0n1dphlc-k4aoEnGwRgk5awU7p9FOavMQ/exec"; // PASTE YOUR WEB APP URL HERE
-        const APP_VERSION = "v0.4";
+        const APP_VERSION = "v5";
         let appData = [];
         let recognition = null;
         let isListening = false;
+        let activeFieldId = null;
+
+        document.addEventListener('focusin', function(e) {
+            if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) {
+                activeFieldId = e.target.id;
+            }
+        });
 
         async function init() {
             const res = await fetch(API_URL);
@@ -215,10 +224,27 @@
             isListening = !isListening;
             if (isListening) {
                 recognition.start();
+                const btn = document.getElementById('masterMicBtn');
+                if(btn) { btn.innerText = '🎙️ Mic: ON'; btn.classList.replace('is-info', 'is-danger'); }
             } else {
                 recognition.stop();
+                const btn = document.getElementById('masterMicBtn');
+                if(btn) { btn.innerText = '🎙️ Mic: OFF'; btn.classList.replace('is-danger', 'is-info'); }
             }
             document.querySelectorAll('.mic-btn').forEach(btn => btn.style.color = isListening ? '#ff1744' : 'var(--blue)');
+        }
+
+        function playNotificationChime() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            } catch(e) { console.error(e); }
         }
 
         function handleSpeech(e) {
@@ -234,7 +260,10 @@
                 if (pageIdx > -1) {
                     const pageName = [...new Set(appData.map(r => r.Page))][pageIdx];
                     const tabEl = Array.from(document.querySelectorAll('#tab-list a')).find(a => a.innerText === pageName);
-                    if (tabEl) showPage(pageName, tabEl);
+                    if (tabEl) {
+                        showPage(pageName, tabEl);
+                        playNotificationChime();
+                    }
                     if (earbudMode) speak(`Navigating to ${pageName}`);
                 }
                 return;
@@ -254,9 +283,27 @@
                     fieldDiv.classList.add('glow');
                     setTimeout(() => fieldDiv.classList.remove('glow'), 3000);
 
+                    const el = document.getElementById(matchedRow.ID);
+                    if(el) el.focus();
+                    activeFieldId = matchedRow.ID;
+
                     if (earbudMode) {
                         speak(matchedRow.Audio || matchedRow.Label);
+                    } else {
+                        playNotificationChime();
                     }
+                }
+                return;
+            }
+
+            // Fallback Dictation
+            if (activeFieldId || document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT')) {
+                const targetId = activeFieldId || document.activeElement.id;
+                const el = document.getElementById(targetId);
+                if (el) {
+                    // Update value directly
+                    el.value = e.results[e.results.length - 1][0].transcript.trim();
+                    runLogic();
                 }
             }
         }
@@ -268,7 +315,11 @@
         }
 
         function startVoiceInput(id) {
-            toggleMicListener();
+            activeFieldId = id;
+            const el = document.getElementById(id);
+            if(el) el.focus();
+            playNotificationChime();
+            if(!isListening) toggleMicListener();
         }
 
         function getColor(s) {
