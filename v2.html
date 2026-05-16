@@ -1,34 +1,123 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+    <!-- v0.4: Cleaned up dead EXP_1 placeholder references; fully synchronized text inputs with the Compiler Map data structure. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HVAC PRO V2</title>
+    <title>HVAC COMPILER PRO v0.4</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --blue: #00e5ff; --green: #00c853; --text: #f8fafc; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding-bottom: 50px; }
-        .navbar { background: #000; border-bottom: 2px solid var(--blue); padding: 10px; font-weight: bold; }
-        .tabs.is-boxed a { color: #94a3b8; border: none !important; }
-        .tabs.is-boxed li.is-active a { background: var(--blue) !important; color: #000 !important; font-weight: bold; }
-        .field-box { background: var(--card); border-radius: 8px; padding: 12px; margin: 5px; border-left: 5px solid var(--blue); }
-        .label { color: var(--text) !important; font-size: 0.85rem; margin-bottom: 5px; }
-        .input, .select select { background: #334155; color: #fff; border: 1px solid #475569; }
-        .is-half-custom { width: calc(50% - 10px); float: left; }
-        .is-full-custom { width: calc(100% - 10px); float: left; }
-        .mic-btn { background: none; border: none; color: var(--blue); font-size: 1.2rem; cursor: pointer; }
-        .calc-box { background: #111; border-color: var(--green); color: var(--green) !important; font-weight: bold; }
-        .hidden { display: none; }
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --blue: #00e5ff;
+            --green: #00c853;
+            --text: #f8fafc;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: sans-serif;
+            padding-bottom: 50px;
+        }
+
+        .navbar {
+            background: #000;
+            border-bottom: 2px solid var(--blue);
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .tabs.is-boxed a {
+            color: #94a3b8;
+            border: none !important;
+        }
+
+        .tabs.is-boxed li.is-active a {
+            background: var(--blue) !important;
+            color: #000 !important;
+            font-weight: bold;
+        }
+
+        .field-box {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 5px;
+            border-left: 5px solid var(--blue);
+        }
+
+        .label {
+            color: var(--text) !important;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .input,
+        .select select {
+            background: #334155;
+            color: #fff;
+            border: 1px solid #475569;
+        }
+
+        .is-half-custom {
+            width: calc(50% - 10px);
+            float: left;
+        }
+
+        .is-full-custom {
+            width: calc(100% - 10px);
+            float: left;
+        }
+
+        .mic-btn {
+            background: none;
+            border: none;
+            color: var(--blue);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .calc-box {
+            background: #111;
+            border-color: var(--green);
+            color: var(--green) !important;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .glow {
+            box-shadow: 0 0 15px var(--blue);
+            border-color: var(--blue) !important;
+            transition: all 0.3s;
+        }
     </style>
 </head>
+
 <body>
-    <nav class="navbar"><div id="app-title">HVAC PRO V2</div></nav>
-    <div class="tabs is-boxed is-fullwidth"><ul id="tab-list"></ul></div>
-    <div class="container p-2"><div id="main-content" class="columns is-multiline is-mobile"></div></div>
+    <nav class="navbar is-flex is-justify-content-space-between is-align-items-center">
+        <div id="app-title">HVAC COMPILER PRO <span id="navbarVerBadge" class="tag is-info is-light">v0.4</span></div>
+        <label class="checkbox has-text-info is-size-7 mr-2"><input type="checkbox" id="earbud-mode"> Earbud
+            Mode</label>
+    </nav>
+    <div class="tabs is-boxed is-fullwidth">
+        <ul id="tab-list"></ul>
+    </div>
+    <div class="container p-2">
+        <div id="main-content" class="columns is-multiline is-mobile"></div>
+    </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyga0xQiAsxtaSwo7rR7cBwh1zalop1yly0n1dphlc-k4aoEnGwRgk5awU7p9FOavMQ/exec"; // PASTE YOUR WEB APP URL HERE
+        const APP_VERSION = "v0.4";
         let appData = [];
+        let recognition = null;
+        let isListening = false;
 
         async function init() {
             const res = await fetch(API_URL);
@@ -36,6 +125,7 @@
             appData = data.rows;
             renderTabs();
             renderFields();
+            initVoice();
         }
 
         function renderTabs() {
@@ -43,7 +133,7 @@
             const list = document.getElementById('tab-list');
             pages.forEach((p, i) => {
                 const li = document.createElement('li');
-                if(i===0) li.className = 'is-active';
+                if (i === 0) li.className = 'is-active';
                 li.innerHTML = `<a onclick="showPage('${p}', this)">${p}</a>`;
                 list.appendChild(li);
             });
@@ -56,24 +146,29 @@
                 div.id = `field-${row.ID}`;
                 div.className = `field-box ${row.Width === 'is-half' ? 'is-half-custom' : 'is-full-custom'}`;
                 div.style.borderLeftColor = getColor(row.Style);
-                
-                let input = `<input class="input" type="${row.Type}" id="${row.ID}" oninput="runLogic()" placeholder="${row.EXP_1 || ''}">`;
-                if(row.Type === 'select') {
+
+                let input = `<input class="input" type="${row.Type}" id="${row.ID}" oninput="runLogic()" placeholder="">`;
+                if (row.Type === 'select') {
                     const opts = row.Options.split(',').map(o => `<option>${o.trim()}</option>`).join('');
                     input = `<div class="select is-fullwidth"><select id="${row.ID}" onchange="runLogic()">${opts}</select></div>`;
                 }
-                if(row.Display === 'Calculated') input = `<input class="input calc-box" id="${row.ID}" readonly>`;
+                if (row.Display === 'Calculated') input = `<input class="input calc-box" id="${row.ID}" readonly>`;
+
+                let controlHtml = `<div class="control is-expanded">${input}</div>`;
+                if (row.Format) {
+                    controlHtml = `<div class="field has-addons"><div class="control is-expanded">${input}</div><div class="control"><a class="button is-static">${row.Format}</a></div></div>`;
+                }
 
                 div.innerHTML = `
-                    <label class="label">${row.Label} <button class="mic-btn" onclick="startVoice('${row.ID}','${row.Audio}')">🎤</button></label>
-                    <div class="control">${input}</div>`;
+                    <label class="label">${row.Label} <button class="mic-btn" onclick="startVoiceInput('${row.ID}')">🎤</button></label>
+                    ${controlHtml}`;
                 container.appendChild(div);
             });
             showPage(appData[0].Page);
         }
 
         function showPage(page, el) {
-            if(el) {
+            if (el) {
                 document.querySelectorAll('#tab-list li').forEach(l => l.classList.remove('is-active'));
                 el.parentElement.classList.add('is-active');
             }
@@ -87,33 +182,102 @@
         function runLogic() {
             appData.forEach(row => {
                 // Logic: Hide/Show
-                if(row.Logic) {
-                    const condition = row.Logic.replace(/\[(.*?)\]/g, (m, id) => `"${document.getElementById(id).value}"`);
-                    const isVisible = eval(condition);
-                    document.getElementById(`field-${row.ID}`).classList.toggle('hidden', !isVisible);
+                if (row.Logic) {
+                    const condition = row.Logic.replace(/\[(.*?)\]/g, (m, id) => {
+                        const el = document.getElementById(id);
+                        return el ? `"${el.value}"` : '""';
+                    });
+                    try {
+                        const isVisible = eval(condition);
+                        document.getElementById(`field-${row.ID}`).classList.toggle('hidden', !isVisible);
+                    } catch (e) { console.error("Logic error", e); }
                 }
                 // Math: Formulas
-                if(row.Formula && row.Display === 'Calculated') {
+                if (row.Formula && row.Display === 'Calculated') {
                     const formula = row.Formula.replace(/\[(.*?)\]/g, (m, id) => parseFloat(document.getElementById(id).value) || 0);
                     document.getElementById(row.ID).value = eval(formula).toFixed(2);
                 }
             });
         }
 
-        function startVoice(id, cue) {
-            const synth = window.speechSynthesis;
-            if(cue) synth.speak(new SpeechSynthesisUtterance(cue));
-            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            rec.onresult = (e) => { document.getElementById(id).value = e.results[0][0].transcript; runLogic(); };
-            rec.start();
+        function initVoice() {
+            if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return;
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.onresult = handleSpeech;
+            recognition.onerror = (e) => { console.log('Speech error', e); recognition.stop(); };
+            recognition.onend = () => { if (isListening) recognition.start(); };
+        }
+
+        function toggleMicListener() {
+            if (!recognition) return;
+            isListening = !isListening;
+            if (isListening) {
+                recognition.start();
+            } else {
+                recognition.stop();
+            }
+            document.querySelectorAll('.mic-btn').forEach(btn => btn.style.color = isListening ? '#ff1744' : 'var(--blue)');
+        }
+
+        function handleSpeech(e) {
+            const transcript = e.results[e.results.length - 1][0].transcript.trim().toLowerCase();
+            const earbudMode = document.getElementById('earbud-mode').checked;
+
+            // Page Navigation
+            const navMatch = transcript.match(/^(?:go to|navigate to)\s+(.+)$/i);
+            if (navMatch) {
+                const targetPage = navMatch[1].trim();
+                const pages = [...new Set(appData.map(r => r.Page.toLowerCase()))];
+                const pageIdx = pages.indexOf(targetPage);
+                if (pageIdx > -1) {
+                    const pageName = [...new Set(appData.map(r => r.Page))][pageIdx];
+                    const tabEl = Array.from(document.querySelectorAll('#tab-list a')).find(a => a.innerText === pageName);
+                    if (tabEl) showPage(pageName, tabEl);
+                    if (earbudMode) speak(`Navigating to ${pageName}`);
+                }
+                return;
+            }
+
+            // Field Navigation
+            const matchedRow = appData.find(r => r.Label.toLowerCase() === transcript);
+            if (matchedRow) {
+                const fieldDiv = document.getElementById(`field-${matchedRow.ID}`);
+                if (fieldDiv) {
+                    const pageName = matchedRow.Page;
+                    const tabEl = Array.from(document.querySelectorAll('#tab-list a')).find(a => a.innerText === pageName);
+                    if (tabEl) showPage(pageName, tabEl);
+
+                    fieldDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.querySelectorAll('.field-box').forEach(el => el.classList.remove('glow'));
+                    fieldDiv.classList.add('glow');
+                    setTimeout(() => fieldDiv.classList.remove('glow'), 3000);
+
+                    if (earbudMode) {
+                        speak(matchedRow.Audio || matchedRow.Label);
+                    }
+                }
+            }
+        }
+
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startVoiceInput(id) {
+            toggleMicListener();
         }
 
         function getColor(s) {
-            const colors = {'is-info':'#00e5ff','is-success':'#00c853','is-warning':'#ffab00','is-danger':'#ff1744','is-dark':'#94a3b8'};
+            const colors = { 'is-info': '#00e5ff', 'is-success': '#00c853', 'is-warning': '#ffab00', 'is-danger': '#ff1744', 'is-dark': '#94a3b8' };
             return colors[s] || '#fff';
         }
 
         init();
     </script>
 </body>
+
 </html>
