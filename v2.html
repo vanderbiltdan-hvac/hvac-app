@@ -2,10 +2,9 @@
 <html>
 
 <head>
-    <!-- v5: Integrated automated audio confirmation chimes, fixed input targeting for individual microphones, added a master mic navbar button, and built a data dictation fallback loop for hands-free field updates. -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HVAC COMPILER PRO v5</title>
+    <title>HVAC COMPILER PRO v6</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
         :root {
@@ -14,13 +13,16 @@
             --blue: #00e5ff;
             --green: #00c853;
             --text: #f8fafc;
+            --app-font-size: 16px;
+            --badge-font-size: 12px;
         }
 
         body {
             background: var(--bg);
             color: var(--text);
             font-family: sans-serif;
-            padding-bottom: 50px;
+            padding-bottom: 80px;
+            font-size: var(--app-font-size);
         }
 
         .navbar {
@@ -41,45 +43,93 @@
             font-weight: bold;
         }
 
+        /* Universal Field Box System */
         .field-box {
             background: var(--card);
             border-radius: 8px;
             padding: 12px;
             margin: 5px;
+            border: 2px solid transparent;
             border-left: 5px solid var(--blue);
+            transition: all 0.2s ease-in-out;
         }
 
-        .label {
-            color: var(--text) !important;
-            font-size: 0.85rem;
-            margin-bottom: 5px;
+        /* Electric Blue Selection & Checklist Highlighting */
+        .field-box.is-compiled {
+            border: 2px solid var(--blue) !important;
+        }
+        
+        .field-box.is-compiled .field-label-btn {
+            color: var(--blue) !important;
+            font-weight: bold;
         }
 
-        .input,
-        .select select {
+        /* Split-Tap Interactive Label Layout */
+        .field-label-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .field-label-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .field-label-btn:active {
+            opacity: 0.7;
+        }
+
+        /* Voice Numerical Shortcut Badges */
+        .voice-index-badge {
+            background: #000;
+            color: var(--blue);
+            font-size: var(--badge-font-size);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--blue);
+            font-weight: bold;
+            box-shadow: 0 0 4px rgba(0, 229, 255, 0.4);
+        }
+
+        .input, .select select {
             background: #334155;
             color: #fff;
             border: 1px solid #475569;
         }
 
-        .is-half-custom {
-            width: calc(50% - 10px);
-            float: left;
+        /* Custom Input Components layout wrappers */
+        .stepper-container, .slider-container, .switch-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 8px;
         }
 
-        .is-full-custom {
-            width: calc(100% - 10px);
-            float: left;
+        .stepper-value {
+            flex-grow: 1;
+            text-align: center;
+            font-weight: bold;
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #fff;
+            padding: 6px;
+            border-radius: 4px;
         }
 
-        .mic-btn {
-            background: none;
-            border: none;
-            color: var(--blue);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
+        /* Real-Time Calculation Fields */
         .calc-box {
             background: #111;
             border-color: var(--green);
@@ -87,9 +137,59 @@
             font-weight: bold;
         }
 
-        .hidden {
-            display: none !important;
+        /* HUD Live Voice Staging Display Template */
+        .hud-box {
+            background: #000;
+            border: 2px solid #ffab00;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 10px 5px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(255, 171, 0, 0.3);
         }
+
+        .hud-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ffab00;
+            margin-bottom: 4px;
+        }
+
+        .hud-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            font-family: monospace;
+        }
+
+        /* Cascading Pull Compiler UI Panel */
+        .shuffle-list-container {
+            background: #0f172a;
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .shuffle-item {
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .shuffle-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .hidden { display: none !important; }
 
         .glow {
             box-shadow: 0 0 15px var(--blue);
@@ -101,7 +201,7 @@
 
 <body>
     <nav class="navbar is-flex is-justify-content-space-between is-align-items-center">
-        <div id="app-title">HVAC COMPILER PRO <span id="navbarVerBadge" class="tag is-info is-light">v5</span></div>
+        <div id="app-title">HVAC COMPILER <span id="navbarVerBadge" class="tag is-info is-light">v6</span></div>
         <div>
             <label class="checkbox has-text-info is-size-7 mr-2"><input type="checkbox" id="earbud-mode"> Earbud Mode</label>
             <button id="masterMicBtn" class="button is-small is-info ml-2" onclick="toggleMicListener()">🎙️ Mic: OFF</button>
@@ -111,38 +211,71 @@
         <ul id="tab-list"></ul>
     </div>
     <div class="container p-2">
-        <div id="main-content" class="columns is-multiline is-mobile"></div>
+        <div id="hud-staging-zone" class="hidden">
+            <div class="hud-box">
+                <div class="hud-title" id="hud-target-label">Voice Staging Buffer</div>
+                <div class="hud-value" id="hud-display-value">---</div>
+                <div class="has-text-grey-light is-size-7 mt-1">Say "Confirm", "Commit", or "Clear"</div>
+            </div>
+        </div>
+        
+        <div id="main-content" class="columns is-multiline is-mobile m-0"></div>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyga0xQiAsxtaSwo7rR7cBwh1zalop1yly0n1dphlc-k4aoEnGwRgk5awU7p9FOavMQ/exec"; // PASTE YOUR WEB APP URL HERE
-        const APP_VERSION = "v5";
+        // Connect to your Google Apps Script Deployment URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbyga0xQiAsxtaSwo7rR7cBwh1zalop1yly0n1dphlc-k4aoEnGwRgk5awU7p9FOavMQ/exec";
+        
         let appData = [];
+        let globalSettings = {};
+        let compilerMemory = []; // Tracks rows where hidden inCompiler flag is true
         let recognition = null;
         let isListening = false;
         let activeFieldId = null;
+        let voiceStagingValue = null;
+        let currentActivePage = "";
 
+        // Track user interaction state for manual selections
         document.addEventListener('focusin', function(e) {
-            if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) {
+            if(e.target && ['INPUT', 'SELECT'].includes(e.target.tagName)) {
                 activeFieldId = e.target.id;
             }
         });
 
         async function init() {
-            const res = await fetch(API_URL);
-            const data = await res.json();
-            appData = data.rows;
-            renderTabs();
-            renderFields();
-            initVoice();
+            try {
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                appData = data.rows;
+                globalSettings = data.settings || { globalFontSize: "16px", voiceBadgeSize: "12px", globalTheme: "Electric Blue" };
+                
+                applyUniversalGlobalSettings();
+                renderTabs();
+                renderFields();
+                initVoice();
+            } catch (e) {
+                console.error("Initialization breakdown:", e);
+            }
+        }
+
+        // Apply Universal Adjustments Panel values directly to CSS variables
+        function applyUniversalGlobalSettings() {
+            const root = document.documentElement;
+            root.style.setProperty('--app-font-size', globalSettings.globalFontSize);
+            root.style.setProperty('--badge-font-size', globalSettings.voiceBadgeSize);
+            if (globalSettings.globalTheme && globalSettings.globalTheme !== "Electric Blue") {
+                root.style.setProperty('--blue', globalSettings.globalTheme);
+            }
         }
 
         function renderTabs() {
-            const pages = [...new Set(appData.map(r => r.Page))];
+            // Sort by unique ordered pages
+            const pages = [...new Set(appData.map(r => r.Page))].filter(Boolean);
             const list = document.getElementById('tab-list');
+            list.innerHTML = "";
             pages.forEach((p, i) => {
                 const li = document.createElement('li');
-                if (i === 0) li.className = 'is-active';
+                if (i === 0) { li.className = 'is-active'; currentActivePage = p; }
                 li.innerHTML = `<a onclick="showPage('${p}', this)">${p}</a>`;
                 list.appendChild(li);
             });
@@ -150,30 +283,115 @@
 
         function renderFields() {
             const container = document.getElementById('main-content');
-            appData.forEach(row => {
+            container.innerHTML = "";
+            
+            // Apply sorting hierarchy using AF|Order column, or fall back to default row index
+            const sortedData = [...appData].sort((a, b) => {
+                const orderA = a.Order !== "" ? parseFloat(a.Order) : 9999;
+                const orderB = b.Order !== "" ? parseFloat(b.Order) : 9999;
+                return orderA - orderB;
+            });
+
+            let activeVoiceCounter = 1;
+
+            sortedData.forEach(row => {
                 const div = document.createElement('div');
                 div.id = `field-${row.ID}`;
-                div.className = `field-box ${row.Width === 'is-half' ? 'is-half-custom' : 'is-full-custom'}`;
-                div.style.borderLeftColor = getColor(row.Style);
+                
+                // Establish element width class
+                let widthClass = "is-full-custom";
+                if (row.Width === 'is-half' || row.Width === 'is-half-custom') widthClass = "is-half-custom";
+                div.className = `field-box ${widthClass}`;
 
-                let input = `<input class="input" type="${row.Type}" id="${row.ID}" oninput="runLogic()" placeholder="">`;
-                if (row.Type === 'select') {
-                    const opts = row.Options.split(',').map(o => `<option>${o.trim()}</option>`).join('');
-                    input = `<div class="select is-fullwidth"><select id="${row.ID}" onchange="runLogic()">${opts}</select></div>`;
+                // Universal Fallback Architecture Rules for Row Borders/Scales
+                div.style.borderLeftColor = row.BorderColor || row.BgColor || getColor(row.Style);
+                if (row.Scale) {
+                    div.style.transform = `scale(${row.Scale})`;
+                    div.style.transformOrigin = "left center";
                 }
-                if (row.Display === 'Calculated') input = `<input class="input calc-box" id="${row.ID}" readonly>`;
+                if (row.FontSize) div.style.fontSize = row.FontSize;
 
-                let controlHtml = `<div class="control is-expanded">${input}</div>`;
-                if (row.Format) {
-                    controlHtml = `<div class="field has-addons"><div class="control is-expanded">${input}</div><div class="control"><a class="button is-static">${row.Format}</a></div></div>`;
+                // Build unique templates for our interactive field tools menu
+                let controlHtml = "";
+                
+                if (row.Type === 'split-stepper' || row.Type === 'dial-stepper') {
+                    const step = row.Options ? parseFloat(row.Options) : 1;
+                    const baseDefault = row.Default !== "" ? parseFloat(row.Default) : 0;
+                    controlHtml = `
+                        <div class="stepper-container">
+                            <button class="button is-info is-small" onclick="stepField('${row.ID}', -${step})">-</button>
+                            <input class="input has-text-centered font-weight-bold" type="number" id="${row.ID}" value="${baseDefault}" oninput="runLogic()">
+                            <button class="button is-info is-small" onclick="stepField('${row.ID}', ${step})">+</button>
+                        </div>`;
+                } 
+                else if (row.Type === 'split-slider' || row.Type === 'slider') {
+                    const opts = row.Options ? row.Options.split(',') : [0, 100, 1];
+                    const min = opts[0] ? opts[0].trim() : 0;
+                    const max = opts[1] ? opts[1].trim() : 100;
+                    const step = opts[2] ? opts[2].trim() : 1;
+                    const baseDefault = row.Default !== "" ? row.Default : min;
+                    controlHtml = `
+                        <div class="slider-container">
+                            <input class="slider is-fullwidth m-0" type="range" id="${row.ID}" min="${min}" max="${max}" step="${step}" value="${baseDefault}" oninput="updateSliderDisplay('${row.ID}', this.value)">
+                            <span id="slider-val-${row.ID}" class="tag is-dark">${baseDefault}</span>
+                        </div>`;
+                }
+                else if (row.Type === 'toggle-switch') {
+                    const baseDefault = row.Default === "TRUE";
+                    controlHtml = `
+                        <div class="switch-container">
+                            <button id="switch-${row.ID}" class="button is-fullwidth ${baseDefault ? 'is-success' : 'is-light'}" onclick="toggleSwitchComponent('${row.ID}')">
+                                ${baseDefault ? 'ON / TRUE' : 'OFF / FALSE'}
+                            </button>
+                            <input type="hidden" id="${row.ID}" value="${row.Default || 'FALSE'}">
+                        </div>`;
+                }
+                else if (row.Type === 'checkbox') {
+                    controlHtml = `
+                        <div class="control">
+                            <label class="checkbox is-size-5">
+                                <input type="checkbox" id="${row.ID}" ${row.Default === 'TRUE' ? 'checked' : ''} onchange="handleCheckboxChange('${row.ID}')"> Check/Verify Action
+                            </label>
+                        </div>`;
+                }
+                else if (row.Type === 'shuffle-list') {
+                    // Injecting Cascading Aggregation Target Containers
+                    controlHtml = `
+                        <div class="shuffle-list-container" id="shuffle-container-${row.ID}" data-target-bucket="${row.Target || ''}">
+                            <div class="has-text-grey is-size-7 has-text-centered py-2">Shuffle List Ready [Target: ${row.Target || 'Local Page'}]</div>
+                        </div>`;
+                }
+                else if (row.Type === 'select') {
+                    const opts = row.Options ? row.Options.split(',').map(o => `<option value="${o.trim()}">${o.trim()}</option>`).join('') : '<option>No Options Configured</option>';
+                    controlHtml = `<div class="select is-fullwidth"><select id="${row.ID}" onchange="runLogic()">${opts}</select></div>`;
+                }
+                else {
+                    // Text / Calculated Fallback Display Default
+                    const isCalc = row.Display === 'Calculated' || row.Formula;
+                    controlHtml = `<input class="input ${isCalc ? 'calc-box' : ''}" type="text" id="${row.ID}" value="${row.Default || ''}" ${isCalc ? 'readonly' : ''} oninput="runLogic()">`;
                 }
 
+                // Append Add-on layout units if format column handles standard text values
+                if (row.Format && row.Type !== 'shuffle-list' && row.Type !== 'checkbox') {
+                    controlHtml = `<div class="field has-addons">${row.Type === 'select' ? controlHtml : `<div class="control is-expanded">${controlHtml}</div>`}<div class="control"><a class="button is-static is-small">${row.Format}</a></div></div>`;
+                }
+
+                // Assemble Left-Click Interactive Selector & Speech Badge Structure
                 div.innerHTML = `
-                    <label class="label">${row.Label} <button class="mic-btn" onclick="startVoiceInput('${row.ID}')">🎤</button></label>
-                    ${controlHtml}`;
+                    <div class="field-label-container">
+                        <button class="field-label-btn" onclick="handleLabelLeftClick('${row.ID}')">
+                            <span class="voice-index-badge">${activeVoiceCounter}</span>
+                            <span style="color: ${row.TextColor || 'inherit'}; font-weight: ${row.FontWeight || 'normal'}">${row.Label}</span>
+                        </button>
+                        <button class="button is-small p-1 is-ghost" style="color: var(--blue)" onclick="startVoiceInput('${row.ID}')">🎤</button>
+                    </div>
+                    <div class="control-wrapper">${controlHtml}</div>`;
+                
                 container.appendChild(div);
+                activeVoiceCounter++;
             });
-            showPage(appData[0].Page);
+            
+            showPage(currentActivePage);
         }
 
         function showPage(page, el) {
@@ -181,131 +399,362 @@
                 document.querySelectorAll('#tab-list li').forEach(l => l.classList.remove('is-active'));
                 el.parentElement.classList.add('is-active');
             }
+            currentActivePage = page;
             appData.forEach(row => {
                 const el = document.getElementById(`field-${row.ID}`);
-                el.style.display = (row.Page === page) ? 'block' : 'none';
+                if (el) el.style.display = (row.Page === page) ? 'block' : 'none';
             });
+            
+            // Auto hide/show HUD based on voice presence
+            document.getElementById('hud-staging-zone').className = 'hidden';
             runLogic();
+            refreshAllShuffleLists();
         }
 
+        // Modular Input Component Functions
+        function stepField(id, val) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.value = (parseFloat(el.value) || 0) + val;
+                runLogic();
+                refreshAllShuffleLists();
+            }
+        }
+
+        function updateSliderDisplay(id, val) {
+            const display = document.getElementById(`slider-val-${id}`);
+            if (display) display.innerText = val;
+            runLogic();
+            refreshAllShuffleLists();
+        }
+
+        function toggleSwitchComponent(id) {
+            const input = document.getElementById(id);
+            const btn = document.getElementById(`switch-${id}`);
+            if (input && btn) {
+                const isTrue = input.value === "TRUE";
+                input.value = isTrue ? "FALSE" : "TRUE";
+                btn.innerText = isTrue ? "OFF / FALSE" : "ON / TRUE";
+                btn.className = `button is-fullwidth ${isTrue ? 'is-light' : 'is-success'}`;
+                runLogic();
+                refreshAllShuffleLists();
+            }
+        }
+
+        function handleCheckboxChange(id) {
+            runLogic();
+            refreshAllShuffleLists();
+        }
+
+        // Sticky Selection & Cascading List Pipeline
+        function handleLabelLeftClick(id) {
+            const fieldBox = document.getElementById(`field-${id}`);
+            const index = compilerMemory.indexOf(id);
+            
+            if (index > -1) {
+                // Already in list -> Remove and clear highlight
+                compilerMemory.splice(index, 1);
+                if (fieldBox) fieldBox.classList.remove('is-compiled');
+            } else {
+                // Add to memory pipeline -> Lock Electric Blue border state
+                compilerMemory.push(id);
+                if (fieldBox) fieldBox.classList.add('is-compiled');
+            }
+            refreshAllShuffleLists();
+        }
+
+        function refreshAllShuffleLists() {
+            // Find every shuffle-list component currently displayed on screen
+            const containers = document.querySelectorAll('.shuffle-list-container');
+            containers.forEach(box => {
+                const targetBuckets = box.getAttribute('data-target-bucket').split(',').map(s => s.trim().toLowerCase());
+                box.innerHTML = "";
+                
+                // Filter down compiled tools based on current active assignments
+                const matchedItems = appData.filter(row => {
+                    if (!compilerMemory.includes(row.ID)) return false;
+                    
+                    // If target parameter is empty, pull local page elements to the bottom list
+                    if (targetBuckets.length === 1 && targetBuckets[0] === "") {
+                        return row.Page === currentActivePage;
+                    }
+                    // Tier 2 Super Vacuum: Match multiple target source definitions
+                    return targetBuckets.includes(row.Page.toLowerCase()) || targetBuckets.includes(row.ID.toLowerCase());
+                });
+
+                if (matchedItems.length === 0) {
+                    box.innerHTML = `<div class="has-text-grey is-size-7 has-text-centered py-2">Shuffle list is empty. Tap field labels above to populate.</div>`;
+                    return;
+                }
+
+                // Render compiled nodes with interactive sort/delete controls
+                matchedItems.forEach(item => {
+                    const itemEl = document.getElementById(item.ID);
+                    const currentVal = itemEl ? (itemEl.tagName === 'SELECT' ? itemEl.value : itemEl.value || 'No entry') : '---';
+                    
+                    const div = document.createElement('div');
+                    div.className = "shuffle-item animate-fade";
+                    div.innerHTML = `
+                        <div style="font-size: 0.9rem">
+                            <span class="has-text-info font-weight-bold">${item.Label}:</span> 
+                            <span class="has-text-white">${currentVal}</span>
+                        </div>
+                        <div class="shuffle-controls">
+                            <button class="button is-small is-dark px-2" onclick="shiftCompilerOrder('${item.ID}', -1)">▲</button>
+                            <button class="button is-small is-dark px-2" onclick="shiftCompilerOrder('${item.ID}', 1)">▼</button>
+                            <button class="button is-small is-danger is-outlined px-2" onclick="handleLabelLeftClick('${item.ID}')">✕</button>
+                        </div>`;
+                    box.appendChild(div);
+                });
+            });
+        }
+
+        function shiftCompilerOrder(id, shift) {
+            const idx = compilerMemory.indexOf(id);
+            if (idx === -1) return;
+            const newIdx = idx + shift;
+            if (newIdx >= 0 && newIdx < compilerMemory.length) {
+                // Swap position inside list state array
+                const temp = compilerMemory[idx];
+                compilerMemory[idx] = compilerMemory[newIdx];
+                compilerMemory[newIdx] = temp;
+                refreshAllShuffleLists();
+            }
+        }
+
+        // Calculation & Conditional Visibility Evaluator Engine
         function runLogic() {
             appData.forEach(row => {
-                // Logic: Hide/Show
                 if (row.Logic) {
                     const condition = row.Logic.replace(/\[(.*?)\]/g, (m, id) => {
                         const el = document.getElementById(id);
-                        return el ? `"${el.value}"` : '""';
+                        if (!el) return '""';
+                        return el.type === 'checkbox' ? `"${el.checked ? 'TRUE' : 'FALSE'}"` : `"${el.value}"`;
                     });
                     try {
                         const isVisible = eval(condition);
-                        document.getElementById(`field-${row.ID}`).classList.toggle('hidden', !isVisible);
-                    } catch (e) { console.error("Logic error", e); }
+                        const fieldBox = document.getElementById(`field-${row.ID}`);
+                        if (fieldBox) fieldBox.classList.toggle('hidden', !isVisible);
+                    } catch (e) { console.error("Logic processing bypass:", e); }
                 }
-                // Math: Formulas
+
                 if (row.Formula && row.Display === 'Calculated') {
-                    const formula = row.Formula.replace(/\[(.*?)\]/g, (m, id) => parseFloat(document.getElementById(id).value) || 0);
-                    document.getElementById(row.ID).value = eval(formula).toFixed(2);
+                    const formula = row.Formula.replace(/\[(.*?)\]/g, (m, id) => {
+                        const el = document.getElementById(id);
+                        if (!el) return 0;
+                        if (el.type === 'checkbox') return el.checked ? 1 : 0;
+                        return parseFloat(el.value) || 0;
+                    });
+                    try {
+                        const targetEl = document.getElementById(row.ID);
+                        if (targetEl) targetEl.value = eval(formula).toFixed(2);
+                    } catch(e) { console.error("Math processing error:", e); }
                 }
             });
         }
 
+        // Voice Engine: Overwrite Staging Pipeline Core
         function initVoice() {
             if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return;
             recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.continuous = true;
             recognition.interimResults = false;
             recognition.onresult = handleSpeech;
-            recognition.onerror = (e) => { console.log('Speech error', e); recognition.stop(); };
+            recognition.onerror = (e) => { console.log('Voice Core Error:', e); recognition.stop(); };
             recognition.onend = () => { if (isListening) recognition.start(); };
         }
 
         function toggleMicListener() {
             if (!recognition) return;
             isListening = !isListening;
+            const btn = document.getElementById('masterMicBtn');
             if (isListening) {
                 recognition.start();
-                const btn = document.getElementById('masterMicBtn');
                 if(btn) { btn.innerText = '🎙️ Mic: ON'; btn.classList.replace('is-info', 'is-danger'); }
             } else {
                 recognition.stop();
-                const btn = document.getElementById('masterMicBtn');
                 if(btn) { btn.innerText = '🎙️ Mic: OFF'; btn.classList.replace('is-danger', 'is-info'); }
+                document.getElementById('hud-staging-zone').className = 'hidden';
             }
-            document.querySelectorAll('.mic-btn').forEach(btn => btn.style.color = isListening ? '#ff1744' : 'var(--blue)');
-        }
-
-        function playNotificationChime() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-            } catch(e) { console.error(e); }
         }
 
         function handleSpeech(e) {
             const transcript = e.results[e.results.length - 1][0].transcript.trim().toLowerCase();
             const earbudMode = document.getElementById('earbud-mode').checked;
 
-            // Page Navigation
-            const navMatch = transcript.match(/^(?:go to|navigate to)\s+(.+)$/i);
-            if (navMatch) {
-                const targetPage = navMatch[1].trim();
-                const pages = [...new Set(appData.map(r => r.Page.toLowerCase()))];
-                const pageIdx = pages.indexOf(targetPage);
-                if (pageIdx > -1) {
-                    const pageName = [...new Set(appData.map(r => r.Page))][pageIdx];
-                    const tabEl = Array.from(document.querySelectorAll('#tab-list a')).find(a => a.innerText === pageName);
-                    if (tabEl) {
-                        showPage(pageName, tabEl);
-                        playNotificationChime();
+            // Macro Command Parser: Overwrite Confirmation Loop Check
+            if (['confirm', 'commit', 'copy', 'approve'].includes(transcript)) {
+                if (activeFieldId && voiceStagingValue !== null) {
+                    const targetInput = document.getElementById(activeFieldId);
+                    if (targetInput) {
+                        targetInput.value = voiceStagingValue;
+                        
+                        // Force list insertion behavior on save commit
+                        if (!compilerMemory.includes(activeFieldId)) {
+                            handleLabelLeftClick(activeFieldId);
+                        }
+                        
+                        playNotificationChime(880, 0.15); // Affirmative high-frequency confirmation chime
+                        if (earbudMode) speak(`Committed ${voiceStagingValue}`);
+                        
+                        // Wipe buffer state
+                        voiceStagingValue = null;
+                        document.getElementById('hud-staging-zone').className = 'hidden';
+                        runLogic();
+                        refreshAllShuffleLists();
                     }
-                    if (earbudMode) speak(`Navigating to ${pageName}`);
                 }
                 return;
             }
 
-            // Field Navigation
-            const matchedRow = appData.find(r => r.Label.toLowerCase() === transcript);
-            if (matchedRow) {
-                const fieldDiv = document.getElementById(`field-${matchedRow.ID}`);
-                if (fieldDiv) {
-                    const pageName = matchedRow.Page;
-                    const tabEl = Array.from(document.querySelectorAll('#tab-list a')).find(a => a.innerText === pageName);
-                    if (tabEl) showPage(pageName, tabEl);
+            if (['clear', 'scratch that', 'wipe'].includes(transcript)) {
+                voiceStagingValue = null;
+                document.getElementById('hud-display-value').innerText = "---";
+                playNotificationChime(440, 0.2); // Error alert context drop chime
+                return;
+            }
 
-                    fieldDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    document.querySelectorAll('.field-box').forEach(el => el.classList.remove('glow'));
-                    fieldDiv.classList.add('glow');
-                    setTimeout(() => fieldDiv.classList.remove('glow'), 3000);
+            // Navigation Cue Parse: "Go to Page" Router
+            const pageMatch = transcript.match(/^(?:go to|navigate to|page)\s+(.+)$/i);
+            if (pageMatch) {
+                const targetPage = pageMatch[1].trim().toLowerCase();
+                const pages = [...new Set(appData.map(r => r.Page))].filter(Boolean);
+                const matchedPage = pages.find(p => p.toLowerCase() === targetPage);
+                if (matchedPage) {
+                    const tabs = Array.from(document.querySelectorAll('#tab-list a'));
+                    const targetTab = tabs.find(t => t.innerText.toLowerCase() === targetPage);
+                    showPage(matchedPage, targetTab);
+                    if (earbudMode) speak(`Page ${matchedPage}`);
+                }
+                return;
+            }
 
-                    const el = document.getElementById(matchedRow.ID);
-                    if(el) el.focus();
-                    activeFieldId = matchedRow.ID;
-
+            // Relative Navigation: "Forward X" / "Back X"
+            const relativeJumpMatch = transcript.match(/^(forward|back)\s*(\d+)?$/i);
+            if (relativeJumpMatch) {
+                const direction = relativeJumpMatch[1].toLowerCase();
+                const jumpSteps = relativeJumpMatch[2] ? parseInt(relativeJumpMatch[2]) : 1;
+                
+                const visibleBoxes = Array.from(document.querySelectorAll('.field-box')).filter(b => b.style.display !== 'none');
+                const activeIndex = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
+                
+                let targetIndex = activeIndex !== -1 ? activeIndex : 0;
+                if (direction === 'forward') targetIndex += jumpSteps;
+                if (direction === 'back') targetIndex -= jumpSteps;
+                
+                // Edge constraints protection loop
+                if (targetIndex >= visibleBoxes.length) targetIndex = visibleBoxes.length - 1;
+                if (targetIndex < 0) targetIndex = 0;
+                
+                const nextBox = visibleBoxes[targetIndex];
+                if (nextBox) {
+                    const nextId = nextBox.id.replace('field-', '');
+                    startVoiceInput(nextId);
                     if (earbudMode) {
-                        speak(matchedRow.Audio || matchedRow.Label);
-                    } else {
-                        playNotificationChime();
+                        const nextRow = appData.find(r => r.ID === nextId);
+                        speak(`Selected ${nextRow ? nextRow.Label : 'Field'}`);
                     }
                 }
                 return;
             }
 
-            // Fallback Dictation
-            if (activeFieldId || document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT')) {
-                const targetId = activeFieldId || document.activeElement.id;
-                const el = document.getElementById(targetId);
-                if (el) {
-                    // Update value directly
-                    el.value = e.results[e.results.length - 1][0].transcript.trim();
-                    runLogic();
+            // Direct Absolute Voice Index Check ("Five ninety two")
+            const absoluteMatch = transcript.match(/^(\d+)\s+(.+)$/);
+            if (absoluteMatch) {
+                const spokenNum = parseInt(absoluteMatch[1]);
+                const remainingText = absoluteMatch[2];
+                
+                const visibleBoxes = Array.from(document.querySelectorAll('.field-box')).filter(b => b.style.display !== 'none');
+                if (spokenNum > 0 && spokenNum <= visibleBoxes.length) {
+                    const targetedBox = visibleBoxes[spokenNum - 1];
+                    const discoveredId = targetedBox.id.replace('field-', '');
+                    
+                    activeFieldId = discoveredId;
+                    processIncomingValue(remainingText);
+                    return;
                 }
             }
+
+            // Parse Semantic Match Override List (Fuzzy Match Aliases via Column AK)
+            let matchedRow = appData.find(row => {
+                if (row.Page !== currentActivePage) return false;
+                if (row.Label.toLowerCase() === transcript) return true;
+                if (row.Audio) {
+                    const aliases = row.Options ? row.Audio.split(',').map(s => s.trim().toLowerCase()) : [];
+                    return aliases.includes(transcript);
+                }
+                return false;
+            });
+
+            if (matchedRow) {
+                startVoiceInput(matchedRow.ID);
+                return;
+            }
+
+            // Fallback Engine Process: Intercept inputs when standard focus parameters align
+            if (activeFieldId) {
+                processIncomingValue(transcript);
+            }
+        }
+
+        // Direct Incoming Data Routing to Voice HUD Monitor
+        function processIncomingValue(valueText) {
+            const currentFieldRow = appData.find(r => r.ID === activeFieldId);
+            if (!currentFieldRow) return;
+
+            // Extract values and isolate structural alphanumeric strings
+            let cleanVal = valueText;
+            if (currentFieldRow.Type === 'split-stepper' || currentFieldRow.Type === 'dial-stepper') {
+                const parsedNum = valueText.replace(/[^0-9.]/g, '');
+                if (parsedNum !== "") cleanVal = parsedNum;
+            }
+
+            voiceStagingValue = cleanVal;
+
+            // Render active tracking parameters directly to UI overlay HUD
+            document.getElementById('hud-target-label').innerText = `Staging for: ${currentFieldRow.Label}`;
+            document.getElementById('hud-display-value').innerText = `${cleanVal} ${currentFieldRow.Format || ''}`;
+            document.getElementById('hud-staging-zone').className = ''; // Unhide HUD box window
+            
+            // Highlight focused component boundary lines on viewport
+            const containerBox = document.getElementById(`field-${activeFieldId}`);
+            if (containerBox) {
+                containerBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.querySelectorAll('.field-box').forEach(el => el.classList.remove('glow'));
+                containerBox.classList.add('glow');
+            }
+        }
+
+        function startVoiceInput(id) {
+            activeFieldId = id;
+            const el = document.getElementById(id);
+            if(el) el.focus();
+            playNotificationChime(660, 0.1);
+            if(!isListening) toggleMicListener();
+            
+            // Clear prior staging values on new index jump target context shift
+            voiceStagingValue = null;
+            document.getElementById('hud-staging-zone').className = 'hidden';
+            
+            const containerBox = document.getElementById(`field-${id}`);
+            if (containerBox) {
+                containerBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.querySelectorAll('.field-box').forEach(el => el.classList.remove('glow'));
+                containerBox.classList.add('glow');
+            }
+        }
+
+        function playNotificationChime(frequency, duration) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.start(); osc.stop(audioCtx.currentTime + duration);
+            } catch(e) { console.error("Audio engine context failure:", e); }
         }
 
         function speak(text) {
@@ -314,17 +763,9 @@
             window.speechSynthesis.speak(utterance);
         }
 
-        function startVoiceInput(id) {
-            activeFieldId = id;
-            const el = document.getElementById(id);
-            if(el) el.focus();
-            playNotificationChime();
-            if(!isListening) toggleMicListener();
-        }
-
-        function getColor(s) {
+        function getColor(styleKeyword) {
             const colors = { 'is-info': '#00e5ff', 'is-success': '#00c853', 'is-warning': '#ffab00', 'is-danger': '#ff1744', 'is-dark': '#94a3b8' };
-            return colors[s] || '#fff';
+            return colors[styleKeyword] || '#475569';
         }
 
         init();
