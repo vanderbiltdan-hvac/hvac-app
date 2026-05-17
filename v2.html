@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
-
+<!-- HVAC COMPILER PRO v7.3: Horizontal Ribbon Track Layout -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HVAC COMPILER PRO v6</title>
+    <title>HVAC COMPILER PRO v7.3</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
         :root {
@@ -110,6 +110,63 @@
             border: 1px solid #475569;
         }
 
+        /* High-Density Horizontal Row Layout */
+        .horizontal-row-layout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            gap: 10px;
+        }
+        
+        .horizontal-row-layout .wing-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-grow: 1;
+            cursor: pointer;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        
+        .horizontal-row-layout .wing-center {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .horizontal-row-layout .wing-right {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 120px;
+        }
+
+        /* Horizontal Ribbon Track Container */
+        .ribbon-track-container {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            gap: 10px;
+            padding: 10px 0;
+            width: 100%;
+            margin-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .ribbon-track-container::-webkit-scrollbar { display: none; }
+        
+        .ribbon-item-card {
+            background: var(--card);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            text-align: center;
+            min-width: 120px;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
         /* Custom Input Components layout wrappers */
         .stepper-container, .slider-container, .switch-container {
             display: flex;
@@ -201,7 +258,7 @@
 
 <body>
     <nav class="navbar is-flex is-justify-content-space-between is-align-items-center">
-        <div id="app-title">HVAC COMPILER <span id="navbarVerBadge" class="tag is-info is-light">v6</span></div>
+        <div id="app-title">HVAC COMPILER <span id="navbarVerBadge" class="tag is-info is-light">v7.3</span></div>
         <div>
             <label class="checkbox has-text-info is-size-7 mr-2"><input type="checkbox" id="earbud-mode"> Earbud Mode</label>
             <button id="masterMicBtn" class="button is-small is-info ml-2" onclick="toggleMicListener()">🎙️ Mic: OFF</button>
@@ -292,15 +349,72 @@
                 return orderA - orderB;
             });
 
+            // Initialize Ribbon Tracks for each page
+            const pages = [...new Set(appData.map(r => r.Page))].filter(Boolean);
+            const ribbonContainers = {};
+            pages.forEach(p => {
+                const rc = document.createElement('div');
+                rc.id = `ribbon-track-${p.replace(/\\s+/g, '')}`;
+                rc.className = 'ribbon-track-container hidden';
+                container.appendChild(rc);
+                ribbonContainers[p] = rc;
+            });
+
             let activeVoiceCounter = 1;
 
             sortedData.forEach(row => {
+                const wrapper = document.createElement('div');
+                wrapper.id = `grid-wrapper-${row.ID}`;
+                
+// =========================================================================
+// 🛠️ TOOL ZONE: HORIZONTAL RIBBON ITEM
+// =========================================================================
+// SPREADSHEET PROPERTY MAP:
+// -> row.Type       (Col H)  : 'ribbon-item' groups element into top horizontal scroll track
+// -> row.Page       (Col J)  : Determines which page track the item belongs to
+// =========================================================================
+                if (row.Type === 'ribbon-item') {
+                    wrapper.className = ""; // No Bulma column widths for ribbon wrapper
+                    if (row.Options_4 === 'mic-override') {
+                        wrapper.addEventListener('click', (e) => { startVoiceInput(row.ID); }, true);
+                    }
+                    const rCard = document.createElement('div');
+                    rCard.id = `field-${row.ID}`;
+                    rCard.className = `ribbon-item-card`;
+                    rCard.innerHTML = `
+                        <div style="font-size:0.8rem; color:${row.TextColor||'#94a3b8'}">${row.Label}</div>
+                        <div id="ribbon-val-${row.ID}" style="font-weight:bold; font-size:1.2rem; color:${row.TextColor||'#fff'}">${row.Default || '---'}</div>
+                        <input type="hidden" id="${row.ID}" value="${row.Default || ''}">
+                    `;
+                    rCard.onclick = () => startVoiceInput(row.ID);
+                    wrapper.appendChild(rCard);
+                    if (ribbonContainers[row.Page]) {
+                        ribbonContainers[row.Page].appendChild(wrapper);
+                    }
+                    activeVoiceCounter++;
+                    return;
+                }
+
+                if (row.Width === 'is-half' || row.Width === 'is-half-custom') {
+                    wrapper.className = "column is-6-desktop is-6-tablet is-12-mobile";
+                } else {
+                    wrapper.className = "column is-12";
+                }
+
+                // Mic Rescue Override
+                if (row.Options_4 === 'mic-override') {
+                    wrapper.addEventListener('click', (e) => {
+                        startVoiceInput(row.ID);
+                    }, true);
+                }
+
                 const div = document.createElement('div');
                 div.id = `field-${row.ID}`;
                 
                 // Establish element width class
                 let widthClass = "is-full-custom";
                 if (row.Width === 'is-half' || row.Width === 'is-half-custom') widthClass = "is-half-custom";
+                if (row.Options_3 === 'row') widthClass += " horizontal-row-layout";
                 div.className = `field-box ${widthClass}`;
 
                 // Universal Fallback Architecture Rules for Row Borders/Scales
@@ -314,6 +428,14 @@
                 // Build unique templates for our interactive field tools menu
                 let controlHtml = "";
                 
+// =========================================================================
+// 🛠️ TOOL ZONE: SPLIT-STEPPER & DIAL-STEPPER
+// =========================================================================
+// SPREADSHEET PROPERTY MAP:
+// -> row.ID         (Col D)  : Field DOM Target / Value Lookup ID
+// -> row.Default    (Col T)  : Base Default Value
+// -> row.Options    (Col V)  : Numerical Step Interval (e.g. 0.5, 1, 5)
+// =========================================================================
                 if (row.Type === 'split-stepper' || row.Type === 'dial-stepper') {
                     const step = row.Options ? parseFloat(row.Options) : 1;
                     const baseDefault = row.Default !== "" ? parseFloat(row.Default) : 0;
@@ -324,6 +446,14 @@
                             <button class="button is-info is-small" onclick="stepField('${row.ID}', ${step})">+</button>
                         </div>`;
                 } 
+// =========================================================================
+// 🛠️ TOOL ZONE: SLIDER & SPLIT-SLIDER
+// =========================================================================
+// SPREADSHEET PROPERTY MAP:
+// -> row.ID         (Col D)  : Field DOM Target / Value Lookup ID
+// -> row.Default    (Col T)  : Initial Baseline Position
+// -> row.Options    (Col V)  : CSV Config Array (Min, Max, Step)
+// =========================================================================
                 else if (row.Type === 'split-slider' || row.Type === 'slider') {
                     const opts = row.Options ? row.Options.split(',') : [0, 100, 1];
                     const min = opts[0] ? opts[0].trim() : 0;
@@ -336,6 +466,13 @@
                             <span id="slider-val-${row.ID}" class="tag is-dark">${baseDefault}</span>
                         </div>`;
                 }
+// =========================================================================
+// 🛠️ TOOL ZONE: TOGGLE-SWITCH
+// =========================================================================
+// SPREADSHEET PROPERTY MAP:
+// -> row.ID         (Col D)  : Field DOM Target / Value Lookup ID
+// -> row.Default    (Col T)  : Initial State (TRUE / FALSE)
+// =========================================================================
                 else if (row.Type === 'toggle-switch') {
                     const baseDefault = row.Default === "TRUE";
                     controlHtml = `
@@ -346,6 +483,13 @@
                             <input type="hidden" id="${row.ID}" value="${row.Default || 'FALSE'}">
                         </div>`;
                 }
+// =========================================================================
+// 🛠️ TOOL ZONE: CHECKBOX
+// =========================================================================
+// SPREADSHEET PROPERTY MAP:
+// -> row.ID         (Col D)  : Field DOM Target / Value Lookup ID
+// -> row.Default    (Col T)  : Initial Checked State (TRUE)
+// =========================================================================
                 else if (row.Type === 'checkbox') {
                     controlHtml = `
                         <div class="control">
@@ -354,6 +498,13 @@
                             </label>
                         </div>`;
                 }
+// =========================================================================
+// 🛠️ TOOL ZONE: SHUFFLE-LIST
+// =========================================================================
+// SPREADSHEET PROPERTY MAP:
+// -> row.ID         (Col D)  : Field DOM Target / Value Lookup ID
+// -> row.Target     (Col AC) : Source Bucket Targets (CSV list of Page/ID strings)
+// =========================================================================
                 else if (row.Type === 'shuffle-list') {
                     // Injecting Cascading Aggregation Target Containers
                     controlHtml = `
@@ -361,10 +512,26 @@
                             <div class="has-text-grey is-size-7 has-text-centered py-2">Shuffle List Ready [Target: ${row.Target || 'Local Page'}]</div>
                         </div>`;
                 }
+// =========================================================================
+// 🛠️ TOOL ZONE: NATIVE SELECT DROPDOWN
+// =========================================================================
+// SPREADSHEET PROPERTY MAP:
+// -> row.ID         (Col D)  : Field DOM Target / Value Lookup ID
+// -> row.Options    (Col V)  : CSV List of Dropdown Choices
+// =========================================================================
                 else if (row.Type === 'select') {
                     const opts = row.Options ? row.Options.split(',').map(o => `<option value="${o.trim()}">${o.trim()}</option>`).join('') : '<option>No Options Configured</option>';
                     controlHtml = `<div class="select is-fullwidth"><select id="${row.ID}" onchange="runLogic()">${opts}</select></div>`;
                 }
+// =========================================================================
+// 🛠️ TOOL ZONE: TEXT & CALCULATED FALLBACK
+// =========================================================================
+// SPREADSHEET PROPERTY MAP:
+// -> row.ID         (Col D)  : Field DOM Target / Value Lookup ID
+// -> row.Default    (Col T)  : Base Default Text Value
+// -> row.Display    (Col N/A): Triggers Calculated (Read-only) state
+// -> row.Formula    (Col G)  : Formula Execution Pipeline Trigger
+// =========================================================================
                 else {
                     // Text / Calculated Fallback Display Default
                     const isCalc = row.Display === 'Calculated' || row.Formula;
@@ -376,18 +543,33 @@
                     controlHtml = `<div class="field has-addons">${row.Type === 'select' ? controlHtml : `<div class="control is-expanded">${controlHtml}</div>`}<div class="control"><a class="button is-static is-small">${row.Format}</a></div></div>`;
                 }
 
-                // Assemble Left-Click Interactive Selector & Speech Badge Structure
-                div.innerHTML = `
-                    <div class="field-label-container">
-                        <button class="field-label-btn" onclick="handleLabelLeftClick('${row.ID}')">
+                // Assemble Interactive Structure (Branching Horizontal Row Layout vs Vertical Card)
+                if (row.Options_3 === 'row') {
+                    div.innerHTML = `
+                        <div class="wing-left" onclick="handleLabelLeftClick('${row.ID}')">
                             <span class="voice-index-badge">${activeVoiceCounter}</span>
                             <span style="color: ${row.TextColor || 'inherit'}; font-weight: ${row.FontWeight || 'normal'}">${row.Label}</span>
-                        </button>
-                        <button class="button is-small p-1 is-ghost" style="color: var(--blue)" onclick="startVoiceInput('${row.ID}')">🎤</button>
-                    </div>
-                    <div class="control-wrapper">${controlHtml}</div>`;
+                        </div>
+                        <div class="wing-center">
+                            <button class="button is-small p-1 is-ghost" style="color: var(--blue)" onclick="startVoiceInput('${row.ID}')">🎤</button>
+                        </div>
+                        <div class="wing-right">
+                            ${controlHtml}
+                        </div>`;
+                } else {
+                    div.innerHTML = `
+                        <div class="field-label-container">
+                            <button class="field-label-btn" onclick="handleLabelLeftClick('${row.ID}')">
+                                <span class="voice-index-badge">${activeVoiceCounter}</span>
+                                <span style="color: ${row.TextColor || 'inherit'}; font-weight: ${row.FontWeight || 'normal'}">${row.Label}</span>
+                            </button>
+                            <button class="button is-small p-1 is-ghost" style="color: var(--blue)" onclick="startVoiceInput('${row.ID}')">🎤</button>
+                        </div>
+                        <div class="control-wrapper">${controlHtml}</div>`;
+                }
                 
-                container.appendChild(div);
+                wrapper.appendChild(div);
+                container.appendChild(wrapper);
                 activeVoiceCounter++;
             });
             
@@ -401,10 +583,15 @@
             }
             currentActivePage = page;
             appData.forEach(row => {
-                const el = document.getElementById(`field-${row.ID}`);
-                if (el) el.style.display = (row.Page === page) ? 'block' : 'none';
+                const gridWrapper = document.getElementById(`grid-wrapper-${row.ID}`);
+                if (gridWrapper) gridWrapper.style.display = (row.Page === page) ? 'block' : 'none';
             });
             
+            // Toggle active ribbon track display
+            document.querySelectorAll('.ribbon-track-container').forEach(el => el.classList.add('hidden'));
+            const activeTrack = document.getElementById(`ribbon-track-${page.replace(/\\s+/g, '')}`);
+            if (activeTrack && activeTrack.children.length > 0) activeTrack.classList.remove('hidden');
+
             // Auto hide/show HUD based on voice presence
             document.getElementById('hud-staging-zone').className = 'hidden';
             runLogic();
@@ -533,8 +720,8 @@
                     });
                     try {
                         const isVisible = eval(condition);
-                        const fieldBox = document.getElementById(`field-${row.ID}`);
-                        if (fieldBox) fieldBox.classList.toggle('hidden', !isVisible);
+                        const gridWrapper = document.getElementById(`grid-wrapper-${row.ID}`);
+                        if (gridWrapper) gridWrapper.classList.toggle('hidden', !isVisible);
                     } catch (e) { console.error("Logic processing bypass:", e); }
                 }
 
@@ -589,6 +776,10 @@
                     if (targetInput) {
                         targetInput.value = voiceStagingValue;
                         
+                        // Sync Ribbon visual display if active
+                        const ribbonDisplay = document.getElementById(`ribbon-val-${activeFieldId}`);
+                        if (ribbonDisplay) ribbonDisplay.innerText = voiceStagingValue;
+                        
                         // Force list insertion behavior on save commit
                         if (!compilerMemory.includes(activeFieldId)) {
                             handleLabelLeftClick(activeFieldId);
@@ -602,6 +793,16 @@
                         document.getElementById('hud-staging-zone').className = 'hidden';
                         runLogic();
                         refreshAllShuffleLists();
+                        
+                        // Sequential Auto-Advance Workflow
+                        setTimeout(() => {
+                            const visibleBoxes = Array.from(document.querySelectorAll('.field-box, .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
+                            const activeIdx = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
+                            if (activeIdx !== -1 && activeIdx + 1 < visibleBoxes.length) {
+                                const nextId = visibleBoxes[activeIdx + 1].id.replace('field-', '');
+                                startVoiceInput(nextId);
+                            }
+                        }, 50); // slight delay to allow runLogic DOM updates to settle
                     }
                 }
                 return;
@@ -635,7 +836,7 @@
                 const direction = relativeJumpMatch[1].toLowerCase();
                 const jumpSteps = relativeJumpMatch[2] ? parseInt(relativeJumpMatch[2]) : 1;
                 
-                const visibleBoxes = Array.from(document.querySelectorAll('.field-box')).filter(b => b.style.display !== 'none');
+                const visibleBoxes = Array.from(document.querySelectorAll('.field-box, .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
                 const activeIndex = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
                 
                 let targetIndex = activeIndex !== -1 ? activeIndex : 0;
@@ -664,7 +865,7 @@
                 const spokenNum = parseInt(absoluteMatch[1]);
                 const remainingText = absoluteMatch[2];
                 
-                const visibleBoxes = Array.from(document.querySelectorAll('.field-box')).filter(b => b.style.display !== 'none');
+                const visibleBoxes = Array.from(document.querySelectorAll('.field-box, .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
                 if (spokenNum > 0 && spokenNum <= visibleBoxes.length) {
                     const targetedBox = visibleBoxes[spokenNum - 1];
                     const discoveredId = targetedBox.id.replace('field-', '');
@@ -719,8 +920,8 @@
             // Highlight focused component boundary lines on viewport
             const containerBox = document.getElementById(`field-${activeFieldId}`);
             if (containerBox) {
-                containerBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                document.querySelectorAll('.field-box').forEach(el => el.classList.remove('glow'));
+                containerBox.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                document.querySelectorAll('.field-box, .ribbon-item-card').forEach(el => el.classList.remove('glow'));
                 containerBox.classList.add('glow');
             }
         }
@@ -738,8 +939,8 @@
             
             const containerBox = document.getElementById(`field-${id}`);
             if (containerBox) {
-                containerBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                document.querySelectorAll('.field-box').forEach(el => el.classList.remove('glow'));
+                containerBox.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                document.querySelectorAll('.field-box, .ribbon-item-card').forEach(el => el.classList.remove('glow'));
                 containerBox.classList.add('glow');
             }
         }
