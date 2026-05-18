@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
-<!-- HVAC COMPILER PRO v7.3: Horizontal Ribbon Track Layout -->
+<!-- HVAC COMPILER PRO v7.4: Interactive HUD Portal & Capacitance Logic -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HVAC COMPILER PRO v7.3</title>
+    <title>HVAC COMPILER PRO v7.4</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
         :root {
@@ -247,6 +247,7 @@
         }
 
         .hidden { display: none !important; }
+        .ribbon-bypassed { display: none !important; }
 
         .glow {
             box-shadow: 0 0 15px var(--blue);
@@ -258,7 +259,7 @@
 
 <body>
     <nav class="navbar is-flex is-justify-content-space-between is-align-items-center">
-        <div id="app-title">HVAC COMPILER <span id="navbarVerBadge" class="tag is-info is-light">v7.3</span></div>
+        <div id="app-title">HVAC COMPILER <span id="navbarVerBadge" class="tag is-info is-light">v7.4</span></div>
         <div>
             <label class="checkbox has-text-info is-size-7 mr-2"><input type="checkbox" id="earbud-mode"> Earbud Mode</label>
             <button id="masterMicBtn" class="button is-small is-info ml-2" onclick="toggleMicListener()">🎙️ Mic: OFF</button>
@@ -268,14 +269,6 @@
         <ul id="tab-list"></ul>
     </div>
     <div class="container p-2">
-        <div id="hud-staging-zone" class="hidden">
-            <div class="hud-box">
-                <div class="hud-title" id="hud-target-label">Voice Staging Buffer</div>
-                <div class="hud-value" id="hud-display-value">---</div>
-                <div class="has-text-grey-light is-size-7 mt-1">Say "Confirm", "Commit", or "Clear"</div>
-            </div>
-        </div>
-        
         <div id="main-content" class="columns is-multiline is-mobile m-0"></div>
     </div>
 
@@ -295,9 +288,49 @@
         // Track user interaction state for manual selections
         document.addEventListener('focusin', function(e) {
             if(e.target && ['INPUT', 'SELECT'].includes(e.target.tagName)) {
-                activeFieldId = e.target.id;
+                focusField(e.target.id);
             }
         });
+
+        function focusField(id) {
+            activeFieldId = id;
+            const targetRow = appData.find(r => r.ID === id);
+            const targetInput = document.getElementById(id);
+            
+            const hudLabel = document.getElementById('hud-target-label');
+            const hudValue = document.getElementById('hud-display-value');
+            const proxyInput = document.getElementById('hud-proxy-input');
+            
+            if (hudLabel && targetRow) hudLabel.innerText = targetRow.Label;
+            if (hudValue) hudValue.innerText = (targetInput && targetInput.value) ? targetInput.value : '---';
+            if (proxyInput) proxyInput.value = '';
+        }
+
+        function commitProxyInput(val) {
+            if (!activeFieldId || val === '') return;
+            const targetInput = document.getElementById(activeFieldId);
+            if (targetInput) {
+                targetInput.value = val;
+                const ribbonDisplay = document.getElementById(`ribbon-val-${activeFieldId}`);
+                if (ribbonDisplay) ribbonDisplay.innerText = val;
+                
+                if (!compilerMemory.includes(activeFieldId)) {
+                    handleLabelLeftClick(activeFieldId);
+                }
+                
+                runLogic();
+                refreshAllShuffleLists();
+                
+                setTimeout(() => {
+                    const visibleBoxes = Array.from(document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
+                    const activeIdx = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
+                    if (activeIdx !== -1 && activeIdx + 1 < visibleBoxes.length) {
+                        const nextId = visibleBoxes[activeIdx + 1].id.replace('field-', '');
+                        startVoiceInput(nextId);
+                    }
+                }, 50);
+            }
+        }
 
         async function init() {
             try {
@@ -363,42 +396,52 @@
             let activeVoiceCounter = 1;
 
             sortedData.forEach(row => {
+// =========================================================================
+// 🛠️ TOOL ZONE: PERMANENT HUD PORTAL
+// =========================================================================
+                if (row.Type === 'hud-display') {
+                    const isPermanent = row.Options_3 === 'permanent';
+                    const hudWrapper = document.createElement('div');
+                    hudWrapper.id = 'hud-staging-zone';
+                    hudWrapper.className = `column is-12 ${isPermanent ? 'hud-permanent' : 'hidden'}`;
+                    
+                    hudWrapper.innerHTML = `
+                        <div class="hud-box" style="font-size: ${row.FontSize || '2rem'}; font-weight: ${row.FontWeight || 'bold'}; border-radius: ${row.Corners || '8px'};" onclick="document.getElementById('hud-proxy-input').focus()">
+                            <div class="hud-title" id="hud-target-label">${row.Label || 'Voice Staging Buffer'}</div>
+                            <div class="hud-value" id="hud-display-value">${row.Default || '---'}</div>
+                            <input type="number" id="hud-proxy-input" style="opacity:0; position:absolute; pointer-events:none;" onchange="commitProxyInput(this.value)" onkeydown="if(event.key === 'Enter') { this.blur(); }">
+                            <div class="has-text-grey-light is-size-7 mt-1">Say "Confirm" or Tap to Type</div>
+                        </div>
+                    `;
+                    container.appendChild(hudWrapper);
+                    return; // Skip normal grid building
+                }
+
                 const wrapper = document.createElement('div');
                 wrapper.id = `grid-wrapper-${row.ID}`;
                 
-// =========================================================================
-// 🛠️ TOOL ZONE: HORIZONTAL RIBBON ITEM
-// =========================================================================
-// SPREADSHEET PROPERTY MAP:
-// -> row.Type       (Col H)  : 'ribbon-item' groups element into top horizontal scroll track
-// -> row.Page       (Col J)  : Determines which page track the item belongs to
-// =========================================================================
-                if (row.Type === 'ribbon-item') {
-                    wrapper.className = ""; // No Bulma column widths for ribbon wrapper
-                    if (row.Options_4 === 'mic-override') {
-                        wrapper.addEventListener('click', (e) => { startVoiceInput(row.ID); }, true);
-                    }
-                    const rCard = document.createElement('div');
-                    rCard.id = `field-${row.ID}`;
-                    rCard.className = `ribbon-item-card`;
-                    rCard.innerHTML = `
-                        <div style="font-size:0.8rem; color:${row.TextColor||'#94a3b8'}">${row.Label}</div>
-                        <div id="ribbon-val-${row.ID}" style="font-weight:bold; font-size:1.2rem; color:${row.TextColor||'#fff'}">${row.Default || '---'}</div>
-                        <input type="hidden" id="${row.ID}" value="${row.Default || ''}">
-                    `;
-                    rCard.onclick = () => startVoiceInput(row.ID);
-                    wrapper.appendChild(rCard);
-                    if (ribbonContainers[row.Page]) {
-                        ribbonContainers[row.Page].appendChild(wrapper);
-                    }
-                    activeVoiceCounter++;
-                    return;
-                }
-
                 if (row.Width === 'is-half' || row.Width === 'is-half-custom') {
                     wrapper.className = "column is-6-desktop is-6-tablet is-12-mobile";
                 } else {
                     wrapper.className = "column is-12";
+                }
+
+// =========================================================================
+// 🛠️ TOOL ZONE: HORIZONTAL RIBBON ITEM (BYPASSED GRID)
+// =========================================================================
+                if (row.Options_3 === 'ribbon') {
+                    wrapper.classList.add('ribbon-bypassed');
+                    const rCard = document.createElement('div');
+                    rCard.id = `field-${row.ID}`; // Binds to voice queries natively
+                    rCard.className = `ribbon-item-card`;
+                    rCard.innerHTML = `
+                        <div style="font-size:0.8rem; color:${row.TextColor||'#94a3b8'}">${row.Label}</div>
+                        <div id="ribbon-val-${row.ID}" style="font-weight:bold; font-size:1.2rem; color:${row.TextColor||'#fff'}">${row.Default || '---'}</div>
+                    `;
+                    rCard.onclick = () => { focusField(row.ID); startVoiceInput(row.ID); };
+                    if (ribbonContainers[row.Page]) {
+                        ribbonContainers[row.Page].appendChild(rCard);
+                    }
                 }
 
                 // Mic Rescue Override
@@ -593,7 +636,8 @@
             if (activeTrack && activeTrack.children.length > 0) activeTrack.classList.remove('hidden');
 
             // Auto hide/show HUD based on voice presence
-            document.getElementById('hud-staging-zone').className = 'hidden';
+            const hud = document.getElementById('hud-staging-zone');
+            if (hud && !hud.classList.contains('hud-permanent')) hud.classList.add('hidden');
             runLogic();
             refreshAllShuffleLists();
         }
@@ -678,13 +722,14 @@
                 matchedItems.forEach(item => {
                     const itemEl = document.getElementById(item.ID);
                     const currentVal = itemEl ? (itemEl.tagName === 'SELECT' ? itemEl.value : itemEl.value || 'No entry') : '---';
+                    const capStatus = itemEl && itemEl.hasAttribute('data-cap-status') ? itemEl.getAttribute('data-cap-status') : '';
                     
                     const div = document.createElement('div');
                     div.className = "shuffle-item animate-fade";
                     div.innerHTML = `
                         <div style="font-size: 0.9rem">
                             <span class="has-text-info font-weight-bold">${item.Label}:</span> 
-                            <span class="has-text-white">${currentVal}</span>
+                            <span class="has-text-white">${currentVal}</span>${capStatus}
                         </div>
                         <div class="shuffle-controls">
                             <button class="button is-small is-dark px-2" onclick="shiftCompilerOrder('${item.ID}', -1)">▲</button>
@@ -725,6 +770,36 @@
                     } catch (e) { console.error("Logic processing bypass:", e); }
                 }
 
+            // Automated Load-Capacitance Logic
+            ['herm', 'fan'].forEach(type => {
+                const v = document.getElementById(`diag_${type}_v`);
+                const a = document.getElementById(`diag_${type}_a`);
+                const rated = document.getElementById(`diag_${type}_mfd`);
+                const tolSelector = document.getElementById('diag_cap_tol');
+                
+                if (v && a && rated && v.value && a.value && rated.value && tolSelector) {
+                    const volts = parseFloat(v.value);
+                    const amps = parseFloat(a.value);
+                    const ratedMfd = parseFloat(rated.value);
+                    let tolVal = parseFloat(tolSelector.value.replace('%', '')) / 100;
+                    if (isNaN(tolVal)) tolVal = 0.10; // Default 10%
+                    
+                    if (volts > 0) {
+                        const calcMfd = (amps * 2652) / volts;
+                        const variance = Math.abs(calcMfd - ratedMfd) / ratedMfd;
+                        const badgeStr = variance > tolVal ? '<span class="has-text-danger is-size-7 ml-1">🔴 [FAIL]</span>' : '<span class="has-text-success is-size-7 ml-1">🟢 [PASS]</span>';
+                        
+                        // Sync Ribbon visual display
+                        const ribbonDisplay = document.getElementById(`ribbon-val-diag_${type}_mfd`);
+                        if (ribbonDisplay) {
+                            ribbonDisplay.innerHTML = `${ratedMfd} ${badgeStr}`;
+                        }
+                        // Tag for shuffle list
+                        rated.setAttribute('data-cap-status', badgeStr);
+                    }
+                }
+            });
+
                 if (row.Formula && row.Display === 'Calculated') {
                     const formula = row.Formula.replace(/\[(.*?)\]/g, (m, id) => {
                         const el = document.getElementById(id);
@@ -761,7 +836,8 @@
             } else {
                 recognition.stop();
                 if(btn) { btn.innerText = '🎙️ Mic: OFF'; btn.classList.replace('is-danger', 'is-info'); }
-                document.getElementById('hud-staging-zone').className = 'hidden';
+                const hud = document.getElementById('hud-staging-zone');
+                if (hud && !hud.classList.contains('hud-permanent')) hud.classList.add('hidden');
             }
         }
 
@@ -790,13 +866,14 @@
                         
                         // Wipe buffer state
                         voiceStagingValue = null;
-                        document.getElementById('hud-staging-zone').className = 'hidden';
+                        const hud = document.getElementById('hud-staging-zone');
+                        if (hud && !hud.classList.contains('hud-permanent')) hud.classList.add('hidden');
                         runLogic();
                         refreshAllShuffleLists();
                         
                         // Sequential Auto-Advance Workflow
                         setTimeout(() => {
-                            const visibleBoxes = Array.from(document.querySelectorAll('.field-box, .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
+                            const visibleBoxes = Array.from(document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
                             const activeIdx = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
                             if (activeIdx !== -1 && activeIdx + 1 < visibleBoxes.length) {
                                 const nextId = visibleBoxes[activeIdx + 1].id.replace('field-', '');
@@ -836,7 +913,7 @@
                 const direction = relativeJumpMatch[1].toLowerCase();
                 const jumpSteps = relativeJumpMatch[2] ? parseInt(relativeJumpMatch[2]) : 1;
                 
-                const visibleBoxes = Array.from(document.querySelectorAll('.field-box, .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
+                const visibleBoxes = Array.from(document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
                 const activeIndex = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
                 
                 let targetIndex = activeIndex !== -1 ? activeIndex : 0;
@@ -865,7 +942,7 @@
                 const spokenNum = parseInt(absoluteMatch[1]);
                 const remainingText = absoluteMatch[2];
                 
-                const visibleBoxes = Array.from(document.querySelectorAll('.field-box, .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
+                const visibleBoxes = Array.from(document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
                 if (spokenNum > 0 && spokenNum <= visibleBoxes.length) {
                     const targetedBox = visibleBoxes[spokenNum - 1];
                     const discoveredId = targetedBox.id.replace('field-', '');
@@ -915,19 +992,20 @@
             // Render active tracking parameters directly to UI overlay HUD
             document.getElementById('hud-target-label').innerText = `Staging for: ${currentFieldRow.Label}`;
             document.getElementById('hud-display-value').innerText = `${cleanVal} ${currentFieldRow.Format || ''}`;
-            document.getElementById('hud-staging-zone').className = ''; // Unhide HUD box window
+            const hud = document.getElementById('hud-staging-zone');
+            if (hud) hud.classList.remove('hidden');
             
             // Highlight focused component boundary lines on viewport
             const containerBox = document.getElementById(`field-${activeFieldId}`);
             if (containerBox) {
                 containerBox.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-                document.querySelectorAll('.field-box, .ribbon-item-card').forEach(el => el.classList.remove('glow'));
+                document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card').forEach(el => el.classList.remove('glow'));
                 containerBox.classList.add('glow');
             }
         }
 
         function startVoiceInput(id) {
-            activeFieldId = id;
+            focusField(id);
             const el = document.getElementById(id);
             if(el) el.focus();
             playNotificationChime(660, 0.1);
@@ -935,12 +1013,13 @@
             
             // Clear prior staging values on new index jump target context shift
             voiceStagingValue = null;
-            document.getElementById('hud-staging-zone').className = 'hidden';
+            const hud = document.getElementById('hud-staging-zone');
+            if (hud && !hud.classList.contains('hud-permanent')) hud.classList.add('hidden');
             
             const containerBox = document.getElementById(`field-${id}`);
             if (containerBox) {
                 containerBox.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-                document.querySelectorAll('.field-box, .ribbon-item-card').forEach(el => el.classList.remove('glow'));
+                document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card').forEach(el => el.classList.remove('glow'));
                 containerBox.classList.add('glow');
             }
         }
