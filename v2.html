@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
-<!-- HVAC COMPILER PRO v7.4: Interactive HUD Portal & Capacitance Logic -->
+<!-- HVAC COMPILER PRO v7.5: Data Normalization & Routing Fixes -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>HVAC COMPILER PRO v7.4</title>
+    <title>HVAC COMPILER PRO v7.5</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <style>
         :root {
@@ -259,7 +259,7 @@
 
 <body>
     <nav class="navbar is-flex is-justify-content-space-between is-align-items-center">
-        <div id="app-title">HVAC COMPILER <span id="navbarVerBadge" class="tag is-info is-light">v7.4</span></div>
+        <div id="app-title">HVAC COMPILER <span id="navbarVerBadge" class="tag is-info is-light">v7.5</span></div>
         <div>
             <label class="checkbox has-text-info is-size-7 mr-2"><input type="checkbox" id="earbud-mode"> Earbud Mode</label>
             <button id="masterMicBtn" class="button is-small is-info ml-2" onclick="toggleMicListener()">🎙️ Mic: OFF</button>
@@ -323,9 +323,9 @@
                 
                 setTimeout(() => {
                     const visibleBoxes = Array.from(document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
-                    const activeIdx = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
+                    const activeIdx = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}` || b.id === `ribbon-card-${activeFieldId}`);
                     if (activeIdx !== -1 && activeIdx + 1 < visibleBoxes.length) {
-                        const nextId = visibleBoxes[activeIdx + 1].id.replace('field-', '');
+                        const nextId = visibleBoxes[activeIdx + 1].id.replace('field-', '').replace('ribbon-card-', '');
                         startVoiceInput(nextId);
                     }
                 }, 50);
@@ -336,7 +336,16 @@
             try {
                 const res = await fetch(API_URL);
                 const data = await res.json();
-                appData = data.rows;
+                appData = data.rows.map(row => {
+                    row.Options_3 = row['Options 3'] || row.Options_3 || '';
+                    row.Options_4 = row['Options 4'] || row.Options_4 || '';
+                    row.FontSize = row['Font Size'] || row.FontSize || '';
+                    row.FontWeight = row['Font Weight'] || row.FontWeight || '';
+                    row.TextColor = row['Text Color'] || row.TextColor || '';
+                    row.BgColor = row['Bg Color'] || row.BgColor || '';
+                    row.BorderColor = row['Border Color'] || row.BorderColor || '';
+                    return row;
+                });
                 globalSettings = data.settings || { globalFontSize: "16px", voiceBadgeSize: "12px", globalTheme: "Electric Blue" };
                 
                 applyUniversalGlobalSettings();
@@ -432,7 +441,7 @@
                 if (row.Options_3 === 'ribbon') {
                     wrapper.classList.add('ribbon-bypassed');
                     const rCard = document.createElement('div');
-                    rCard.id = `field-${row.ID}`; // Binds to voice queries natively
+                    rCard.id = `ribbon-card-${row.ID}`;
                     rCard.className = `ribbon-item-card`;
                     rCard.innerHTML = `
                         <div style="font-size:0.8rem; color:${row.TextColor||'#94a3b8'}">${row.Label}</div>
@@ -627,7 +636,10 @@
             currentActivePage = page;
             appData.forEach(row => {
                 const gridWrapper = document.getElementById(`grid-wrapper-${row.ID}`);
-                if (gridWrapper) gridWrapper.style.display = (row.Page === page) ? 'block' : 'none';
+                if (gridWrapper) {
+                    const isRibbon = String(row.Options_3 || '').toLowerCase().trim() === 'ribbon';
+                    gridWrapper.style.display = (row.Page === page && !isRibbon) ? 'block' : 'none';
+                }
             });
             
             // Toggle active ribbon track display
@@ -874,9 +886,9 @@
                         // Sequential Auto-Advance Workflow
                         setTimeout(() => {
                             const visibleBoxes = Array.from(document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
-                            const activeIdx = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
+                            const activeIdx = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}` || b.id === `ribbon-card-${activeFieldId}`);
                             if (activeIdx !== -1 && activeIdx + 1 < visibleBoxes.length) {
-                                const nextId = visibleBoxes[activeIdx + 1].id.replace('field-', '');
+                                const nextId = visibleBoxes[activeIdx + 1].id.replace('field-', '').replace('ribbon-card-', '');
                                 startVoiceInput(nextId);
                             }
                         }, 50); // slight delay to allow runLogic DOM updates to settle
@@ -914,7 +926,7 @@
                 const jumpSteps = relativeJumpMatch[2] ? parseInt(relativeJumpMatch[2]) : 1;
                 
                 const visibleBoxes = Array.from(document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
-                const activeIndex = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}`);
+                const activeIndex = visibleBoxes.findIndex(b => b.id === `field-${activeFieldId}` || b.id === `ribbon-card-${activeFieldId}`);
                 
                 let targetIndex = activeIndex !== -1 ? activeIndex : 0;
                 if (direction === 'forward') targetIndex += jumpSteps;
@@ -926,7 +938,7 @@
                 
                 const nextBox = visibleBoxes[targetIndex];
                 if (nextBox) {
-                    const nextId = nextBox.id.replace('field-', '');
+                    const nextId = nextBox.id.replace('field-', '').replace('ribbon-card-', '');
                     startVoiceInput(nextId);
                     if (earbudMode) {
                         const nextRow = appData.find(r => r.ID === nextId);
@@ -945,7 +957,7 @@
                 const visibleBoxes = Array.from(document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card')).filter(b => b.parentElement.style.display !== 'none' && !b.parentElement.classList.contains('hidden'));
                 if (spokenNum > 0 && spokenNum <= visibleBoxes.length) {
                     const targetedBox = visibleBoxes[spokenNum - 1];
-                    const discoveredId = targetedBox.id.replace('field-', '');
+                    const discoveredId = targetedBox.id.replace('field-', '').replace('ribbon-card-', '');
                     
                     activeFieldId = discoveredId;
                     processIncomingValue(remainingText);
@@ -996,7 +1008,7 @@
             if (hud) hud.classList.remove('hidden');
             
             // Highlight focused component boundary lines on viewport
-            const containerBox = document.getElementById(`field-${activeFieldId}`);
+            const containerBox = document.getElementById(`ribbon-card-${activeFieldId}`) || document.getElementById(`field-${activeFieldId}`);
             if (containerBox) {
                 containerBox.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
                 document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card').forEach(el => el.classList.remove('glow'));
@@ -1016,7 +1028,7 @@
             const hud = document.getElementById('hud-staging-zone');
             if (hud && !hud.classList.contains('hud-permanent')) hud.classList.add('hidden');
             
-            const containerBox = document.getElementById(`field-${id}`);
+            const containerBox = document.getElementById(`ribbon-card-${id}`) || document.getElementById(`field-${id}`);
             if (containerBox) {
                 containerBox.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
                 document.querySelectorAll('.field-box:not(.ribbon-bypassed), .ribbon-item-card').forEach(el => el.classList.remove('glow'));
