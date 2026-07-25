@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v4.74</title>
+<title>Diagnostics v4.75</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider mb-1 w-full text-center uppercase">[ Build: v4_74 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider mb-1 w-full text-center uppercase">[ Build: v4_75 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold mb-2 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div class="relative mb-1 w-full flex justify-center">
                     <div id="hud-live-value-box" onclick="document.getElementById('hud-hidden-numeric-input').focus()" class="text-slate-50 font-extrabold leading-tight cursor-text font-sans tracking-tight min-h-[1.1em] text-center flex items-baseline justify-center text-[100px]">---</div>
@@ -415,7 +415,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.74</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.75</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -488,7 +488,7 @@ const liveAppState = {
     diag_comp_rla: null, diag_odf_fla: null,
     diag_comp_rla_2: null, diag_odf_fla_2: null,
     testMode: 'live',
-    flowMode: 'component',
+    flowMode: 'tool',
     diag_herm_bench: null, diag_fan_bench: null,
     target_mfd: 35, target_fan_mfd: 5,
     cRlaRating: 14.20, odfFlaRating: 1.10,
@@ -1114,8 +1114,52 @@ function triggerMasterReset() {
 }
 
 function toggleMic() {
-    liveAppState.micActive = !liveAppState.micActive;
-    document.getElementById('voice-trigger-btn').style.background = liveAppState.micActive ? '#16a34a' : '#1e293b';
+liveAppState.micActive = !liveAppState.micActive;
+const micBtn = document.getElementById('voice-trigger-btn');
+if (micBtn) micBtn.style.background = liveAppState.micActive ? '#16a34a' : '#1e293b';
+
+if (!liveAppState.micActive) return; // Stop listening if toggled off
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (!SpeechRecognition) {
+alert("Voice dictation not supported in this browser. Please use Chrome.");
+liveAppState.micActive = false;
+if (micBtn) micBtn.style.background = '#1e293b';
+return;
+}
+
+const recognition = new SpeechRecognition();
+recognition.lang = 'en-US';
+recognition.interimResults = false;
+recognition.maxAlternatives = 1;
+
+recognition.onresult = function(event) {
+const speechResult = event.results.transcript.toUpperCase();
+
+// Step 2: Command execution to lock in data and auto-advance
+if (speechResult.includes("COPY") || speechResult.includes("COMPLY") || speechResult.includes("CONFIRM") || speechResult.includes("NEXT")) {
+commitHudValue();
+} else {
+// Step 1: Extract numeric readouts
+const match = speechResult.match(/\d+(\.\d+)?/);
+if (match) {
+const num = match;
+hudStagingValue = num;
+const hiddenInput = document.getElementById('hud-hidden-numeric-input');
+if (hiddenInput) hiddenInput.value = num;
+updateHUD();
+}
+}
+};
+
+recognition.onend = function() {
+// Keep the microphone awake for hands-free continuous testing
+if (liveAppState.micActive) {
+try { recognition.start(); } catch(e) {}
+}
+};
+
+recognition.start();
 }
 
 function updateHUD() {
