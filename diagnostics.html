@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnostics v4.74</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.active-ledger-row {
+    outline: 2px solid #38bdf8;
+    outline-offset: -2px;
+    background-color: #f0f9ff !important;
+}
+input[type="number"].no-spinners::-webkit-inner-spin-button, 
+input[type="number"].no-spinners::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type="number"].no-spinners {
+  -moz-appearance: textfield;
+}
+</style>
+</head>
+<body class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen" style="overscroll-behavior-y: contain;">
+
+<div id="fixed-dashboard-hdr" class="w-full sticky top-0 z-50 bg-slate-900">
+<!-- STATUS BAR LAUNCHER -->
+<div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-1.5 cursor-pointer hover:bg-slate-800 transition-colors">
+<div id="active-job-ticket" class="text-slate-400 font-mono text-[9px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+</div>
+
+<!-- TOP RIBBON DRAWER (ACCORDION) -->
+<div id="top-ribbon-drawer" class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-2 px-4 py-2 hidden origin-top transition-all duration-300 z-40 shadow-md">
+<button onclick="createNewJob()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="New Job">
+<span class="text-base leading-none mb-1">➕</span><span class="text-[7px] font-bold uppercase tracking-wider">New Job</span>
+</button>
+<button onclick="mirrorSync()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mirror Sync">
+<span class="text-base leading-none mb-1">📥</span><span class="text-[7px] font-bold uppercase tracking-wider">Mirror</span>
+</button>
+<button onclick="openDrive()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Drive">
+<span class="text-base leading-none mb-1">📁</span><span class="text-[7px] font-bold uppercase tracking-wider">Drive</span>
+</button>
+<button onclick="openAlbum()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Album">
+<span class="text-base leading-none mb-1">📷</span><span class="text-[7px] font-bold uppercase tracking-wider">Album</span>
+</button>
+<button onclick="openManuals()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Manuals">
+<span class="text-base leading-none mb-1">📖</span><span class="text-[7px] font-bold uppercase tracking-wider">Manuals</span>
+</button>
+<button onclick="toggleFlowMode()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Toggle Flow">
+<span class="text-base leading-none mb-1">🔀</span><span id="lbl-flow-toggle" class="text-[7px] font-bold uppercase tracking-wider">Comp Flow</span>
+</button>
+<button id="btn-compiler" onclick="toggleCompilerSweep()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-800 hover:bg-slate-700 flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-600 shadow-sm" title="Compiler">
+<span id="icon-compiler" class="text-base leading-none mb-1 text-slate-400 transition-colors">⚡</span><span id="text-compiler" class="text-[7px] font-bold uppercase tracking-wider text-slate-400 transition-colors">Compiler</span>
+</button>
+<button onclick="toggleConfigModal()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Config">
+<span class="text-base leading-none mb-1">⚙️</span><span class="text-[7px] font-bold uppercase tracking-wider">Config</span>
+</button>
+<button onclick="toggleMic()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mic">
+<span class="text-base leading-none mb-1">🎙️</span><span class="text-[7px] font-bold uppercase tracking-wider">Mic</span>
+</button>
+<button onclick="toggleCalibrationDock()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Settings">
+<span class="text-base leading-none mb-1">⚙️</span><span class="text-[7px] font-bold uppercase tracking-wider">Settings</span>
+</button>
+<button onclick="triggerMasterReset()" class="flex-shrink-0 min-w-[60px] h-12 bg-red-900/80 hover:bg-red-700 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-red-500 shadow-sm" title="Clear Slate">
+
+<span class="text-base leading-none mb-1">🗑️</span><span class="text-[7px] font-bold uppercase tracking-wider">Clear</span>
+
+</button>
+
+<button onclick="openHistoryModal()" class="flex-shrink-0 min-w-[60px] h-12 bg-emerald-700 hover:bg-emerald-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-emerald-500 shadow-sm" title="History Vault">
+
+<span class="text-base leading-none mb-1">📜</span><span class="text-[7px] font-bold uppercase tracking-wider">History</span>
+
+</button>
+
+</div>
+    <!-- TOP RIBBON SHELF -->
+    <div id="production-pill-shelf" class="w-full pt-2 pb-0 px-4 bg-slate-900 box-border border-b border-slate-800">
+        <div id="ribbon-track" class="flex gap-2 overflow-x-auto pb-4 no-scrollbar items-start"></div>
+    </div>
+
+    <!-- VOICE HUD CONTAINER -->
+    <div id="voice-hud-container" class="w-full relative bg-slate-900 pb-4">
+        <div id="hud-modal-overlay" class="absolute inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4 rounded-b-xl">
+            <h3 id="modal-title" class="text-slate-300 font-bold mb-4 uppercase tracking-widest text-sm text-center">Select Option</h3>
+            <div id="modal-grid" class="grid grid-cols-5 gap-3 w-full max-w-sm mb-4"></div>
+            <button onclick="closeModals()" class="px-8 py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-lg uppercase tracking-wider transition-colors">Cancel</button>
+        </div>
+        <div id="hud-main-box" class="flex overflow-hidden rounded-b-xl shadow-md box-border w-full bg-slate-800 border-4 border-blue-500">
+            <!-- LEFT WING -->
+            <div id="hud-left-panel" class="flex flex-col box-border shrink-0 w-[15%]">
+                <button id="hud-btn-l1" onclick="openTotalCapsModal()" class="w-full h-[60px] bg-slate-800 flex flex-col items-center justify-center border-b border-r border-slate-600 cursor-pointer hover:bg-slate-700 transition-colors"><span class="text-[10px] text-slate-400 font-bold leading-none mb-1">CAPS</span><span id="label-total-caps" class="text-white text-lg font-bold leading-none">1</span></button>
+                <button id="voice-trigger-btn" onclick="toggleMic()" class="w-full h-[60px] bg-slate-600 border-none text-2xl cursor-pointer flex items-center justify-center border-b border-r border-slate-700 transition-colors shadow-inner drop-shadow-md">🎤</button>
+                <button id="hud-btn-l2" onclick="openPageModal()" class="w-full h-[60px] bg-slate-800 flex flex-col items-center justify-center border-b border-r border-slate-600 cursor-pointer hover:bg-slate-700 transition-colors"><span class="text-[10px] text-slate-400 font-bold leading-none mb-1">PAGE</span><span id="label-active-page" class="text-white text-lg font-bold leading-none">1</span></button>
+                <div id="hud-dash-left" class="flex-1 flex items-end justify-center pb-2 text-[10px] text-slate-400 font-bold text-center px-1 leading-tight tracking-wider"></div>
+            </div>
+            
+            <!-- CENTER PANEL -->
+            <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider mb-1 w-full text-center uppercase">[ Build: v4_74 ]</div>
+                <div id="hud-status-prompt" class="text-slate-300 font-bold mb-2 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
+                <div class="relative mb-1 w-full flex justify-center">
+                    <div id="hud-live-value-box" onclick="document.getElementById('hud-hidden-numeric-input').focus()" class="text-slate-50 font-extrabold leading-tight cursor-text font-sans tracking-tight min-h-[1.1em] text-center flex items-baseline justify-center text-[100px]">---</div>
+                    <input type="number" id="hud-hidden-numeric-input" pattern="[1-9]*" inputmode="decimal" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-text bg-transparent border-none outline-none text-transparent p-0" oninput="syncHiddenInput(event)">
+                </div>
+                <div id="hud-helper-envelope" class="text-slate-300 font-bold font-sans whitespace-nowrap overflow-hidden text-ellipsis w-full text-[15px]">Target Range: ---</div>
+            </div>
+
+            <!-- RIGHT WING -->
+            <div id="hud-right-panel" class="flex flex-col border-l border-slate-700 box-border shrink-0 w-[15%]">
+                <button id="hud-btn-commit" onclick="commitHudValue()" class="h-[60px] bg-green-500 text-white border-none text-2xl font-bold cursor-pointer flex items-center justify-center border-b border-slate-700">✔</button>
+                <button id="hud-btn-mode" onclick="toggleTestMode()" class="h-[60px] bg-blue-500 text-white border-none text-xl font-bold cursor-pointer flex items-center justify-center border-b border-slate-700 transition-all duration-300">⚡</button>
+                <button id="hud-btn-reset" onclick="triggerMasterReset()" class="h-[60px] bg-slate-600 text-white border-none text-xl cursor-pointer flex items-center justify-center border-b border-slate-700">❌</button>
+                <div id="hud-dash-right" class="flex-1 flex items-end justify-center pb-2 text-[10px] text-slate-400 font-bold text-center px-1 leading-tight tracking-wider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- STICKY DESCRIPTION BANNER (HIDDEN BY DEFAULT) -->
+<div id="sticky-description-banner" class="w-full bg-blue-900/40 border-b border-blue-500/50 px-4 py-1.5 hidden justify-center items-center transition-all">
+    <span id="sticky-description-text" class="text-blue-100 font-bold text-[11px] tracking-widest uppercase"></span>
+</div>
+
+<!-- JOB LEDGER (HIGH-CONTRAST SUNLIGHT STYLING) -->
+<div id="job-ledger-container" class="flex-1 bg-slate-900 w-full px-2 py-2 overflow-y-auto">
+    <!-- LEDGER ROWS GENERATED HERE -->
+</div>
+
+<!-- DOCK FABs (HOVERING RIGHT) -->
+<button onclick="openHubModal()" class="fixed bottom-20 right-4 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center font-bold tracking-wider text-xs border-2 border-slate-800 transition-transform transform hover:scale-105">
+HUB
+</button>
+
+<!-- SNAPSHOT HYBRID MODAL -->
+<div id="snapshot-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+<div class="bg-slate-800 w-full max-w-sm rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col">
+<div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+<h3 class="text-white font-bold tracking-widest text-xs uppercase">Save Snapshot</h3>
+<button onclick="closeSnapshotModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+</div>
+<div class="p-4 flex flex-col gap-4 max-h-[75vh] overflow-y-auto no-scrollbar">
+<div>
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Customer Name / Notes</label>
+<input type="text" id="snap-customer-name" placeholder="e.g. Smith / Rooftop Unit 2" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-3 font-bold text-sm focus:outline-none focus:border-emerald-500 transition-colors">
+</div>
+<div>
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Raw Address / Location Notes</label>
+<input type="text" id="snap-raw-address" placeholder="e.g. 123 Beach Blvd" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-3 font-bold text-sm mb-3 focus:outline-none focus:border-blue-500 transition-colors">
+</div>
+<div>
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Smart Site Profile</label>
+<select id="snap-site-dropdown" onchange="handleSnapshotSiteChange(this.value)" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-3 font-bold text-sm focus:outline-none focus:border-blue-500 transition-colors">
+<option value="Standard">Standard (GPS Only)</option>
+<option value="Oceana">Oceana</option>
+<option value="Paramount">Paramount</option>
+<option value="River Palm">River Palm</option>
+<option value="Custom">+ Add Custom Site...</option>
+</select>
+</div>
+<div id="snap-custom-builder" class="hidden flex-col gap-3 p-3 mt-1 border border-dashed border-amber-400 rounded-lg bg-amber-900/10">
+<div class="text-amber-400 text-[10px] font-bold tracking-widest uppercase flex items-center gap-1"><span>🏗️</span> Custom Site Builder</div>
+<input type="text" id="snap-custom-site-name" placeholder="Site Name" class="w-full bg-slate-900 text-white border border-amber-500/50 rounded p-2 text-xs font-bold focus:border-amber-400 outline-none">
+<div class="grid grid-cols-3 gap-2">
+<div>
+<label class="text-slate-400 text-[8px] font-bold uppercase block mb-1">Start Flr</label>
+<input type="number" id="snap-custom-start-fl" value="1" class="w-full bg-slate-900 text-white border border-amber-500/50 rounded p-2 text-xs font-bold focus:border-amber-400 outline-none">
+</div>
+<div>
+<label class="text-slate-400 text-[8px] font-bold uppercase block mb-1">Top Flr</label>
+<input type="number" id="snap-custom-max-fl" value="10" class="w-full bg-slate-900 text-white border border-amber-500/50 rounded p-2 text-xs font-bold focus:border-amber-400 outline-none">
+</div>
+<div>
+<label class="text-slate-400 text-[8px] font-bold uppercase block mb-1">Units/Flr</label>
+<input type="number" id="snap-custom-units" value="6" class="w-full bg-slate-900 text-white border border-amber-500/50 rounded p-2 text-xs font-bold focus:border-amber-400 outline-none">
+</div>
+</div>
+<button onclick="applyCustomSnapshotSite()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Load to Grid</button>
+</div>
+<button onclick="executeGenericSnapshot()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-colors shadow-sm mt-3">💾 Save General Snapshot</button>
+<div id="quick-build-container" class="border-t border-slate-700 pt-3 mt-3 hidden">
+<label class="text-slate-500 text-[9px] font-bold uppercase tracking-wider mb-2 block text-center">--- QUICK BUILD (<span id="quick-build-title">SITE</span>) ---</label>
+<div id="quick-bldg-block" class="mb-4">
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2 block">Building / Phase</label>
+<div class="grid grid-cols-2 gap-2" id="grid-snap-bldg"></div>
+</div>
+<div class="mt-2">
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2 flex justify-between"><span>Floor</span> <span id="lbl-sel-floor" class="text-emerald-400 font-bold">--</span></label>
+<div class="grid grid-cols-5 gap-2" id="grid-snap-floor"></div>
+</div>
+<div id="unit-container" class="opacity-50 pointer-events-none transition-opacity mt-4">
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2 flex justify-between"><span>Unit</span> <span id="lbl-sel-unit" class="text-emerald-400 font-bold">--</span></label>
+<div class="grid grid-cols-4 gap-2" id="grid-snap-unit"></div>
+</div>
+</div>
+</div>
+<div id="snap-saving-indicator" class="hidden p-3 bg-emerald-900 text-emerald-100 font-bold text-xs uppercase tracking-widest text-center">
+⏳ Locating & Saving...
+</div>
+</div>
+</div>
+
+<!-- HISTORY VAULT MODAL -->
+<div id="history-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+<div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+<div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+<h3 class="text-white font-bold tracking-widest text-xs uppercase">📜 History Vault</h3>
+<button onclick="closeHistoryModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+</div>
+<div class="p-2 bg-slate-800 border-b border-slate-700">
+<button id="radar-btn" onclick="filterNearbySnapshots()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2"><span>📍</span><span>Find Nearby (1000 ft)</span></button>
+</div>
+<div id="history-list-container" class="p-2 flex flex-col gap-2 overflow-y-auto no-scrollbar flex-1 bg-slate-900">
+<!-- HISTORY ROWS INJECTED HERE -->
+</div>
+</div>
+</div>
+
+<!-- PREVIEW RESULTS MODAL -->
+<div id="preview-results-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+<div class="bg-slate-800 w-full max-w-sm rounded-xl border border-blue-500 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+<div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+<h3 class="text-white font-bold tracking-widest text-xs uppercase">📊 Unit Results Preview</h3>
+<button onclick="closePreviewModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+</div>
+<div id="preview-modal-content" class="p-4 flex flex-col gap-3 overflow-y-auto no-scrollbar flex-1 bg-slate-900">
+<!-- Results injected here -->
+</div>
+<div class="p-4 bg-slate-900 border-t border-slate-700 flex flex-col gap-2">
+<button id="btn-confirm-load" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-colors shadow-lg">⚡ Load to Main Screen</button>
+<button onclick="closePreviewModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 rounded-lg text-[10px] uppercase tracking-widest transition-colors">Cancel</button>
+</div>
+</div>
+</div>
+
+<!-- THE SYSTEM CONFIG MODAL -->
+<div id="diag-config-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+<div class="bg-slate-800 w-full max-w-sm rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col">
+<div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+<h3 class="text-white font-bold tracking-widest text-xs uppercase">System Configuration</h3>
+<button onclick="toggleConfigModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+</div>
+<div class="p-4 flex flex-col gap-4 max-h-[70vh] overflow-y-auto no-scrollbar">
+<div class="mb-2 border-b border-slate-700 pb-3">
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Load Quick Profile (Optional)</label>
+<div class="flex gap-2">
+<select id="config-quick-load" onchange="loadQuickProfile(this.value)" class="flex-1 bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+<option value="">-- Select Profile --</option>
+</select>
+<button onclick="deleteCustomProfile()" class="bg-red-900/80 hover:bg-red-700 text-white px-3 rounded border border-red-500 transition-colors shadow-sm" title="Delete Profile">🗑️</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Circuit A Identity</label>
+<select id="config-circ-a" onchange="handleCircAChange(this.value)" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors"><option value="Herm">Herm</option><option value="Fan 1">Fan 1</option></select>
+</div>
+<div>
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Circuit B Identity</label>
+<select id="config-circ-b" onchange="handleCircBChange(this.value)" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors"><option value="Fan">Fan</option><option value="Fan 2">Fan 2</option></select>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div>
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Compressor Qty</label>
+<select id="config-comp-qty" onchange="toggleModalVisibility()" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors"><option value="1">1 Compressor</option><option value="2">2 Compressors</option></select>
+</div>
+<div>
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">OD Fan Qty</label>
+<select id="config-fan-qty" onchange="toggleModalVisibility()" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors"><option value="1">1 Fan</option><option value="2">2 Fans</option></select>
+</div>
+</div>
+<div class="border-t border-slate-700 pt-3">
+
+<h4 class="text-slate-300 font-bold text-[10px] tracking-wider uppercase mb-2">Capacitors (µF)</h4>
+
+<div class="grid grid-cols-2 gap-2 mb-3">
+
+<div>
+
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Herm MFD</label>
+
+<input type="number" step="any" id="config-target-mfd" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+
+</div>
+
+<div>
+
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Fan MFD</label>
+
+<input type="number" step="any" id="config-target-fan-mfd" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+
+</div>
+
+</div>
+
+<h4 class="text-slate-300 font-bold text-[10px] tracking-wider uppercase mb-2">Motor Ratings (Amps)</h4>
+
+<div class="grid grid-cols-2 gap-2 mb-2">
+<div>
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Comp 1 RLA</label>
+<input type="number" step="0.01" id="config-comp-rla-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+</div>
+<div>
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Comp 1 LRA</label>
+<input type="number" step="0.01" id="config-comp-lra-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+</div>
+</div>
+<div id="config-comp2-row" class="grid grid-cols-2 gap-2 mb-2">
+
+<div>
+
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Comp 2 RLA</label>
+
+<input type="number" step="0.01" id="config-comp-rla-2-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+
+</div>
+
+<div>
+
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Comp 2 LRA</label>
+
+<input type="number" step="0.01" id="config-comp-lra-2-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+
+</div>
+
+</div>
+
+<div class="grid grid-cols-2 gap-2 mb-2">
+
+<div>
+
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Fan 1 FLA</label>
+
+<input type="number" step="0.01" id="config-fan-fla-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+
+</div>
+
+<div id="config-fan2-row">
+
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Fan 2 FLA</label>
+
+<input type="number" step="0.01" id="config-fan-fla-2-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+
+</div>
+
+</div>
+<div>
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">🎯 Target Subcool</label>
+<input type="number" step="0.1" id="config-target-subcool" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
+</div>
+</div>
+<div class="border-t border-slate-700 pt-3 flex flex-col gap-2">
+<button onclick="document.getElementById('custom-site-drawer').classList.toggle('hidden')" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded text-[9px] font-bold uppercase tracking-wider transition-colors w-full text-left flex justify-between"><span>➕ Add Custom Site</span><span>▼</span></button>
+<div id="custom-site-drawer" class="hidden flex-col gap-2 bg-slate-900 p-3 rounded border border-slate-700">
+<input type="text" id="custom-profile-name" placeholder="e.g. Oceana North" class="w-full bg-slate-800 text-white border border-slate-600 rounded p-2 text-[10px] font-bold">
+<p class="text-slate-500 text-[9px] leading-tight">Saving an existing profile name will overwrite and update it.</p>
+<button onclick="saveCustomProfile()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded text-[9px] font-bold uppercase tracking-wider transition-colors w-full shadow-sm">Save Profile</button>
+</div>
+</div>
+</div>
+<div class="p-4 bg-slate-900 border-t border-slate-700">
+<button onclick="saveSystemConfig()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-colors">Apply Config</button>
+</div>
+</div>
+</div>
+
+<!-- THE HUB MODAL -->
+<div id="hub-master-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+    <div class="bg-slate-800 w-full max-w-sm rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col">
+        <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+            <h3 class="text-white font-bold tracking-widest text-xs uppercase">Workspace Hub</h3>
+            <button onclick="closeHubModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+        <div class="p-4 flex flex-col gap-4">
+
+            <div>
+
+
+                <label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Unit / Circuit Description</label>
+
+
+                <input type="text" id="hub-desc-input" placeholder="e.g. Oceana North - Fl 4 - Unit 401" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-3 font-bold text-sm focus:outline-none focus:border-blue-500 transition-colors">
+
+
+                <p class="text-slate-500 text-[10px] mt-1 leading-tight">Leave blank to hide the sticky label on the main screen.</p>
+
+
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-2">
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>📷</span><span>CAMERA</span></button>
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>📸</span><span>CAM + FLASH</span></button>
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>🎥</span><span>VID + FLASH</span></button>
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>🎙️</span><span>AUDIO</span></button>
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>📝</span><span>NOTES</span></button>
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>🖍️</span><span>DRAWING</span></button>
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>📍</span><span>GPS PIN</span></button>
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>🔦</span><span>TORCH</span></button>
+                <button class="bg-slate-700/50 text-slate-500 py-3 px-1 rounded font-bold text-[9px] cursor-not-allowed border border-slate-600/50 flex flex-col items-center justify-center gap-1"><span>📊</span><span>SUMMARY</span></button>
+            </div>
+        </div>
+        <div class="p-4 bg-slate-900 border-t border-slate-700">
+
+            <button onclick="saveHubData()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-colors">Save & Close</button>
+
+        </div>
+    </div>
+</div>
+
+<!-- BOTTOM APP NAVIGATION RIBBON -->
+<div id="bottom-nav-ribbon" class="w-full h-16 bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex justify-start px-2 py-2 overflow-x-auto no-scrollbar gap-2">
+<a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.02</span></a>
+<a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
+<a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
+<a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.74</span></a>
+<a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
+<a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
+<a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
+<a href="reports.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Reports<br><span class="text-[8px] font-normal">v1.00</span></a>
+<a href="datablock.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Data Block<br><span class="text-[8px] font-normal">v1.00</span></a>
+</div>
+
+<script>
+const mfdArray = [2.5, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80];
+
+// GLOBAL HEADER FUNCTIONS
+function toggleTopRibbon() {
+    const ribbon = document.getElementById('top-ribbon-drawer');
+    ribbon.classList.toggle('hidden');
+}
+function createNewJob() {
+    const name = prompt("Enter new Job Name/ID:");
+    if(name && name.trim() !== '') document.getElementById('active-job-ticket').innerText = name.trim();
+}
+function mirrorSync() { console.log("Mirror Sync triggered"); }
+function openDrive() { console.log("Drive bridge triggered"); }
+function openAlbum() { console.log("Album bridge triggered"); }
+function openManuals() { console.log("Manuals bridge triggered"); }
+
+function cycleTolerance() {
+    const tols = [0.05, 0.06, 0.10];
+    let idx = tols.indexOf(liveAppState.selectedTolerance);
+    idx = (idx + 1) % tols.length;
+    liveAppState.selectedTolerance = tols[idx];
+    updateHUD();
+    refreshLedger();
+    renderAllPills();
+}
+
+function updateManualValue(field, val) {
+    liveAppState[field] = parseFloat(val);
+    renderAllPills();
+    refreshLedger();
+}
+
+function cycleMfd(field, direction) {
+    let current = liveAppState[field] || 35;
+    let idx = mfdArray.indexOf(current);
+    if (idx === -1) {
+        idx = 0;
+        let minDiff = Math.abs(current - mfdArray[0]);
+        for(let i=1; i<mfdArray.length; i++) {
+            let diff = Math.abs(current - mfdArray[i]);
+            if (diff < minDiff) { minDiff = diff; idx = i; }
+        }
+    }
+    idx += direction;
+    if (idx < 0) idx = 0;
+    if (idx >= mfdArray.length) idx = mfdArray.length - 1;
+    liveAppState[field] = mfdArray[idx];
+    updateHUD();
+    refreshLedger();
+    renderAllPills();
+}
+
+// mockDataRows removed for dynamic ribbon
+
+let isFirstTap = false;
+let hudStagingValue = "";
+
+const liveAppState = {
+    description: "",
+    diag_herm_v: null, diag_herm_a: null,
+    diag_fan_v: null, diag_fan_a: null,
+    diag_comp_rla: null, diag_odf_fla: null,
+    diag_comp_rla_2: null, diag_odf_fla_2: null,
+    testMode: 'live',
+    flowMode: 'component',
+    diag_herm_bench: null, diag_fan_bench: null,
+    target_mfd: 35, target_fan_mfd: 5,
+    cRlaRating: 14.20, odfFlaRating: 1.10,
+    cRla2Rating: 14.20, odfFla2Rating: 1.10,
+    circ_a: "Herm", circ_b: "Fan",
+    comp_qty: 1, fan_qty: 1,
+    selectedTolerance: 0.06,
+    activeField: 'diag_herm_v',
+    micActive: false,
+    isHermEnabled: true,
+    isFanEnabled: true
+};
+
+function toggleTestMode() {
+    const modes = ['live', 'bench', 'both'];
+    liveAppState.testMode = modes[(modes.indexOf(liveAppState.testMode) + 1) % 3];
+    
+    const btn = document.getElementById('hud-btn-mode');
+    const hudBox = document.getElementById('hud-main-box');
+    
+    if (liveAppState.testMode === 'live') {
+        btn.innerHTML = '⚡'; btn.style.background = '#3b82f6';
+        hudBox.style.borderImage = 'none'; hudBox.style.borderColor = '#3b82f6';
+    } else if (liveAppState.testMode === 'bench') {
+        btn.innerHTML = '🧪'; btn.style.background = '#f59e0b';
+        hudBox.style.borderImage = 'none'; hudBox.style.borderColor = '#f59e0b';
+    } else {
+        btn.innerHTML = `<div class="relative w-full h-full"><span class="absolute top-1 left-2 text-lg drop-shadow-md">⚡</span><svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none"><line x1="0" y1="100%" x2="100%" y2="0" stroke="rgba(255,255,255,0.3)" stroke-width="2"/></svg><span class="absolute bottom-1 right-2 text-lg drop-shadow-md">🧪</span></div>`;
+        btn.style.background = 'linear-gradient(to bottom right, #3b82f6, #f59e0b)';
+        hudBox.style.borderImage = 'linear-gradient(to right, #3b82f6, #f59e0b) 1';
+    }
+    
+    const activeSeq = getActiveSequence();
+    if (!activeSeq.find(s => s.id === liveAppState.activeField) && activeSeq.length > 0) {
+        setActiveField(activeSeq[0].id);
+    }
+    renderAllPills(); refreshLedger(); updateHUD(); updateDashLabels();
+}
+
+function toggleComponent(comp) {
+    if (comp === 'herm') liveAppState.isHermEnabled = !liveAppState.isHermEnabled;
+    if (comp === 'fan') liveAppState.isFanEnabled = !liveAppState.isFanEnabled;
+    
+    const activeSeq = getActiveSequence();
+    if (!activeSeq.find(s => s.id === liveAppState.activeField) && activeSeq.length > 0) {
+        setActiveField(activeSeq[0].id);
+        document.getElementById('hud-hidden-numeric-input').value = '';
+    }
+    
+    renderAllPills();
+    refreshLedger();
+    updateHUD();
+    updateDashLabels();
+}
+
+const committedState = {
+    diag_herm_v: false, diag_herm_a: false,
+    diag_fan_v: false, diag_fan_a: false,
+    diag_comp_rla: false, diag_odf_fla: false,
+    diag_comp_rla_2: false, diag_odf_fla_2: false,
+    diag_herm_bench: false, diag_fan_bench: false
+};
+
+const hudSequence = [
+{ id: 'diag_herm_v', prompt: 'Enter Herm Volts', label: 'Herm Volts' },
+{ id: 'diag_herm_a', prompt: 'Enter Herm Amps', label: 'Herm Amps' },
+{ id: 'diag_fan_v', prompt: 'Enter Fan 1 Volts', label: 'Fan Volts' },
+{ id: 'diag_fan_a', prompt: 'Enter Fan 1 Amps', label: 'Fan Amps' },
+{ id: 'diag_comp_rla', prompt: 'Enter Comp 1 RLA', label: 'Comp 1 RLA (Act)' },
+{ id: 'diag_comp_rla_2', prompt: 'Enter Comp 2 RLA', label: 'Comp 2 RLA (Act)' },
+{ id: 'diag_odf_fla', prompt: 'Enter Fan 1 FLA', label: 'Fan 1 FLA (Act)' },
+{ id: 'diag_odf_fla_2', prompt: 'Enter Fan 2 FLA', label: 'Fan 2 FLA (Act)' },
+{ id: 'diag_herm_bench', prompt: 'Enter Herm MFD', label: 'Herm MFD' },
+{ id: 'diag_fan_bench', prompt: 'Enter Fan 1 MFD', label: 'Fan MFD' }
+];
+
+window.totalCaps = 1;
+window.activeCap = 0;
+window.modalState = null;
+
+function openHubModal() {
+    document.getElementById('hub-desc-input').value = liveAppState.description || "";
+    document.getElementById('hub-master-modal').classList.remove('hidden');
+    document.getElementById('hub-master-modal').classList.add('flex');
+}
+
+function closeHubModal() {
+    document.getElementById('hub-master-modal').classList.remove('flex');
+    document.getElementById('hub-master-modal').classList.add('hidden');
+}
+
+function saveHubData() {
+    liveAppState.description = document.getElementById('hub-desc-input').value.trim();
+    updateStickyDescription();
+    saveToLocal();
+    closeHubModal();
+}
+
+function toggleModalVisibility() {
+
+
+const cQty = document.getElementById('config-comp-qty').value;
+
+
+const fQty = document.getElementById('config-fan-qty').value;
+
+
+const c2Row = document.getElementById('config-comp2-row');
+
+
+const f2Row = document.getElementById('config-fan2-row');
+
+
+if (c2Row) c2Row.style.display = (cQty === '2') ? 'grid' : 'none';
+
+
+if (f2Row) f2Row.style.display = (fQty === '2') ? 'block' : 'none';
+
+
+}
+
+function handleCircAChange(val) {
+    liveAppState.target_mfd = (val === 'Herm') ? 45 : 10;
+}
+
+function handleCircBChange(val) {
+    liveAppState.target_fan_mfd = (val === 'Fan') ? 5 : 10;
+}
+
+function toggleConfigModal() {
+    const modal = document.getElementById('diag-config-modal');
+    if (modal) {
+        modal.classList.toggle('hidden');
+        modal.classList.toggle('flex');
+        
+        if (modal.classList.contains('flex')) {
+            populateConfigProfiles();
+            document.getElementById('config-circ-a').value = liveAppState.circ_a || "Herm";
+            document.getElementById('config-circ-b').value = liveAppState.circ_b || "Fan";
+            document.getElementById('config-comp-qty').value = liveAppState.comp_qty || 1;
+
+            document.getElementById('config-fan-qty').value = liveAppState.fan_qty || 1;
+
+            document.getElementById('config-target-mfd').value = liveAppState.target_mfd || 35;
+
+            document.getElementById('config-target-fan-mfd').value = liveAppState.target_fan_mfd || 5;
+
+            document.getElementById('config-comp-rla-rating').value = liveAppState.cRlaRating || 14.20;
+            document.getElementById('config-comp-rla-2-rating').value = liveAppState.cRla2Rating || 14.20;
+            document.getElementById('config-fan-fla-rating').value = liveAppState.odfFlaRating || 1.10;
+            document.getElementById('config-fan-fla-2-rating').value = liveAppState.odfFla2Rating || 1.10;
+            toggleModalVisibility();
+        }
+    }
+}
+
+function saveSystemConfig() {
+    liveAppState.circ_a = document.getElementById('config-circ-a').value || "Herm";
+    liveAppState.circ_b = document.getElementById('config-circ-b').value || "Fan";
+    liveAppState.comp_qty = parseInt(document.getElementById('config-comp-qty').value) || 1;
+
+    liveAppState.fan_qty = parseInt(document.getElementById('config-fan-qty').value) || 1;
+
+    liveAppState.target_mfd = parseFloat(document.getElementById('config-target-mfd').value) || 35;
+
+    liveAppState.target_fan_mfd = parseFloat(document.getElementById('config-target-fan-mfd').value) || 5;
+
+    liveAppState.cRlaRating = parseFloat(document.getElementById('config-comp-rla-rating').value) || 14.20;
+    liveAppState.cRla2Rating = parseFloat(document.getElementById('config-comp-rla-2-rating').value) || 14.20;
+    liveAppState.odfFlaRating = parseFloat(document.getElementById('config-fan-fla-rating').value) || 1.10;
+    liveAppState.odfFla2Rating = parseFloat(document.getElementById('config-fan-fla-2-rating').value) || 1.10;
+
+    const activeSeq = getActiveSequence();
+    if (!activeSeq.find(s => s.id === liveAppState.activeField) && activeSeq.length > 0) {
+        setActiveField(activeSeq[0].id);
+    }
+
+    saveToLocal();
+    renderAllPills();
+    refreshLedger();
+    updateHUD();
+    updateDashLabels();
+    toggleConfigModal();
+}
+
+function updateStickyDescription() {
+    const banner = document.getElementById('sticky-description-banner');
+    const textSpan = document.getElementById('sticky-description-text');
+    
+    if (liveAppState.description && liveAppState.description !== "") {
+        textSpan.innerText = liveAppState.description;
+        banner.classList.remove('hidden');
+        banner.classList.add('flex');
+    } else {
+        banner.classList.remove('flex');
+        banner.classList.add('hidden');
+        textSpan.innerText = "";
+    }
+}
+
+function updateLeftButtons() {
+    const l1 = document.getElementById('label-total-caps');
+    const l2 = document.getElementById('label-active-page');
+    if (l1) l1.innerText = window.totalCaps;
+    if (l2) l2.innerText = (window.activeCap + 1);
+}
+
+function openTotalCapsModal() {
+    window.modalState = 'caps';
+    document.getElementById('modal-title').innerText = 'Set Total Capacitors (1-10)';
+    renderModalGrid(10, window.totalCaps);
+    document.getElementById('hud-modal-overlay').classList.remove('hidden');
+    document.getElementById('hud-modal-overlay').classList.add('flex');
+}
+
+function openPageModal() {
+    window.modalState = 'page';
+    document.getElementById('modal-title').innerText = 'Jump to Capacitor Page';
+    renderModalGrid(window.totalCaps, window.activeCap + 1);
+    document.getElementById('hud-modal-overlay').classList.remove('hidden');
+    document.getElementById('hud-modal-overlay').classList.add('flex');
+}
+
+function closeModals() {
+    document.getElementById('hud-modal-overlay').classList.remove('flex');
+    document.getElementById('hud-modal-overlay').classList.add('hidden');
+}
+
+function renderModalGrid(count, activeVal) {
+    let html = '';
+    for(let i=1; i<=count; i++) {
+        const isActive = (i === activeVal);
+        const bg = isActive ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600';
+        html += `<button onclick="handleModalSelect(${i})" class="h-12 rounded-lg font-bold text-lg flex items-center justify-center transition-colors shadow-sm ${bg}">${i}</button>`;
+    }
+    document.getElementById('modal-grid').innerHTML = html;
+}
+
+function handleModalSelect(val) {
+    if(window.modalState === 'caps') {
+        window.totalCaps = val;
+        if(window.activeCap >= window.totalCaps) {
+            switchPage(window.totalCaps - 1);
+        } else {
+            updateLeftButtons();
+            saveToLocal();
+        }
+    } else if(window.modalState === 'page') {
+        switchPage(val - 1);
+    }
+    closeModals();
+}
+
+function switchPage(newIndex) {
+    if(newIndex === window.activeCap) return;
+    window.activeCap = newIndex;
+    
+    if(window.capacitorRegistry && window.capacitorRegistry[newIndex]) {
+        Object.assign(liveAppState, window.capacitorRegistry[newIndex].liveAppState);
+        Object.assign(committedState, window.capacitorRegistry[newIndex].committedState);
+    } else {
+        triggerMasterReset();
+    }
+    
+    const activeSeq = getActiveSequence();
+    if (activeSeq.length > 0 && !activeSeq.find(s => s.id === liveAppState.activeField)) {
+        setActiveField(activeSeq[0].id);
+    }
+    
+    updateLeftButtons();
+    renderAllPills();
+    refreshLedger();
+    updateHUD();
+    updateDashLabels();
+    
+    const btn = document.getElementById('hud-btn-mode');
+    const hudBox = document.getElementById('hud-main-box');
+    if (liveAppState.testMode === 'live') {
+        if(btn) { btn.innerHTML = '⚡'; btn.style.background = '#3b82f6'; }
+        if(hudBox) { hudBox.style.borderImage = 'none'; hudBox.style.borderColor = '#3b82f6'; }
+    } else if (liveAppState.testMode === 'bench') {
+        if(btn) { btn.innerHTML = '🧪'; btn.style.background = '#f59e0b'; }
+        if(hudBox) { hudBox.style.borderImage = 'none'; hudBox.style.borderColor = '#f59e0b'; }
+    } else {
+        if(btn) { 
+            btn.innerHTML = `<div class="relative w-full h-full"><span class="absolute top-1 left-2 text-lg drop-shadow-md">⚡</span><svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none"><line x1="0" y1="100%" x2="100%" y2="0" stroke="rgba(255,255,255,0.3)" stroke-width="2"/></svg><span class="absolute bottom-1 right-2 text-lg drop-shadow-md">🧪</span></div>`;
+            btn.style.background = 'linear-gradient(to bottom right, #3b82f6, #f59e0b)';
+        }
+        if(hudBox) hudBox.style.borderImage = 'linear-gradient(to right, #3b82f6, #f59e0b) 1';
+    }
+    updateStickyDescription();
+    saveToLocal();
+}
+
+function getActiveSequence() {
+    const componentFlow = ['diag_herm_v', 'diag_herm_a', 'diag_fan_v', 'diag_fan_a', 'diag_comp_rla', 'diag_comp_rla_2', 'diag_odf_fla', 'diag_odf_fla_2', 'diag_herm_bench', 'diag_fan_bench'];
+    const toolFlow = ['diag_herm_v', 'diag_fan_v', 'diag_herm_a', 'diag_fan_a', 'diag_comp_rla', 'diag_comp_rla_2', 'diag_odf_fla', 'diag_odf_fla_2', 'diag_herm_bench', 'diag_fan_bench'];
+
+    const activeOrder = liveAppState.flowMode === 'tool' ? toolFlow : componentFlow;
+
+    return activeOrder.map(id => hudSequence.find(s => s.id === id)).filter(step => {
+        if (!step) return false;
+        if (step.id.includes('herm') && !liveAppState.isHermEnabled) return false;
+        if (step.id.includes('fan') && !liveAppState.isFanEnabled) return false;
+        if (step.id === 'diag_comp_rla_2' && liveAppState.comp_qty !== 2) return false;
+        if (step.id === 'diag_odf_fla_2' && liveAppState.fan_qty !== 2) return false;
+        if (liveAppState.testMode === 'live' && step.id.includes('bench')) return false;
+        if (liveAppState.testMode === 'bench' && (step.id.endsWith('_v') || step.id.endsWith('_a'))) return false;
+        return true;
+    });
+}
+
+function toggleFlowMode() {
+    liveAppState.flowMode = liveAppState.flowMode === 'component' ? 'tool' : 'component';
+    const lbl = document.getElementById('lbl-flow-toggle');
+    if (lbl) lbl.innerText = liveAppState.flowMode === 'component' ? 'COMP FLOW' : 'TOOL FLOW';
+    
+    const activeSeq = getActiveSequence();
+    if (!activeSeq.find(s => s.id === liveAppState.activeField) && activeSeq.length > 0) {
+        setActiveField(activeSeq[0].id);
+    }
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function updateDashLabels() {
+    const dashLeft = document.getElementById('hud-dash-left');
+    const dashRight = document.getElementById('hud-dash-right');
+    if(dashLeft) {
+        const hMfd = liveAppState.isHermEnabled ? liveAppState.target_mfd : 0;
+        const fMfd = liveAppState.isFanEnabled ? liveAppState.target_fan_mfd : 0;
+        let capStr = '';
+        if(liveAppState.isHermEnabled && liveAppState.isFanEnabled) capStr = `${hMfd}+${fMfd} µF`;
+        else if (liveAppState.isHermEnabled) capStr = `${hMfd} µF`;
+        else if (liveAppState.isFanEnabled) capStr = `${fMfd} µF`;
+        else capStr = '---';
+        dashLeft.innerHTML = `${capStr}<br>±${(liveAppState.selectedTolerance*100).toFixed(0)}%`;
+    }
+    if(dashRight) {
+        const rla = liveAppState.cRlaRating ? liveAppState.cRlaRating.toFixed(1) : '-';
+const fla = liveAppState.odfFlaRating ? liveAppState.odfFlaRating.toFixed(2) : '-';
+        dashRight.innerHTML = `${rla} / ${fla}`;
+    }
+}
+
+function saveToLocal() {
+    if (!window.capacitorRegistry) window.capacitorRegistry = [];
+    window.capacitorRegistry[window.activeCap] = {
+        liveAppState: JSON.parse(JSON.stringify(liveAppState)),
+        committedState: JSON.parse(JSON.stringify(committedState))
+    };
+    const data = {
+        liveAppState: liveAppState,
+        committedState: committedState,
+        capacitorRegistry: window.capacitorRegistry,
+        compilerRegistry: window.compilerRegistry || {},
+        totalCaps: window.totalCaps || 1,
+        activeCap: window.activeCap || 0
+    };
+    localStorage.setItem('hvac_app_v4', JSON.stringify(data));
+}
+
+function initLedger() {
+    const ledger = document.getElementById('job-ledger-container');
+    let html = '';
+    const items = [
+{ id: 'diag_herm_v', lbl: 'Herm Volts' }, { id: 'diag_herm_a', lbl: 'Herm Amps' }, { id: 'combo-herm', lbl: 'Herm Results', combo: true },
+{ id: 'diag_fan_v', lbl: 'Fan Volts' }, { id: 'diag_fan_a', lbl: 'Fan Amps' }, { id: 'combo-fan', lbl: 'Fan Results', combo: true },
+{ id: 'diag_comp_rla', lbl: 'RLA (Measured)' },
+{ id: 'diag_comp_rla_2', lbl: 'RLA 2 (Measured)' },
+{ id: 'diag_odf_fla', lbl: 'FLA ODF (Measured)' },
+{ id: 'diag_odf_fla_2', lbl: 'FLA ODF2 (Measured)' },
+{ id: 'diag_herm_bench', lbl: 'Herm µF' }, { id: 'diag_fan_bench', lbl: 'Fan µF' },
+{ id: 'report-summary', lbl: 'Capacitor Results', combo: true },
+{ id: 'report-motor', lbl: 'Motor Load Results', combo: true }
+];
+
+    items.forEach(item => {
+        const activeId = item.combo ? (item.id === 'combo-herm' ? 'diag_herm_v' : (item.id === 'combo-fan' ? 'diag_fan_v' : 'diag_herm_v')) : item.id;
+        html += `
+        <div id="ledger-row-${item.id}" onclick="setActiveField('${activeId}')" class="flex items-stretch mb-[4px] w-full box-border cursor-pointer bg-white border border-slate-300 rounded overflow-hidden">
+            <div id="ledger-row-${item.id}-text" class="py-1 px-3 text-[10px] text-black font-mono flex-1 transition-colors flex justify-between items-center">
+                <span class="font-bold text-black cursor-pointer select-none transition-colors px-1 -ml-1 rounded" id="label-${item.id}" onclick="event.stopPropagation(); toggleBlueStamp('${item.id}')">${item.lbl}</span> <span><span class="text-slate-400 font-bold">---</span></span>
+            </div>
+            <div class="bg-slate-100 text-slate-500 font-bold flex items-center justify-center px-3 border-l border-slate-200 select-none hover:bg-slate-200 transition-colors" onclick="event.stopPropagation(); clearSpecificSlot('${item.id}')">[ ⟲ ]</div>
+        </div>`;
+    });
+    ledger.innerHTML = html;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('hvac_app_v4');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            Object.assign(liveAppState, parsed.liveAppState);
+            Object.assign(committedState, parsed.committedState);
+            if (liveAppState.circ_a === 'compressor' || liveAppState.circ_a === 'herm') liveAppState.circ_a = 'Herm';
+            if (liveAppState.circ_b === 'fan') liveAppState.circ_b = 'Fan';
+            if (parsed.capacitorRegistry) window.capacitorRegistry = parsed.capacitorRegistry;
+            if (parsed.totalCaps) window.totalCaps = parsed.totalCaps;
+            if (parsed.activeCap !== undefined) window.activeCap = parsed.activeCap;
+            if (parsed.compilerRegistry) window.compilerRegistry = parsed.compilerRegistry;
+        } catch(e) { console.error('Storage parse error', e); }
+    }
+    if (!window.capacitorRegistry) window.capacitorRegistry = [];
+    updateLeftButtons();
+    renderAllPills();
+    initLedger();
+    refreshLedger();
+    updateDashLabels();
+    updateStickyDescription();
+    const activeSeq = getActiveSequence();
+    if (activeSeq.length > 0) setActiveField(activeSeq[0].id);
+    else updateHUD();
+});
+
+function setActiveField(id) {
+    liveAppState.activeField = id;
+    isFirstTap = true;
+    hudStagingValue = "";
+    document.getElementById('hud-hidden-numeric-input').value = "";
+
+    // Unified Selection: Strip active class from all rows
+    const allRows = ['diag_herm_v', 'diag_herm_a', 'combo-herm', 'diag_fan_v', 'diag_fan_a', 'combo-fan', 'diag_comp_rla', 'diag_odf_fla'];
+    allRows.forEach(rowId => {
+        const el = document.getElementById('ledger-row-' + rowId);
+        if (el) el.classList.remove('active-ledger-row');
+    });
+
+    // Add active class to selected ledger row
+    const targetEl = document.getElementById('ledger-row-' + id);
+    if (targetEl) targetEl.classList.add('active-ledger-row');
+
+    renderAllPills();
+    updateHUD();
+    document.getElementById('hud-hidden-numeric-input').focus();
+
+    // Auto-Scroll Ribbon to Active Pill
+    setTimeout(() => {
+        const activePill = document.getElementById('pill-' + id);
+        if (activePill) activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }, 50);
+}
+
+function syncHiddenInput(e) {
+    const el = document.getElementById('hud-hidden-numeric-input');
+    if (isFirstTap && e && e.data !== null && e.data !== undefined) {
+        el.value = e.data;
+        isFirstTap = false;
+    } else if (isFirstTap) {
+        isFirstTap = false;
+    }
+    hudStagingValue = el.value;
+    updateHUD();
+}
+
+function commitHudValue() {
+    if (hudStagingValue !== '') {
+        const parsed = parseFloat(hudStagingValue);
+        if (!isNaN(parsed)) liveAppState[liveAppState.activeField] = parsed;
+    }
+    hudStagingValue = "";
+    const val = liveAppState[liveAppState.activeField];
+    if (val) committedState[liveAppState.activeField] = true;
+
+    refreshLedger(); // Immediate binding
+
+    // Smart Hunting
+    let foundEmpty = false;
+    const activeSeq = getActiveSequence();
+    for (let i = 0; i < activeSeq.length; i++) {
+        const fId = activeSeq[i].id;
+        if (!committedState[fId]) {
+            setActiveField(fId);
+            foundEmpty = true;
+            break;
+        }
+    }
+    if (!foundEmpty && activeSeq.length > 0) {
+        let currentIndex = activeSeq.findIndex(s => s.id === liveAppState.activeField);
+        currentIndex = (currentIndex + 1) % activeSeq.length;
+        setActiveField(activeSeq[currentIndex].id);
+    }
+}
+
+function clearSpecificSlot(id) {
+    if (id === 'combo-herm' || id === 'combo-fan') {
+        const t = document.getElementById(`ledger-row-${id}-text`);
+        const spec = id === 'combo-herm' ? (liveAppState.isHermEnabled ? `(${liveAppState.target_mfd || '---'} µF)` : '') : (liveAppState.isFanEnabled ? `(${liveAppState.target_fan_mfd || '---'} µF)` : '');
+        const specDiv = spec ? `<div style="color: #000000; font-weight: bold; margin-left: auto;">${spec}</div>` : '';
+        if(t) t.innerHTML = `<span class="font-bold">${id==='combo-herm'?'Herm':'Fan'} MFD Result</span> <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span>${specDiv}</div>`;
+        return;
+    }
+    liveAppState[id] = null;
+    committedState[id] = false;
+    
+    const textDiv = document.getElementById(`ledger-row-${id}-text`);
+    if (textDiv) {
+        const lbl = hudSequence.find(s => s.id === id)?.label || id;
+        let specStr = '';
+        if (id === 'diag_comp_rla') {
+            specStr = `<span style="color: #000000; font-weight: bold; margin-left: auto;">(${liveAppState.cRlaRating ? liveAppState.cRlaRating.toFixed(2) : '---'} A)</span>`;
+        } else if (id === 'diag_comp_rla_2') {
+            specStr = `<span style="color: #000000; font-weight: bold; margin-left: auto;">(${liveAppState.cRla2Rating ? liveAppState.cRla2Rating.toFixed(2) : '---'} A)</span>`;
+        } else if (id === 'diag_odf_fla') {
+            specStr = `<span style="color: #000000; font-weight: bold; margin-left: auto;">(${liveAppState.odfFlaRating ? liveAppState.odfFlaRating.toFixed(2) : '---'} A)</span>`;
+        } else if (id === 'diag_odf_fla_2') {
+            specStr = `<span style="color: #000000; font-weight: bold; margin-left: auto;">(${liveAppState.odfFla2Rating ? liveAppState.odfFla2Rating.toFixed(2) : '---'} A)</span>`;
+        }
+        textDiv.innerHTML = `<span class="font-bold">${lbl}</span> <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span>${specStr}</div>`;
+    }
+
+    if (id === 'diag_herm_v' || id === 'diag_herm_a') clearSpecificSlot('combo-herm');
+    if (id === 'diag_fan_v' || id === 'diag_fan_a') clearSpecificSlot('combo-fan');
+    
+    if (liveAppState.activeField === id) {
+        hudStagingValue = '';
+        document.getElementById('hud-hidden-numeric-input').value = '';
+        updateHUD();
+    }
+    renderAllPills();
+    refreshLedger();
+}
+
+function clearHudValue() {
+    clearSpecificSlot(liveAppState.activeField);
+    document.getElementById('hud-hidden-numeric-input').focus();
+}
+
+// Blue Stamp Compiler Registry
+window.compilerRegistry = window.compilerRegistry || {};
+
+const hardcodedFieldMap = [
+"Herm Volts | W88 | Diag",
+"Herm Amps | W89 | Diag",
+"Herm Results | W90 | Diag",
+"Fan Volts | W92 | Diag",
+"Fan Amps | W93 | Diag",
+"Fan Results | W94 | Diag",
+"RLA (Measured) | W99 | Diag",
+"RLA 2 (Measured) | W100 | Diag",
+"FLA ODF (Measured) | W101 | Diag",
+"FLA ODF2 (Measured) | W102 | Diag",
+"Capacitor Results | W95 | Diag",
+"Motor Load Results | W95C | Diag"
+];
+
+function toggleBlueStamp(id) {
+    if (!window.compilerRegistry[id]) {
+        window.compilerRegistry[id] = { stamped: false };
+    }
+    window.compilerRegistry[id].stamped = !window.compilerRegistry[id].stamped;
+
+    // Extract the human-readable label and formatted sentence for the Compiler
+    if (window.compilerRegistry[id].stamped) {
+        const textWrapper = document.getElementById(`ledger-row-${id}-text`);
+        if (textWrapper) {
+            const labelSpan = textWrapper.querySelector('span:first-child');
+            const valueDiv = textWrapper.querySelector('div.flex-1');
+            if (labelSpan) window.compilerRegistry[id].label = labelSpan.innerText.trim();
+            if (valueDiv) window.compilerRegistry[id].displayValue = valueDiv.innerText.trim();
+        }
+    } else {
+        // Clean up payload if un-stamped
+        delete window.compilerRegistry[id].label;
+        delete window.compilerRegistry[id].displayValue;
+    }
+
+    refreshLedger(); // Instantly repaints the row
+    saveToLocal(); // Locks the stamp into memory
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+let isCompilerSwept = false;
+
+function toggleCompilerSweep() {
+    isCompilerSwept = !isCompilerSwept;
+    const btn = document.getElementById('btn-compiler');
+    const icon = document.getElementById('icon-compiler');
+    const txt = document.getElementById('text-compiler');
+    
+    if(isCompilerSwept) {
+        btn.classList.remove('bg-slate-800', 'border-slate-600', 'hover:bg-slate-700');
+        btn.classList.add('bg-blue-600', 'border-blue-400', 'hover:bg-blue-500');
+        if(icon) icon.classList.replace('text-slate-400', 'text-white');
+        if(txt) txt.classList.replace('text-slate-400', 'text-white');
+
+        document.querySelectorAll('[id^="ledger-row-"]').forEach(row => {
+            const id = row.id.replace('ledger-row-', '');
+            const textWrapper = document.getElementById(`ledger-row-${id}-text`);
+            if (textWrapper && !textWrapper.innerText.includes('---')) {
+                const isStamped = window.compilerRegistry && window.compilerRegistry[id] && window.compilerRegistry[id].stamped;
+                if (!isStamped) toggleBlueStamp(id);
+            }
+        });
+    } else {
+        btn.classList.add('bg-slate-800', 'border-slate-600', 'hover:bg-slate-700');
+        btn.classList.remove('bg-blue-600', 'border-blue-400', 'hover:bg-blue-500');
+        if(icon) icon.classList.replace('text-white', 'text-slate-400');
+        if(txt) txt.classList.replace('text-white', 'text-slate-400');
+        
+        document.querySelectorAll('[id^="ledger-row-"]').forEach(row => {
+            const id = row.id.replace('ledger-row-', '');
+            const textWrapper = document.getElementById(`ledger-row-${id}-text`);
+            if (textWrapper && !textWrapper.innerText.includes('---')) {
+                const isStamped = window.compilerRegistry && window.compilerRegistry[id] && window.compilerRegistry[id].stamped;
+                if (isStamped) toggleBlueStamp(id);
+            }
+        });
+    }
+    if (navigator.vibrate) navigator.vibrate(50);
+    saveToLocal(); // Locks the bulk sweep into memory
+}
+
+function triggerMasterReset() {
+    Object.keys(committedState).forEach(k => {
+        liveAppState[k] = null;
+        committedState[k] = false;
+        clearSpecificSlot(k);
+    });
+    const activeSeq = getActiveSequence();
+    if (activeSeq.length > 0) setActiveField(activeSeq[0].id);
+}
+
+function toggleMic() {
+    liveAppState.micActive = !liveAppState.micActive;
+    document.getElementById('voice-trigger-btn').style.background = liveAppState.micActive ? '#16a34a' : '#1e293b';
+}
+
+function updateHUD() {
+    const step = getActiveSequence().find(s => s.id === liveAppState.activeField);
+    if (!step) return;
+
+    let promptText = step.prompt;
+    if (liveAppState.comp_qty === 1 && promptText.includes('Comp 1')) promptText = promptText.replace('Comp 1 ', 'Comp ');
+    if (liveAppState.fan_qty === 1 && promptText.includes('Fan 1')) promptText = promptText.replace('Fan 1 ', 'Fan ');
+    document.getElementById('hud-status-prompt').innerText = promptText;
+    const inputEl = document.getElementById('hud-hidden-numeric-input');
+
+    let valToDisplay = liveAppState[step.id];
+    if (hudStagingValue !== '') {
+        const parsed = parseFloat(hudStagingValue);
+        valToDisplay = isNaN(parsed) ? 0 : parsed;
+    } else if (inputEl.value === '') {
+        valToDisplay = 0;
+    }
+
+    let htmlStr = '---';
+    if (valToDisplay) {
+        const fixedStr = parseFloat(valToDisplay).toFixed(2);
+        if (fixedStr.includes('.')) {
+            const parts = fixedStr.split('.');
+            htmlStr = `${parts[0]}<span style="font-size: 0.62em; opacity: 0.85; margin-left: 1px;">.${parts[1]}</span>`;
+        } else {
+            htmlStr = `${fixedStr}<span style="font-size: 0.62em; opacity: 0.85; margin-left: 1px;">.00</span>`;
+        }
+    }
+    document.getElementById('hud-live-value-box').innerHTML = htmlStr;
+
+    let helper = 'Target Range: ---';
+    let envColor = '#cbd5e1';
+    const tol = liveAppState.selectedTolerance;
+    const val = parseFloat(valToDisplay);
+    const hasVal = (val && !isNaN(val));
+
+    // Calculate live bounds for HUD
+    if (step.id === 'diag_herm_v' && liveAppState.target_mfd) {
+        if (liveAppState.diag_herm_a) {
+            const predVolts = (liveAppState.diag_herm_a * 2652) / liveAppState.target_mfd;
+            const min = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 + tol));
+            const max = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 - tol));
+            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} V)  🎯 ${predVolts.toFixed(1)} V`;
+            if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
+        } else if (hasVal) {
+            const predAmps = (liveAppState.target_mfd * val) / 2652;
+            const min = ((liveAppState.target_mfd * (1 - tol)) * val) / 2652;
+            const max = ((liveAppState.target_mfd * (1 + tol)) * val) / 2652;
+            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} A)  🎯 ${predAmps.toFixed(2)} A`;
+            envColor = '#cbd5e1';
+        }
+    } else if (step.id === 'diag_herm_a' && liveAppState.target_mfd) {
+        if (liveAppState.diag_herm_v) {
+            const predAmps = (liveAppState.target_mfd * liveAppState.diag_herm_v) / 2652;
+            const min = ((liveAppState.target_mfd * (1 - tol)) * liveAppState.diag_herm_v) / 2652;
+            const max = ((liveAppState.target_mfd * (1 + tol)) * liveAppState.diag_herm_v) / 2652;
+            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} A)  🎯 ${predAmps.toFixed(2)} A`;
+            if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
+        } else if (hasVal) {
+            const predVolts = (val * 2652) / liveAppState.target_mfd;
+            const min = (val * 2652) / (liveAppState.target_mfd * (1 + tol));
+            const max = (val * 2652) / (liveAppState.target_mfd * (1 - tol));
+            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} V)  🎯 ${predVolts.toFixed(1)} V`;
+            envColor = '#cbd5e1';
+        }
+    } else if (step.id === 'diag_fan_v' && liveAppState.target_fan_mfd) {
+        if (liveAppState.diag_fan_a) {
+            const predVolts = (liveAppState.diag_fan_a * 2652) / liveAppState.target_fan_mfd;
+            const min = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 + tol));
+            const max = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 - tol));
+            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} V)  🎯 ${predVolts.toFixed(1)} V`;
+            if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
+        } else if (hasVal) {
+            const predAmps = (liveAppState.target_fan_mfd * val) / 2652;
+            const min = ((liveAppState.target_fan_mfd * (1 - tol)) * val) / 2652;
+            const max = ((liveAppState.target_fan_mfd * (1 + tol)) * val) / 2652;
+            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} A)  🎯 ${predAmps.toFixed(2)} A`;
+            envColor = '#cbd5e1';
+        }
+    } else if (step.id === 'diag_fan_a' && liveAppState.target_fan_mfd) {
+        if (liveAppState.diag_fan_v) {
+            const predAmps = (liveAppState.target_fan_mfd * liveAppState.diag_fan_v) / 2652;
+            const min = ((liveAppState.target_fan_mfd * (1 - tol)) * liveAppState.diag_fan_v) / 2652;
+            const max = ((liveAppState.target_fan_mfd * (1 + tol)) * liveAppState.diag_fan_v) / 2652;
+            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} A)  🎯 ${predAmps.toFixed(2)} A`;
+            if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
+        } else if (hasVal) {
+            const predVolts = (val * 2652) / liveAppState.target_fan_mfd;
+            const min = (val * 2652) / (liveAppState.target_fan_mfd * (1 + tol));
+            const max = (val * 2652) / (liveAppState.target_fan_mfd * (1 - tol));
+            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} V)  🎯 ${predVolts.toFixed(1)} V`;
+            envColor = '#cbd5e1';
+        }
+    } else if (step.id === 'diag_comp_rla' && liveAppState.cRlaRating) {
+        helper = `(Max: ${liveAppState.cRlaRating.toFixed(3)} A)`;
+        if (hasVal) envColor = (val <= liveAppState.cRlaRating) ? '#16a34a' : '#dc2626';
+    } else if (step.id === 'diag_odf_fla' && liveAppState.odfFlaRating) {
+        helper = `(Max: ${liveAppState.odfFlaRating.toFixed(3)} A)`;
+        if (hasVal) envColor = (val <= liveAppState.odfFlaRating) ? '#16a34a' : '#dc2626';
+    } else if (step.id === 'diag_herm_bench' && liveAppState.target_mfd) {
+        const min = liveAppState.target_mfd * (1 - tol);
+        const max = liveAppState.target_mfd * (1 + tol);
+        helper = `(${min.toFixed(3)} - ${max.toFixed(3)} µF)  🎯 ${liveAppState.target_mfd.toFixed(1)} µF`;
+        if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
+    } else if (step.id === 'diag_fan_bench' && liveAppState.target_fan_mfd) {
+        const min = liveAppState.target_fan_mfd * (1 - tol);
+        const max = liveAppState.target_fan_mfd * (1 + tol);
+        helper = `(${min.toFixed(3)} - ${max.toFixed(3)} µF)  🎯 ${liveAppState.target_fan_mfd.toFixed(1)} µF`;
+        if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
+    }
+
+    const envEl = document.getElementById('hud-helper-envelope');
+    envEl.innerText = helper;
+    envEl.style.color = envColor;
+}
+
+function refreshLedger() {
+    const tol = liveAppState.selectedTolerance;
+    
+    hudSequence.forEach(step => {
+        const row = document.getElementById(`ledger-row-${step.id}`);
+        if (row) {
+            if (step.id.includes('herm') && !liveAppState.isHermEnabled) row.style.display = 'none';
+            else if (step.id.includes('fan') && !liveAppState.isFanEnabled) row.style.display = 'none';
+            else if (liveAppState.testMode === 'live' && step.id.includes('bench')) row.style.display = 'none';
+            else if (liveAppState.testMode === 'bench' && (step.id.endsWith('_v') || step.id.endsWith('_a'))) row.style.display = 'none';
+            else if (step.id === 'diag_comp_rla_2' && liveAppState.comp_qty !== 2) row.style.display = 'none';
+            else if (step.id === 'diag_odf_fla_2' && liveAppState.fan_qty !== 2) row.style.display = 'none';
+            else row.style.display = 'flex';
+        }
+
+        const isCommitted = committedState[step.id];
+        const val = liveAppState[step.id];
+        const formattedVal = isCommitted ? (step.id.endsWith('_v') ? `${val.toFixed(1)} V` : step.id.includes('bench') ? `${val.toFixed(2)} µF` : `${val.toFixed(2)}`) : '---';
+        const tol = liveAppState.selectedTolerance || 0.06;
+
+        let isPass = true, windowStr = '', specStr = '';
+
+        if (step.id === 'diag_comp_rla') {
+            specStr = `<span style="color: #000000; font-weight: bold;">(${liveAppState.cRlaRating ? liveAppState.cRlaRating.toFixed(2) : '---'})</span>`;
+        } else if (step.id === 'diag_comp_rla_2') {
+            specStr = `<span style="color: #000000; font-weight: bold;">(${liveAppState.cRla2Rating ? liveAppState.cRla2Rating.toFixed(2) : '---'})</span>`;
+        } else if (step.id === 'diag_odf_fla') {
+            specStr = `<span style="color: #000000; font-weight: bold;">(${liveAppState.odfFlaRating ? liveAppState.odfFlaRating.toFixed(2) : '---'})</span>`;
+        } else if (step.id === 'diag_odf_fla_2') {
+            specStr = `<span style="color: #000000; font-weight: bold;">(${liveAppState.odfFla2Rating ? liveAppState.odfFla2Rating.toFixed(2) : '---'})</span>`;
+        }
+
+        if (step.id === 'diag_herm_v' && liveAppState.target_mfd) {
+            if (liveAppState.diag_herm_a) {
+                const min = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 + tol));
+                const max = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 - tol));
+                if (isCommitted) isPass = (val >= min && val <= max);
+                windowStr = `(${min.toFixed(1)} - ${max.toFixed(1)} V)`;
+            }
+        } else if (step.id === 'diag_herm_a' && liveAppState.target_mfd) {
+            if (liveAppState.diag_herm_v) {
+                const min = ((liveAppState.target_mfd * (1 - tol)) * liveAppState.diag_herm_v) / 2652;
+                const max = ((liveAppState.target_mfd * (1 + tol)) * liveAppState.diag_herm_v) / 2652;
+                if (isCommitted) isPass = (val >= min && val <= max);
+                windowStr = `(${min.toFixed(2)} - ${max.toFixed(2)})`;
+            }
+        } else if (step.id === 'diag_fan_v' && liveAppState.target_fan_mfd) {
+            if (liveAppState.diag_fan_a) {
+                const min = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 + tol));
+                const max = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 - tol));
+                if (isCommitted) isPass = (val >= min && val <= max);
+                windowStr = `(${min.toFixed(1)} - ${max.toFixed(1)} V)`;
+            }
+        } else if (step.id === 'diag_fan_a' && liveAppState.target_fan_mfd) {
+            if (liveAppState.diag_fan_v) {
+                const min = ((liveAppState.target_fan_mfd * (1 - tol)) * liveAppState.diag_fan_v) / 2652;
+                const max = ((liveAppState.target_fan_mfd * (1 + tol)) * liveAppState.diag_fan_v) / 2652;
+                if (isCommitted) isPass = (val >= min && val <= max);
+                windowStr = `(${min.toFixed(2)} - ${max.toFixed(2)})`;
+            }
+        } else if (step.id === 'diag_comp_rla' && liveAppState.cRlaRating) {
+            if (isCommitted) isPass = (val <= liveAppState.cRlaRating);
+            windowStr = isCommitted ? `(${((val / liveAppState.cRlaRating) * 100).toFixed(1)}%)` : '';
+        } else if (step.id === 'diag_comp_rla_2' && liveAppState.cRla2Rating) {
+            if (isCommitted) isPass = (val <= liveAppState.cRla2Rating);
+            windowStr = isCommitted ? `(${((val / liveAppState.cRla2Rating) * 100).toFixed(1)}%)` : '';
+        } else if (step.id === 'diag_odf_fla' && liveAppState.odfFlaRating) {
+            if (isCommitted) isPass = (val <= liveAppState.odfFlaRating);
+            windowStr = isCommitted ? `(${((val / liveAppState.odfFlaRating) * 100).toFixed(1)}%)` : '';
+        } else if (step.id === 'diag_odf_fla_2' && liveAppState.odfFla2Rating) {
+            if (isCommitted) isPass = (val <= liveAppState.odfFla2Rating);
+            windowStr = isCommitted ? `(${((val / liveAppState.odfFla2Rating) * 100).toFixed(1)}%)` : '';
+        } else if (step.id === 'diag_herm_bench' && liveAppState.target_mfd) {
+            const min = liveAppState.target_mfd * (1 - tol);
+            const max = liveAppState.target_mfd * (1 + tol);
+            if (isCommitted) isPass = (val >= min && val <= max);
+            windowStr = `(${min.toFixed(2)} - ${max.toFixed(2)} µF)`;
+            specStr = `<span style="color: #000000; font-weight: bold;">(${liveAppState.target_mfd.toFixed(1)} µF)</span>`;
+        } else if (step.id === 'diag_fan_bench' && liveAppState.target_fan_mfd) {
+            const min = liveAppState.target_fan_mfd * (1 - tol);
+            const max = liveAppState.target_fan_mfd * (1 + tol);
+            if (isCommitted) isPass = (val >= min && val <= max);
+            windowStr = `(${min.toFixed(2)} - ${max.toFixed(2)} µF)`;
+            specStr = `<span style="color: #000000; font-weight: bold;">(${liveAppState.target_fan_mfd.toFixed(1)} µF)</span>`;
+        }
+
+        const textColor = isCommitted ? (isPass ? '#16a34a' : '#dc2626') : '#94a3b8';
+        const textDiv = document.getElementById(`ledger-row-${step.id}-text`);
+        if (textDiv) {
+            const wind = windowStr ? `<span style="color: #000000; font-weight: bold;">${windowStr}</span>` : '';
+            const isStamped = window.compilerRegistry && window.compilerRegistry[step.id] && window.compilerRegistry[step.id].stamped;
+            const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === step.label);
+            const lblClass = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+            let displayLabel = step.label;
+            if (step.id.includes('herm')) displayLabel = step.label.replace('Herm', liveAppState.circ_a);
+            else if (step.id.includes('fan')) displayLabel = step.label.replace('Fan', liveAppState.circ_b);
+            textDiv.innerHTML = `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${lblClass}" onclick="event.stopPropagation(); toggleBlueStamp('${step.id}')">${displayLabel}</span> <div class="flex flex-1 items-center ml-2"><span style="color: ${textColor}; font-weight: 900; font-size: 12px;">${formattedVal}</span><div style="margin-left: auto; display: flex; gap: 6px; align-items: center;">${wind}${specStr}</div></div>`;
+        }
+    });
+
+    // Combo Herm
+    const comboHermRow = document.getElementById('ledger-row-combo-herm');
+    if (comboHermRow) comboHermRow.style.display = (liveAppState.isHermEnabled && liveAppState.testMode !== 'bench') ? 'flex' : 'none';
+    const comboHermText = document.getElementById('ledger-row-combo-herm-text');
+    if (comboHermText) {
+        const spec = liveAppState.isHermEnabled ? `(${liveAppState.target_mfd || '---'} µF)` : '';
+        const specDiv = spec ? `<div style="color: #000000; font-weight: bold; margin-left: auto;">${spec}</div>` : '';
+        if (committedState.diag_herm_v && committedState.diag_herm_a && liveAppState.diag_herm_v > 0 && liveAppState.diag_herm_a > 0) {
+            const act = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
+            const tgt = liveAppState.target_mfd || 35;
+            const dev = ((act - tgt) / tgt) * 100;
+            const isPass = Math.abs(dev) <= (tol * 100);
+            const sign = dev > 0 ? '+' : '';
+            comboHermText.innerHTML = `${(()=>{
+                const isStamped = window.compilerRegistry && window.compilerRegistry['combo-herm'] && window.compilerRegistry['combo-herm'].stamped;
+                const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === 'Herm Results');
+                const cl = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+                return `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${cl}" onclick="event.stopPropagation(); toggleBlueStamp('combo-herm')">${liveAppState.circ_a} Results</span>`;
+            })()} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 900; font-size: 12px;">${act.toFixed(2)} µF (${sign}${dev.toFixed(1)}%)</span>${specDiv}</div>`;
+        } else {
+            comboHermText.innerHTML = `${(()=>{
+                const isStamped = window.compilerRegistry && window.compilerRegistry['combo-herm'] && window.compilerRegistry['combo-herm'].stamped;
+                const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === 'Herm Results');
+                const cl = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+                return `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${cl}" onclick="event.stopPropagation(); toggleBlueStamp('combo-herm')">${liveAppState.circ_a} Results</span>`;
+            })()} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span>${specDiv}</div>`;
+        }
+    }
+
+    // Combo Fan
+    const comboFanRow = document.getElementById('ledger-row-combo-fan');
+    if (comboFanRow) comboFanRow.style.display = (liveAppState.isFanEnabled && liveAppState.testMode !== 'bench') ? 'flex' : 'none';
+    const comboFanText = document.getElementById('ledger-row-combo-fan-text');
+    if (comboFanText) {
+        const spec = liveAppState.isFanEnabled ? `(${liveAppState.target_fan_mfd || '---'} µF)` : '';
+        const specDiv = spec ? `<div style="color: #000000; font-weight: bold; margin-left: auto;">${spec}</div>` : '';
+        if (committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.diag_fan_v > 0 && liveAppState.diag_fan_a > 0) {
+            const act = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
+            const tgt = liveAppState.target_fan_mfd || 5;
+            const dev = ((act - tgt) / tgt) * 100;
+            const isPass = Math.abs(dev) <= (tol * 100);
+            const sign = dev > 0 ? '+' : '';
+            comboFanText.innerHTML = `${(()=>{
+                const isStamped = window.compilerRegistry && window.compilerRegistry['combo-fan'] && window.compilerRegistry['combo-fan'].stamped;
+                const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === 'Fan Results');
+                const cl = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+                return `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${cl}" onclick="event.stopPropagation(); toggleBlueStamp('combo-fan')">${liveAppState.circ_b} Results</span>`;
+            })()} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 900; font-size: 12px;">${act.toFixed(2)} µF (${sign}${dev.toFixed(1)}%)</span>${specDiv}</div>`;
+        } else {
+            comboFanText.innerHTML = `${(()=>{
+                const isStamped = window.compilerRegistry && window.compilerRegistry['combo-fan'] && window.compilerRegistry['combo-fan'].stamped;
+                const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === 'Fan Results');
+                const cl = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+                return `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${cl}" onclick="event.stopPropagation(); toggleBlueStamp('combo-fan')">${liveAppState.circ_b} Results</span>`;
+            })()} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span>${specDiv}</div>`;
+        }
+    }
+
+    // 1. Capacitor Results (Unified)
+    const reportLiveRow = document.getElementById('ledger-row-report-summary');
+    if (reportLiveRow) reportLiveRow.style.display = (liveAppState.isHermEnabled && liveAppState.isFanEnabled) ? 'flex' : 'none';
+    const reportLiveText = document.getElementById('ledger-row-report-summary-text');
+    if (reportLiveText) {
+        const isStamped = window.compilerRegistry && window.compilerRegistry['report-summary'] && window.compilerRegistry['report-summary'].stamped;
+        const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === 'Capacitor Results');
+        const clSum = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+        const lblSpan = `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${clSum}" onclick="event.stopPropagation(); toggleBlueStamp('report-summary')">Capacitor Results</span>`;
+
+        const isLive = liveAppState.testMode !== 'bench';
+        let hAct = 0, fAct = 0;
+        let canCalculate = false;
+
+        if (isLive && committedState.diag_herm_v && committedState.diag_herm_a && committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.diag_herm_v > 0 && liveAppState.diag_fan_v > 0) {
+            hAct = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
+            fAct = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
+            canCalculate = true;
+        } else if (!isLive && committedState.diag_herm_bench && committedState.diag_fan_bench && liveAppState.diag_herm_bench > 0 && liveAppState.diag_fan_bench > 0) {
+            hAct = liveAppState.diag_herm_bench;
+            fAct = liveAppState.diag_fan_bench;
+            canCalculate = true;
+        }
+
+        if (canCalculate) {
+            const hTgt = liveAppState.target_mfd || 35;
+            const hDev = ((hAct - hTgt) / hTgt) * 100;
+            const fTgt = liveAppState.target_fan_mfd || 5;
+            const fDev = ((fAct - fTgt) / fTgt) * 100;
+            const tol = liveAppState.selectedTolerance || 0.06;
+            const hPass = Math.abs(hDev) <= (tol * 100);
+            const fPass = Math.abs(fDev) <= (tol * 100);
+            const isPass = hPass && fPass;
+            let statusText = "within tolerance";
+            if (!hPass && fPass) statusText = `outside of tolerance on ${liveAppState.circ_a} side`;
+            else if (hPass && !fPass) statusText = `outside of tolerance on ${liveAppState.circ_b} side`;
+            else if (!hPass && !fPass) statusText = `outside of tolerance on both ${liveAppState.circ_a} and ${liveAppState.circ_b} sides`;
+            const hSign = hDev > 0 ? '+' : '';
+            const fSign = fDev > 0 ? '+' : '';
+            const testContext = isLive ? "tested under load" : "lab tested";
+            const sentence = `⚡ ${hTgt} + ${fTgt} µF Capacitor ${testContext} ${statusText} at ${hAct.toFixed(2)} + ${fAct.toFixed(2)} µF (${hSign}${hDev.toFixed(1)}% + ${fSign}${fDev.toFixed(1)}%).`;
+            reportLiveText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 800; font-size: 10px; line-height: 1.1;">${sentence}</span></div>`;
+        } else {
+            reportLiveText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span></div>`;
+        }
+    }
+
+    // 3. Motor Load Results
+    const reportMotorRow = document.getElementById('ledger-row-report-motor');
+    if (reportMotorRow) reportMotorRow.style.display = 'flex';
+    const reportMotorText = document.getElementById('ledger-row-report-motor-text');
+    if (reportMotorText) {
+        const isStamped = window.compilerRegistry && window.compilerRegistry['report-motor'] && window.compilerRegistry['report-motor'].stamped;
+        const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === 'Motor Load Results');
+        const clSum = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+        const lblSpan = `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${clSum}" onclick="event.stopPropagation(); toggleBlueStamp('report-motor')">Motor Load Results</span>`;
+
+        const c1Comm = committedState.diag_comp_rla && liveAppState.diag_comp_rla > 0;
+        const c2Comm = liveAppState.comp_qty !== 2 || (committedState.diag_comp_rla_2 && liveAppState.diag_comp_rla_2 > 0);
+        const f1Comm = committedState.diag_odf_fla && liveAppState.diag_odf_fla > 0;
+        const f2Comm = liveAppState.fan_qty !== 2 || (committedState.diag_odf_fla_2 && liveAppState.diag_odf_fla_2 > 0);
+
+        if (c1Comm && c2Comm && f1Comm && f2Comm) {
+            const c1Act = liveAppState.diag_comp_rla;
+            const c1Tgt = liveAppState.cRlaRating || 14.20;
+            const c1Pass = c1Act <= c1Tgt;
+            const c1Status = c1Pass ? "within range" : "OUT OF RANGE";
+
+            const f1Act = liveAppState.diag_odf_fla;
+            const f1Tgt = liveAppState.odfFlaRating || 1.10;
+            const f1Pass = f1Act <= f1Tgt;
+            const f1Status = f1Pass ? "within range" : "OUT OF RANGE";
+
+            let isPass = c1Pass && f1Pass;
+
+            let sentence = `🌀 RLA ${c1Tgt.toFixed(2)} tested ${c1Status} at ${c1Act.toFixed(2)}`;
+
+            if (liveAppState.comp_qty === 2) {
+                const c2Act = liveAppState.diag_comp_rla_2;
+                const c2Tgt = liveAppState.cRla2Rating || 14.20;
+                const c2Pass = c2Act <= c2Tgt;
+                const c2Status = c2Pass ? "within range" : "OUT OF RANGE";
+                isPass = isPass && c2Pass;
+                sentence += `, RLA 2 ${c2Tgt.toFixed(2)} tested ${c2Status} at ${c2Act.toFixed(2)}`;
+            }
+
+            sentence += ` and FLA ODF ${f1Tgt.toFixed(2)} tested ${f1Status} at ${f1Act.toFixed(2)}`;
+
+            if (liveAppState.fan_qty === 2) {
+                const f2Act = liveAppState.diag_odf_fla_2;
+                const f2Tgt = liveAppState.odfFla2Rating || 1.10;
+                const f2Pass = f2Act <= f2Tgt;
+                const f2Status = f2Pass ? "within range" : "OUT OF RANGE";
+                isPass = isPass && f2Pass;
+                sentence += `, FLA ODF2 ${f2Tgt.toFixed(2)} tested ${f2Status} at ${f2Act.toFixed(2)}`;
+            }
+
+            sentence += `.`;
+            
+            reportMotorText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 800; font-size: 10px; line-height: 1.1;">${sentence}</span></div>`;
+        } else {
+            reportMotorText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span></div>`;
+        }
+    }
+}
+
+function renderAllPills() {
+    const lblA = liveAppState.circ_a === 'Fan 1' ? 'Fan 1 MFD' : 'Herm MFD';
+    const lblB = liveAppState.circ_b === 'Fan 2' ? 'Fan 2 MFD' : 'Fan MFD';
+    let html = `
+        <div class="selector-pill p-1 min-w-[70px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent; ${!liveAppState.isHermEnabled ? 'opacity: 0.5;' : ''}">
+            <div class="flex justify-between items-center px-1">
+                <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lblA}</div>
+                <button onclick="toggleComponent('herm')" class="text-[8px] font-bold text-slate-300 hover:text-white bg-slate-700 px-1 rounded cursor-pointer leading-tight h-3 flex items-center justify-center border border-slate-600 shadow-sm">${liveAppState.isHermEnabled ? 'ON' : 'OFF'}</button>
+            </div>
+            <div class="flex justify-between items-center text-[14px] font-bold text-slate-300 mt-0.5">
+                <button onclick="cycleMfd('target_mfd', -1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">◀</button>
+                <input type="number" id="input-target_mfd" value="${liveAppState.target_mfd || 35}" onchange="updateManualValue('target_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+                <button onclick="cycleMfd('target_mfd', 1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">▶</button>
+            </div>
+        </div>
+        <div class="selector-pill p-1 min-w-[70px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent; ${!liveAppState.isFanEnabled ? 'opacity: 0.5;' : ''}">
+            <div class="flex justify-between items-center px-1">
+                <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lblB}</div>
+                <button onclick="toggleComponent('fan')" class="text-[8px] font-bold text-slate-300 hover:text-white bg-slate-700 px-1 rounded cursor-pointer leading-tight h-3 flex items-center justify-center border border-slate-600 shadow-sm">${liveAppState.isFanEnabled ? 'ON' : 'OFF'}</button>
+            </div>
+            <div class="flex justify-between items-center text-[14px] font-bold text-slate-300 mt-0.5">
+                <button onclick="cycleMfd('target_fan_mfd', -1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">◀</button>
+                <input type="number" id="input-target_fan_mfd" value="${liveAppState.target_fan_mfd || 5}" onchange="updateManualValue('target_fan_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+                <button onclick="cycleMfd('target_fan_mfd', 1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">▶</button>
+            </div>
+        </div>
+        <div onclick="cycleTolerance()" class="selector-pill p-1 min-w-[60px] rounded flex flex-col justify-center cursor-pointer transition-colors" style="background:#1e2530; border:2px solid transparent;">
+            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">Tolerance</div>
+            <div class="text-[14px] font-bold text-slate-300 text-center">${(liveAppState.selectedTolerance * 100).toFixed(0)}%</div>
+        </div>
+        <div class="selector-pill p-1 min-w-[60px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
+            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">Comp RLA (S)</div>
+            <div class="flex justify-center items-center text-[14px] font-bold text-slate-300 mt-0.5">
+                <input type="number" id="input-cRlaRating" value="${liveAppState.cRlaRating || 14.2}" onchange="updateManualValue('cRlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+            </div>
+        </div>
+        <div class="selector-pill p-1 min-w-[60px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
+            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">ODF FLA (S)</div>
+
+            <div class="flex justify-center items-center text-[14px] font-bold text-slate-300 mt-0.5">
+
+            <input type="number" id="input-odfFlaRating" value="${liveAppState.odfFlaRating || 1.1}" onchange="updateManualValue('odfFlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+
+            </div>
+
+            </div>
+
+            <div class="selector-pill p-1 min-w-[60px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
+
+            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">🎯 Target SC</div>
+
+            <div class="flex justify-center items-center text-[14px] font-bold text-slate-300 mt-0.5">
+
+            <input type="number" id="input-targetSubcool" value="${liveAppState.targetSubcool || 10.0}" onchange="updateManualValue('targetSubcool', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+
+            </div>
+
+            </div>`;
+    getActiveSequence().forEach(step => {
+        let val = liveAppState[step.id];
+        let displayVal = val ? val.toFixed(2) : '---';
+        let borderColor = (liveAppState.activeField === step.id) ? '#38bdf8' : 'transparent';
+        
+        let displayLabel = step.label;
+        if (liveAppState.comp_qty === 1 && displayLabel.includes('Comp 1')) displayLabel = displayLabel.replace('Comp 1 ', 'Comp ');
+        if (liveAppState.fan_qty === 1 && displayLabel.includes('Fan 1')) displayLabel = displayLabel.replace('Fan 1 ', 'Fan ');
+        
+        html += `
+        <div id="pill-${step.id}" onclick="setActiveField('${step.id}')" style="background:#1e2530; border:2px solid ${borderColor};" class="p-1 min-w-[80px] rounded flex flex-col justify-center cursor-pointer transition-colors">
+            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">${displayLabel}</div>
+            <div class="text-[14px] font-bold text-slate-300 text-center">${displayVal}</div>
+        </div>`;
+    });
+    document.getElementById('ribbon-track').innerHTML = html;
+    saveToLocal();
+    updateDashLabels();
+}
+    
+
+        // --- PROFILES & SNAPSHOT LOGIC ---
+
+    function populateConfigProfiles() {
+        const sel = document.getElementById('config-quick-load');
+        if(!sel) return;
+        let html = `<option value="">-- Select Profile --</option>`;
+        const custom = JSON.parse(localStorage.getItem('hvac_custom_profiles') || '{}');
+        for(let k in custom) {
+            html += `<option value="custom_${k}">🟡 ${k}</option>`;
+        }
+        sel.innerHTML = html;
+    }
+
+    function loadQuickProfile(val) {
+        if(!val || !val.startsWith("custom_")) return;
+        const k = val.replace("custom_", "");
+        const custom = JSON.parse(localStorage.getItem('hvac_custom_profiles') || '{}');
+        const p = custom[k];
+        if(p) {
+            document.getElementById('config-comp-rla-rating').value = p.compRla;
+            document.getElementById('config-fan-fla-rating').value = p.odfFla;
+            liveAppState.target_mfd = p.mfd;
+            liveAppState.target_fan_mfd = p.fanMfd;
+            if(p.c2Rla) document.getElementById('config-comp-rla-2-rating').value = p.c2Rla;
+            if(p.f2Fla) document.getElementById('config-fan-fla-2-rating').value = p.f2Fla;
+        }
+    }
+
+    function saveCustomProfile() {
+        const name = document.getElementById('custom-profile-name').value.trim();
+        if(!name) return;
+        const custom = JSON.parse(localStorage.getItem('hvac_custom_profiles') || '{}');
+        custom[name] = {
+            compRla: parseFloat(document.getElementById('config-comp-rla-rating').value) || 14.2,
+            odfFla: parseFloat(document.getElementById('config-fan-fla-rating').value) || 1.1,
+            c2Rla: parseFloat(document.getElementById('config-comp-rla-2-rating').value) || 14.2,
+            f2Fla: parseFloat(document.getElementById('config-fan-fla-2-rating').value) || 1.1,
+            mfd: liveAppState.target_mfd || 35,
+            fanMfd: liveAppState.target_fan_mfd || 5
+        };
+        localStorage.setItem('hvac_custom_profiles', JSON.stringify(custom));
+        document.getElementById('custom-profile-name').value = '';
+        populateConfigProfiles();
+        document.getElementById('config-quick-load').value = `custom_${name}`;
+    }
+
+    function deleteCustomProfile() {
+        const sel = document.getElementById('config-quick-load');
+        const val = sel.value;
+        if(!val || !val.startsWith("custom_")) return;
+        if(!confirm("Delete this custom profile?")) return;
+        const k = val.replace("custom_", "");
+        const custom = JSON.parse(localStorage.getItem('hvac_custom_profiles') || '{}');
+        delete custom[k];
+        localStorage.setItem('hvac_custom_profiles', JSON.stringify(custom));
+        populateConfigProfiles();
+    }
+
+let snapState = { siteName: '', building: '', floor: null, unit: null };
+
+function executeGenericSnapshot() {
+document.getElementById('snap-saving-indicator').classList.remove('hidden');
+const finalizeSave = (gpsString) => {
+const now = new Date();
+let hrs = now.getHours(); const ampm = hrs >= 12 ? 'PM' : 'AM'; hrs = hrs % 12; hrs = hrs ? hrs : 12;
+const mins = now.getMinutes().toString().padStart(2, '0');
+const timeStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${hrs}:${mins} ${ampm}`;
+
+let custName = document.getElementById('snap-customer-name').value.trim();
+let rawAddress = document.getElementById('snap-raw-address').value.trim();
+let siteVal = document.getElementById('snap-site-dropdown').value;
+let siteName = siteVal === 'Custom' ? document.getElementById('snap-custom-site-name').value.trim() : siteVal;
+
+let sitePrefix = "";
+if (siteName && siteName !== 'Standard') sitePrefix = siteName;
+if (rawAddress) sitePrefix = sitePrefix ? `${sitePrefix} - ${rawAddress}` : rawAddress;
+
+let locationString = gpsString;
+if (sitePrefix) {
+locationString = `📍 ${sitePrefix} | ${gpsString}`;
+}
+
+const snapshotName = `${custName ? custName : "Unit Snapshot"} | ${timeStr} | ${locationString}`;
+
+let history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
+history.push({ id: Date.now(), name: snapshotName, live: JSON.parse(JSON.stringify(liveAppState)), commit: JSON.parse(JSON.stringify(committedState)) });
+localStorage.setItem('hvac_snapshot_registry', JSON.stringify(history));
+
+liveAppState.description = snapshotName;
+updateStickyDescription();
+saveToLocal();
+
+setTimeout(() => { closeSnapshotModal(); }, 800);
+};
+if ("geolocation" in navigator) {
+navigator.geolocation.getCurrentPosition((pos) => finalizeSave(`📍 [${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}]`), (err) => finalizeSave("📍 [GPS Error]"), { timeout: 10000 });
+} else { finalizeSave("📍 [No GPS]"); }
+}
+
+function openSnapshotModal() {
+document.getElementById('snap-customer-name').value = '';
+document.getElementById('snap-site-dropdown').value = 'Standard';
+document.getElementById('snap-custom-builder').classList.add('hidden');
+document.getElementById('snap-custom-builder').classList.remove('flex');
+document.getElementById('quick-build-container').classList.add('hidden');
+document.getElementById('snap-saving-indicator').classList.add('hidden');
+
+document.getElementById('snapshot-modal').classList.remove('hidden');
+document.getElementById('snapshot-modal').classList.add('flex');
+}
+
+function closeSnapshotModal() {
+document.getElementById('snapshot-modal').classList.remove('flex');
+document.getElementById('snapshot-modal').classList.add('hidden');
+}
+
+function handleSnapshotSiteChange(val) {
+const cb = document.getElementById('snap-custom-builder');
+const qb = document.getElementById('quick-build-container');
+if (val === 'Standard') {
+cb.classList.add('hidden'); cb.classList.remove('flex');
+qb.classList.add('hidden');
+} else if (val === 'Custom') {
+cb.classList.remove('hidden'); cb.classList.add('flex');
+qb.classList.add('hidden');
+} else {
+cb.classList.add('hidden'); cb.classList.remove('flex');
+qb.classList.remove('hidden');
+document.getElementById('quick-build-title').innerText = val.toUpperCase();
+let p = { bldgs: ["North", "South"], minFl: 1, maxFl: 10, unitsPerFl: 6 };
+if (val === 'Oceana') p = { bldgs: ["North", "South"], minFl: 1, maxFl: 10, unitsPerFl: 6 };
+if (val === 'Paramount') p = { bldgs: ["North", "South"], minFl: 1, maxFl: 10, unitsPerFl: 4 };
+if (val === 'River Palm') p = { bldgs: ["North", "South"], minFl: 1, maxFl: 6, unitsPerFl: 10 };
+snapState.siteName = val;
+renderQuickBuildGrids(p);
+}
+}
+
+function applyCustomSnapshotSite() {
+const name = document.getElementById('snap-custom-site-name').value.trim();
+if(!name) { alert("Enter a Custom Site Name."); return; }
+const startFl = parseInt(document.getElementById('snap-custom-start-fl').value) || 1;
+const maxFl = parseInt(document.getElementById('snap-custom-max-fl').value) || 10;
+const units = parseInt(document.getElementById('snap-custom-units').value) || 6;
+
+document.getElementById('quick-build-container').classList.remove('hidden');
+document.getElementById('quick-build-title').innerText = name.toUpperCase();
+snapState.siteName = name;
+renderQuickBuildGrids({ bldgs: ["Main"], minFl: startFl, maxFl: maxFl, unitsPerFl: units });
+}
+
+function renderQuickBuildGrids(p) {
+snapState.building = p.bldgs || '';
+snapState.floor = null;
+snapState.unit = null;
+document.getElementById('lbl-sel-floor').innerText = '--';
+document.getElementById('lbl-sel-unit').innerText = '--';
+document.getElementById('unit-container').classList.add('opacity-50', 'pointer-events-none');
+
+const bGrid = document.getElementById('grid-snap-bldg');
+if(p.bldgs.length <= 1 && p.bldgs === "Main") {
+document.getElementById('quick-bldg-block').classList.add('hidden');
+} else {
+document.getElementById('quick-bldg-block').classList.remove('hidden');
+let bHtml = '';
+p.bldgs.forEach(b => {
+bHtml += `<button id="btn-bldg-${b}" onclick="selectBldg('${b}')" class="snap-bldg-btn bg-slate-700 text-slate-300 hover:bg-slate-600 h-10 rounded-lg font-bold text-sm flex items-center justify-center transition-colors shadow-sm">${b}</button>`;
+});
+bGrid.innerHTML = bHtml;
+setTimeout(() => selectBldg(p.bldgs), 50);
+}
+
+let fHtml = '';
+for(let i=p.minFl; i<=p.maxFl; i++) {
+fHtml += `<button onclick="selectFloor(${i})" class="snap-fl-btn h-10 bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg font-bold text-lg flex items-center justify-center transition-colors shadow-sm" id="btn-fl-${i}">${i}</button>`;
+}
+document.getElementById('grid-snap-floor').innerHTML = fHtml;
+
+let uHtml = '';
+for(let i=1; i<=p.unitsPerFl; i++) {
+const uStr = i < 10 ? "0" + i : i.toString();
+uHtml += `<button onclick="selectUnit('${uStr}')" class="snap-un-btn h-10 bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg font-bold text-sm flex items-center justify-center transition-colors shadow-sm" id="btn-un-${uStr}">${uStr}</button>`;
+}
+document.getElementById('grid-snap-unit').innerHTML = uHtml;
+}
+
+function selectBldg(b) {
+snapState.building = b;
+document.querySelectorAll('.snap-bldg-btn').forEach(btn => {
+btn.classList.remove('bg-emerald-600', 'text-white', 'border', 'border-emerald-400');
+btn.classList.add('bg-slate-700', 'text-slate-300');
+});
+const active = document.getElementById('btn-bldg-' + b);
+if(active) {
+active.classList.remove('bg-slate-700', 'text-slate-300');
+active.classList.add('bg-emerald-600', 'text-white', 'border', 'border-emerald-400');
+}
+}
+
+function selectFloor(f) {
+snapState.floor = f;
+document.getElementById('lbl-sel-floor').innerText = f;
+document.querySelectorAll('.snap-fl-btn').forEach(btn => {
+btn.classList.remove('bg-emerald-600', 'text-white', 'border', 'border-emerald-400');
+btn.classList.add('bg-slate-700', 'text-slate-300');
+});
+const active = document.getElementById('btn-fl-' + f);
+if(active) {
+active.classList.remove('bg-slate-700', 'text-slate-300');
+active.classList.add('bg-emerald-600', 'text-white', 'border', 'border-emerald-400');
+}
+document.getElementById('unit-container').classList.remove('opacity-50', 'pointer-events-none');
+}
+
+function selectUnit(u) {
+snapState.unit = u;
+document.getElementById('lbl-sel-unit').innerText = u;
+document.querySelectorAll('.snap-un-btn').forEach(btn => {
+btn.classList.remove('bg-emerald-600', 'text-white', 'border', 'border-emerald-400');
+btn.classList.add('bg-slate-700', 'text-slate-300');
+});
+const active = document.getElementById('btn-un-' + u);
+if(active) {
+active.classList.remove('bg-slate-700', 'text-slate-300');
+active.classList.add('bg-emerald-600', 'text-white', 'border', 'border-emerald-400');
+}
+
+document.getElementById('snap-saving-indicator').classList.remove('hidden');
+
+const finalizeSave = (gpsString) => {
+const now = new Date();
+let hrs = now.getHours(); const ampm = hrs >= 12 ? 'PM' : 'AM'; hrs = hrs % 12; hrs = hrs ? hrs : 12;
+const mins = now.getMinutes().toString().padStart(2, '0');
+const timeStr = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')} ${hrs}:${mins} ${ampm}`;
+
+const fullUnit = snapState.floor + snapState.unit;
+let custName = document.getElementById('snap-customer-name').value.trim();
+let rawAddress = document.getElementById('snap-raw-address').value.trim();
+let nameStr = custName ? ` - ${custName}` : '';
+let bldgStr = snapState.building && snapState.building !== 'Main' ? ` ${snapState.building}` : '';
+let addrStr = rawAddress ? ` | ${rawAddress}` : '';
+
+const locationString = `📍 ${snapState.siteName}${bldgStr} - Unit ${fullUnit}${addrStr} | ${gpsString}`;
+const snapshotName = `${snapState.siteName}${bldgStr} - Unit ${fullUnit}${nameStr}${addrStr} | ${timeStr} | ${gpsString}`;
+
+let history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
+history.push({ id: Date.now(), name: snapshotName, live: JSON.parse(JSON.stringify(liveAppState)), commit: JSON.parse(JSON.stringify(committedState)) });
+localStorage.setItem('hvac_snapshot_registry', JSON.stringify(history));
+
+liveAppState.description = snapshotName;
+updateStickyDescription();
+saveToLocal();
+
+setTimeout(() => { closeSnapshotModal(); }, 800);
+};
+
+if ("geolocation" in navigator) {
+navigator.geolocation.getCurrentPosition((pos) => finalizeSave(`📍 [${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}]`), (err) => finalizeSave("📍 [GPS Error]"), { timeout: 10000 });
+} else { finalizeSave("📍 [No GPS]"); }
+}
+
+        // --- HISTORY VAULT LOGIC ---
+        function openHistoryModal() {
+        renderHistoryList();
+        document.getElementById('history-modal').classList.remove('hidden');
+        document.getElementById('history-modal').classList.add('flex');
+        }
+
+        function closeHistoryModal() {
+        document.getElementById('history-modal').classList.remove('flex');
+        document.getElementById('history-modal').classList.add('hidden');
+        }
+
+                function getDistanceFeet(lat1, lon1, lat2, lon2) {
+        const R = 20902231; // Radius of Earth in feet
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        }
+
+        function filterNearbySnapshots() {
+        const btn = document.getElementById('radar-btn');
+        btn.innerHTML = '<span>⏳</span><span>Scanning (1000 ft)...</span>';
+        btn.disabled = true;
+
+        if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+        renderHistoryList(pos.coords.latitude, pos.coords.longitude);
+        btn.innerHTML = '<span>📍</span><span>Find Nearby (1000 ft)</span>';
+        btn.disabled = false;
+        }, (err) => {
+        alert("GPS Radar Failed. Ensure location permissions are active in your browser.");
+        btn.innerHTML = '<span>📍</span><span>Find Nearby (1000 ft)</span>';
+        btn.disabled = false;
+        }, { timeout: 10000 });
+        } else {
+        alert("GPS not supported.");
+        btn.disabled = false;
+        }
+        }
+
+        function renderHistoryList(filterLat = null, filterLon = null) {
+        const container = document.getElementById('history-list-container');
+        const history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
+        if (history.length === 0) {
+        container.innerHTML = '<div class="text-slate-500 text-center text-xs mt-4 font-bold tracking-widest uppercase">Vault is empty.</div>';
+        return;
+        }
+
+        let html = '';
+        let matchCount = 0;
+
+        history.slice().reverse().forEach(snap => {
+        let gpsDisplay = snap.name;
+        const gpsMatch = snap.name.match(/📍 \[([\d.-]+),\s*([\d.-]+)\]/);
+
+        if (filterLat && filterLon && gpsMatch) {
+        const dist = getDistanceFeet(filterLat, filterLon, parseFloat(gpsMatch[1]), parseFloat(gpsMatch[2]));
+        if (dist > 1000) return; // Skip if > 1000 feet away
+        } else if (filterLat && filterLon && !gpsMatch) {
+        return; // Skip units without GPS if radar is active
+        }
+
+        matchCount++;
+
+        if (gpsMatch) {
+        const lat = gpsMatch[1];
+        const lon = gpsMatch[2];
+        const mapLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+        gpsDisplay = snap.name.replace(/📍 \[.*?\]/, `<a href="${mapLink}" target="_blank" class="text-blue-400 hover:text-blue-300 underline" onclick="event.stopPropagation()">📍 Map</a>`);
+        }
+
+        html += `
+        <div class="bg-slate-800 p-3 rounded border border-slate-700 shadow-sm flex flex-col gap-2 transition-all">
+        <div class="text-slate-300 text-[10px] font-bold leading-tight">${gpsDisplay}</div>
+        <div class="flex gap-2 mt-1">
+        <button onclick="togglePreview(${snap.id})" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-1.5 rounded text-[9px] font-bold uppercase tracking-wider transition-colors shadow-sm">Preview Data</button>
+        <button onclick="deleteSnapshot(${snap.id})" class="bg-red-900/80 hover:bg-red-700 text-white px-3 py-1.5 rounded border border-red-500 transition-colors shadow-sm" title="Delete">🗑️</button>
+        </div>
+        </div>`;
+        });
+
+        if(matchCount === 0) {
+        container.innerHTML = '<div class="text-slate-500 text-center text-xs mt-4 font-bold tracking-widest uppercase">No units found within 1000 ft.</div>';
+        } else {
+        container.innerHTML = html;
+        }
+        }
+
+        function togglePreview(id) {
+const history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
+const snap = history.find(s => s.id === id);
+if (!snap) return;
+
+const l = snap.live;
+const c = snap.commit;
+let html = '';
+
+// 1. Inject the Snapshot Title / Context
+html += `
+<div class="bg-blue-900/40 border border-blue-500/50 p-3 rounded-lg mb-3 shadow-inner flex flex-col items-center justify-center text-center">
+<span class="text-[9px] text-blue-300 font-bold uppercase tracking-widest mb-1">Active Preview</span>
+<span class="text-xs font-bold text-white leading-tight">${snap.name}</span>
+</div>`;
+
+// 2. Row Builder Helpers
+const buildRow = (label, val, context, isPass = null) => {
+const textCol = isPass === null ? 'text-white' : (isPass ? 'text-emerald-400' : 'text-rose-400');
+html += `
+<div class="flex items-center justify-between p-2 mb-1 bg-slate-800 rounded border border-slate-700">
+<span class="text-[11px] font-bold text-slate-300 w-1/3">${label}</span>
+<div class="flex-1 flex justify-end items-center gap-2 text-right">
+<span class="text-xs font-bold ${textCol}">${val}</span>
+${context ? `<span class="text-[10px] text-slate-500 font-bold">${context}</span>` : ''}
+</div>
+</div>`;
+};
+
+const buildReport = (label, sentence, isPass) => {
+const textCol = isPass ? 'text-emerald-400' : 'text-rose-400';
+html += `
+<div class="p-2 mt-2 mb-1 bg-slate-900 rounded border border-slate-700 flex flex-col gap-1">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${label}</span>
+<span class="text-xs font-bold ${textCol} leading-tight">${sentence}</span>
+</div>`;
+};
+
+const tol = l.selectedTolerance || 0.06;
+let hVPass = null, hAPass = null, fVPass = null, fAPass = null;
+let hBPass = null, fBPass = null;
+
+if (c.diag_herm_v && c.diag_herm_a && l.target_mfd) {
+const act = (l.diag_herm_a * 2652) / l.diag_herm_v;
+hVPass = hAPass = (Math.abs(act - l.target_mfd) / l.target_mfd) <= tol;
+}
+if (c.diag_fan_v && c.diag_fan_a && l.target_fan_mfd) {
+const act = (l.diag_fan_a * 2652) / l.diag_fan_v;
+fVPass = fAPass = (Math.abs(act - l.target_fan_mfd) / l.target_fan_mfd) <= tol;
+}
+if (c.diag_herm_bench && l.target_mfd) {
+hBPass = (Math.abs(l.diag_herm_bench - l.target_mfd) / l.target_mfd) <= tol;
+}
+if (c.diag_fan_bench && l.target_fan_mfd) {
+fBPass = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= tol;
+}
+
+// 3. Raw Data Rows (Volts & Amps)
+if (c.diag_herm_v) buildRow(l.circ_a + ' Volts', l.diag_herm_v.toFixed(1) + ' V', '', hVPass);
+if (c.diag_herm_a) buildRow(l.circ_a + ' Amps', l.diag_herm_a.toFixed(2) + ' A', '', hAPass);
+if (c.diag_herm_bench) buildRow(l.circ_a + ' µF (Bench)', l.diag_herm_bench.toFixed(2) + ' µF', '', hBPass);
+
+if (c.diag_fan_v) buildRow(l.circ_b + ' Volts', l.diag_fan_v.toFixed(1) + ' V', '', fVPass);
+if (c.diag_fan_a) buildRow(l.circ_b + ' Amps', l.diag_fan_a.toFixed(2) + ' A', '', fAPass);
+if (c.diag_fan_bench) buildRow(l.circ_b + ' µF (Bench)', l.diag_fan_bench.toFixed(2) + ' µF', '', fBPass);
+
+if (c.diag_comp_rla) {
+const tgt = l.cRlaRating || 14.20;
+buildRow(l.comp_qty === 1 ? 'Comp RLA' : 'Comp 1 RLA', l.diag_comp_rla.toFixed(2) + ' A', `(Max: ${tgt.toFixed(2)})`, l.diag_comp_rla <= tgt);
+}
+if (c.diag_comp_rla_2 && l.comp_qty === 2) {
+const tgt = l.cRla2Rating || 14.20;
+buildRow('Comp 2 RLA', l.diag_comp_rla_2.toFixed(2) + ' A', `(Max: ${tgt.toFixed(2)})`, l.diag_comp_rla_2 <= tgt);
+}
+if (c.diag_odf_fla) {
+const tgt = l.odfFlaRating || 1.10;
+buildRow(l.fan_qty === 1 ? 'Fan FLA' : 'Fan 1 FLA', l.diag_odf_fla.toFixed(2) + ' A', `(Max: ${tgt.toFixed(2)})`, l.diag_odf_fla <= tgt);
+}
+if (c.diag_odf_fla_2 && l.fan_qty === 2) {
+const tgt = l.odfFla2Rating || 1.10;
+buildRow('Fan 2 FLA', l.diag_odf_fla_2.toFixed(2) + ' A', `(Max: ${tgt.toFixed(2)})`, l.diag_odf_fla_2 <= tgt);
+}
+
+// 4. Capacitor Final Report Sentence
+const isLive = l.testMode !== 'bench';
+let hAct = 0, fAct = 0, canCalcCap = false;
+if (isLive && c.diag_herm_v && c.diag_herm_a && c.diag_fan_v && c.diag_fan_a && l.diag_herm_v > 0 && l.diag_fan_v > 0) {
+hAct = (l.diag_herm_a * 2652) / l.diag_herm_v;
+fAct = (l.diag_fan_a * 2652) / l.diag_fan_v;
+canCalcCap = true;
+} else if (!isLive && c.diag_herm_bench && c.diag_fan_bench && l.diag_herm_bench > 0 && l.diag_fan_bench > 0) {
+hAct = l.diag_herm_bench;
+fAct = l.diag_fan_bench;
+canCalcCap = true;
+}
+
+if (canCalcCap) {
+const hTgt = l.target_mfd || 35;
+const fTgt = l.target_fan_mfd || 5;
+const hDev = ((hAct - hTgt)/hTgt)*100;
+const fDev = ((fAct - fTgt)/fTgt)*100;
+const hPass = Math.abs(hDev) <= (tol*100);
+const fPass = Math.abs(fDev) <= (tol*100);
+const isPass = hPass && fPass;
+let statusText = "within tolerance";
+if (!hPass && fPass) statusText = `outside of tolerance on ${l.circ_a} side`;
+else if (hPass && !fPass) statusText = `outside of tolerance on ${l.circ_b} side`;
+else if (!hPass && !fPass) statusText = `outside of tolerance on both sides`;
+const hSign = hDev > 0 ? '+' : '';
+const fSign = fDev > 0 ? '+' : '';
+const testContext = isLive ? "tested under load" : "lab tested";
+const sentence = `⚡ ${hTgt} + ${fTgt} µF Capacitor ${testContext} ${statusText} at ${hAct.toFixed(2)} + ${fAct.toFixed(2)} µF (${hSign}${hDev.toFixed(1)}% + ${fSign}${fDev.toFixed(1)}%).`;
+buildReport('Capacitor Results', sentence, isPass);
+}
+
+// 5. Motor Load Final Report Sentence
+const c1Comm = c.diag_comp_rla && l.diag_comp_rla > 0;
+const c2Comm = l.comp_qty !== 2 || (c.diag_comp_rla_2 && l.diag_comp_rla_2 > 0);
+const f1Comm = c.diag_odf_fla && l.diag_odf_fla > 0;
+const f2Comm = l.fan_qty !== 2 || (c.diag_odf_fla_2 && l.diag_odf_fla_2 > 0);
+
+if (c1Comm && c2Comm && f1Comm && f2Comm) {
+const c1Act = l.diag_comp_rla;
+const c1Tgt = l.cRlaRating || 14.20;
+const c1Pass = c1Act <= c1Tgt;
+const c1Status = c1Pass ? "within range" : "OUT OF RANGE";
+
+const f1Act = l.diag_odf_fla;
+const f1Tgt = l.odfFlaRating || 1.10;
+const f1Pass = f1Act <= f1Tgt;
+const f1Status = f1Pass ? "within range" : "OUT OF RANGE";
+
+let isPass = c1Pass && f1Pass;
+let sentence = `🌀 RLA ${c1Tgt.toFixed(2)} tested ${c1Status} at ${c1Act.toFixed(2)}`;
+
+if (l.comp_qty === 2) {
+const c2Act = l.diag_comp_rla_2;
+const c2Tgt = l.cRla2Rating || 14.20;
+const c2Pass = c2Act <= c2Tgt;
+const c2Status = c2Pass ? "within range" : "OUT OF RANGE";
+isPass = isPass && c2Pass;
+sentence += `, RLA 2 ${c2Tgt.toFixed(2)} tested ${c2Status} at ${c2Act.toFixed(2)}`;
+}
+
+sentence += ` and FLA ODF ${f1Tgt.toFixed(2)} tested ${f1Status} at ${f1Act.toFixed(2)}`;
+
+if (l.fan_qty === 2) {
+const f2Act = l.diag_odf_fla_2;
+const f2Tgt = l.odfFla2Rating || 1.10;
+const f2Pass = f2Act <= f2Tgt;
+const f2Status = f2Pass ? "within range" : "OUT OF RANGE";
+isPass = isPass && f2Pass;
+sentence += `, FLA ODF2 ${f2Tgt.toFixed(2)} tested ${f2Status} at ${f2Act.toFixed(2)}`;
+}
+sentence += `.`;
+buildReport('Motor Load Results', sentence, isPass);
+}
+
+if (html === '') {
+html = '<div class="text-slate-500 text-center text-xs mt-4 font-bold tracking-widest uppercase">No measured results in this snapshot.</div>';
+}
+
+document.getElementById('preview-modal-content').innerHTML = html;
+document.getElementById('btn-confirm-load').onclick = () => confirmLoadSnapshot(id);
+
+document.getElementById('preview-results-modal').classList.remove('hidden');
+document.getElementById('preview-results-modal').classList.add('flex');
+}
+
+        function closePreviewModal() {
+        document.getElementById('preview-results-modal').classList.remove('flex');
+        document.getElementById('preview-results-modal').classList.add('hidden');
+        }
+
+        function confirmLoadSnapshot(id) {
+        const history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
+        const snap = history.find(s => s.id === id);
+        if (snap) {
+        Object.assign(liveAppState, snap.live);
+        Object.assign(committedState, snap.commit);
+        saveToLocal();
+        renderAllPills();
+        refreshLedger();
+        updateHUD();
+        updateDashLabels();
+        updateStickyDescription();
+        closePreviewModal();
+        closeHistoryModal();
+        }
+        }
+
+        function deleteSnapshot(id) {
+        if(!confirm("Permanently delete this snapshot?")) return;
+        let history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
+        history = history.filter(s => s.id !== id);
+        localStorage.setItem('hvac_snapshot_registry', JSON.stringify(history));
+        renderHistoryList();
+        }
+
+// Auto-Center the Active Navigation Button
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const activeNavBtn = document.querySelector('#bottom-nav-ribbon .bg-slate-700');
+        if (activeNavBtn) {
+            activeNavBtn.scrollIntoView({ inline: 'center', behavior: 'smooth' });
+        }
+    }, 50);
+});
+        </script>
+</body>
+</html>
