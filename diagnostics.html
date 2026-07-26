@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v4.77</title>
+<title>Diagnostics v4.78</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider mb-1 w-full text-center uppercase">[ Build: v4_77 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider mb-1 w-full text-center uppercase">[ Build: v4_78 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold mb-2 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div class="relative mb-1 w-full flex justify-center">
                     <div id="hud-live-value-box" onclick="document.getElementById('hud-hidden-numeric-input').focus()" class="text-slate-50 font-extrabold leading-tight cursor-text font-sans tracking-tight min-h-[1.1em] text-center flex items-baseline justify-center text-[100px]">---</div>
@@ -209,8 +209,25 @@ HUB
 <h3 class="text-white font-bold tracking-widest text-xs uppercase">📜 History Vault</h3>
 <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
 </div>
-<div class="p-2 bg-slate-800 border-b border-slate-700">
-<button id="radar-btn" onclick="filterNearbySnapshots()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2"><span>📍</span><span>Find Nearby (1000 ft)</span></button>
+<div class="bg-slate-800 p-3 border-b border-slate-700 flex flex-col gap-3 shrink-0">
+    <!-- Storage Meter -->
+    <div>
+        <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+            <span>Vault Storage Capacity</span>
+            <span id="storage-meter-text">0 KB / 5120 KB</span>
+        </div>
+        <div class="w-full bg-slate-900 rounded-full h-2 border border-slate-700">
+            <div id="storage-meter-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+        </div>
+    </div>
+    <!-- Dynamic Radar -->
+    <div class="flex gap-2 items-center">
+        <div class="flex-1 bg-slate-900 border border-slate-600 rounded flex items-center px-2">
+            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mr-2">Radius</span>
+            <input type="number" id="radar-radius-input" value="1000" class="bg-transparent text-white text-xs font-bold w-full focus:outline-none py-1.5 no-spinners" placeholder="Ft">
+        </div>
+        <button onclick="filterNearbySnapshots()" id="radar-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase tracking-widest px-4 py-2 rounded transition-colors shadow-sm whitespace-nowrap">📍 Find Nearby</button>
+    </div>
 </div>
 <div id="history-list-container" class="p-2 flex flex-col gap-2 overflow-y-auto no-scrollbar flex-1 bg-slate-900">
 <!-- HISTORY ROWS INJECTED HERE -->
@@ -415,7 +432,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.77</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.78</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -924,7 +941,8 @@ function setActiveField(id) {
 
     renderAllPills();
     updateHUD();
-    document.getElementById('hud-hidden-numeric-input').focus();
+    const hiddenInput = document.getElementById('hud-hidden-numeric-input');
+    if (hiddenInput && !liveAppState.micActive) hiddenInput.focus();
 
     // Auto-Scroll Ribbon to Active Pill
     setTimeout(() => {
@@ -1015,7 +1033,8 @@ function clearSpecificSlot(id) {
 
 function clearHudValue() {
     clearSpecificSlot(liveAppState.activeField);
-    document.getElementById('hud-hidden-numeric-input').focus();
+    const hiddenInput = document.getElementById('hud-hidden-numeric-input');
+    if (hiddenInput && !liveAppState.micActive) hiddenInput.focus();
 }
 
 // Blue Stamp Compiler Registry
@@ -1137,8 +1156,11 @@ recognition.onresult = function(event) {
 const speechResult = event.results[0][0].transcript.toUpperCase();
 
 // Step 2: Command execution to lock in data and auto-advance
-if (speechResult.includes("COPY") || speechResult.includes("COMPLY") || speechResult.includes("CONFIRM") || speechResult.includes("NEXT")) {
-commitHudValue();
+if (speechResult.includes("MIC OFF") || speechResult.includes("STOP MIC") || speechResult.includes("TURN OFF MIC")) {
+    if (liveAppState.micActive) toggleMic(); // Turn it off securely
+    return;
+} else if (speechResult.includes("COPY") || speechResult.includes("COMPLY") || speechResult.includes("CONFIRM") || speechResult.includes("NEXT")) {
+    commitHudValue();
 } else {
 // Step 1: Extract numeric readouts
 const match = speechResult.match(/\d+(\.\d+)?/);
@@ -1883,68 +1905,92 @@ navigator.geolocation.getCurrentPosition((pos) => finalizeSave(`📍 [${pos.coor
 }
 
         // --- HISTORY VAULT LOGIC ---
-        function openHistoryModal() {
-        renderHistoryList();
-        document.getElementById('history-modal').classList.remove('hidden');
-        document.getElementById('history-modal').classList.add('flex');
+function updateStorageMeter() {
+    const meterBar = document.getElementById('storage-meter-bar');
+    const meterText = document.getElementById('storage-meter-text');
+    if (!meterBar || !meterText) return;
+    
+    let usedBytes = 0;
+    for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+            usedBytes += localStorage[key].length;
         }
+    }
+    const maxBytes = 5242880; // 5 MB
+    let percent = (usedBytes / maxBytes) * 100;
+    if (percent > 100) percent = 100;
+    
+    meterBar.style.width = percent + '%';
+    meterText.innerText = `${(usedBytes / 1024).toFixed(1)} KB / 5120 KB (${percent.toFixed(1)}%)`;
+    
+    meterBar.className = 'h-full rounded-full transition-all duration-500 ';
+    if (percent < 70) meterBar.className += 'bg-emerald-500';
+    else if (percent < 90) meterBar.className += 'bg-amber-500';
+    else meterBar.className += 'bg-rose-500';
+}
 
-        function closeHistoryModal() {
-        document.getElementById('history-modal').classList.remove('flex');
-        document.getElementById('history-modal').classList.add('hidden');
-        }
+function openHistoryModal() {
+    renderHistoryList();
+    updateStorageMeter();
+    document.getElementById('history-modal').classList.remove('hidden');
+    document.getElementById('history-modal').classList.add('flex');
+}
 
-                function getDistanceFeet(lat1, lon1, lat2, lon2) {
-        const R = 20902231; // Radius of Earth in feet
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        }
+function closeHistoryModal() {
+    document.getElementById('history-modal').classList.remove('flex');
+    document.getElementById('history-modal').classList.add('hidden');
+}
 
-        function filterNearbySnapshots() {
-        const btn = document.getElementById('radar-btn');
-        btn.innerHTML = '<span>⏳</span><span>Scanning (1000 ft)...</span>';
-        btn.disabled = true;
+function getDistanceFeet(lat1, lon1, lat2, lon2) {
+    const R = 20902231; // Radius of Earth in feet
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
 
-        if ("geolocation" in navigator) {
+function filterNearbySnapshots() {
+    const radiusInput = document.getElementById('radar-radius-input');
+    const radius = radiusInput ? parseInt(radiusInput.value) || 1000 : 1000;
+    const btn = document.getElementById('radar-btn');
+    btn.innerHTML = `<span>⏳</span><span>Scanning (${radius} ft)...</span>`;
+    btn.disabled = true;
+
+    if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition((pos) => {
-        renderHistoryList(pos.coords.latitude, pos.coords.longitude);
-        btn.innerHTML = '<span>📍</span><span>Find Nearby (1000 ft)</span>';
-        btn.disabled = false;
+            renderHistoryList(pos.coords.latitude, pos.coords.longitude, radius);
+            btn.innerHTML = '<span>📍</span><span>Find Nearby</span>';
+            btn.disabled = false;
         }, (err) => {
-        alert("GPS Radar Failed. Ensure location permissions are active in your browser.");
-        btn.innerHTML = '<span>📍</span><span>Find Nearby (1000 ft)</span>';
-        btn.disabled = false;
+            alert("GPS Radar Failed. Ensure location permissions are active in your browser.");
+            btn.innerHTML = '<span>📍</span><span>Find Nearby</span>';
+            btn.disabled = false;
         }, { timeout: 10000 });
-        } else {
+    } else {
         alert("GPS not supported.");
         btn.disabled = false;
-        }
-        }
+    }
+}
 
-        function renderHistoryList(filterLat = null, filterLon = null) {
-        const container = document.getElementById('history-list-container');
-        const history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
-        if (history.length === 0) {
+function renderHistoryList(filterLat = null, filterLon = null, radius = 1000) {
+    const container = document.getElementById('history-list-container');
+    const history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
+    if (history.length === 0) {
         container.innerHTML = '<div class="text-slate-500 text-center text-xs mt-4 font-bold tracking-widest uppercase">Vault is empty.</div>';
         return;
-        }
+    }
 
-        let html = '';
-        let matchCount = 0;
+    let html = '';
+    let matchCount = 0;
 
-        history.slice().reverse().forEach(snap => {
+    history.slice().reverse().forEach(snap => {
         let gpsDisplay = snap.name;
         const gpsMatch = snap.name.match(/📍 \[([\d.-]+),\s*([\d.-]+)\]/);
 
         if (filterLat && filterLon && gpsMatch) {
-        const dist = getDistanceFeet(filterLat, filterLon, parseFloat(gpsMatch[1]), parseFloat(gpsMatch[2]));
-        if (dist > 1000) return; // Skip if > 1000 feet away
-        } else if (filterLat && filterLon && !gpsMatch) {
-        return; // Skip units without GPS if radar is active
+            const dist = getDistanceFeet(filterLat, filterLon, parseFloat(gpsMatch[4]), parseFloat(gpsMatch[5]));
+            if (dist > radius) return; // Dynamic radius filter
         }
-
         matchCount++;
 
         if (gpsMatch) {
