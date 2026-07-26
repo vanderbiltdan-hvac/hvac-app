@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v4.92</title>
+<title>Diagnostics v4.94</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v4_92 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v4_94 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -387,6 +387,10 @@ HUB
 </div>
 </div>
 </div>
+<div class="px-4 py-2 border-t border-slate-700 bg-slate-800/50">
+<label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2 block text-center">⚙️ Custom Flow Builder</label>
+<div id="custom-flow-builder" class="flex flex-col gap-1.5 max-h-32 overflow-y-auto no-scrollbar bg-slate-900 p-2 rounded border border-slate-700 shadow-inner"></div>
+</div>
 <div class="p-4 bg-slate-900 border-t border-slate-700">
 <button onclick="saveSystemConfig()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-xs uppercase tracking-widest transition-colors">Apply Config</button>
 </div>
@@ -441,7 +445,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.92</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.94</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -666,6 +670,7 @@ function toggleConfigModal() {
             document.getElementById('config-comp-rla-2-rating').value = liveAppState.cRla2Rating || 14.20;
             document.getElementById('config-fan-fla-rating').value = liveAppState.odfFlaRating || 1.10;
             document.getElementById('config-fan-fla-2-rating').value = liveAppState.odfFla2Rating || 1.10;
+            renderCustomFlowBuilder();
             toggleModalVisibility();
         }
     }
@@ -815,7 +820,10 @@ function getActiveSequence() {
     const componentFlow = ['diag_herm_v', 'diag_herm_a', 'diag_fan_v', 'diag_fan_a', 'diag_comp_rla', 'diag_comp_rla_2', 'diag_odf_fla', 'diag_odf_fla_2', 'diag_herm_bench', 'diag_fan_bench'];
     const toolFlow = ['diag_herm_v', 'diag_fan_v', 'diag_herm_a', 'diag_fan_a', 'diag_comp_rla', 'diag_comp_rla_2', 'diag_odf_fla', 'diag_odf_fla_2', 'diag_herm_bench', 'diag_fan_bench'];
 
-    const activeOrder = liveAppState.flowMode === 'tool' ? toolFlow : componentFlow;
+    let activeOrder = liveAppState.flowMode === 'tool' ? toolFlow : componentFlow;
+    if (liveAppState.flowMode === 'custom') {
+        activeOrder = liveAppState.customFlowOrder || toolFlow;
+    }
 
     return activeOrder.map(id => hudSequence.find(s => s.id === id)).filter(step => {
         if (!step) return false;
@@ -830,15 +838,52 @@ function getActiveSequence() {
 }
 
 function toggleFlowMode() {
-    liveAppState.flowMode = liveAppState.flowMode === 'component' ? 'tool' : 'component';
-    const lbl = document.getElementById('lbl-flow-toggle');
-    if (lbl) lbl.innerText = liveAppState.flowMode === 'component' ? 'COMP FLOW' : 'TOOL FLOW';
+    if (liveAppState.flowMode === 'component') liveAppState.flowMode = 'tool';
+    else if (liveAppState.flowMode === 'tool') liveAppState.flowMode = 'custom';
+    else liveAppState.flowMode = 'component';
     
+    const lbl = document.getElementById('lbl-flow-toggle');
+    if (lbl) lbl.innerText = liveAppState.flowMode === 'component' ? 'COMP FLOW' : (liveAppState.flowMode === 'tool' ? 'TOOL FLOW' : 'CUSTOM FLOW');
+
     const activeSeq = getActiveSequence();
     if (!activeSeq.find(s => s.id === liveAppState.activeField) && activeSeq.length > 0) {
         setActiveField(activeSeq[0].id);
     }
     if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function renderCustomFlowBuilder() {
+    const builder = document.getElementById('custom-flow-builder');
+    if (!builder) return;
+    if (!liveAppState.customFlowOrder) liveAppState.customFlowOrder = ['diag_herm_v', 'diag_fan_v', 'diag_herm_a', 'diag_fan_a', 'diag_comp_rla', 'diag_comp_rla_2', 'diag_odf_fla', 'diag_odf_fla_2', 'diag_herm_bench', 'diag_fan_bench'];
+    
+    let html = '';
+    liveAppState.customFlowOrder.forEach((id, idx) => {
+        const step = hudSequence.find(s => s.id === id);
+        if (!step) return;
+        html += `<div class="flex justify-between items-center bg-slate-800 p-1.5 rounded border border-slate-600 text-[10px] text-white">
+            <span class="font-bold">${step.label}</span>
+            <div class="flex gap-1">
+                <button onclick="moveCustomFlow(${idx}, -1)" class="bg-slate-700 px-2 py-0.5 rounded hover:bg-slate-500 font-bold border border-slate-600 shadow-sm">▲</button>
+                <button onclick="moveCustomFlow(${idx}, 1)" class="bg-slate-700 px-2 py-0.5 rounded hover:bg-slate-500 font-bold border border-slate-600 shadow-sm">▼</button>
+            </div>
+        </div>`;
+    });
+    builder.innerHTML = html;
+}
+
+function moveCustomFlow(idx, dir) {
+    const arr = liveAppState.customFlowOrder;
+    if (idx + dir < 0 || idx + dir >= arr.length) return;
+    const temp = arr[idx];
+    arr[idx] = arr[idx + dir];
+    arr[idx + dir] = temp;
+    saveToLocal();
+    renderCustomFlowBuilder();
+    if (liveAppState.flowMode === 'custom') {
+        renderAllPills();
+        updateHUD();
+    }
 }
 
 function updateDashLabels() {
@@ -942,6 +987,7 @@ function initLedger() {
             <div class="bg-slate-100 text-slate-500 font-bold flex items-center justify-center px-3 border-l border-slate-200 select-none hover:bg-slate-200 transition-colors" onclick="event.stopPropagation(); clearSpecificSlot('${item.id}')">[ ⟲ ]</div>
         </div>`;
     });
+    html += `<div id="ledger-summary-results" class="w-full mt-2 flex flex-col gap-1"></div>`;
     ledger.innerHTML = html;
 }
 
@@ -952,6 +998,12 @@ window.addEventListener('DOMContentLoaded', () => {
             const parsed = JSON.parse(saved);
             Object.assign(liveAppState, parsed.liveAppState);
             Object.assign(committedState, parsed.committedState);
+            
+            // v4.93 Override: Force Tool Flow on fresh load
+            liveAppState.flowMode = 'tool';
+            const flowLbl = document.getElementById('lbl-flow-toggle');
+            if (flowLbl) flowLbl.innerText = 'TOOL FLOW';
+
             if (liveAppState.circ_a === 'compressor' || liveAppState.circ_a === 'herm') liveAppState.circ_a = 'Herm';
             if (liveAppState.circ_b === 'fan') liveAppState.circ_b = 'Fan';
             if (parsed.capacitorRegistry) window.capacitorRegistry = parsed.capacitorRegistry;
@@ -1202,51 +1254,73 @@ function triggerMasterReset() {
 }
 
 function toggleMic() {
-liveAppState.micActive = !liveAppState.micActive;
-const micBtn = document.getElementById('voice-trigger-btn');
-if (micBtn) micBtn.style.background = liveAppState.micActive ? '#16a34a' : '#1e293b';
+    liveAppState.micActive = !liveAppState.micActive;
+    const micBtn = document.getElementById('voice-trigger-btn');
+    if (micBtn) micBtn.style.background = liveAppState.micActive ? '#16a34a' : '#1e293b';
 
-if (!liveAppState.micActive) return; // Stop listening if toggled off
+    if (window.micPingInterval) clearInterval(window.micPingInterval);
 
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (!SpeechRecognition) {
-alert("Voice dictation not supported in this browser. Please use Chrome.");
-liveAppState.micActive = false;
-if (micBtn) micBtn.style.background = '#1e293b';
-return;
-}
+    if (!liveAppState.micActive) return; 
 
-const recognition = new SpeechRecognition();
-recognition.lang = 'en-US';
-recognition.interimResults = false;
-recognition.maxAlternatives = 1;
+    // 5-Second Active Mic Ping
+    window.micPingInterval = setInterval(() => {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            osc.type = 'sine'; osc.frequency.value = 800;
+            osc.connect(ctx.destination);
+            osc.start(); osc.stop(ctx.currentTime + 0.1);
+        } catch(e) {}
+    }, 5000);
 
-recognition.onresult = function(event) {
-    const speechResult = event.results[0][0].transcript.toUpperCase();
-
-    // Step 2: Command execution to lock in data and auto-advance
-    if (speechResult.includes("MIC OFF") || speechResult.includes("STOP MIC") || speechResult.includes("TURN OFF MIC") || speechResult.includes("MIC STOP") || speechResult.includes("MIKE STOP") || speechResult.includes("STOP MIKE") || speechResult.includes("STOP LISTENING")) {
-        if (liveAppState.micActive) {
-            liveAppState.micActive = false;
-            const micBtn = document.getElementById('voice-trigger-btn');
-            if (micBtn) micBtn.style.background = '#1e293b';
-            try { recognition.stop(); } catch(e) {} // Forcefully kill engine
-        }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Voice dictation not supported in this browser. Please use Chrome.");
+        liveAppState.micActive = false;
+        if (micBtn) micBtn.style.background = '#1e293b';
+        if (window.micPingInterval) clearInterval(window.micPingInterval);
         return;
-    } else if (speechResult.includes("COPY") || speechResult.includes("COMPLY") || speechResult.includes("CONFIRM") || speechResult.includes("NEXT")) {
-        commitHudValue();
-    } else {
-        // Step 1: Extract numeric readouts
-        const match = speechResult.match(/\d+(\.\d+)?/);
-        if (match) {
-            const num = match[0];
-            hudStagingValue = num;
-            const hiddenInput = document.getElementById('hud-hidden-numeric-input');
-            if (hiddenInput) hiddenInput.value = num;
-            updateHUD();
-        }
     }
-};
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = function(event) {
+        const speechResult = event.results[0][0].transcript.toUpperCase();
+
+        if (speechResult.includes("MIC OFF") || speechResult.includes("STOP MIC") || speechResult.includes("TURN OFF MIC") || speechResult.includes("MIC STOP") || speechResult.includes("MIKE STOP") || speechResult.includes("STOP MIKE") || speechResult.includes("STOP LISTENING")) {
+            if (liveAppState.micActive) {
+                liveAppState.micActive = false;
+                const micBtn = document.getElementById('voice-trigger-btn');
+                if (micBtn) micBtn.style.background = '#1e293b';
+                if (window.micPingInterval) clearInterval(window.micPingInterval);
+                try { recognition.stop(); } catch(e) {} 
+            }
+            return;
+        } else if (speechResult.includes("COPY") || speechResult.includes("COMPLY") || speechResult.includes("CONFIRM") || speechResult.includes("NEXT")) {
+            commitHudValue();
+        } else {
+            // Voice Navigation: Jump to specific pill by label
+            const activeSeq = getActiveSequence();
+            const navTarget = activeSeq.find(s => speechResult.includes(s.label.toUpperCase()));
+            if (navTarget) {
+                setActiveField(navTarget.id);
+                return;
+            }
+
+            // Extract numeric readouts
+            const match = speechResult.match(/\d+(\.\d+)?/);
+            if (match) {
+                const num = match[0];
+                hudStagingValue = num;
+                const hiddenInput = document.getElementById('hud-hidden-numeric-input');
+                if (hiddenInput) hiddenInput.value = num;
+                updateHUD();
+            }
+        }
+    };
 
 recognition.onend = function() {
 // Keep the microphone awake for hands-free continuous testing
@@ -1530,8 +1604,46 @@ function refreshLedger() {
         }
     }
 
-
+    // Safe Ledger Results Summary
+    const summaryContainer = document.getElementById('ledger-summary-results');
+    if (summaryContainer) {
+        const tolCheck = liveAppState.selectedTolerance || 0.06;
+        let summaryHtml = '';
+        
+        let capHtml = '';
+        if (committedState.diag_herm_v && committedState.diag_herm_a && liveAppState.target_mfd) {
+            const act = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
+            const c = Math.abs((act - liveAppState.target_mfd)/liveAppState.target_mfd) <= tolCheck ? '#16a34a' : '#dc2626';
+            capHtml += `<span style="color:${c};">HERM: ${act.toFixed(2)}µF</span>`;
+        }
+        if (committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.target_fan_mfd) {
+            const act = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
+            const c = Math.abs((act - liveAppState.target_fan_mfd)/liveAppState.target_fan_mfd) <= tolCheck ? '#16a34a' : '#dc2626';
+            capHtml += `${capHtml !== '' ? ' | ' : ''}<span style="color:${c};">FAN: ${act.toFixed(2)}µF</span>`;
+        }
+        if (capHtml !== '') {
+            summaryHtml += `<div class="bg-slate-800 p-2 rounded border border-slate-700 shadow-sm flex flex-col mb-1"><span class="text-[10px] font-bold text-white uppercase tracking-wider">Capacitor Results</span><div class="text-xs font-bold mt-0.5">${capHtml}</div></div>`;
+        }
+        
+        let motHtml = '';
+        if (committedState.diag_comp_rla && liveAppState.cRlaRating) {
+            const pct = (liveAppState.diag_comp_rla / liveAppState.cRlaRating) * 100;
+            const c = liveAppState.diag_comp_rla <= liveAppState.cRlaRating ? '#16a34a' : '#dc2626';
+            motHtml += `<span style="color:${c};">COMP: ${liveAppState.diag_comp_rla.toFixed(2)}A (${pct.toFixed(1)}%)</span>`;
+        }
+        if (committedState.diag_odf_fla && liveAppState.odfFlaRating) {
+            const pct = (liveAppState.diag_odf_fla / liveAppState.odfFlaRating) * 100;
+            const c = liveAppState.diag_odf_fla <= liveAppState.odfFlaRating ? '#16a34a' : '#dc2626';
+            motHtml += `${motHtml !== '' ? ' | ' : ''}<span style="color:${c};">ODF: ${liveAppState.diag_odf_fla.toFixed(2)}A (${pct.toFixed(1)}%)</span>`;
+        }
+        if (motHtml !== '') {
+            summaryHtml += `<div class="bg-slate-800 p-2 rounded border border-slate-700 shadow-sm flex flex-col mb-1"><span class="text-[10px] font-bold text-white uppercase tracking-wider">Motor Load Results</span><div class="text-xs font-bold mt-0.5">${motHtml}</div></div>`;
+        }
+        
+        summaryContainer.innerHTML = summaryHtml;
+    }
 }
+
 
 function renderAllPills() {
     const track = document.getElementById('ribbon-track');
@@ -1608,7 +1720,19 @@ function renderAllPills() {
 
     getActiveSequence().forEach(step => {
         const isCommitted = committedState[step.id];
-        const borderColor = liveAppState.activeField === step.id ? '#3b82f6' : (isCommitted ? '#16a34a' : '#475569');
+        
+        let borderColor = '#475569'; // default grey
+        if (liveAppState.activeField === step.id) {
+            borderColor = '#3b82f6'; // active blue
+        } else if (isCommitted) {
+            borderColor = '#16a34a'; // default pass green
+            // Inherit Pass/Fail Math Colors
+            if ((step.id.includes('herm_v') || step.id.includes('herm_a') || step.id.includes('herm_bench')) && hCol === 'text-rose-400') borderColor = '#dc2626';
+            if ((step.id.includes('fan_v') || step.id.includes('fan_a') || step.id.includes('fan_bench')) && fCol === 'text-rose-400') borderColor = '#dc2626';
+            if (step.id.includes('comp_rla') && rlaCol === 'text-rose-400') borderColor = '#dc2626';
+            if (step.id.includes('odf_fla') && flaCol === 'text-rose-400') borderColor = '#dc2626';
+        }
+
         const displayLabel = step.label;
         const displayVal = isCommitted ? liveAppState[step.id] : '---';
         html += `
