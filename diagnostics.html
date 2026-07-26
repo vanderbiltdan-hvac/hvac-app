@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v4.80</title>
+<title>Diagnostics v4.92</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,8 +99,10 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider mb-1 w-full text-center uppercase">[ Build: v4_80 ]</div>
-                <div id="hud-status-prompt" class="text-slate-300 font-bold mb-2 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v4_92 ]</div>
+                <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
+                <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
+                <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div class="relative mb-1 w-full flex justify-center">
                     <div id="hud-live-value-box" onclick="document.getElementById('hud-hidden-numeric-input').focus()" class="text-slate-50 font-extrabold leading-tight cursor-text font-sans tracking-tight min-h-[1.1em] text-center flex items-baseline justify-center text-[100px]">---</div>
                     <input type="number" id="hud-hidden-numeric-input" pattern="[1-9]*" inputmode="decimal" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-text bg-transparent border-none outline-none text-transparent p-0" oninput="syncHiddenInput(event)">
@@ -227,7 +229,10 @@ HUB
     <div class="flex gap-2 items-center">
         <div class="flex-1 bg-slate-900 border border-slate-600 rounded flex items-center px-2">
             <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mr-2">Radius</span>
-            <input type="number" id="radar-radius-input" value="1000" class="bg-transparent text-white text-xs font-bold w-full focus:outline-none py-1.5 no-spinners" placeholder="Ft">
+<input type="number" id="radar-radius-input" value="1000" class="w-14 bg-slate-900 text-white border border-slate-600 rounded p-1 font-bold text-xs text-center focus:outline-none focus:border-blue-500 transition-colors">
+<select id="radar-unit-select" class="bg-slate-800 text-white border border-slate-600 rounded p-1 font-bold text-[10px] focus:outline-none focus:border-blue-500 transition-colors">
+<option value="ft">Ft</option><option value="yd">Yds</option><option value="mi">Mi</option>
+</select>
         </div>
         <button onclick="filterNearbySnapshots()" id="radar-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase tracking-widest px-4 py-2 rounded transition-colors shadow-sm whitespace-nowrap">📍 Find Nearby</button>
     </div>
@@ -241,9 +246,10 @@ HUB
 <!-- PREVIEW RESULTS MODAL -->
 <div id="preview-results-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
 <div class="bg-slate-800 w-full max-w-sm rounded-xl border border-blue-500 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-<div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
-<h3 class="text-white font-bold tracking-widest text-xs uppercase">📊 Unit Results Preview</h3>
-<button onclick="closePreviewModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+<div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex flex-col gap-1 relative">
+<button onclick="closePreviewModal()" class="absolute top-2 right-4 text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+<h3 id="preview-modal-title" class="text-white font-bold tracking-wide text-[10px] uppercase pr-6 leading-tight">📊 Unit Results Preview</h3>
+<div id="preview-modal-specs" class="text-[9px] text-slate-300 font-mono flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5"></div>
 </div>
 <div id="preview-modal-content" class="p-4 flex flex-col gap-3 overflow-y-auto no-scrollbar flex-1 bg-slate-900">
 <!-- Results injected here -->
@@ -435,7 +441,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.80</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.92</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -577,10 +583,10 @@ const hudSequence = [
 { id: 'diag_herm_a', prompt: 'Enter Herm Amps', label: 'Herm Amps' },
 { id: 'diag_fan_v', prompt: 'Enter Fan 1 Volts', label: 'Fan Volts' },
 { id: 'diag_fan_a', prompt: 'Enter Fan 1 Amps', label: 'Fan Amps' },
-{ id: 'diag_comp_rla', prompt: 'Enter Comp 1 RLA', label: 'Comp 1 RLA (Act)' },
-{ id: 'diag_comp_rla_2', prompt: 'Enter Comp 2 RLA', label: 'Comp 2 RLA (Act)' },
-{ id: 'diag_odf_fla', prompt: 'Enter Fan 1 FLA', label: 'Fan 1 FLA (Act)' },
-{ id: 'diag_odf_fla_2', prompt: 'Enter Fan 2 FLA', label: 'Fan 2 FLA (Act)' },
+{ id: 'diag_comp_rla', prompt: 'Enter Comp RLA', label: 'RLA (Measured)' },
+{ id: 'diag_comp_rla_2', prompt: 'Enter Comp 2 RLA', label: 'RLA 2 (Measured)' },
+{ id: 'diag_odf_fla', prompt: 'Enter Fan FLA', label: 'FLA ODF (Measured)' },
+{ id: 'diag_odf_fla_2', prompt: 'Enter Fan 2 FLA', label: 'FLA ODF2 (Measured)' },
 { id: 'diag_herm_bench', prompt: 'Enter Herm MFD', label: 'Herm MFD' },
 { id: 'diag_fan_bench', prompt: 'Enter Fan 1 MFD', label: 'Fan MFD' }
 ];
@@ -677,7 +683,9 @@ function saveSystemConfig() {
     liveAppState.target_fan_mfd = parseFloat(document.getElementById('config-target-fan-mfd').value) || 5;
 
     liveAppState.cRlaRating = parseFloat(document.getElementById('config-comp-rla-rating').value) || 14.20;
-    liveAppState.cRla2Rating = parseFloat(document.getElementById('config-comp-rla-2-rating').value) || 14.20;
+liveAppState.cLraRating = parseFloat(document.getElementById('config-comp-lra-rating').value) || null;
+liveAppState.cRla2Rating = parseFloat(document.getElementById('config-comp-rla-2-rating').value) || 14.20;
+liveAppState.cLra2Rating = parseFloat(document.getElementById('config-comp-lra-2-rating').value) || null;
     liveAppState.odfFlaRating = parseFloat(document.getElementById('config-fan-fla-rating').value) || 1.10;
     liveAppState.odfFla2Rating = parseFloat(document.getElementById('config-fan-fla-2-rating').value) || 1.10;
 
@@ -836,20 +844,59 @@ function toggleFlowMode() {
 function updateDashLabels() {
     const dashLeft = document.getElementById('hud-dash-left');
     const dashRight = document.getElementById('hud-dash-right');
+    const miniCaps = document.getElementById('hud-mini-caps');
+    const miniMotors = document.getElementById('hud-mini-motors');
+    const tol = liveAppState.selectedTolerance || 0.06;
+
+    let hCol = 'text-slate-400', fCol = 'text-slate-400', rlaCol = 'text-slate-400', flaCol = 'text-slate-400';
+    let hActText = '---', fActText = '---', rlaActText = '---', flaActText = '---';
+
+    if (committedState.diag_herm_v && committedState.diag_herm_a && liveAppState.target_mfd) {
+        const act = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
+        const dev = ((act - liveAppState.target_mfd) / liveAppState.target_mfd) * 100;
+        hCol = Math.abs(dev) <= (tol * 100) ? 'text-emerald-400' : 'text-rose-400';
+        hActText = `<span class="${hCol}">${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(1)}%)</span>`;
+    } else if (committedState.diag_herm_bench && liveAppState.target_mfd) {
+        const dev = ((liveAppState.diag_herm_bench - liveAppState.target_mfd) / liveAppState.target_mfd) * 100;
+        hCol = Math.abs(dev) <= (tol * 100) ? 'text-emerald-400' : 'text-rose-400';
+        hActText = `<span class="${hCol}">${liveAppState.diag_herm_bench.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(1)}%)</span>`;
+    }
+
+    if (committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.target_fan_mfd) {
+        const act = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
+        const dev = ((act - liveAppState.target_fan_mfd) / liveAppState.target_fan_mfd) * 100;
+        fCol = Math.abs(dev) <= (tol * 100) ? 'text-emerald-400' : 'text-rose-400';
+        fActText = `<span class="${fCol}">${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(1)}%)</span>`;
+    } else if (committedState.diag_fan_bench && liveAppState.target_fan_mfd) {
+        const dev = ((liveAppState.diag_fan_bench - liveAppState.target_fan_mfd) / liveAppState.target_fan_mfd) * 100;
+        fCol = Math.abs(dev) <= (tol * 100) ? 'text-emerald-400' : 'text-rose-400';
+        fActText = `<span class="${fCol}">${liveAppState.diag_fan_bench.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(1)}%)</span>`;
+    }
+
+    if (committedState.diag_comp_rla && liveAppState.cRlaRating) {
+        const pct = (liveAppState.diag_comp_rla / liveAppState.cRlaRating) * 100;
+        rlaCol = liveAppState.diag_comp_rla <= liveAppState.cRlaRating ? 'text-emerald-400' : 'text-rose-400';
+        rlaActText = `<span class="${rlaCol}">${liveAppState.diag_comp_rla.toFixed(2)} A (${pct.toFixed(1)}%)</span>`;
+    }
+    if (committedState.diag_odf_fla && liveAppState.odfFlaRating) {
+        const pct = (liveAppState.diag_odf_fla / liveAppState.odfFlaRating) * 100;
+        flaCol = liveAppState.diag_odf_fla <= liveAppState.odfFlaRating ? 'text-emerald-400' : 'text-rose-400';
+        flaActText = `<span class="${flaCol}">${liveAppState.diag_odf_fla.toFixed(2)} A (${pct.toFixed(1)}%)</span>`;
+    }
+
     if(dashLeft) {
-        const hMfd = liveAppState.isHermEnabled ? liveAppState.target_mfd : 0;
-        const fMfd = liveAppState.isFanEnabled ? liveAppState.target_fan_mfd : 0;
-        let capStr = '';
-        if(liveAppState.isHermEnabled && liveAppState.isFanEnabled) capStr = `${hMfd}+${fMfd} µF`;
-        else if (liveAppState.isHermEnabled) capStr = `${hMfd} µF`;
-        else if (liveAppState.isFanEnabled) capStr = `${fMfd} µF`;
-        else capStr = '---';
-        dashLeft.innerHTML = `${capStr}<br>±${(liveAppState.selectedTolerance*100).toFixed(0)}%`;
+        const hMfd = liveAppState.isHermEnabled ? `<span class="${hCol}">${liveAppState.target_mfd}</span>` : 0;
+        const fMfd = liveAppState.isFanEnabled ? `<span class="${fCol}">${liveAppState.target_fan_mfd}</span>` : 0;
+        dashLeft.innerHTML = `<span>⚡ CAP: ${hMfd}/${fMfd} µF<br>±${(liveAppState.selectedTolerance * 100).toFixed(0)}%</span>`;
     }
     if(dashRight) {
-        const rla = liveAppState.cRlaRating ? liveAppState.cRlaRating.toFixed(1) : '-';
-const fla = liveAppState.odfFlaRating ? liveAppState.odfFlaRating.toFixed(2) : '-';
-        dashRight.innerHTML = `${rla} / ${fla}`;
+        dashRight.innerHTML = `<span>🌀 RLA: <span class="${rlaCol}">${liveAppState.cRlaRating || '--'}</span><br>💨 FLA: <span class="${flaCol}">${liveAppState.odfFlaRating || '--'}</span></span>`;
+    }
+    if(miniCaps) {
+        miniCaps.innerHTML = `<div class="mb-0.5">${hActText}</div><div>${fActText}</div>`;
+    }
+    if(miniMotors) {
+        miniMotors.innerHTML = `<div class="mb-0.5">${rlaActText}</div><div>${flaActText}</div>`;
     }
 }
 
@@ -915,6 +962,22 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     if (!window.capacitorRegistry) window.capacitorRegistry = [];
     updateLeftButtons();
+            // Force the Mode Button to physically match the loaded state
+            const btn = document.getElementById('hud-btn-mode');
+            const hudBox = document.getElementById('hud-main-box');
+            if (btn && hudBox) {
+                if (liveAppState.testMode === 'live') {
+                    btn.innerHTML = '⚡'; btn.style.background = '#3b82f6';
+                    hudBox.style.borderImage = 'none'; hudBox.style.borderColor = '#3b82f6';
+                } else if (liveAppState.testMode === 'bench') {
+                    btn.innerHTML = '🧪'; btn.style.background = '#f59e0b';
+                    hudBox.style.borderImage = 'none'; hudBox.style.borderColor = '#f59e0b';
+                } else {
+                    btn.innerHTML = `<div class="relative w-full h-full"><span class="absolute top-1 left-2 text-lg drop-shadow-md">⚡</span><svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none"><line x1="0" y1="100%" x2="100%" y2="0" stroke="rgba(255,255,255,0.3)" stroke-width="2"/></svg><span class="absolute bottom-1 right-2 text-lg drop-shadow-md">🧪</span></div>`;
+                    btn.style.background = 'linear-gradient(to bottom right, #3b82f6, #f59e0b)';
+                    hudBox.style.borderImage = 'linear-gradient(to right, #3b82f6, #f59e0b) 1';
+                }
+            }
     renderAllPills();
     initLedger();
     refreshLedger();
@@ -1131,8 +1194,11 @@ function triggerMasterReset() {
         committedState[k] = false;
         clearSpecificSlot(k);
     });
+    liveAppState.description = null;
+    updateStickyDescription();
     const activeSeq = getActiveSequence();
     if (activeSeq.length > 0) setActiveField(activeSeq[0].id);
+    updateDashLabels();
 }
 
 function toggleMic() {
@@ -1156,25 +1222,30 @@ recognition.interimResults = false;
 recognition.maxAlternatives = 1;
 
 recognition.onresult = function(event) {
-const speechResult = event.results[0][0].transcript.toUpperCase();
+    const speechResult = event.results[0][0].transcript.toUpperCase();
 
-// Step 2: Command execution to lock in data and auto-advance
-if (speechResult.includes("MIC OFF") || speechResult.includes("STOP MIC") || speechResult.includes("TURN OFF MIC")) {
-    if (liveAppState.micActive) toggleMic(); // Turn it off securely
-    return;
-} else if (speechResult.includes("COPY") || speechResult.includes("COMPLY") || speechResult.includes("CONFIRM") || speechResult.includes("NEXT")) {
-    commitHudValue();
-} else {
-// Step 1: Extract numeric readouts
-const match = speechResult.match(/\d+(\.\d+)?/);
-if (match) {
-const num = match[0];
-hudStagingValue = num;
-const hiddenInput = document.getElementById('hud-hidden-numeric-input');
-if (hiddenInput) hiddenInput.value = num;
-updateHUD();
-}
-}
+    // Step 2: Command execution to lock in data and auto-advance
+    if (speechResult.includes("MIC OFF") || speechResult.includes("STOP MIC") || speechResult.includes("TURN OFF MIC") || speechResult.includes("MIC STOP") || speechResult.includes("MIKE STOP") || speechResult.includes("STOP MIKE") || speechResult.includes("STOP LISTENING")) {
+        if (liveAppState.micActive) {
+            liveAppState.micActive = false;
+            const micBtn = document.getElementById('voice-trigger-btn');
+            if (micBtn) micBtn.style.background = '#1e293b';
+            try { recognition.stop(); } catch(e) {} // Forcefully kill engine
+        }
+        return;
+    } else if (speechResult.includes("COPY") || speechResult.includes("COMPLY") || speechResult.includes("CONFIRM") || speechResult.includes("NEXT")) {
+        commitHudValue();
+    } else {
+        // Step 1: Extract numeric readouts
+        const match = speechResult.match(/\d+(\.\d+)?/);
+        if (match) {
+            const num = match[0];
+            hudStagingValue = num;
+            const hiddenInput = document.getElementById('hud-hidden-numeric-input');
+            if (hiddenInput) hiddenInput.value = num;
+            updateHUD();
+        }
+    }
 };
 
 recognition.onend = function() {
@@ -1392,14 +1463,12 @@ function refreshLedger() {
         const textColor = isCommitted ? (isPass ? '#16a34a' : '#dc2626') : '#94a3b8';
         const textDiv = document.getElementById(`ledger-row-${step.id}-text`);
         if (textDiv) {
-            const wind = windowStr ? `<span style="color: #000000; font-weight: bold;">${windowStr}</span>` : '';
             const isStamped = window.compilerRegistry && window.compilerRegistry[step.id] && window.compilerRegistry[step.id].stamped;
             const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === step.label);
             const lblClass = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
-            let displayLabel = step.label;
-            if (step.id.includes('herm')) displayLabel = step.label.replace('Herm', liveAppState.circ_a);
-            else if (step.id.includes('fan')) displayLabel = step.label.replace('Fan', liveAppState.circ_b);
-            textDiv.innerHTML = `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${lblClass}" onclick="event.stopPropagation(); toggleBlueStamp('${step.id}')">${displayLabel}</span> <div class="flex flex-1 items-center ml-2"><span style="color: ${textColor}; font-weight: 900; font-size: 12px;">${formattedVal}</span><div style="margin-left: auto; display: flex; gap: 6px; align-items: center;">${wind}${specStr}</div></div>`;
+            const formattedVal = isCommitted ? val.toFixed(2) + (step.id.includes('v') ? ' V' : (step.id.includes('mfd')||step.id.includes('bench') ? ' µF' : ' A')) : '---';
+
+            textDiv.innerHTML = `<span class="font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${lblClass}" onclick="event.stopPropagation(); toggleBlueStamp('${step.id}')">${step.label}</span> <div class="flex flex-1 items-center justify-end ml-2"><span style="color: ${textColor}; font-weight: 900; font-size: 12px;">${formattedVal}</span></div>`;
         }
     });
 
@@ -1461,186 +1530,95 @@ function refreshLedger() {
         }
     }
 
-    // 1. Capacitor Results (Unified)
-    const reportLiveRow = document.getElementById('ledger-row-report-summary');
-    if (reportLiveRow) reportLiveRow.style.display = (liveAppState.isHermEnabled && liveAppState.isFanEnabled) ? 'flex' : 'none';
-    const reportLiveText = document.getElementById('ledger-row-report-summary-text');
-    if (reportLiveText) {
-        const isStamped = window.compilerRegistry && window.compilerRegistry['report-summary'] && window.compilerRegistry['report-summary'].stamped;
-        const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === 'Capacitor Results');
-        const clSum = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
-        const lblSpan = `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${clSum}" onclick="event.stopPropagation(); toggleBlueStamp('report-summary')">Capacitor Results</span>`;
 
-        const isLive = liveAppState.testMode !== 'bench';
-        let hAct = 0, fAct = 0;
-        let canCalculate = false;
-
-        if (isLive && committedState.diag_herm_v && committedState.diag_herm_a && committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.diag_herm_v > 0 && liveAppState.diag_fan_v > 0) {
-            hAct = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
-            fAct = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
-            canCalculate = true;
-        } else if (!isLive && committedState.diag_herm_bench && committedState.diag_fan_bench && liveAppState.diag_herm_bench > 0 && liveAppState.diag_fan_bench > 0) {
-            hAct = liveAppState.diag_herm_bench;
-            fAct = liveAppState.diag_fan_bench;
-            canCalculate = true;
-        }
-
-        if (canCalculate) {
-            const hTgt = liveAppState.target_mfd || 35;
-            const hDev = ((hAct - hTgt) / hTgt) * 100;
-            const fTgt = liveAppState.target_fan_mfd || 5;
-            const fDev = ((fAct - fTgt) / fTgt) * 100;
-            const tol = liveAppState.selectedTolerance || 0.06;
-            const hPass = Math.abs(hDev) <= (tol * 100);
-            const fPass = Math.abs(fDev) <= (tol * 100);
-            const isPass = hPass && fPass;
-            let statusText = "within tolerance";
-            if (!hPass && fPass) statusText = `outside of tolerance on ${liveAppState.circ_a} side`;
-            else if (hPass && !fPass) statusText = `outside of tolerance on ${liveAppState.circ_b} side`;
-            else if (!hPass && !fPass) statusText = `outside of tolerance on both ${liveAppState.circ_a} and ${liveAppState.circ_b} sides`;
-            const hSign = hDev > 0 ? '+' : '';
-            const fSign = fDev > 0 ? '+' : '';
-            const testContext = isLive ? "tested under load" : "lab tested";
-            const sentence = `⚡ ${hTgt} + ${fTgt} µF Capacitor ${testContext} ${statusText} at ${hAct.toFixed(2)} + ${fAct.toFixed(2)} µF (${hSign}${hDev.toFixed(1)}% + ${fSign}${fDev.toFixed(1)}%).`;
-            reportLiveText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 800; font-size: 10px; line-height: 1.1;">${sentence}</span></div>`;
-        } else {
-            reportLiveText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span></div>`;
-        }
-    }
-
-    // 3. Motor Load Results
-    const reportMotorRow = document.getElementById('ledger-row-report-motor');
-    if (reportMotorRow) reportMotorRow.style.display = 'flex';
-    const reportMotorText = document.getElementById('ledger-row-report-motor-text');
-    if (reportMotorText) {
-        const isStamped = window.compilerRegistry && window.compilerRegistry['report-motor'] && window.compilerRegistry['report-motor'].stamped;
-        const isMapped = hardcodedFieldMap.some(m => m.split('|')[0].trim() === 'Motor Load Results');
-        const clSum = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
-        const lblSpan = `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${clSum}" onclick="event.stopPropagation(); toggleBlueStamp('report-motor')">Motor Load Results</span>`;
-
-        const c1Comm = committedState.diag_comp_rla && liveAppState.diag_comp_rla > 0;
-        const c2Comm = liveAppState.comp_qty !== 2 || (committedState.diag_comp_rla_2 && liveAppState.diag_comp_rla_2 > 0);
-        const f1Comm = committedState.diag_odf_fla && liveAppState.diag_odf_fla > 0;
-        const f2Comm = liveAppState.fan_qty !== 2 || (committedState.diag_odf_fla_2 && liveAppState.diag_odf_fla_2 > 0);
-
-        if (c1Comm && c2Comm && f1Comm && f2Comm) {
-            const c1Act = liveAppState.diag_comp_rla;
-            const c1Tgt = liveAppState.cRlaRating || 14.20;
-            const c1Pass = c1Act <= c1Tgt;
-            const c1Status = c1Pass ? "within range" : "OUT OF RANGE";
-
-            const f1Act = liveAppState.diag_odf_fla;
-            const f1Tgt = liveAppState.odfFlaRating || 1.10;
-            const f1Pass = f1Act <= f1Tgt;
-            const f1Status = f1Pass ? "within range" : "OUT OF RANGE";
-
-            let isPass = c1Pass && f1Pass;
-
-            let sentence = `🌀 RLA ${c1Tgt.toFixed(2)} tested ${c1Status} at ${c1Act.toFixed(2)}`;
-
-            if (liveAppState.comp_qty === 2) {
-                const c2Act = liveAppState.diag_comp_rla_2;
-                const c2Tgt = liveAppState.cRla2Rating || 14.20;
-                const c2Pass = c2Act <= c2Tgt;
-                const c2Status = c2Pass ? "within range" : "OUT OF RANGE";
-                isPass = isPass && c2Pass;
-                sentence += `, RLA 2 ${c2Tgt.toFixed(2)} tested ${c2Status} at ${c2Act.toFixed(2)}`;
-            }
-
-            sentence += ` and FLA ODF ${f1Tgt.toFixed(2)} tested ${f1Status} at ${f1Act.toFixed(2)}`;
-
-            if (liveAppState.fan_qty === 2) {
-                const f2Act = liveAppState.diag_odf_fla_2;
-                const f2Tgt = liveAppState.odfFla2Rating || 1.10;
-                const f2Pass = f2Act <= f2Tgt;
-                const f2Status = f2Pass ? "within range" : "OUT OF RANGE";
-                isPass = isPass && f2Pass;
-                sentence += `, FLA ODF2 ${f2Tgt.toFixed(2)} tested ${f2Status} at ${f2Act.toFixed(2)}`;
-            }
-
-            sentence += `.`;
-            
-            reportMotorText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 800; font-size: 10px; line-height: 1.1;">${sentence}</span></div>`;
-        } else {
-            reportMotorText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span></div>`;
-        }
-    }
 }
 
 function renderAllPills() {
-    const lblA = liveAppState.circ_a === 'Fan 1' ? 'Fan 1 MFD' : 'Herm MFD';
-    const lblB = liveAppState.circ_b === 'Fan 2' ? 'Fan 2 MFD' : 'Fan MFD';
+    const track = document.getElementById('ribbon-track');
+    if (!track) return;
+    const lblA = liveAppState.circ_a || 'Herm';
+    const lblB = liveAppState.circ_b || 'Fan';
+
+    const tol = liveAppState.selectedTolerance || 0.06;
+    let hCol = 'text-slate-300', fCol = 'text-slate-300', rlaCol = 'text-slate-300', flaCol = 'text-slate-300';
+    if (committedState.diag_herm_v && committedState.diag_herm_a && liveAppState.target_mfd) {
+        const act = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
+        hCol = Math.abs((act - liveAppState.target_mfd)/liveAppState.target_mfd) <= tol ? 'text-emerald-400' : 'text-rose-400';
+    } else if (committedState.diag_herm_bench && liveAppState.target_mfd) {
+        hCol = Math.abs((liveAppState.diag_herm_bench - liveAppState.target_mfd)/liveAppState.target_mfd) <= tol ? 'text-emerald-400' : 'text-rose-400';
+    }
+    if (committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.target_fan_mfd) {
+        const act = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
+        fCol = Math.abs((act - liveAppState.target_fan_mfd)/liveAppState.target_fan_mfd) <= tol ? 'text-emerald-400' : 'text-rose-400';
+    } else if (committedState.diag_fan_bench && liveAppState.target_fan_mfd) {
+        fCol = Math.abs((liveAppState.diag_fan_bench - liveAppState.target_fan_mfd)/liveAppState.target_fan_mfd) <= tol ? 'text-emerald-400' : 'text-rose-400';
+    }
+    if (committedState.diag_comp_rla && liveAppState.cRlaRating) {
+        rlaCol = liveAppState.diag_comp_rla <= liveAppState.cRlaRating ? 'text-emerald-400' : 'text-rose-400';
+    }
+    if (committedState.diag_odf_fla && liveAppState.odfFlaRating) {
+        flaCol = liveAppState.diag_odf_fla <= liveAppState.odfFlaRating ? 'text-emerald-400' : 'text-rose-400';
+    }
+
     let html = `
-        <div class="selector-pill p-1 min-w-[70px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent; ${!liveAppState.isHermEnabled ? 'opacity: 0.5;' : ''}">
-            <div class="flex justify-between items-center px-1">
-                <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lblA}</div>
-                <button onclick="toggleComponent('herm')" class="text-[8px] font-bold text-slate-300 hover:text-white bg-slate-700 px-1 rounded cursor-pointer leading-tight h-3 flex items-center justify-center border border-slate-600 shadow-sm">${liveAppState.isHermEnabled ? 'ON' : 'OFF'}</button>
-            </div>
-            <div class="flex justify-between items-center text-[14px] font-bold text-slate-300 mt-0.5">
-                <button onclick="cycleMfd('target_mfd', -1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">◀</button>
-                <input type="number" id="input-target_mfd" value="${liveAppState.target_mfd || 35}" onchange="updateManualValue('target_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
-                <button onclick="cycleMfd('target_mfd', 1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">▶</button>
-            </div>
+    <div class="selector-pill p-1 min-w-[85px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent; ${!liveAppState.isHermEnabled ? 'opacity: 0.5;' : ''}">
+        <div class="flex justify-between items-center px-1">
+            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lblA} MFD</div>
+            <button onclick="toggleComponent('herm')" class="text-[8px] font-bold text-slate-300 hover:text-white bg-slate-700 px-1 rounded cursor-pointer leading-tight h-3 flex items-center justify-center border border-slate-600 shadow-sm">${liveAppState.isHermEnabled ? 'ON' : 'OFF'}</button>
         </div>
-        <div class="selector-pill p-1 min-w-[70px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent; ${!liveAppState.isFanEnabled ? 'opacity: 0.5;' : ''}">
-            <div class="flex justify-between items-center px-1">
-                <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lblB}</div>
-                <button onclick="toggleComponent('fan')" class="text-[8px] font-bold text-slate-300 hover:text-white bg-slate-700 px-1 rounded cursor-pointer leading-tight h-3 flex items-center justify-center border border-slate-600 shadow-sm">${liveAppState.isFanEnabled ? 'ON' : 'OFF'}</button>
-            </div>
-            <div class="flex justify-between items-center text-[14px] font-bold text-slate-300 mt-0.5">
-                <button onclick="cycleMfd('target_fan_mfd', -1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">◀</button>
-                <input type="number" id="input-target_fan_mfd" value="${liveAppState.target_fan_mfd || 5}" onchange="updateManualValue('target_fan_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
-                <button onclick="cycleMfd('target_fan_mfd', 1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">▶</button>
-            </div>
+        <div class="flex justify-between items-center text-[14px] font-bold ${hCol} mt-0.5">
+            <button onclick="cycleMfd('target_mfd', -1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">◀</button>
+            <input type="number" id="input-target_mfd" value="${liveAppState.target_mfd || 35}" onchange="updateManualValue('target_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+            <button onclick="cycleMfd('target_mfd', 1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">▶</button>
         </div>
-        <div onclick="cycleTolerance()" class="selector-pill p-1 min-w-[60px] rounded flex flex-col justify-center cursor-pointer transition-colors" style="background:#1e2530; border:2px solid transparent;">
-            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">Tolerance</div>
-            <div class="text-[14px] font-bold text-slate-300 text-center">${(liveAppState.selectedTolerance * 100).toFixed(0)}%</div>
+    </div>
+    <div class="selector-pill p-1 min-w-[85px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent; ${!liveAppState.isFanEnabled ? 'opacity: 0.5;' : ''}">
+        <div class="flex justify-between items-center px-1">
+            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap">${lblB} MFD</div>
+            <button onclick="toggleComponent('fan')" class="text-[8px] font-bold text-slate-300 hover:text-white bg-slate-700 px-1 rounded cursor-pointer leading-tight h-3 flex items-center justify-center border border-slate-600 shadow-sm">${liveAppState.isFanEnabled ? 'ON' : 'OFF'}</button>
         </div>
-        <div class="selector-pill p-1 min-w-[60px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
-            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">Comp RLA (S)</div>
-            <div class="flex justify-center items-center text-[14px] font-bold text-slate-300 mt-0.5">
-                <input type="number" id="input-cRlaRating" value="${liveAppState.cRlaRating || 14.2}" onchange="updateManualValue('cRlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
-            </div>
+        <div class="flex justify-between items-center text-[14px] font-bold ${fCol} mt-0.5">
+            <button onclick="cycleMfd('target_fan_mfd', -1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">◀</button>
+            <input type="number" id="input-target_fan_mfd" value="${liveAppState.target_fan_mfd || 5}" onchange="updateManualValue('target_fan_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+            <button onclick="cycleMfd('target_fan_mfd', 1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">▶</button>
         </div>
-        <div class="selector-pill p-1 min-w-[60px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
-            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">ODF FLA (S)</div>
-
-            <div class="flex justify-center items-center text-[14px] font-bold text-slate-300 mt-0.5">
-
+    </div>
+    <div onclick="cycleTolerance()" class="selector-pill p-1 min-w-[75px] rounded flex flex-col justify-center cursor-pointer transition-colors" style="background:#1e2530; border:2px solid transparent;">
+        <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">Tolerance</div>
+        <div class="text-[14px] font-bold text-slate-300 text-center">${(liveAppState.selectedTolerance * 100).toFixed(0)}%</div>
+    </div>
+    <div class="selector-pill p-1 min-w-[75px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
+        <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">Comp RLA</div>
+        <div class="flex justify-center items-center text-[14px] font-bold ${rlaCol} mt-0.5">
+            <input type="number" id="input-cRlaRating" value="${liveAppState.cRlaRating || 14.2}" onchange="updateManualValue('cRlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+        </div>
+    </div>
+    <div class="selector-pill p-1 min-w-[75px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
+        <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">ODF FLA</div>
+        <div class="flex justify-center items-center text-[14px] font-bold ${flaCol} mt-0.5">
             <input type="number" id="input-odfFlaRating" value="${liveAppState.odfFlaRating || 1.1}" onchange="updateManualValue('odfFlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
-
-            </div>
-
-            </div>
-
-            <div class="selector-pill p-1 min-w-[60px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
-
-            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">🎯 Target SC</div>
-
-            <div class="flex justify-center items-center text-[14px] font-bold text-slate-300 mt-0.5">
-
+        </div>
+    </div>
+    <div class="selector-pill p-1 min-w-[75px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
+        <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">🎯 Target SC</div>
+        <div class="flex justify-center items-center text-[14px] font-bold text-slate-300 mt-0.5">
             <input type="number" id="input-targetSubcool" value="${liveAppState.targetSubcool || 10.0}" onchange="updateManualValue('targetSubcool', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+        </div>
+    </div>`;
 
-            </div>
-
-            </div>`;
     getActiveSequence().forEach(step => {
-        let val = liveAppState[step.id];
-        let displayVal = val ? val.toFixed(2) : '---';
-        let borderColor = (liveAppState.activeField === step.id) ? '#38bdf8' : 'transparent';
-        
-        let displayLabel = step.label;
-        if (liveAppState.comp_qty === 1 && displayLabel.includes('Comp 1')) displayLabel = displayLabel.replace('Comp 1 ', 'Comp ');
-        if (liveAppState.fan_qty === 1 && displayLabel.includes('Fan 1')) displayLabel = displayLabel.replace('Fan 1 ', 'Fan ');
-        
+        const isCommitted = committedState[step.id];
+        const borderColor = liveAppState.activeField === step.id ? '#3b82f6' : (isCommitted ? '#16a34a' : '#475569');
+        const displayLabel = step.label;
+        const displayVal = isCommitted ? liveAppState[step.id] : '---';
         html += `
         <div id="pill-${step.id}" onclick="setActiveField('${step.id}')" style="background:#1e2530; border:2px solid ${borderColor};" class="p-1 min-w-[80px] rounded flex flex-col justify-center cursor-pointer transition-colors">
-            <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">${displayLabel}</div>
-            <div class="text-[14px] font-bold text-slate-300 text-center">${displayVal}</div>
+        <div class="text-[9px] text-slate-400 font-bold leading-tight text-center px-0.5">${displayLabel}</div>
+        <div class="text-[14px] font-bold text-slate-300 text-center">${displayVal}</div>
         </div>`;
     });
-    document.getElementById('ribbon-track').innerHTML = html;
+
+    track.innerHTML = html;
     saveToLocal();
     updateDashLabels();
 }
@@ -2007,15 +1985,66 @@ async function reprocessGeocode(id, lat, lon) {
         let history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
         const snapIndex = history.findIndex(s => s.id === id);
         if (snapIndex !== -1) {
-            // Keep the bracketed coordinates but add the address
-            history[snapIndex].name = history[snapIndex].name.replace(/^.*(\[[\d.-]+,\s*[\d.-]+\])$/, `📍 ${address} $1`);
-            localStorage.setItem('hvac_snapshot_registry', JSON.stringify(history));
-            renderHistoryList();
-        }
+let parts = history[snapIndex].name.split(' | ');
+if (parts.length >= 3) {
+parts[parts.length - 1] = parts[parts.length - 1].replace(/.*(\[[\d.-]+,\s*[\d.-]+\])$/, `📍 ${address} $1`);
+history[snapIndex].name = parts.join(' | ');
+} else {
+history[snapIndex].name = history[snapIndex].name.replace(/.*(\[[\d.-]+,\s*[\d.-]+\])$/, `📍 ${address} $1`);
+}
+localStorage.setItem('hvac_snapshot_registry', JSON.stringify(history));
+renderHistoryList();
+}
     } else {
         if (btn) btn.innerHTML = '❌';
         alert("Geocoding failed. Try again later.");
     }
+}
+
+async function forwardGeocodeHistory(id) {
+let history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
+const snapIndex = history.findIndex(s => s.id === id);
+if (snapIndex === -1) return;
+
+// Extract the current address to prepopulate the prompt
+let currentAddress = "";
+let namePart = history[snapIndex].name.split(' | ').pop();
+if (namePart) {
+    currentAddress = namePart.replace(/📍\s*/, '').replace(/\[.*\]/, '').trim();
+}
+
+const newAddress = prompt("Edit address to fetch new GPS coordinates:", currentAddress);
+if (!newAddress || newAddress.trim() === "") return;
+
+const btn = document.getElementById(`fwd-btn-${id}`);
+if (btn) btn.innerHTML = '⏳';
+
+try {
+const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newAddress)}`);
+const data = await response.json();
+if (data && data.length > 0) {
+const lat = parseFloat(data[0].lat).toFixed(4);
+const lon = parseFloat(data[0].lon).toFixed(4);
+
+let parts = history[snapIndex].name.split(' | ');
+if (parts.length >= 3) {
+parts[parts.length - 1] = `📍 ${newAddress} [${lat}, ${lon}]`;
+history[snapIndex].name = parts.join(' | ');
+} else {
+history[snapIndex].name = `📍 ${newAddress} [${lat}, ${lon}]`;
+}
+
+localStorage.setItem('hvac_snapshot_registry', JSON.stringify(history));
+renderHistoryList();
+} else {
+alert("Could not find GPS coordinates for that exact address.");
+if(btn) btn.innerHTML = '🔍';
+}
+} catch(e) {
+console.error("Forward Geocoding failed:", e);
+alert("Forward Geocoding failed. Try again later.");
+if(btn) btn.innerHTML = '🔍';
+}
 }
 
 function editSnapshotName(id) {
@@ -2074,6 +2103,12 @@ function filterNearbySnapshots() {
 }
 
 function renderHistoryList(filterLat = null, filterLon = null, radius = 1000) {
+const radiusInput = parseFloat(document.getElementById('radar-radius-input')?.value) || 1000;
+const unitSelect = document.getElementById('radar-unit-select')?.value || 'ft';
+let searchRadius = radiusInput;
+if (unitSelect === 'mi') searchRadius = radiusInput * 5280;
+else if (unitSelect === 'yd') searchRadius = radiusInput * 3;
+
     const container = document.getElementById('history-list-container');
     const history = JSON.parse(localStorage.getItem('hvac_snapshot_registry') || '[]');
     if (history.length === 0) {
@@ -2088,10 +2123,32 @@ function renderHistoryList(filterLat = null, filterLon = null, radius = 1000) {
         let gpsDisplay = snap.name;
         const gpsMatch = snap.name.match(/\[([\d.-]+),\s*([\d.-]+)\]/);
 
-        if (filterLat && filterLon && gpsMatch) {
-            const dist = getDistanceFeet(filterLat, filterLon, parseFloat(gpsMatch[4]), parseFloat(gpsMatch[5]));
-            if (dist > radius) return; // Dynamic radius filter
-        }
+let distanceBadge = '';
+if (filterLat && filterLon && gpsMatch) {
+const lat = parseFloat(gpsMatch[1]);
+const lon = parseFloat(gpsMatch[2]);
+const dist = getDistanceFeet(filterLat, filterLon, lat, lon);
+if (dist > searchRadius) return;
+let distText = unitSelect === 'mi' ? (dist/5280).toFixed(1) + ' mi' : Math.round(dist) + ' ft';
+distanceBadge = `<span class="text-blue-400 ml-2">📏 ${distText} away</span>`;
+}
+
+const l = snap.live || {};
+const c = snap.commit || {};
+const tolCheck = l.selectedTolerance || 0.06;
+let hCol = 'text-slate-400', fCol = 'text-slate-400';
+if (c.diag_herm_v && c.diag_herm_a && l.target_mfd) hCol = (Math.abs(((l.diag_herm_a * 2652) / l.diag_herm_v) - l.target_mfd) / l.target_mfd) <= tolCheck ? 'text-emerald-400' : 'text-rose-400';
+else if (c.diag_herm_bench && l.target_mfd) hCol = (Math.abs(l.diag_herm_bench - l.target_mfd) / l.target_mfd) <= tolCheck ? 'text-emerald-400' : 'text-rose-400';
+if (c.diag_fan_v && c.diag_fan_a && l.target_fan_mfd) fCol = (Math.abs(((l.diag_fan_a * 2652) / l.diag_fan_v) - l.target_fan_mfd) / l.target_fan_mfd) <= tolCheck ? 'text-emerald-400' : 'text-rose-400';
+else if (c.diag_fan_bench && l.target_fan_mfd) fCol = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= tolCheck ? 'text-emerald-400' : 'text-rose-400';
+
+let rlaCol = 'text-slate-400', flaCol = 'text-slate-400';
+if (c.diag_comp_rla && l.diag_comp_rla && l.cRlaRating) rlaCol = l.diag_comp_rla <= l.cRlaRating ? 'text-emerald-400' : 'text-rose-400';
+if (c.diag_odf_fla && l.diag_odf_fla && l.odfFlaRating) flaCol = l.diag_odf_fla <= l.odfFlaRating ? 'text-emerald-400' : 'text-rose-400';
+
+const hMfd = l.target_mfd ? `<span class="${hCol}">${l.target_mfd}</span>` : 'NA';
+const fMfd = l.target_fan_mfd ? `<span class="${fCol}">${l.target_fan_mfd}</span>` : 'NA';
+const specsLine = `<div class="text-[9px] font-mono mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-slate-400"><span>⚡ Cap: <span class="${hCol}">${hMfd}</span>/<span class="${fCol}">${fMfd}</span></span> <span>🌀 Comp: <span class="${rlaCol}">${l.cRlaRating||'NA'}</span>/${l.cLraRating||'NA'}A</span> <span>💨 Fan: <span class="${flaCol}">${l.odfFlaRating||'NA'}</span>A</span> <span>🎯 SC: ${l.targetSubcool||'NA'}°</span></div>`;
         matchCount++;
 
         if (gpsMatch) {
@@ -2101,16 +2158,18 @@ function renderHistoryList(filterLat = null, filterLon = null, radius = 1000) {
         gpsDisplay = snap.name.replace(/\[.*?\]/, `<a href="${mapLink}" target="_blank" class="text-blue-400 hover:text-blue-300 underline" onclick="event.stopPropagation()">[📍 Map]</a>`);
         }
 
-        html += `
-        <div class="bg-slate-800 p-3 rounded border border-slate-700 shadow-sm flex flex-col gap-2 transition-all">
-        <div class="text-slate-300 text-[10px] font-bold leading-tight">${gpsDisplay}</div>
-        <div class="flex gap-2 mt-1">
-<button onclick="togglePreview(${snap.id})" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-1.5 rounded text-[9px] font-bold uppercase tracking-wider transition-colors shadow-sm">Preview</button>
-${gpsMatch ? `<button id="geo-btn-${snap.id}" onclick="event.stopPropagation(); reprocessGeocode(${snap.id}, ${gpsMatch[1]}, ${gpsMatch[2]})" class="bg-amber-700/80 hover:bg-amber-600 text-white px-3 py-1.5 rounded border border-amber-500 transition-colors shadow-sm" title="Convert to Address">🗺️</button>` : ''}
-<button onclick="event.stopPropagation(); editSnapshotName(${snap.id})" class="bg-emerald-900/80 hover:bg-emerald-700 text-white px-3 py-1.5 rounded border border-emerald-500 transition-colors shadow-sm" title="Edit Name">✏️</button>
-<button onclick="event.stopPropagation(); deleteSnapshot(${snap.id})" class="bg-red-900/80 hover:bg-red-700 text-white px-3 py-1.5 rounded border border-red-500 transition-colors shadow-sm" title="Delete">🗑️</button>
+html += `
+<div class="bg-slate-800 p-2.5 rounded border border-slate-700 shadow-sm flex flex-col gap-1.5 transition-all">
+<div class="text-slate-300 text-[10px] font-bold leading-tight">${gpsDisplay}${distanceBadge}</div>
+${specsLine}
+<div class="flex gap-1.5 mt-1">
+<button onclick="togglePreview(${snap.id})" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-1 rounded text-[8px] font-bold uppercase tracking-wider transition-colors shadow-sm">Preview</button>
+${gpsMatch ? `<button id="geo-btn-${snap.id}" onclick="event.stopPropagation(); reprocessGeocode(${snap.id}, ${gpsMatch[1]}, ${gpsMatch[2]})" class="bg-amber-700/80 hover:bg-amber-600 text-white px-2 py-1 rounded border border-amber-500 transition-colors shadow-sm" title="Convert to Address">🗺️</button>` : ''}
+<button id="fwd-btn-${snap.id}" onclick="event.stopPropagation(); forwardGeocodeHistory(${snap.id})" class="bg-indigo-900/80 hover:bg-indigo-700 text-white px-2 py-1 rounded border border-indigo-500 transition-colors shadow-sm" title="Fetch GPS for Address">🔍</button>
+<button onclick="event.stopPropagation(); editSnapshotName(${snap.id})" class="bg-emerald-900/80 hover:bg-emerald-700 text-white px-2 py-1 rounded border border-emerald-500 transition-colors shadow-sm" title="Edit Name">✏️</button>
+<button onclick="event.stopPropagation(); deleteSnapshot(${snap.id})" class="bg-red-900/80 hover:bg-red-700 text-white px-2 py-1 rounded border border-red-500 transition-colors shadow-sm" title="Delete">🗑️</button>
 </div>
-        </div>`;
+</div>`;
         });
 
         if(matchCount === 0) {
@@ -2129,25 +2188,37 @@ const l = snap.live;
 const c = snap.commit;
 let html = '';
 
-// 1. Inject the Snapshot Title / Context
-html += `
-<div class="bg-blue-900/40 border border-blue-500/50 p-3 rounded-lg mb-3 shadow-inner flex flex-col items-center justify-center text-center">
-<span class="text-[9px] text-blue-300 font-bold uppercase tracking-widest mb-1">Active Preview</span>
-<span class="text-xs font-bold text-white leading-tight">${snap.name}</span>
-</div>`;
+    // 1. Dynamic Header Injection & Color Logic
+    const tolCheck = l.selectedTolerance || 0.06;
+    let hCol = 'text-slate-400', fCol = 'text-slate-400';
+    if (c.diag_herm_v && c.diag_herm_a && l.target_mfd) hCol = (Math.abs(((l.diag_herm_a * 2652) / l.diag_herm_v) - l.target_mfd) / l.target_mfd) <= tolCheck ? 'text-emerald-400' : 'text-rose-400';
+    else if (c.diag_herm_bench && l.target_mfd) hCol = (Math.abs(l.diag_herm_bench - l.target_mfd) / l.target_mfd) <= tolCheck ? 'text-emerald-400' : 'text-rose-400';
+    if (c.diag_fan_v && c.diag_fan_a && l.target_fan_mfd) fCol = (Math.abs(((l.diag_fan_a * 2652) / l.diag_fan_v) - l.target_fan_mfd) / l.target_fan_mfd) <= tolCheck ? 'text-emerald-400' : 'text-rose-400';
+    else if (c.diag_fan_bench && l.target_fan_mfd) fCol = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= tolCheck ? 'text-emerald-400' : 'text-rose-400';
 
-// 2. Row Builder Helpers
-const buildRow = (label, val, context, isPass = null) => {
-const textCol = isPass === null ? 'text-white' : (isPass ? 'text-emerald-400' : 'text-rose-400');
-html += `
-<div class="flex items-center justify-between p-2 mb-1 bg-slate-800 rounded border border-slate-700">
-<span class="text-[11px] font-bold text-slate-300 w-1/3">${label}</span>
-<div class="flex-1 flex justify-end items-center gap-2 text-right">
-<span class="text-xs font-bold ${textCol}">${val}</span>
-${context ? `<span class="text-[10px] text-slate-500 font-bold">${context}</span>` : ''}
-</div>
-</div>`;
-};
+    let rlaCol = 'text-slate-400', flaCol = 'text-slate-400';
+    if (c.diag_comp_rla && l.diag_comp_rla && l.cRlaRating) rlaCol = l.diag_comp_rla <= l.cRlaRating ? 'text-emerald-400' : 'text-rose-400';
+    if (c.diag_odf_fla && l.diag_odf_fla && l.odfFlaRating) flaCol = l.diag_odf_fla <= l.odfFlaRating ? 'text-emerald-400' : 'text-rose-400';
+
+    const titleEl = document.getElementById('preview-modal-title');
+    const specsEl = document.getElementById('preview-modal-specs');
+    if (titleEl) titleEl.innerHTML = snap.name.replace(/\[📍 Map\]/g, '').replace(/\[.*\]/, '').trim();
+    if (specsEl) {
+        specsEl.innerHTML = `<span>⚡ Cap: <span class="${hCol}">${l.target_mfd||'NA'}</span>/<span class="${fCol}">${l.target_fan_mfd||'NA'}</span></span> <span>🌀 Comp: <span class="${rlaCol}">${l.cRlaRating||'NA'}</span>/${l.cLraRating||'NA'}A</span> <span>💨 Fan: <span class="${flaCol}">${l.odfFlaRating||'NA'}</span>A</span> <span>🎯 SC: ${l.targetSubcool||'NA'}°</span>`;
+    }
+
+    // 2. Row Builder Helper (v4.61 Mirror)
+    const buildRow = (title, act, details, isPass) => {
+        const textCol = isPass ? 'text-emerald-400' : 'text-rose-400';
+        return `
+        <div class="bg-slate-800 p-2 rounded border border-slate-700 shadow-sm flex justify-between items-center mb-1">
+            <span class="text-[10px] font-bold text-white uppercase tracking-wider">${title}</span>
+            <div class="flex gap-3 text-xs font-mono">
+                <span class="${textCol} font-bold text-right">${act}</span>
+                <span class="text-slate-400 text-right">${details}</span>
+            </div>
+        </div>`;
+    };
 
 const buildReport = (label, sentence, isPass) => {
 const textCol = isPass ? 'text-emerald-400' : 'text-rose-400';
@@ -2177,31 +2248,95 @@ if (c.diag_fan_bench && l.target_fan_mfd) {
 fBPass = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= tol;
 }
 
-// 3. Raw Data Rows (Volts & Amps)
-if (c.diag_herm_v) buildRow(l.circ_a + ' Volts', l.diag_herm_v.toFixed(1) + ' V', '', hVPass);
-if (c.diag_herm_a) buildRow(l.circ_a + ' Amps', l.diag_herm_a.toFixed(2) + ' A', '', hAPass);
-if (c.diag_herm_bench) buildRow(l.circ_a + ' µF (Bench)', l.diag_herm_bench.toFixed(2) + ' µF', '', hBPass);
+    // 4. Electrical Measurements Block (v4.61 Mirror)
+    let hasElectrical = false;
+    let elecHtml = `<div class="bg-slate-900 p-3 rounded-lg border border-slate-700 shadow-inner mb-3">
+        <div class="text-blue-400 font-bold text-[10px] mb-2 border-b border-slate-700 pb-1 uppercase tracking-wider">⚡ Electrical Readings</div>`;
 
-if (c.diag_fan_v) buildRow(l.circ_b + ' Volts', l.diag_fan_v.toFixed(1) + ' V', '', fVPass);
-if (c.diag_fan_a) buildRow(l.circ_b + ' Amps', l.diag_fan_a.toFixed(2) + ' A', '', fAPass);
-if (c.diag_fan_bench) buildRow(l.circ_b + ' µF (Bench)', l.diag_fan_bench.toFixed(2) + ' µF', '', fBPass);
+    if (c.diag_herm_v && l.diag_herm_v) {
+        elecHtml += buildRow(l.circ_a + ' Volts', `${l.diag_herm_v.toFixed(1)} V`, ``, true);
+        hasElectrical = true;
+    }
+    if (c.diag_herm_a && l.diag_herm_a) {
+        elecHtml += buildRow(l.circ_a + ' Amps', `${l.diag_herm_a.toFixed(2)} A`, ``, true);
+        hasElectrical = true;
+    }
+    if (c.diag_fan_v && l.diag_fan_v) {
+        elecHtml += buildRow(l.circ_b + ' Volts', `${l.diag_fan_v.toFixed(1)} V`, ``, true);
+        hasElectrical = true;
+    }
+    if (c.diag_fan_a && l.diag_fan_a) {
+        elecHtml += buildRow(l.circ_b + ' Amps', `${l.diag_fan_a.toFixed(2)} A`, ``, true);
+        hasElectrical = true;
+    }
 
-if (c.diag_comp_rla) {
-const tgt = l.cRlaRating || 14.20;
-buildRow(l.comp_qty === 1 ? 'Comp RLA' : 'Comp 1 RLA', l.diag_comp_rla.toFixed(2) + ' A', `(Max: ${tgt.toFixed(2)})`, l.diag_comp_rla <= tgt);
-}
-if (c.diag_comp_rla_2 && l.comp_qty === 2) {
-const tgt = l.cRla2Rating || 14.20;
-buildRow('Comp 2 RLA', l.diag_comp_rla_2.toFixed(2) + ' A', `(Max: ${tgt.toFixed(2)})`, l.diag_comp_rla_2 <= tgt);
-}
-if (c.diag_odf_fla) {
-const tgt = l.odfFlaRating || 1.10;
-buildRow(l.fan_qty === 1 ? 'Fan FLA' : 'Fan 1 FLA', l.diag_odf_fla.toFixed(2) + ' A', `(Max: ${tgt.toFixed(2)})`, l.diag_odf_fla <= tgt);
-}
-if (c.diag_odf_fla_2 && l.fan_qty === 2) {
-const tgt = l.odfFla2Rating || 1.10;
-buildRow('Fan 2 FLA', l.diag_odf_fla_2.toFixed(2) + ' A', `(Max: ${tgt.toFixed(2)})`, l.diag_odf_fla_2 <= tgt);
-}
+    if (c.diag_herm_v && c.diag_herm_a && l.target_mfd) {
+        const act = ((l.diag_herm_a * 2652) / l.diag_herm_v).toFixed(2);
+        const tgt = l.target_mfd;
+        const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
+        const pct = ((act / tgt) * 100).toFixed(1);
+        elecHtml += buildRow('Herm MFD (Live)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
+        hasElectrical = true;
+    } else if (c.diag_herm_bench && l.diag_herm_bench > 0) {
+        const act = l.diag_herm_bench.toFixed(2);
+        const tgt = l.target_mfd || 35;
+        const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
+        const pct = ((act / tgt) * 100).toFixed(1);
+        elecHtml += buildRow('Herm MFD (Bench)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
+        hasElectrical = true;
+    }
+
+    if (c.diag_fan_v && c.diag_fan_a && l.target_fan_mfd) {
+        const act = ((l.diag_fan_a * 2652) / l.diag_fan_v).toFixed(2);
+        const tgt = l.target_fan_mfd;
+        const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
+        const pct = ((act / tgt) * 100).toFixed(1);
+        elecHtml += buildRow('Fan MFD (Live)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
+        hasElectrical = true;
+    } else if (c.diag_fan_bench && l.diag_fan_bench > 0) {
+        const act = l.diag_fan_bench.toFixed(2);
+        const tgt = l.target_fan_mfd || 5;
+        const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
+        const pct = ((act / tgt) * 100).toFixed(1);
+        elecHtml += buildRow('Fan MFD (Bench)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
+        hasElectrical = true;
+    }
+
+    if (c.diag_comp_rla && l.diag_comp_rla) {
+        const act = l.diag_comp_rla.toFixed(2);
+        const tgt = l.cRlaRating || 14.20;
+        const isPass = parseFloat(act) <= tgt;
+        const pct = ((l.diag_comp_rla / tgt) * 100).toFixed(1);
+        elecHtml += buildRow('RLA (Measured)', `${act} A`, `(${pct}%) (${tgt.toFixed(2)} A)`, isPass);
+        hasElectrical = true;
+    }
+    if (c.diag_comp_rla_2 && l.diag_comp_rla_2 && l.comp_qty === 2) {
+        const act = l.diag_comp_rla_2.toFixed(2);
+        const tgt = l.cRla2Rating || 14.20;
+        const isPass = parseFloat(act) <= tgt;
+        const pct = ((l.diag_comp_rla_2 / tgt) * 100).toFixed(1);
+        elecHtml += buildRow('RLA 2 (Measured)', `${act} A`, `(${pct}%) (${tgt.toFixed(2)} A)`, isPass);
+        hasElectrical = true;
+    }
+    if (c.diag_odf_fla && l.diag_odf_fla) {
+        const act = l.diag_odf_fla.toFixed(2);
+        const tgt = l.odfFlaRating || 1.10;
+        const isPass = parseFloat(act) <= tgt;
+        const pct = ((l.diag_odf_fla / tgt) * 100).toFixed(1);
+        elecHtml += buildRow('FLA ODF (Measured)', `${act} A`, `(${pct}%) (${tgt.toFixed(2)} A)`, isPass);
+        hasElectrical = true;
+    }
+    if (c.diag_odf_fla_2 && l.diag_odf_fla_2 && l.fan_qty === 2) {
+        const act = l.diag_odf_fla_2.toFixed(2);
+        const tgt = l.odfFla2Rating || 1.10;
+        const isPass = parseFloat(act) <= tgt;
+        const pct = ((l.diag_odf_fla_2 / tgt) * 100).toFixed(1);
+        elecHtml += buildRow('FLA ODF2 (Measured)', `${act} A`, `(${pct}%) (${tgt.toFixed(2)} A)`, isPass);
+        hasElectrical = true;
+    }
+
+    elecHtml += `</div>`;
+    if (hasElectrical) html += elecHtml;
 
 // 4. Capacitor Final Report Sentence
 const isLive = l.testMode !== 'bench';
