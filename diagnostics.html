@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v4.94</title>
+<title>Diagnostics v4.95</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v4_94 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v4_95 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -107,7 +107,7 @@ input[type="number"].no-spinners {
                     <div id="hud-live-value-box" onclick="document.getElementById('hud-hidden-numeric-input').focus()" class="text-slate-50 font-extrabold leading-tight cursor-text font-sans tracking-tight min-h-[1.1em] text-center flex items-baseline justify-center text-[100px]">---</div>
                     <input type="number" id="hud-hidden-numeric-input" pattern="[1-9]*" inputmode="decimal" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-text bg-transparent border-none outline-none text-transparent p-0" oninput="syncHiddenInput(event)">
                 </div>
-                <div id="hud-helper-envelope" class="text-slate-300 font-bold font-sans whitespace-nowrap overflow-hidden text-ellipsis w-full text-[15px]">Target Range: ---</div>
+                <div id="hud-helper-envelope" class="text-slate-300 font-bold font-sans w-full text-[15px] flex flex-col items-center justify-center leading-tight h-10 mt-1">Target Range: ---</div>
             </div>
 
             <!-- RIGHT WING -->
@@ -445,7 +445,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.94</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.95</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -987,7 +987,6 @@ function initLedger() {
             <div class="bg-slate-100 text-slate-500 font-bold flex items-center justify-center px-3 border-l border-slate-200 select-none hover:bg-slate-200 transition-colors" onclick="event.stopPropagation(); clearSpecificSlot('${item.id}')">[ ⟲ ]</div>
         </div>`;
     });
-    html += `<div id="ledger-summary-results" class="w-full mt-2 flex flex-col gap-1"></div>`;
     ledger.innerHTML = html;
 }
 
@@ -1082,32 +1081,51 @@ function syncHiddenInput(e) {
 }
 
 function commitHudValue() {
-    if (hudStagingValue !== '') {
-        const parsed = parseFloat(hudStagingValue);
-        if (!isNaN(parsed)) liveAppState[liveAppState.activeField] = parsed;
-    }
-    hudStagingValue = "";
-    const val = liveAppState[liveAppState.activeField];
-    if (val) committedState[liveAppState.activeField] = true;
+    const inputEl = document.getElementById('hud-hidden-numeric-input');
+    let val = hudStagingValue !== '' ? parseFloat(hudStagingValue) : parseFloat(inputEl.value);
+    if (isNaN(val)) return;
 
-    refreshLedger(); // Immediate binding
+    liveAppState[liveAppState.activeField] = val;
+    committedState[liveAppState.activeField] = true;
 
-    // Smart Hunting
-    let foundEmpty = false;
+    hudStagingValue = '';
+    inputEl.value = '';
+
+    saveToLocal();
+    updateDashLabels();
+    renderAllPills();
+    refreshLedger();
+
     const activeSeq = getActiveSequence();
-    for (let i = 0; i < activeSeq.length; i++) {
-        const fId = activeSeq[i].id;
-        if (!committedState[fId]) {
-            setActiveField(fId);
-            foundEmpty = true;
-            break;
+    if (activeSeq.length === 0) return;
+
+    const tol = liveAppState.selectedTolerance || 0.06;
+    const failedIds = [];
+    if (committedState.diag_herm_v && committedState.diag_herm_a && liveAppState.target_mfd) {
+        const dev = Math.abs((liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v - liveAppState.target_mfd) / liveAppState.target_mfd;
+        if (dev > tol) failedIds.push('diag_herm_v', 'diag_herm_a');
+    }
+    if (committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.target_fan_mfd) {
+        const dev = Math.abs((liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v - liveAppState.target_fan_mfd) / liveAppState.target_fan_mfd;
+        if (dev > tol) failedIds.push('diag_fan_v', 'diag_fan_a');
+    }
+    if (committedState.diag_comp_rla && liveAppState.cRlaRating && liveAppState.diag_comp_rla > liveAppState.cRlaRating) failedIds.push('diag_comp_rla');
+    if (committedState.diag_odf_fla && liveAppState.odfFlaRating && liveAppState.diag_odf_fla > liveAppState.odfFlaRating) failedIds.push('diag_odf_fla');
+
+    let currentIndex = activeSeq.findIndex(s => s.id === liveAppState.activeField);
+    let nextIndex = currentIndex + 1;
+
+    if (failedIds.length > 0) {
+        let nextFailed = activeSeq.find((s, idx) => idx >= nextIndex && failedIds.includes(s.id));
+        if (!nextFailed) nextFailed = activeSeq.find(s => failedIds.includes(s.id));
+        if (nextFailed) {
+            setActiveField(nextFailed.id);
+            return;
         }
     }
-    if (!foundEmpty && activeSeq.length > 0) {
-        let currentIndex = activeSeq.findIndex(s => s.id === liveAppState.activeField);
-        currentIndex = (currentIndex + 1) % activeSeq.length;
-        setActiveField(activeSeq[currentIndex].id);
-    }
+
+    if (nextIndex >= activeSeq.length) nextIndex = 0;
+    setActiveField(activeSeq[nextIndex].id);
 }
 
 function clearSpecificSlot(id) {
@@ -1302,8 +1320,20 @@ function toggleMic() {
         } else if (speechResult.includes("COPY") || speechResult.includes("COMPLY") || speechResult.includes("CONFIRM") || speechResult.includes("NEXT")) {
             commitHudValue();
         } else {
-            // Voice Navigation: Jump to specific pill by label
+            let navTargetId = null;
+            if (speechResult.includes("HERM") && (speechResult.includes("VOLT") || speechResult.includes("V"))) navTargetId = "diag_herm_v";
+            else if (speechResult.includes("HERM") && (speechResult.includes("AMP") || speechResult.includes("A"))) navTargetId = "diag_herm_a";
+            else if (speechResult.includes("FAN") && (speechResult.includes("VOLT") || speechResult.includes("V"))) navTargetId = "diag_fan_v";
+            else if (speechResult.includes("FAN") && (speechResult.includes("AMP") || speechResult.includes("A"))) navTargetId = "diag_fan_a";
+            else if (speechResult.includes("COMPRESSOR") || speechResult.includes("COMP") || speechResult.includes("RLA")) navTargetId = "diag_comp_rla";
+            else if (speechResult.includes("FLORIDA") || speechResult.includes("FLA") || speechResult.includes("ODF") || speechResult.includes("OUTDOOR")) navTargetId = "diag_odf_fla";
+
             const activeSeq = getActiveSequence();
+            if (navTargetId && activeSeq.find(s => s.id === navTargetId)) {
+                setActiveField(navTargetId);
+                return;
+            }
+
             const navTarget = activeSeq.find(s => speechResult.includes(s.label.toUpperCase()));
             if (navTarget) {
                 setActiveField(navTarget.id);
@@ -1374,13 +1404,13 @@ function updateHUD() {
             const predVolts = (liveAppState.diag_herm_a * 2652) / liveAppState.target_mfd;
             const min = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 + tol));
             const max = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 - tol));
-            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} V)  🎯 ${predVolts.toFixed(1)} V`;
+            helper = `<div class="text-lg text-white">(${min.toFixed(1)} - ${max.toFixed(1)} V)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${predVolts.toFixed(1)} V</div>`;
             if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
         } else if (hasVal) {
             const predAmps = (liveAppState.target_mfd * val) / 2652;
             const min = ((liveAppState.target_mfd * (1 - tol)) * val) / 2652;
             const max = ((liveAppState.target_mfd * (1 + tol)) * val) / 2652;
-            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} A)  🎯 ${predAmps.toFixed(2)} A`;
+            helper = `<div class="text-lg text-white">(${min.toFixed(2)} - ${max.toFixed(2)} A)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${predAmps.toFixed(2)} A</div>`;
             envColor = '#cbd5e1';
         }
     } else if (step.id === 'diag_herm_a' && liveAppState.target_mfd) {
@@ -1388,13 +1418,13 @@ function updateHUD() {
             const predAmps = (liveAppState.target_mfd * liveAppState.diag_herm_v) / 2652;
             const min = ((liveAppState.target_mfd * (1 - tol)) * liveAppState.diag_herm_v) / 2652;
             const max = ((liveAppState.target_mfd * (1 + tol)) * liveAppState.diag_herm_v) / 2652;
-            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} A)  🎯 ${predAmps.toFixed(2)} A`;
+            helper = `<div class="text-lg text-white">(${min.toFixed(2)} - ${max.toFixed(2)} A)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${predAmps.toFixed(2)} A</div>`;
             if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
         } else if (hasVal) {
             const predVolts = (val * 2652) / liveAppState.target_mfd;
             const min = (val * 2652) / (liveAppState.target_mfd * (1 + tol));
             const max = (val * 2652) / (liveAppState.target_mfd * (1 - tol));
-            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} V)  🎯 ${predVolts.toFixed(1)} V`;
+            helper = `<div class="text-lg text-white">(${min.toFixed(1)} - ${max.toFixed(1)} V)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${predVolts.toFixed(1)} V</div>`;
             envColor = '#cbd5e1';
         }
     } else if (step.id === 'diag_fan_v' && liveAppState.target_fan_mfd) {
@@ -1402,13 +1432,13 @@ function updateHUD() {
             const predVolts = (liveAppState.diag_fan_a * 2652) / liveAppState.target_fan_mfd;
             const min = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 + tol));
             const max = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 - tol));
-            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} V)  🎯 ${predVolts.toFixed(1)} V`;
+            helper = `<div class="text-lg text-white">(${min.toFixed(1)} - ${max.toFixed(1)} V)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${predVolts.toFixed(1)} V</div>`;
             if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
         } else if (hasVal) {
             const predAmps = (liveAppState.target_fan_mfd * val) / 2652;
             const min = ((liveAppState.target_fan_mfd * (1 - tol)) * val) / 2652;
             const max = ((liveAppState.target_fan_mfd * (1 + tol)) * val) / 2652;
-            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} A)  🎯 ${predAmps.toFixed(2)} A`;
+            helper = `<div class="text-lg text-white">(${min.toFixed(2)} - ${max.toFixed(2)} A)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${predAmps.toFixed(2)} A</div>`;
             envColor = '#cbd5e1';
         }
     } else if (step.id === 'diag_fan_a' && liveAppState.target_fan_mfd) {
@@ -1416,35 +1446,35 @@ function updateHUD() {
             const predAmps = (liveAppState.target_fan_mfd * liveAppState.diag_fan_v) / 2652;
             const min = ((liveAppState.target_fan_mfd * (1 - tol)) * liveAppState.diag_fan_v) / 2652;
             const max = ((liveAppState.target_fan_mfd * (1 + tol)) * liveAppState.diag_fan_v) / 2652;
-            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} A)  🎯 ${predAmps.toFixed(2)} A`;
+            helper = `<div class="text-lg text-white">(${min.toFixed(2)} - ${max.toFixed(2)} A)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${predAmps.toFixed(2)} A</div>`;
             if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
         } else if (hasVal) {
             const predVolts = (val * 2652) / liveAppState.target_fan_mfd;
             const min = (val * 2652) / (liveAppState.target_fan_mfd * (1 + tol));
             const max = (val * 2652) / (liveAppState.target_fan_mfd * (1 - tol));
-            helper = `(${min.toFixed(3)} - ${max.toFixed(3)} V)  🎯 ${predVolts.toFixed(1)} V`;
+            helper = `<div class="text-lg text-white">(${min.toFixed(1)} - ${max.toFixed(1)} V)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${predVolts.toFixed(1)} V</div>`;
             envColor = '#cbd5e1';
         }
     } else if (step.id === 'diag_comp_rla' && liveAppState.cRlaRating) {
-        helper = `(Max: ${liveAppState.cRlaRating.toFixed(3)} A)`;
+        helper = `<div class="text-lg text-white">(Max: ${liveAppState.cRlaRating.toFixed(2)} A)</div>`;
         if (hasVal) envColor = (val <= liveAppState.cRlaRating) ? '#16a34a' : '#dc2626';
     } else if (step.id === 'diag_odf_fla' && liveAppState.odfFlaRating) {
-        helper = `(Max: ${liveAppState.odfFlaRating.toFixed(3)} A)`;
+        helper = `<div class="text-lg text-white">(Max: ${liveAppState.odfFlaRating.toFixed(2)} A)</div>`;
         if (hasVal) envColor = (val <= liveAppState.odfFlaRating) ? '#16a34a' : '#dc2626';
     } else if (step.id === 'diag_herm_bench' && liveAppState.target_mfd) {
         const min = liveAppState.target_mfd * (1 - tol);
         const max = liveAppState.target_mfd * (1 + tol);
-        helper = `(${min.toFixed(3)} - ${max.toFixed(3)} µF)  🎯 ${liveAppState.target_mfd.toFixed(1)} µF`;
+        helper = `<div class="text-lg text-white">(${min.toFixed(1)} - ${max.toFixed(1)} µF)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${liveAppState.target_mfd.toFixed(1)} µF</div>`;
         if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
     } else if (step.id === 'diag_fan_bench' && liveAppState.target_fan_mfd) {
         const min = liveAppState.target_fan_mfd * (1 - tol);
         const max = liveAppState.target_fan_mfd * (1 + tol);
-        helper = `(${min.toFixed(3)} - ${max.toFixed(3)} µF)  🎯 ${liveAppState.target_fan_mfd.toFixed(1)} µF`;
+        helper = `<div class="text-lg text-white">(${min.toFixed(1)} - ${max.toFixed(1)} µF)</div><div class="text-xs text-slate-400 mt-0.5">🎯 ${liveAppState.target_fan_mfd.toFixed(1)} µF</div>`;
         if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
     }
 
     const envEl = document.getElementById('hud-helper-envelope');
-    envEl.innerText = helper;
+    envEl.innerHTML = helper;
     envEl.style.color = envColor;
 }
 
@@ -1604,43 +1634,83 @@ function refreshLedger() {
         }
     }
 
-    // Safe Ledger Results Summary
-    const summaryContainer = document.getElementById('ledger-summary-results');
-    if (summaryContainer) {
-        const tolCheck = liveAppState.selectedTolerance || 0.06;
-        let summaryHtml = '';
-        
-        let capHtml = '';
-        if (committedState.diag_herm_v && committedState.diag_herm_a && liveAppState.target_mfd) {
-            const act = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
-            const c = Math.abs((act - liveAppState.target_mfd)/liveAppState.target_mfd) <= tolCheck ? '#16a34a' : '#dc2626';
-            capHtml += `<span style="color:${c};">HERM: ${act.toFixed(2)}µF</span>`;
+    // 1. Capacitor Results (Unified)
+    const reportLiveRow = document.getElementById('ledger-row-report-summary');
+    if (reportLiveRow) reportLiveRow.style.display = (liveAppState.isHermEnabled && liveAppState.isFanEnabled) ? 'flex' : 'none';
+    const reportLiveText = document.getElementById('ledger-row-report-summary-text');
+    if (reportLiveText) {
+        const isStamped = window.compilerRegistry && window.compilerRegistry['report-summary'] && window.compilerRegistry['report-summary'].stamped;
+        const isMapped = hardcodedFieldMap.some(m => m.split('|').trim() === 'Capacitor Results');
+        const clSum = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+        const lblSpan = `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${clSum}" onclick="event.stopPropagation(); toggleBlueStamp('report-summary')">Capacitor Results</span>`;
+
+        const isLive = liveAppState.testMode !== 'bench';
+        let hAct = 0, fAct = 0;
+        let canCalculate = false;
+
+        if (isLive && committedState.diag_herm_v && committedState.diag_herm_a && committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.diag_herm_v > 0 && liveAppState.diag_fan_v > 0) {
+            hAct = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
+            fAct = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
+            canCalculate = true;
+        } else if (!isLive && committedState.diag_herm_bench && committedState.diag_fan_bench && liveAppState.diag_herm_bench > 0 && liveAppState.diag_fan_bench > 0) {
+            hAct = liveAppState.diag_herm_bench;
+            fAct = liveAppState.diag_fan_bench;
+            canCalculate = true;
         }
-        if (committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.target_fan_mfd) {
-            const act = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
-            const c = Math.abs((act - liveAppState.target_fan_mfd)/liveAppState.target_fan_mfd) <= tolCheck ? '#16a34a' : '#dc2626';
-            capHtml += `${capHtml !== '' ? ' | ' : ''}<span style="color:${c};">FAN: ${act.toFixed(2)}µF</span>`;
+
+        if (canCalculate) {
+            const hTgt = liveAppState.target_mfd || 35;
+            const hDev = ((hAct - hTgt) / hTgt) * 100;
+            const fTgt = liveAppState.target_fan_mfd || 5;
+            const fDev = ((fAct - fTgt) / fTgt) * 100;
+            const tol = liveAppState.selectedTolerance || 0.06;
+            const hPass = Math.abs(hDev) <= (tol * 100);
+            const fPass = Math.abs(fDev) <= (tol * 100);
+            const isPass = hPass && fPass;
+            let statusText = "within tolerance";
+            if (!hPass && fPass) statusText = `outside of tolerance on ${liveAppState.circ_a} side`;
+            else if (hPass && !fPass) statusText = `outside of tolerance on ${liveAppState.circ_b} side`;
+            else if (!hPass && !fPass) statusText = `outside of tolerance on both sides`;
+            const hSign = hDev > 0 ? '+' : '';
+            const fSign = fDev > 0 ? '+' : '';
+            const testContext = isLive ? "tested under load" : "lab tested";
+            const sentence = `⚡ ${hTgt} + ${fTgt} µF Capacitor ${testContext} ${statusText} at ${hAct.toFixed(2)} + ${fAct.toFixed(2)} µF (${hSign}${hDev.toFixed(1)}% + ${fSign}${fDev.toFixed(1)}%).`;
+            reportLiveText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 800; font-size: 10px; line-height: 1.1;">${sentence}</span></div>`;
+        } else {
+            reportLiveText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span></div>`;
         }
-        if (capHtml !== '') {
-            summaryHtml += `<div class="bg-slate-800 p-2 rounded border border-slate-700 shadow-sm flex flex-col mb-1"><span class="text-[10px] font-bold text-white uppercase tracking-wider">Capacitor Results</span><div class="text-xs font-bold mt-0.5">${capHtml}</div></div>`;
+    }
+
+    // 3. Motor Load Results
+    const reportMotorRow = document.getElementById('ledger-row-report-motor');
+    if (reportMotorRow) reportMotorRow.style.display = 'flex';
+    const reportMotorText = document.getElementById('ledger-row-report-motor-text');
+    if (reportMotorText) {
+        const isStamped = window.compilerRegistry && window.compilerRegistry['report-motor'] && window.compilerRegistry['report-motor'].stamped;
+        const isMapped = hardcodedFieldMap.some(m => m.split('|').trim() === 'Motor Load Results');
+        const clSum = isStamped ? 'bg-blue-600 text-white shadow-sm' : (isMapped ? 'text-black' : 'border border-orange-500 text-orange-600 bg-orange-50');
+        const lblSpan = `<span class="w-[30%] shrink-0 font-bold cursor-pointer select-none transition-colors px-1 -ml-1 rounded whitespace-normal leading-tight flex items-center ${clSum}" onclick="event.stopPropagation(); toggleBlueStamp('report-motor')">Motor Load Results</span>`;
+
+        const c1Comm = committedState.diag_comp_rla && liveAppState.diag_comp_rla > 0;
+        const f1Comm = committedState.diag_odf_fla && liveAppState.diag_odf_fla > 0;
+
+        if (c1Comm && f1Comm) {
+            const c1Act = liveAppState.diag_comp_rla;
+            const c1Tgt = liveAppState.cRlaRating || 14.20;
+            const c1Pass = c1Act <= c1Tgt;
+            const c1Status = c1Pass ? "within range" : "OUT OF RANGE";
+
+            const f1Act = liveAppState.diag_odf_fla;
+            const f1Tgt = liveAppState.odfFlaRating || 1.10;
+            const f1Pass = f1Act <= f1Tgt;
+            const f1Status = f1Pass ? "within range" : "OUT OF RANGE";
+
+            let isPass = c1Pass && f1Pass;
+            let sentence = `🌀 RLA ${c1Tgt.toFixed(2)} tested ${c1Status} at ${c1Act.toFixed(2)} and FLA ODF ${f1Tgt.toFixed(2)} tested ${f1Status} at ${f1Act.toFixed(2)}.`;
+            reportMotorText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 800; font-size: 10px; line-height: 1.1;">${sentence}</span></div>`;
+        } else {
+            reportMotorText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span></div>`;
         }
-        
-        let motHtml = '';
-        if (committedState.diag_comp_rla && liveAppState.cRlaRating) {
-            const pct = (liveAppState.diag_comp_rla / liveAppState.cRlaRating) * 100;
-            const c = liveAppState.diag_comp_rla <= liveAppState.cRlaRating ? '#16a34a' : '#dc2626';
-            motHtml += `<span style="color:${c};">COMP: ${liveAppState.diag_comp_rla.toFixed(2)}A (${pct.toFixed(1)}%)</span>`;
-        }
-        if (committedState.diag_odf_fla && liveAppState.odfFlaRating) {
-            const pct = (liveAppState.diag_odf_fla / liveAppState.odfFlaRating) * 100;
-            const c = liveAppState.diag_odf_fla <= liveAppState.odfFlaRating ? '#16a34a' : '#dc2626';
-            motHtml += `${motHtml !== '' ? ' | ' : ''}<span style="color:${c};">ODF: ${liveAppState.diag_odf_fla.toFixed(2)}A (${pct.toFixed(1)}%)</span>`;
-        }
-        if (motHtml !== '') {
-            summaryHtml += `<div class="bg-slate-800 p-2 rounded border border-slate-700 shadow-sm flex flex-col mb-1"><span class="text-[10px] font-bold text-white uppercase tracking-wider">Motor Load Results</span><div class="text-xs font-bold mt-0.5">${motHtml}</div></div>`;
-        }
-        
-        summaryContainer.innerHTML = summaryHtml;
     }
 }
 
@@ -2378,19 +2448,19 @@ fBPass = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= t
         <div class="text-blue-400 font-bold text-[10px] mb-2 border-b border-slate-700 pb-1 uppercase tracking-wider">⚡ Electrical Readings</div>`;
 
     if (c.diag_herm_v && l.diag_herm_v) {
-        elecHtml += buildRow(l.circ_a + ' Volts', `${l.diag_herm_v.toFixed(1)} V`, ``, true);
+        elecHtml += buildRow(l.circ_a + ' Volts', `${l.diag_herm_v.toFixed(1)} V`, ``, hVPass !== null ? hVPass : true);
         hasElectrical = true;
     }
     if (c.diag_herm_a && l.diag_herm_a) {
-        elecHtml += buildRow(l.circ_a + ' Amps', `${l.diag_herm_a.toFixed(2)} A`, ``, true);
+        elecHtml += buildRow(l.circ_a + ' Amps', `${l.diag_herm_a.toFixed(2)} A`, ``, hAPass !== null ? hAPass : true);
         hasElectrical = true;
     }
     if (c.diag_fan_v && l.diag_fan_v) {
-        elecHtml += buildRow(l.circ_b + ' Volts', `${l.diag_fan_v.toFixed(1)} V`, ``, true);
+        elecHtml += buildRow(l.circ_b + ' Volts', `${l.diag_fan_v.toFixed(1)} V`, ``, fVPass !== null ? fVPass : true);
         hasElectrical = true;
     }
     if (c.diag_fan_a && l.diag_fan_a) {
-        elecHtml += buildRow(l.circ_b + ' Amps', `${l.diag_fan_a.toFixed(2)} A`, ``, true);
+        elecHtml += buildRow(l.circ_b + ' Amps', `${l.diag_fan_a.toFixed(2)} A`, ``, fAPass !== null ? fAPass : true);
         hasElectrical = true;
     }
 
@@ -2399,14 +2469,14 @@ fBPass = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= t
         const tgt = l.target_mfd;
         const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
         const pct = ((act / tgt) * 100).toFixed(1);
-        elecHtml += buildRow('Herm MFD (Live)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
+        elecHtml += buildRow(l.circ_a + ' Results', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
         hasElectrical = true;
     } else if (c.diag_herm_bench && l.diag_herm_bench > 0) {
         const act = l.diag_herm_bench.toFixed(2);
         const tgt = l.target_mfd || 35;
         const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
         const pct = ((act / tgt) * 100).toFixed(1);
-        elecHtml += buildRow('Herm MFD (Bench)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
+        elecHtml += buildRow(l.circ_a + ' Results (Bench)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
         hasElectrical = true;
     }
 
@@ -2415,14 +2485,14 @@ fBPass = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= t
         const tgt = l.target_fan_mfd;
         const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
         const pct = ((act / tgt) * 100).toFixed(1);
-        elecHtml += buildRow('Fan MFD (Live)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
+        elecHtml += buildRow(l.circ_b + ' Results', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
         hasElectrical = true;
     } else if (c.diag_fan_bench && l.diag_fan_bench > 0) {
         const act = l.diag_fan_bench.toFixed(2);
         const tgt = l.target_fan_mfd || 5;
         const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
         const pct = ((act / tgt) * 100).toFixed(1);
-        elecHtml += buildRow('Fan MFD (Bench)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
+        elecHtml += buildRow(l.circ_b + ' Results (Bench)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
         hasElectrical = true;
     }
 
