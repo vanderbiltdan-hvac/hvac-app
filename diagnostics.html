@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v4.79</title>
+<title>Diagnostics v4.80</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider mb-1 w-full text-center uppercase">[ Build: v4_79 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider mb-1 w-full text-center uppercase">[ Build: v4_80 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold mb-2 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div class="relative mb-1 w-full flex justify-center">
                     <div id="hud-live-value-box" onclick="document.getElementById('hud-hidden-numeric-input').focus()" class="text-slate-50 font-extrabold leading-tight cursor-text font-sans tracking-tight min-h-[1.1em] text-center flex items-baseline justify-center text-[100px]">---</div>
@@ -148,7 +148,10 @@ HUB
 </div>
 <div>
 <label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Raw Address / Location Notes</label>
-<input type="text" id="snap-raw-address" placeholder="e.g. 123 Beach Blvd" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-3 font-bold text-sm mb-3 focus:outline-none focus:border-blue-500 transition-colors">
+<div class="flex gap-2 mb-3">
+<input type="text" id="snap-raw-address" placeholder="e.g. 123 Beach Blvd" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-3 font-bold text-sm focus:outline-none focus:border-blue-500 transition-colors">
+<button id="btn-forward-geo" onclick="event.preventDefault(); fetchCoordinatesForAddress()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded font-bold transition-colors shadow-sm" title="Fetch GPS Coordinates">🔍</button>
+</div>
 </div>
 <div>
 <label class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1 block">Smart Site Profile</label>
@@ -432,7 +435,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.79</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v4.80</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -1737,6 +1740,11 @@ saveToLocal();
 
 setTimeout(() => { closeSnapshotModal(); }, 800);
 };
+if (manualGpsOverride) {
+    finalizeSave(manualGpsOverride);
+    manualGpsOverride = null;
+    return;
+}
 if ("geolocation" in navigator) {
 navigator.geolocation.getCurrentPosition(async (pos) => {
     const lat = pos.coords.latitude.toFixed(4);
@@ -1906,6 +1914,11 @@ saveToLocal();
 setTimeout(() => { closeSnapshotModal(); }, 800);
 };
 
+if (manualGpsOverride) {
+    finalizeSave(manualGpsOverride);
+    manualGpsOverride = null;
+    return;
+}
 if ("geolocation" in navigator) {
 navigator.geolocation.getCurrentPosition(async (pos) => {
     const lat = pos.coords.latitude.toFixed(4);
@@ -1958,6 +1971,34 @@ async function reverseGeocode(lat, lon) {
     return null;
 }
 
+let manualGpsOverride = null;
+
+async function fetchCoordinatesForAddress() {
+    const addrInput = document.getElementById('snap-raw-address');
+    if(!addrInput || !addrInput.value) return;
+    const btn = document.getElementById('btn-forward-geo');
+    if(btn) btn.innerHTML = '⏳';
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addrInput.value)}`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+            const lat = parseFloat(data.lat).toFixed(4);
+            const lon = parseFloat(data.lon).toFixed(4);
+            manualGpsOverride = `📍 ${addrInput.value} [${lat}, ${lon}]`;
+            if(btn) btn.innerHTML = '✅';
+            setTimeout(() => { if(btn) btn.innerHTML = '🔍'; }, 2000);
+        } else {
+            alert("Could not find GPS coordinates for that exact address.");
+            if(btn) btn.innerHTML = '❌';
+            setTimeout(() => { if(btn) btn.innerHTML = '🔍'; }, 2000);
+        }
+    } catch(e) {
+        console.error("Forward Geocoding failed:", e);
+        if(btn) btn.innerHTML = '❌';
+        setTimeout(() => { if(btn) btn.innerHTML = '🔍'; }, 2000);
+    }
+}
+
 async function reprocessGeocode(id, lat, lon) {
     const btn = document.getElementById(`geo-btn-${id}`);
     if (btn) btn.innerHTML = '⏳';
@@ -1967,7 +2008,7 @@ async function reprocessGeocode(id, lat, lon) {
         const snapIndex = history.findIndex(s => s.id === id);
         if (snapIndex !== -1) {
             // Keep the bracketed coordinates but add the address
-            history[snapIndex].name = history[snapIndex].name.replace(/📍\s*/, `📍 ${address} `);
+            history[snapIndex].name = history[snapIndex].name.replace(/^.*(\[[\d.-]+,\s*[\d.-]+\])$/, `📍 ${address} $1`);
             localStorage.setItem('hvac_snapshot_registry', JSON.stringify(history));
             renderHistoryList();
         }
