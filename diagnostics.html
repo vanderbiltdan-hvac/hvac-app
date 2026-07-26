@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.01</title>
+<title>Diagnostics v5.02</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v5_01 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v5_02 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -1302,11 +1302,13 @@ function toggleMic() {
 
     // 5-Second Active Mic Ping
     window.micPingInterval = setInterval(() => {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        try {            const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
             osc.type = 'sine'; osc.frequency.value = 800;
-            osc.connect(ctx.destination);
+            const gain = ctx.createGain();
+            gain.gain.value = 0.05;
+            osc.connect(gain);
+            gain.connect(ctx.destination);
             osc.start(); osc.stop(ctx.currentTime + 0.1);
         } catch(e) {}
     }, 5000);
@@ -1340,10 +1342,10 @@ function toggleMic() {
             return;
         } else if (speechResult.includes("COPY") || speechResult.includes("CONFIRM") || speechResult.includes("OK") || speechResult.includes("NEXT")) {
             commitHudValue();
-        } else {
-            let navTargetId = null;
-            if (speechResult.includes("HERM") && (speechResult.includes("VOLT") || speechResult.includes("V"))) navTargetId = "diag_herm_v";
-            else if (speechResult.includes("HERM") && (speechResult.includes("AMP") || speechResult.includes("A"))) navTargetId = "diag_herm_a";
+        } else {            let navTargetId = null;
+            const isHerm = speechResult.includes("HERM") || speechResult.includes("HERMAN") || speechResult.includes("HARM") || speechResult.includes("FIRM") || speechResult.includes("TERM");
+            if (isHerm && (speechResult.includes("VOLT") || speechResult.includes("V"))) navTargetId = "diag_herm_v";
+            else if (isHerm && (speechResult.includes("AMP") || speechResult.includes("A"))) navTargetId = "diag_herm_a";
             else if (speechResult.includes("FAN") && (speechResult.includes("VOLT") || speechResult.includes("V"))) navTargetId = "diag_fan_v";
             else if (speechResult.includes("FAN") && (speechResult.includes("AMP") || speechResult.includes("A"))) navTargetId = "diag_fan_a";
             else if (speechResult.includes("COMPRESSOR") || speechResult.includes("COMP") || speechResult.includes("RLA")) navTargetId = "diag_comp_rla";
@@ -2686,5 +2688,6 @@ window.addEventListener('DOMContentLoaded', () => {
         </script>
 </body>
 </html>
+
 
 
