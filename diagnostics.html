@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.02</title>
+<title>Diagnostics v5.07</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v5_02 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v5_07 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -445,7 +445,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.01</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.07</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -908,13 +908,13 @@ function updateDashLabels() {
             const act = (a * 2652) / v;
             const dev = ((act - liveAppState.target_mfd)/liveAppState.target_mfd)*100;
             hCol = Math.abs(dev) <= (tol*100) ? 'text-emerald-400' : 'text-rose-400';
-            hActText = `${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(1)}%)`;
+            hActText = `${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(2)}%)`;
         }
     } else if (hasLiveVal('diag_herm_bench') && liveAppState.target_mfd) {
         const act = getLiveVal('diag_herm_bench');
         const dev = ((act - liveAppState.target_mfd)/liveAppState.target_mfd)*100;
         hCol = Math.abs(dev) <= (tol*100) ? 'text-emerald-400' : 'text-rose-400';
-        hActText = `${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(1)}%)`;
+        hActText = `${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(2)}%)`;
     }
 
     if (hasLiveVal('diag_fan_v') && hasLiveVal('diag_fan_a') && liveAppState.target_fan_mfd) {
@@ -924,13 +924,13 @@ function updateDashLabels() {
             const act = (a * 2652) / v;
             const dev = ((act - liveAppState.target_fan_mfd)/liveAppState.target_fan_mfd)*100;
             fCol = Math.abs(dev) <= (tol*100) ? 'text-emerald-400' : 'text-rose-400';
-            fActText = `${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(1)}%)`;
+            fActText = `${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(2)}%)`;
         }
     } else if (hasLiveVal('diag_fan_bench') && liveAppState.target_fan_mfd) {
         const act = getLiveVal('diag_fan_bench');
         const dev = ((act - liveAppState.target_fan_mfd)/liveAppState.target_fan_mfd)*100;
         fCol = Math.abs(dev) <= (tol*100) ? 'text-emerald-400' : 'text-rose-400';
-        fActText = `${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(1)}%)`;
+        fActText = `${act.toFixed(2)} µF (${dev > 0 ? '+' : ''}${dev.toFixed(2)}%)`;
     }
 
     let rlaCol = 'text-slate-500', flaCol = 'text-slate-500';
@@ -940,13 +940,13 @@ function updateDashLabels() {
         const act = getLiveVal('diag_comp_rla');
         const pct = (act / liveAppState.cRlaRating) * 100;
         rlaCol = act <= liveAppState.cRlaRating ? 'text-emerald-400' : 'text-rose-400';
-        rlaActText = `${act.toFixed(2)} A (${pct.toFixed(1)}%)`;
+        rlaActText = `${act.toFixed(2)} A (${pct.toFixed(2)}%)`;
     }
     if (hasLiveVal('diag_odf_fla') && liveAppState.odfFlaRating) {
         const act = getLiveVal('diag_odf_fla');
         const pct = (act / liveAppState.odfFlaRating) * 100;
         flaCol = act <= liveAppState.odfFlaRating ? 'text-emerald-400' : 'text-rose-400';
-        flaActText = `${act.toFixed(2)} A (${pct.toFixed(1)}%)`;
+        flaActText = `${act.toFixed(2)} A (${pct.toFixed(2)}%)`;
     }    if (dashLeft) {
         const hMfd = liveAppState.isHermEnabled ? `<span class="${hCol}">${liveAppState.target_mfd || 35}</span>` : 0;
         const fMfd = liveAppState.isFanEnabled ? `<span class="${fCol}">${liveAppState.target_fan_mfd || 5}</span>` : 0;
@@ -1427,13 +1427,13 @@ function updateHUD() {
             const predVolts = (liveAppState.diag_herm_a * 2652) / liveAppState.target_mfd;
             const min = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 + tol));
             const max = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 - tol));
-            helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} V)</div><div class="text-base font-black mt-1">&#127919; ${predVolts.toFixed(2)} V</div>`;
+            helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} V)</div><div class="text-base font-black mt-1">&#127919; ${predVolts.toFixed(2)} V</div>`;
             if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
         } else if (hasVal) {
             const predAmps = (liveAppState.target_mfd * val) / 2652;
             const min = ((liveAppState.target_mfd * (1 - tol)) * val) / 2652;
             const max = ((liveAppState.target_mfd * (1 + tol)) * val) / 2652;
-            helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} A)</div><div class="text-base font-black mt-1">&#127919; ${predAmps.toFixed(2)} A</div>`;
+            helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} A)</div><div class="text-base font-black mt-1">&#127919; ${predAmps.toFixed(2)} A</div>`;
             envColor = '#cbd5e1';
         }
     } else if (step.id === 'diag_herm_a' && liveAppState.target_mfd) {
@@ -1441,13 +1441,13 @@ function updateHUD() {
             const predAmps = (liveAppState.target_mfd * liveAppState.diag_herm_v) / 2652;
             const min = ((liveAppState.target_mfd * (1 - tol)) * liveAppState.diag_herm_v) / 2652;
             const max = ((liveAppState.target_mfd * (1 + tol)) * liveAppState.diag_herm_v) / 2652;
-            helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} A)</div><div class="text-base font-black mt-1">&#127919; ${predAmps.toFixed(2)} A</div>`;
+            helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} A)</div><div class="text-base font-black mt-1">&#127919; ${predAmps.toFixed(2)} A</div>`;
             if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
         } else if (hasVal) {
             const predVolts = (val * 2652) / liveAppState.target_mfd;
             const min = (val * 2652) / (liveAppState.target_mfd * (1 + tol));
             const max = (val * 2652) / (liveAppState.target_mfd * (1 - tol));
-            helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} V)</div><div class="text-base font-black mt-1">&#127919; ${predVolts.toFixed(2)} V</div>`;
+            helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} V)</div><div class="text-base font-black mt-1">&#127919; ${predVolts.toFixed(2)} V</div>`;
             envColor = '#cbd5e1';
         }
     } else if (step.id === 'diag_fan_v' && liveAppState.target_fan_mfd) {
@@ -1455,13 +1455,13 @@ function updateHUD() {
             const predVolts = (liveAppState.diag_fan_a * 2652) / liveAppState.target_fan_mfd;
             const min = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 + tol));
             const max = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 - tol));
-            helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} V)</div><div class="text-base font-black mt-1">&#127919; ${predVolts.toFixed(2)} V</div>`;
+            helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} V)</div><div class="text-base font-black mt-1">&#127919; ${predVolts.toFixed(2)} V</div>`;
             if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
         } else if (hasVal) {
             const predAmps = (liveAppState.target_fan_mfd * val) / 2652;
             const min = ((liveAppState.target_fan_mfd * (1 - tol)) * val) / 2652;
             const max = ((liveAppState.target_fan_mfd * (1 + tol)) * val) / 2652;
-            helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} A)</div><div class="text-base font-black mt-1">&#127919; ${predAmps.toFixed(2)} A</div>`;
+            helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} A)</div><div class="text-base font-black mt-1">&#127919; ${predAmps.toFixed(2)} A</div>`;
             envColor = '#cbd5e1';
         }
     } else if (step.id === 'diag_fan_a' && liveAppState.target_fan_mfd) {
@@ -1469,30 +1469,30 @@ function updateHUD() {
             const predAmps = (liveAppState.target_fan_mfd * liveAppState.diag_fan_v) / 2652;
             const min = ((liveAppState.target_fan_mfd * (1 - tol)) * liveAppState.diag_fan_v) / 2652;
             const max = ((liveAppState.target_fan_mfd * (1 + tol)) * liveAppState.diag_fan_v) / 2652;
-            helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} A)</div><div class="text-base font-black mt-1">&#127919; ${predAmps.toFixed(2)} A</div>`;
+            helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} A)</div><div class="text-base font-black mt-1">&#127919; ${predAmps.toFixed(2)} A</div>`;
             if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
         } else if (hasVal) {
             const predVolts = (val * 2652) / liveAppState.target_fan_mfd;
             const min = (val * 2652) / (liveAppState.target_fan_mfd * (1 + tol));
             const max = (val * 2652) / (liveAppState.target_fan_mfd * (1 - tol));
-            helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} V)</div><div class="text-base font-black mt-1">&#127919; ${predVolts.toFixed(2)} V</div>`;
+            helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} V)</div><div class="text-base font-black mt-1">&#127919; ${predVolts.toFixed(2)} V</div>`;
             envColor = '#cbd5e1';
         }
     } else if (step.id === 'diag_comp_rla' && liveAppState.cRlaRating) {
-        helper = `<div class="text-xl font-bold">(Max: ${liveAppState.cRlaRating.toFixed(2)} A)</div>`;
+        helper = `<div class="text-xl font-bold">(Max: ${liveAppState.cRlaRating.toFixed(3)} A)</div>`;
         if (hasVal) envColor = (val <= liveAppState.cRlaRating) ? '#16a34a' : '#dc2626';
     } else if (step.id === 'diag_odf_fla' && liveAppState.odfFlaRating) {
-        helper = `<div class="text-xl font-bold">(Max: ${liveAppState.odfFlaRating.toFixed(2)} A)</div>`;
+        helper = `<div class="text-xl font-bold">(Max: ${liveAppState.odfFlaRating.toFixed(3)} A)</div>`;
         if (hasVal) envColor = (val <= liveAppState.odfFlaRating) ? '#16a34a' : '#dc2626';
     } else if (step.id === 'diag_herm_bench' && liveAppState.target_mfd) {
         const min = liveAppState.target_mfd * (1 - tol);
         const max = liveAppState.target_mfd * (1 + tol);
-        helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} &micro;F)</div><div class="text-base font-black mt-1">&#127919; ${liveAppState.target_mfd.toFixed(2)} &micro;F</div>`;
+        helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} &micro;F)</div><div class="text-base font-black mt-1">&#127919; ${liveAppState.target_mfd.toFixed(2)} &micro;F</div>`;
         if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
     } else if (step.id === 'diag_fan_bench' && liveAppState.target_fan_mfd) {
         const min = liveAppState.target_fan_mfd * (1 - tol);
         const max = liveAppState.target_fan_mfd * (1 + tol);
-        helper = `<div class="text-xl font-bold">(${min.toFixed(2)} - ${max.toFixed(2)} &micro;F)</div><div class="text-base font-black mt-1">&#127919; ${liveAppState.target_fan_mfd.toFixed(2)} &micro;F</div>`;
+        helper = `<div class="text-xl font-bold">(${min.toFixed(3)} - ${max.toFixed(3)} &micro;F)</div><div class="text-base font-black mt-1">&#127919; ${liveAppState.target_fan_mfd.toFixed(2)} &micro;F</div>`;
         if (hasVal) envColor = (val >= min && val <= max) ? '#16a34a' : '#dc2626';
     }
 
@@ -1538,52 +1538,52 @@ function refreshLedger() {
                 const min = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 + tol));
                 const max = (liveAppState.diag_herm_a * 2652) / (liveAppState.target_mfd * (1 - tol));
                 if (isCommitted) isPass = (val >= min && val <= max);
-                windowStr = `(${min.toFixed(1)} - ${max.toFixed(1)} V)`;
+                windowStr = `(${min.toFixed(3)} - ${max.toFixed(3)} V)`;
             }
         } else if (step.id === 'diag_herm_a' && liveAppState.target_mfd) {
             if (liveAppState.diag_herm_v) {
                 const min = ((liveAppState.target_mfd * (1 - tol)) * liveAppState.diag_herm_v) / 2652;
                 const max = ((liveAppState.target_mfd * (1 + tol)) * liveAppState.diag_herm_v) / 2652;
                 if (isCommitted) isPass = (val >= min && val <= max);
-                windowStr = `(${min.toFixed(2)} - ${max.toFixed(2)})`;
+                windowStr = `(${min.toFixed(3)} - ${max.toFixed(3)})`;
             }
         } else if (step.id === 'diag_fan_v' && liveAppState.target_fan_mfd) {
             if (liveAppState.diag_fan_a) {
                 const min = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 + tol));
                 const max = (liveAppState.diag_fan_a * 2652) / (liveAppState.target_fan_mfd * (1 - tol));
                 if (isCommitted) isPass = (val >= min && val <= max);
-                windowStr = `(${min.toFixed(1)} - ${max.toFixed(1)} V)`;
+                windowStr = `(${min.toFixed(3)} - ${max.toFixed(3)} V)`;
             }
         } else if (step.id === 'diag_fan_a' && liveAppState.target_fan_mfd) {
             if (liveAppState.diag_fan_v) {
                 const min = ((liveAppState.target_fan_mfd * (1 - tol)) * liveAppState.diag_fan_v) / 2652;
                 const max = ((liveAppState.target_fan_mfd * (1 + tol)) * liveAppState.diag_fan_v) / 2652;
                 if (isCommitted) isPass = (val >= min && val <= max);
-                windowStr = `(${min.toFixed(2)} - ${max.toFixed(2)})`;
+                windowStr = `(${min.toFixed(3)} - ${max.toFixed(3)})`;
             }
         } else if (step.id === 'diag_comp_rla' && liveAppState.cRlaRating) {
             if (isCommitted) isPass = (val <= liveAppState.cRlaRating);
-            windowStr = isCommitted ? `(${((val / liveAppState.cRlaRating) * 100).toFixed(1)}%)` : '';
+            windowStr = isCommitted ? `(${((val / liveAppState.cRlaRating) * 100).toFixed(2)}%)` : '';
         } else if (step.id === 'diag_comp_rla_2' && liveAppState.cRla2Rating) {
             if (isCommitted) isPass = (val <= liveAppState.cRla2Rating);
-            windowStr = isCommitted ? `(${((val / liveAppState.cRla2Rating) * 100).toFixed(1)}%)` : '';
+            windowStr = isCommitted ? `(${((val / liveAppState.cRla2Rating) * 100).toFixed(2)}%)` : '';
         } else if (step.id === 'diag_odf_fla' && liveAppState.odfFlaRating) {
             if (isCommitted) isPass = (val <= liveAppState.odfFlaRating);
-            windowStr = isCommitted ? `(${((val / liveAppState.odfFlaRating) * 100).toFixed(1)}%)` : '';
+            windowStr = isCommitted ? `(${((val / liveAppState.odfFlaRating) * 100).toFixed(2)}%)` : '';
         } else if (step.id === 'diag_odf_fla_2' && liveAppState.odfFla2Rating) {
             if (isCommitted) isPass = (val <= liveAppState.odfFla2Rating);
-            windowStr = isCommitted ? `(${((val / liveAppState.odfFla2Rating) * 100).toFixed(1)}%)` : '';
+            windowStr = isCommitted ? `(${((val / liveAppState.odfFla2Rating) * 100).toFixed(2)}%)` : '';
         } else if (step.id === 'diag_herm_bench' && liveAppState.target_mfd) {
             const min = liveAppState.target_mfd * (1 - tol);
             const max = liveAppState.target_mfd * (1 + tol);
             if (isCommitted) isPass = (val >= min && val <= max);
-            windowStr = `(${min.toFixed(2)} - ${max.toFixed(2)} µF)`;
+            windowStr = `(${min.toFixed(3)} - ${max.toFixed(3)} µF)`;
             specStr = `<span style="color: #000000; font-weight: bold;">(${liveAppState.target_mfd.toFixed(1)} µF)</span>`;
         } else if (step.id === 'diag_fan_bench' && liveAppState.target_fan_mfd) {
             const min = liveAppState.target_fan_mfd * (1 - tol);
             const max = liveAppState.target_fan_mfd * (1 + tol);
             if (isCommitted) isPass = (val >= min && val <= max);
-            windowStr = `(${min.toFixed(2)} - ${max.toFixed(2)} µF)`;
+            windowStr = `(${min.toFixed(3)} - ${max.toFixed(3)} µF)`;
             specStr = `<span style="color: #000000; font-weight: bold;">(${liveAppState.target_fan_mfd.toFixed(1)} µF)</span>`;
         }
 
@@ -2688,6 +2688,10 @@ window.addEventListener('DOMContentLoaded', () => {
         </script>
 </body>
 </html>
+
+
+
+
 
 
 
