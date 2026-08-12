@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.07</title>
+<title>Diagnostics v5.10</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v5_07 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v5_10 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -131,10 +131,31 @@ input[type="number"].no-spinners {
     <!-- LEDGER ROWS GENERATED HERE -->
 </div>
 
+
+<div class="w-full px-2 py-2 bg-slate-900 border-t border-slate-800">
+    <button onclick="saveResultsToQuickStash()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
+        <span>💾</span> SAVE RESULTS TO QUICK STASH
+    </button>
+</div>
+
 <!-- DOCK FABs (HOVERING RIGHT) -->
 <button onclick="openHubModal()" class="fixed bottom-20 right-4 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center font-bold tracking-wider text-xs border-2 border-slate-800 transition-transform transform hover:scale-105">
 HUB
 </button>
+
+
+<!-- ADVANCED PAGE MODAL -->
+<div id="advanced-page-modal" class="fixed top-10 left-4 right-4 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl z-50 flex flex-col hidden" style="max-height: 80vh;">
+    <div id="adv-page-modal-header" class="bg-slate-700 p-3 rounded-t-xl cursor-move flex justify-between items-center border-b border-slate-600 select-none">
+        <h3 class="text-white font-bold tracking-widest text-xs uppercase">Jump to Capacitor Page</h3>
+        <div class="flex gap-2">
+            <button onclick="toggleAdvancedPageModalCollapse()" class="text-slate-400 hover:text-white transition-colors text-lg leading-none" title="Collapse/Expand">↕️</button>
+            <button onclick="closeAdvancedPageModal()" class="text-slate-400 hover:text-white transition-colors text-2xl leading-none">&times;</button>
+        </div>
+    </div>
+    <div id="adv-page-modal-body" class="p-2 overflow-y-auto no-scrollbar flex flex-col gap-1 transition-all duration-300">
+    </div>
+</div>
 
 <!-- SNAPSHOT HYBRID MODAL -->
 <div id="snapshot-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
@@ -326,11 +347,11 @@ HUB
 
 <div class="grid grid-cols-2 gap-2 mb-2">
 <div>
-<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Comp 1 RLA</label>
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 flex justify-between"><span>Comp 1 RLA</span><span id="ind-comp-rla"></span></label>
 <input type="number" step="0.01" id="config-comp-rla-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
 </div>
 <div>
-<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Comp 1 LRA</label>
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 flex justify-between"><span>Comp 1 LRA</span><span id="ind-comp-lra"></span></label>
 <input type="number" step="0.01" id="config-comp-lra-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
 </div>
 </div>
@@ -358,7 +379,7 @@ HUB
 
 <div>
 
-<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">Fan 1 FLA</label>
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 flex justify-between"><span>Fan 1 FLA</span><span id="ind-fan-fla"></span></label>
 
 <input type="number" step="0.01" id="config-fan-fla-rating" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
 
@@ -374,7 +395,7 @@ HUB
 
 </div>
 <div>
-<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 block">🎯 Target Subcool</label>
+<label class="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1 flex justify-between"><span>🎯 Target Subcool</span><span id="ind-target-sc"></span></label>
 <input type="number" step="0.1" id="config-target-subcool" class="w-full bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-xs focus:outline-none focus:border-blue-500 transition-colors">
 </div>
 </div>
@@ -442,10 +463,11 @@ HUB
 <!-- BOTTOM APP NAVIGATION RIBBON -->
 <div id="bottom-nav-ribbon" class="w-full h-16 bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex justify-start px-2 py-2 overflow-x-auto no-scrollbar gap-2">
 <a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.02</span></a>
+<button onclick="openSplashHome()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-indigo-500 rounded text-indigo-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Splash<br><span class="text-[8px] font-normal">Quick Stash</span></button>
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.07</span></a>
+<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.10</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -457,6 +479,11 @@ HUB
 const mfdArray = [2.5, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80];
 
 // GLOBAL HEADER FUNCTIONS
+
+function openSplashHome() {
+    window.location.href = location.protocol === "file:" ? "Splash.html" : "index.html";
+}
+
 function toggleTopRibbon() {
     const ribbon = document.getElementById('top-ribbon-drawer');
     ribbon.classList.toggle('hidden');
@@ -693,6 +720,7 @@ liveAppState.cRla2Rating = parseFloat(document.getElementById('config-comp-rla-2
 liveAppState.cLra2Rating = parseFloat(document.getElementById('config-comp-lra-2-rating').value) || null;
     liveAppState.odfFlaRating = parseFloat(document.getElementById('config-fan-fla-rating').value) || 1.10;
     liveAppState.odfFla2Rating = parseFloat(document.getElementById('config-fan-fla-2-rating').value) || 1.10;
+    liveAppState.targetSubcool = parseFloat(document.getElementById('config-target-subcool').value) || null;
 
     const activeSeq = getActiveSequence();
     if (!activeSeq.find(s => s.id === liveAppState.activeField) && activeSeq.length > 0) {
@@ -737,12 +765,230 @@ function openTotalCapsModal() {
     document.getElementById('hud-modal-overlay').classList.add('flex');
 }
 
+
+// --- ADVANCED PAGE MODAL LOGIC ---
+let isAdvDragging = false;
+let advStartX, advStartY, advInitialX, advInitialY;
+
+function initAdvModalDrag() {
+    let advHeader = document.getElementById('adv-page-modal-header');
+    let advModal = document.getElementById('advanced-page-modal');
+    if(!advHeader || !advModal) return;
+
+    advHeader.addEventListener('mousedown', (e) => {
+        isAdvDragging = true;
+        advStartX = e.clientX;
+        advStartY = e.clientY;
+        const rect = advModal.getBoundingClientRect();
+        advInitialX = rect.left;
+        advInitialY = rect.top;
+        advModal.style.transform = 'none';
+        advModal.style.left = advInitialX + 'px';
+        advModal.style.top = advInitialY + 'px';
+        advModal.style.right = 'auto';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isAdvDragging) return;
+        const dx = e.clientX - advStartX;
+        const dy = e.clientY - advStartY;
+        advModal.style.left = (advInitialX + dx) + 'px';
+        advModal.style.top = (advInitialY + dy) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        isAdvDragging = false;
+    });
+
+    advHeader.addEventListener('touchstart', (e) => {
+        isAdvDragging = true;
+        advStartX = e.touches[0].clientX;
+        advStartY = e.touches[0].clientY;
+        const rect = advModal.getBoundingClientRect();
+        advInitialX = rect.left;
+        advInitialY = rect.top;
+        advModal.style.transform = 'none';
+        advModal.style.left = advInitialX + 'px';
+        advModal.style.top = advInitialY + 'px';
+        advModal.style.right = 'auto';
+    }, {passive: true});
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isAdvDragging) return;
+        const dx = e.touches[0].clientX - advStartX;
+        const dy = e.touches[0].clientY - advStartY;
+        advModal.style.left = (advInitialX + dx) + 'px';
+        advModal.style.top = (advInitialY + dy) + 'px';
+    }, {passive: true});
+
+    document.addEventListener('touchend', () => {
+        isAdvDragging = false;
+    });
+}
+setTimeout(initAdvModalDrag, 500);
+
+function toggleAdvancedPageModalCollapse() {
+    let advBody = document.getElementById('adv-page-modal-body');
+    if (advBody.style.display === 'none') {
+        advBody.style.display = 'flex';
+    } else {
+        advBody.style.display = 'none';
+    }
+}
+
+function openAdvancedPageModal() {
+    renderAdvancedPageRows();
+    document.getElementById('advanced-page-modal').classList.remove('hidden');
+}
+
+function closeAdvancedPageModal() {
+    document.getElementById('advanced-page-modal').classList.add('hidden');
+}
+
+function renderAdvancedPageRows() {
+    let html = '';
+    
+
+    const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
+    const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+    const stash = activeStashId ? stashes[activeStashId] : null;
+    
+    let autoName = '🟢 AUTO / QUICK STASH';
+    let hMfdAuto = '--', fMfdAuto = '--', rlaAuto = '--', lraAuto = '--', flaAuto = '--', scAuto = '--';
+    
+    if (stash) {
+        if (stash.customerName) autoName = `🟢 AUTO / ${stash.customerName}`;
+        
+        const sections = [
+            stash.diagnostics || {},
+            stash.equipment || {},
+            stash.readings || {},
+            stash.extra || {}
+        ];
+        
+        function resolveTarget(aliases, stashKey) {
+            let foundValues = [];
+            for (const section of sections) {
+                if (stashKey && section[stashKey] !== undefined && section[stashKey] !== "") {
+                    return section[stashKey];
+                }
+                for (const alias of aliases) {
+                    if (section[alias] !== undefined && section[alias] !== "") {
+                        if (!foundValues.includes(section[alias])) foundValues.push(section[alias]);
+                    }
+                }
+            }
+            return foundValues.length === 1 ? foundValues[0] : '--';
+        }
+        
+        rlaAuto = resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compRla');
+        lraAuto = resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compLra');
+        flaAuto = resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'odfFla');
+        scAuto = resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool');
+        
+        if (stash.diagnostics) {
+            if (stash.diagnostics.target_mfd !== undefined) hMfdAuto = stash.diagnostics.target_mfd;
+            else if (stash.diagnostics.hermMfd !== undefined) hMfdAuto = stash.diagnostics.hermMfd;
+            
+            if (stash.diagnostics.target_fan_mfd !== undefined) fMfdAuto = stash.diagnostics.target_fan_mfd;
+            else if (stash.diagnostics.fanMfd !== undefined) fMfdAuto = stash.diagnostics.fanMfd;
+        }
+    }
+    const lraStrAuto = lraAuto !== '--' ? ` / LRA:${lraAuto}` : '';
+
+    html += `<div onclick="handleAdvancedPageSelect('auto')" class="bg-blue-900/50 hover:bg-blue-800/80 border border-blue-500/50 p-2 rounded cursor-pointer grid grid-cols-6 gap-1 text-[9px] font-mono items-center transition-colors mb-1 shadow-sm">
+        <div class="font-bold text-[10px] text-center text-blue-400 col-span-1 leading-tight flex items-center justify-center whitespace-normal">${autoName}</div>
+        <div class="col-span-2 flex flex-col text-slate-300">
+            <span>⚡ H:${hMfdAuto} F:${fMfdAuto}</span>
+            <span>🎯 SC:${scAuto}°</span>
+        </div>
+        <div class="col-span-3 flex flex-col text-right text-slate-300">
+            <span>🌀 C1:${rlaAuto}A${lraStrAuto}</span>
+            <span>💨 F1:${flaAuto}A</span>
+        </div>
+    </div>`;
+
+
+    for (let i = 0; i < 20; i++) {
+        const isCurrent = (i === window.activeCap);
+        const data = (window.capacitorRegistry && window.capacitorRegistry[i]) ? window.capacitorRegistry[i].liveAppState : (isCurrent ? liveAppState : null);
+        if (!data && !isCurrent && (!window.capacitorRegistry || !window.capacitorRegistry[i])) continue;
+        
+        const hMfd = data?.target_mfd || '--';
+        const fMfd = data?.target_fan_mfd || '--';
+        const rla = data?.cRlaRating || '--';
+        const lra = data?.cLraRating ? data.cLraRating : '--';
+        const fla = data?.odfFlaRating || '--';
+        const sc = data?.targetSubcool || '--';
+        
+        const lraStr = lra !== '--' ? ` / LRA:${lra}` : '';
+        const bg = isCurrent ? 'bg-slate-700 border-emerald-500 text-white' : 'bg-slate-800 border-slate-600 text-slate-400 hover:bg-slate-700';
+
+        html += `<div onclick="handleAdvancedPageSelect(${i})" class="border p-2 rounded cursor-pointer grid grid-cols-6 gap-1 text-[9px] font-mono items-center transition-colors shadow-sm ${bg}">
+            <div class="font-bold text-[11px] text-center text-white col-span-1">P${i+1}</div>
+            <div class="col-span-2 flex flex-col">
+                <span>⚡ H:${hMfd} F:${fMfd}</span>
+                <span>🎯 SC:${sc}°</span>
+            </div>
+            <div class="col-span-3 flex flex-col text-right">
+                <span>🌀 C1:${rla}A${lraStr}</span>
+                <span>💨 F1:${fla}A</span>
+            </div>
+        </div>`;
+    }
+    document.getElementById('adv-page-modal-body').innerHTML = html;
+}
+
+function handleAdvancedPageSelect(val) {
+    if (val === 'auto') {
+        const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
+        if (activeStashId) {
+            const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+            const stash = stashes[activeStashId];
+            if (stash) {
+                const sections = [stash.diagnostics || {}, stash.equipment || {}, stash.readings || {}, stash.extra || {}];
+                function resolveTarget(aliases, stashKey) {
+                    let foundValues = [];
+                    for (const section of sections) {
+                        if (stashKey && section[stashKey] !== undefined && section[stashKey] !== "") return section[stashKey];
+                        for (const alias of aliases) {
+                            if (section[alias] !== undefined && section[alias] !== "") {
+                                if (!foundValues.includes(section[alias])) foundValues.push(section[alias]);
+                            }
+                        }
+                    }
+                    return foundValues.length === 1 ? foundValues[0] : null;
+                }
+                const rla = resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compRla');
+                const lra = resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compLra');
+                const fla = resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'odfFla');
+                const sc = resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool');
+                if (rla !== null) liveAppState.cRlaRating = parseFloat(rla);
+                if (lra !== null) liveAppState.cLraRating = parseFloat(lra);
+                if (fla !== null) liveAppState.odfFlaRating = parseFloat(fla);
+                if (sc !== null) liveAppState.targetSubcool = parseFloat(sc);
+                if (stash.diagnostics) {
+                    if (stash.diagnostics.target_mfd !== undefined) liveAppState.target_mfd = parseFloat(stash.diagnostics.target_mfd);
+                    else if (stash.diagnostics.hermMfd !== undefined) liveAppState.target_mfd = parseFloat(stash.diagnostics.hermMfd);
+                    if (stash.diagnostics.target_fan_mfd !== undefined) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.target_fan_mfd);
+                    else if (stash.diagnostics.fanMfd !== undefined) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.fanMfd);
+                }
+            }
+        }
+        renderAllPills();
+        refreshLedger();
+        updateHUD();
+        updateDashLabels();
+        saveToLocal();
+        closeAdvancedPageModal();
+        return;
+    }
+    switchPage(val);
+    closeAdvancedPageModal();
+}
+
 function openPageModal() {
-    window.modalState = 'page';
-    document.getElementById('modal-title').innerText = 'Jump to Capacitor Page';
-    renderModalGrid(window.totalCaps, window.activeCap + 1);
-    document.getElementById('hud-modal-overlay').classList.remove('hidden');
-    document.getElementById('hud-modal-overlay').classList.add('flex');
+    openAdvancedPageModal();
 }
 
 function closeModals() {
@@ -1185,6 +1431,70 @@ function clearSpecificSlot(id) {
     }
     renderAllPills();
     refreshLedger();
+}
+
+
+function saveResultsToQuickStash() {
+    const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
+    if (!activeStashId) {
+        alert("No active Quick Stash found. Please open a stash in the Hub first.");
+        return;
+    }
+    const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+    const stash = stashes[activeStashId];
+    if (!stash) {
+        alert("Active Quick Stash data not found.");
+        return;
+    }
+
+    if (!stash.diagnostics) stash.diagnostics = {};
+    const d = stash.diagnostics;
+
+    if (!d.compRla && liveAppState.cRlaRating) d.compRla = liveAppState.cRlaRating;
+    if (!d.compLra && liveAppState.cLraRating) d.compLra = liveAppState.cLraRating;
+    if (!d.odfFla && liveAppState.odfFlaRating) d.odfFla = liveAppState.odfFlaRating;
+    if (!d.targetSubcool && liveAppState.targetSubcool) d.targetSubcool = liveAppState.targetSubcool;
+
+    if (liveAppState.diag_herm_v) d.hermVolts = liveAppState.diag_herm_v;
+    if (liveAppState.diag_herm_a) d.hermAmps = liveAppState.diag_herm_a;
+    if (liveAppState.diag_fan_v) d.fanVolts = liveAppState.diag_fan_v;
+    if (liveAppState.diag_fan_a) d.fanAmps = liveAppState.diag_fan_a;
+    
+    if (liveAppState.diag_herm_v && liveAppState.diag_herm_a) {
+        d.hermCalculatedMfd = ((liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v).toFixed(2);
+    }
+    if (liveAppState.diag_fan_v && liveAppState.diag_fan_a) {
+        d.fanCalculatedMfd = ((liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v).toFixed(2);
+    }
+    
+    if (liveAppState.diag_herm_bench) d.hermBenchMfd = liveAppState.diag_herm_bench;
+    if (liveAppState.diag_fan_bench) d.fanBenchMfd = liveAppState.diag_fan_bench;
+
+    if (liveAppState.diag_comp_rla) d.rlaMeasured = liveAppState.diag_comp_rla;
+    if (liveAppState.diag_comp_rla_2) d.rla2Measured = liveAppState.diag_comp_rla_2;
+    if (liveAppState.diag_odf_fla) d.flaOdfMeasured = liveAppState.diag_odf_fla;
+
+    if (liveAppState.target_mfd && d.hermCalculatedMfd) {
+        d.capacitorDeviation = (((d.hermCalculatedMfd - liveAppState.target_mfd) / liveAppState.target_mfd) * 100).toFixed(1) + '%';
+        if (liveAppState.capacitorReportSentence) {
+            d.capacitorResult = liveAppState.capacitorReportSentence;
+        }
+    }
+
+    if (liveAppState.cRlaRating && liveAppState.diag_comp_rla) {
+        d.compressorLoadPct = ((liveAppState.diag_comp_rla / liveAppState.cRlaRating) * 100).toFixed(1) + '%';
+        if (liveAppState.motorLoadReportSentence) {
+            d.motorLoadResult = liveAppState.motorLoadReportSentence;
+        }
+    }
+
+    if (liveAppState.odfFlaRating && liveAppState.diag_odf_fla) {
+        d.fanLoadPct = ((liveAppState.diag_odf_fla / liveAppState.odfFlaRating) * 100).toFixed(1) + '%';
+    }
+
+    stashes[activeStashId] = stash;
+    localStorage.setItem('hvacQuickStashesV1', JSON.stringify(stashes));
+    alert("Results explicitly saved to Quick Stash!");
 }
 
 function clearHudValue() {
@@ -1698,6 +2008,7 @@ function refreshLedger() {
             const fSign = fDev > 0 ? '+' : '';
             const testContext = isLive ? "tested under load" : "lab tested";
             const sentence = `⚡ ${hTgt} + ${fTgt} µF Capacitor ${testContext} ${statusText} at ${hAct.toFixed(2)} + ${fAct.toFixed(2)} µF (${hSign}${hDev.toFixed(1)}% + ${fSign}${fDev.toFixed(1)}%).`;
+            liveAppState.capacitorReportSentence = sentence;
             reportLiveText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 800; font-size: 10px; line-height: 1.1;">${sentence}</span></div>`;
         } else {
             reportLiveText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span></div>`;
@@ -1735,6 +2046,7 @@ function refreshLedger() {
 
             let isPass = c1Pass && f1Pass;
             let sentence = `🌀 RLA ${c1Tgt.toFixed(2)} tested ${c1Status} at ${c1Act.toFixed(2)} and FLA ODF ${f1Tgt.toFixed(2)} tested ${f1Status} at ${f1Act.toFixed(2)}.`;
+            liveAppState.motorLoadReportSentence = sentence;
             reportMotorText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span style="color: ${isPass ? '#16a34a' : '#dc2626'}; font-weight: 800; font-size: 10px; line-height: 1.1;">${sentence}</span></div>`;
         } else {
             reportMotorText.innerHTML = `${lblSpan} <div class="flex flex-1 items-center ml-2"><span class="text-slate-400 font-bold">---</span></div>`;
@@ -1848,10 +2160,91 @@ function renderAllPills() {
 
         // --- PROFILES & SNAPSHOT LOGIC ---
 
+    
+function loadAutoQuickStash() {
+    const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
+    const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+    const stash = stashes[activeStashId];
+    
+    const fields = [
+        { id: 'config-comp-rla-rating', ind: 'ind-comp-rla', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], stashKey: 'compRla' },
+        { id: 'config-comp-lra-rating', ind: 'ind-comp-lra', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps'], stashKey: 'compLra' },
+        { id: 'config-fan-fla-rating', ind: 'ind-fan-fla', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], stashKey: 'odfFla' },
+        { id: 'config-target-subcool', ind: 'ind-target-sc', aliases: ['Target SC', 'Target Subcool', 'Subcool Target'], stashKey: 'targetSubcool' }
+    ];
+
+    if(!stash) {
+        fields.forEach(f => {
+            const ind = document.getElementById(f.ind);
+            if(ind) ind.innerHTML = '<span class="text-slate-500" title="No active stash">⚪</span>';
+        });
+        return;
+    }
+
+    function resolveTarget(aliases, stashKey) {
+        const sections = [
+            stash.diagnostics || {},
+            stash.equipment || {},
+            stash.readings || {},
+            stash.extra || {}
+        ];
+        
+        let foundValues = [];
+        if (stash.diagnostics && stash.diagnostics[stashKey] !== undefined && stash.diagnostics[stashKey] !== "") {
+             foundValues.push(String(stash.diagnostics[stashKey]).trim());
+        }
+
+        for (let i = 1; i < sections.length; i++) {
+            const section = sections[i];
+            if (!section) continue;
+            for (let k in section) {
+                if (aliases.some(a => a.toLowerCase() === k.toLowerCase())) {
+                    const val = String(section[k]).trim();
+                    if (val) foundValues.push(val);
+                }
+            }
+        }
+        
+        let uniqueVals = [];
+        foundValues.forEach(v => {
+            const parsed = parseFloat(v);
+            if (!isNaN(parsed)) {
+                if (!uniqueVals.some(uv => parseFloat(uv) === parsed)) {
+                    uniqueVals.push(v);
+                }
+            } else {
+                if (!uniqueVals.includes(v)) uniqueVals.push(v);
+            }
+        });
+
+        return uniqueVals;
+    }
+
+    fields.forEach(f => {
+        const ind = document.getElementById(f.ind);
+        const input = document.getElementById(f.id);
+        
+        const vals = resolveTarget(f.aliases, f.stashKey);
+        
+        if (vals.length === 1) {
+            if (input) {
+                input.value = parseFloat(vals[0]) || vals[0];
+                input.dispatchEvent(new Event('change'));
+            }
+            if (ind) ind.innerHTML = '<span class="text-emerald-500" title="Resolved: ' + vals[0] + '">🟢</span>';
+        } else if (vals.length > 1) {
+            if (ind) ind.innerHTML = '<span class="text-amber-500" title="Conflict: ' + vals.join(', ') + '">⚠️</span>';
+        } else {
+            if (ind) ind.innerHTML = '<span class="text-slate-500" title="Missing">⚪</span>';
+        }
+    });
+}
+
     function populateConfigProfiles() {
         const sel = document.getElementById('config-quick-load');
         if(!sel) return;
         let html = `<option value="">-- Select Profile --</option>`;
+        html += `<option value="auto_quick_stash" class="text-emerald-400 font-bold">🟢 AUTO / QUICK STASH</option>`;
         const custom = JSON.parse(localStorage.getItem('hvac_custom_profiles') || '{}');
         for(let k in custom) {
             html += `<option value="custom_${k}">🟡 ${k}</option>`;
@@ -1860,6 +2253,10 @@ function renderAllPills() {
     }
 
     function loadQuickProfile(val) {
+        if (val === "auto_quick_stash") {
+            loadAutoQuickStash();
+            return;
+        }
         if(!val || !val.startsWith("custom_")) return;
         const k = val.replace("custom_", "");
         const custom = JSON.parse(localStorage.getItem('hvac_custom_profiles') || '{}');
@@ -2589,6 +2986,7 @@ const hSign = hDev > 0 ? '+' : '';
 const fSign = fDev > 0 ? '+' : '';
 const testContext = isLive ? "tested under load" : "lab tested";
 const sentence = `⚡ ${hTgt} + ${fTgt} µF Capacitor ${testContext} ${statusText} at ${hAct.toFixed(2)} + ${fAct.toFixed(2)} µF (${hSign}${hDev.toFixed(1)}% + ${fSign}${fDev.toFixed(1)}%).`;
+            liveAppState.capacitorReportSentence = sentence;
 buildReport('Capacitor Results', sentence, isPass);
 }
 
