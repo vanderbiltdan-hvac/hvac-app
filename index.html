@@ -4,7 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC PRO v28.42</title>
+    <title>HVAC Splash v1.45</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet for Quick Stash Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .action-pill { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; }
+    </style>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
 
@@ -1279,100 +1289,91 @@
 
 </head>
 
-<body id="masterBody">
+<body id="masterBody" class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen text-white" style="overscroll-behavior-y: contain;">
 
     <div id="masterIndicator" class="master-indicator"></div>
 
-    <!-- v25.2.0 LAUNCHER SECTION (HOME) -->
-    <div class="container" id="v23-home" style="padding-bottom:100px;">
-        <div class="job-header"><span>JOB:</span> <span class="job-header-text">--</span></div>
-        <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top:2px;">
-            <div>
-                <h1 style="font-size:24px; margin:0; letter-spacing:1.5px; font-weight:900; color:white;">
-                    <span id="launcherVerBadge" style="color:var(--electric-blue);">v28.42</span>
-                </h1>
-                <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
-                    <!-- MIRROR PULL (SHEET) -->
-                    <button id="manualSyncBtn" onclick="fetchMirrorSync()" class="btn-utility sync mirror-sync-btn"
-                        style="padding:6px 12px; font-size:11px;">⚡ MIRROR PULL</button>
-                    <button onclick="applyMirrorToHub('all')" class="btn-utility"
-                        style="padding:6px 10px; border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px;">SYNC
-                        ALL</button>
-                    <div class="toggle-container" style="border:none; padding:0; background:none;">
-                        <span style="font-size:8px; color:var(--amber-orange); font-weight:900;">SAFE SYNC</span>
-                        <label class="switch">
-                            <input type="checkbox" id="safeSyncToggleHome" onchange="toggleSafeSync(this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
+    <!-- STATUS BAR LAUNCHER -->
+    <div id="top-status-bar" onclick="document.getElementById('top-ribbon-drawer').classList.toggle('hidden')" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
+        <div id="active-job-ticket" class="job-header-text text-slate-400 font-mono text-base font-bold tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+    </div>
+
+    <!-- TOP RIBBON DRAWER (ACCORDION) -->
+    <div id="top-ribbon-drawer" class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-3 px-4 py-3 hidden origin-top transition-all duration-300 z-40 sticky top-8 shadow-md">
+      <button onclick="startJob()" class="action-pill bg-emerald-600 hover:bg-emerald-500 text-slate-900 flex items-center justify-center text-xl transition-colors border border-emerald-400 shadow-sm" title="New Job">➕</button>
+      <button onclick="openActiveDriveFolder()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Drive">📁</button>
+      <button onclick="openGallery()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Album">📷</button>
+      <button onclick="showSection('section-manuals')" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Manuals">📖</button>
+      <button onclick="toggleGlobalMic()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Mic">🎙️</button>
+    </div>
+
+    <!-- MAIN SPLASH WORKSPACE -->
+    <div id="v23-home" class="flex-1 w-full relative bg-slate-900 overflow-y-auto px-4 py-6 pb-24">
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
+                    <span>SPLASH</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.45</span>
+                </h2>
+                <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
-            <button id="launcherMicBtn" onclick="toggleGlobalMic()"
-                style="background:var(--electric-blue); color:black; border:none; border-radius:16px; width:50px; height:50px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0, 229, 255, 0.4);">
-                <span style="font-size:24px;">🎙</span>
-            </button>
-        </div>
-        <!-- GLOBAL CONFLICT BADGE -->
-        <div id="conflictBadgeHeader"
-            style="display:none; width:100%; text-align:center; padding:10px; border-radius:12px; font-weight:900; margin-bottom:12px; background:rgba(255,23,68,0.2); border:1px solid var(--crimson-red); color:var(--crimson-red); font-size:12px;">
-        </div>
-
-
-
-        <div class="v23-launcher-grid">
-            <!-- SLOT 1: NEW JOB (FULL WIDTH) -->
-            <div
-                style="background:rgba(255,255,255,0.03); padding:14px; border-radius:18px; border:1px solid rgba(255,255,255,0.05);">
-                <input type="text" id="custName" placeholder="Enter Name / Job #"
-                    style="margin-bottom:8px; background:#000;">
-                <button class="btn-full" id="shellBtn" onclick="startJob()"
-                    style="background:var(--emerald-green); color:#000;">🚀 CREATE SHELL</button>
-            </div>
-
-            <!-- SLOT 2: UPLOAD PHOTOS (FULL WIDTH) -->
-            <button class="btn-full"
-                onclick="history.pushState(null, null, '#picker'); document.getElementById('fileInputHome').click()"
-                style="background:var(--electric-blue); color:#000;">
-                📸 UPLOAD PHOTOS
-            </button>
-            <input type="file" id="fileInputHome" style="display:none;" accept="image/*" multiple
-                onchange="handleMultiPhotos(this)">
-
-            <!-- SLOT 3: GALLERY (FULL WIDTH) -->
-            <button class="btn-full" onclick="openGallery()"
-                style="background:#222; color:var(--electric-blue); border-color:var(--electric-blue);">
-                🖼️ GALLERY
-            </button>
-
-            <!-- SLOTS 4 & 5: TWO COLUMNS -->
-            <div class="v23-sub-grid">
-                <button id="librarianBtn" class="btn-half" onclick="runLibrarianInApp()">
-                    🔍 LIBRARIAN
+            
+            <div id="conflictBadgeHeader" style="display:none;" class="w-full text-center p-2 rounded-lg font-bold mb-4 bg-red-900/30 border border-red-500 text-red-500 text-xs"></div>
+            
+            <input type="text" id="custName" placeholder="Enter Name / Job #" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white placeholder-slate-500 mb-3 focus:outline-none focus:border-blue-500 transition-colors">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <button id="shellBtn" onclick="startJob()" class="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-bold py-5 rounded-xl shadow-lg border border-emerald-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg">
+                    <span class="text-2xl">🚀</span> CREATE SHELL
                 </button>
-                <button class="btn-half" onclick="showSection('section-manuals')">
-                    📖 MANUALS
-                </button>
-            </div>
+                <div id="createShellDiagnostic" class="col-span-2 bg-slate-900 border border-amber-500 text-[10px] font-mono text-amber-500 p-2 rounded w-full whitespace-pre-wrap break-words" style="display:none;"></div>
 
-            <!-- SLOT 6: SPECTRUM (TWO COLUMNS) -->
-            <div class="v23-sub-grid">
-                <button class="btn-half" onclick="showSection('section-specs')">
-                    🎙️ SPECTRUM INTAKE
+                <!-- Hidden input for file upload -->
+                <input type="file" id="fileInputHome" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+
+                <button onclick="document.getElementById('fileInputHome').click()" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-5 rounded-xl shadow-lg border border-blue-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg">
+                    <span class="text-2xl">📸</span> UPLOAD PHOTOS
                 </button>
-                <button class="btn-half" onclick="openActiveDriveFolder()"
-                    style="background:#222; color:var(--emerald-green); border-color:var(--emerald-green);">
-                    📂 DRIVE FOLDER
+
+                <button onclick="openQuickStash()" class="col-span-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-5 rounded-xl shadow-lg border border-indigo-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg mt-2 mb-2">
+                    <span class="text-2xl">📥</span> QUICK STASH
+                </button>
+
+                <button onclick="openJobPortal()" class="col-span-2 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold py-5 rounded-xl shadow-lg border border-amber-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg mb-2">
+                    <span class="text-2xl">📂</span> JOB PORTAL
+                </button>
+                
+                <button onclick="triggerAppParser(this)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-xl shadow-lg border border-purple-400 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <span class="text-2xl">⚡</span>
+                    <span class="text-[10px] tracking-wider uppercase">Process Photos</span>
+                </button>
+                
+                <button onclick="openActiveDriveFolder()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold py-4 rounded-xl shadow-lg border border-emerald-500/50 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <span class="text-2xl">📁</span>
+                    <span class="text-[10px] tracking-wider uppercase">Drive Folder</span>
+                </button>
+
+                <button onclick="openGallery()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 font-bold py-4 rounded-xl shadow-lg border border-blue-500/50 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <span class="text-2xl">🖼️</span>
+                    <span class="text-[10px] tracking-wider uppercase">Gallery</span>
+                </button>
+                
+                <button id="librarianBtn" onclick="runLibrarianInApp()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded-xl shadow-lg border border-slate-600 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <span class="text-2xl">🔍</span>
+                    <span class="text-[10px] tracking-wider uppercase">Librarian</span>
+                </button>
+                
+                <button onclick="showSection('section-manuals')" class="col-span-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded-xl shadow-lg border border-slate-600 transition-transform active:scale-95 flex items-center justify-center gap-2">
+                    <span class="text-xl">📖</span>
+                    <span class="text-xs tracking-wider uppercase">Manuals</span>
                 </button>
             </div>
-
-            <!-- SLOT 10: PORTAL (FULL WIDTH BOTTOM) -->
-            <button class="btn-full" onclick="openJobPortal()"
-                style="background:#333; color:var(--amber-orange); border-color:var(--amber-orange); margin-top:20px;">
-                📂 JOB PORTAL (SWITCHER)
-            </button>
+            
+            <div id="photoStatus" style="display:none;" class="mt-6 text-center text-xs text-amber-500 font-bold tracking-wider"></div>
         </div>
     </div>
+
+
 
     <!-- NEW READINGS HUB SECTION -->
     <div class="container" id="section-readings" style="padding-bottom:100px; display:none;">
@@ -1517,7 +1518,7 @@
             <div>
                 <h1
                     style="font-size:22px; margin:0; letter-spacing:1px; background:linear-gradient(90deg, var(--electric-blue), var(--emerald-green)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight:900;">
-                    SYSTEM SPECS</h1>
+                    EQUIPMENT</h1>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
                     <div id="specsVerBadge" style="font-size:11px; color:#888; font-weight:900; letter-spacing:2px;">
                         v28.42</div>
@@ -1888,6 +1889,388 @@
         </div>
     </div>
 
+    <!-- QUICK STASH MODAL -->
+    <div id="quickStashModal" class="modal-overlay" style="background:#121212; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; top:0; z-index:10000; align-items:center;">
+        <!-- QUICK STASH TUNER PANEL -->
+        <div id="qsSettingsPanel" style="display:none; position:fixed; top:50px; right:20px; z-index:10001; background:rgba(18,18,18,0.95); border:1px solid #444; border-radius:8px; width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); flex-direction:column; max-height:85vh; transition: width 0.2s;">
+            <!-- Header / Drag Handle -->
+            <div onmousedown="initQsTunerDrag(event)" ontouchstart="initQsTunerDrag(event)" style="padding:10px 15px; background:rgba(255,255,255,0.05); border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; cursor:move; border-radius:8px 8px 0 0; user-select:none; -webkit-user-select:none;">
+                <div style="font-weight:900; color:var(--electric-blue); font-size:14px; pointer-events:none;">QUICK STASH TUNER</div>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="toggleQsTunerSize()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Toggle Size">↔</button>
+                    <button onclick="toggleQsTunerCollapse()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Minimize">_</button>
+                    <button onclick="toggleQsSettings()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Close">✕</button>
+                </div>
+            </div>
+            <!-- Scrollable content -->
+            <div id="qsSettingsContent" style="padding:15px; font-size:11px; color:#ccc; overflow-y:auto; display:grid; grid-template-columns:1fr; gap:15px; max-height:calc(85vh - 40px);">
+                <!-- GLOBAL -->
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
+                    <div style="color:var(--emerald-green); font-weight:900; margin-bottom:8px;">GLOBAL</div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Width Mode</span>
+                        <select id="qsTunerWidthMode" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
+                            <option value="Compact">Compact</option>
+                            <option value="Standard">Standard</option>
+                            <option value="Wide">Wide</option>
+                            <option value="Full">Full</option>
+                            <option value="Fixed">Fixed</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Fixed Width (px)</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('fixedWidth', -10)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_fixedWidth" style="width:36px; text-align:center; font-family:monospace;">800</span>
+                            <button onclick="adjQsSet('fixedWidth', 10)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Outer Padding</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('outerPadding', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_outerPadding" style="width:36px; text-align:center; font-family:monospace;">15</span>
+                            <button onclick="adjQsSet('outerPadding', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Section Gap</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('sectionGap', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_sectionGap" style="width:36px; text-align:center; font-family:monospace;">15</span>
+                            <button onclick="adjQsSet('sectionGap', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                                <!-- HEADER LAYOUT -->
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom: 15px;">
+                    <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">QUICK STASH TOP HEADER</div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Active Stash Title Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrActiveFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrActiveFs" style="width:30px; text-align:center;">20</span>
+                            <button onclick="adjQsSet('hdrActiveFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Active Stash Title Width (0=Auto)</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrActiveWd', -10)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrActiveWd" style="width:30px; text-align:center;">0</span>
+                            <button onclick="adjQsSet('hdrActiveWd', 10)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Close Button Width</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrCloseWd', -2)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrCloseWd" style="width:30px; text-align:center;">30</span>
+                            <button onclick="adjQsSet('hdrCloseWd', 2)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Close Button Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrCloseFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrCloseFs" style="width:30px; text-align:center;">20</span>
+                            <button onclick="adjQsSet('hdrCloseFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Local Workspace Label Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrWorkspaceFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrWorkspaceFs" style="width:30px; text-align:center;">10</span>
+                            <button onclick="adjQsSet('hdrWorkspaceFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Storage Reading Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrStorageFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrStorageFs" style="width:30px; text-align:center;">10</span>
+                            <button onclick="adjQsSet('hdrStorageFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>QS Version Badge Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrVerFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrVerFs" style="width:30px; text-align:center;">10</span>
+                            <button onclick="adjQsSet('hdrVerFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <!-- FIELD ROWS -->
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
+                    <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">FIELD ROWS</div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Row Mode</span>
+                        <select id="qsTunerRowMode" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
+                            <option value="Fixed">Fixed</option>
+                            <option value="Weight">Weight</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Label Weight</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('lblWeight', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_lblWeight" style="width:36px; text-align:center; font-family:monospace;">2</span>
+                            <button onclick="adjQsSet('lblWeight', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Data Weight</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('datWeight', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_datWeight" style="width:36px; text-align:center; font-family:monospace;">3</span>
+                            <button onclick="adjQsSet('datWeight', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Vertical Padding</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('rowPadV', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_rowPadV" style="width:36px; text-align:center; font-family:monospace;">10</span>
+                            <button onclick="adjQsSet('rowPadV', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Horizontal Padding</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('rowPadH', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_rowPadH" style="width:36px; text-align:center; font-family:monospace;">10</span>
+                            <button onclick="adjQsSet('rowPadH', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Min Height</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('rowMinHeight', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_rowMinHeight" style="width:36px; text-align:center; font-family:monospace;">24</span>
+                            <button onclick="adjQsSet('rowMinHeight', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Checkbox Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('cbSize', -0.1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_cbSize" style="width:36px; text-align:center; font-family:monospace;">1.2</span>
+                            <button onclick="adjQsSet('cbSize', 0.1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Label Font Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('lblFs', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_lblFs" style="width:36px; text-align:center; font-family:monospace;">11</span>
+                            <button onclick="adjQsSet('lblFs', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Data Font Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('datFs', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_datFs" style="width:36px; text-align:center; font-family:monospace;">13</span>
+                            <button onclick="adjQsSet('datFs', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Label Col Width</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('lblColW', -5)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_lblColW" style="width:36px; text-align:center; font-family:monospace;">120</span>
+                            <button onclick="adjQsSet('lblColW', 5)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Col Gap</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('rowGap', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_rowGap" style="width:36px; text-align:center; font-family:monospace;">8</span>
+                            <button onclick="adjQsSet('rowGap', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Border Radius</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('rowRad', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_rowRad" style="width:36px; text-align:center; font-family:monospace;">8</span>
+                            <button onclick="adjQsSet('rowRad', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Data Align</span>
+                        <select id="qsTunerDatAlign" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
+                            <option value="left">Left</option>
+                            <option value="center">Center</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- HEADERS -->
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
+                    <div style="color:var(--electric-blue); font-weight:900; margin-bottom:8px;">HEADERS</div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Font Size</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrFs', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrFs" style="width:36px; text-align:center; font-family:monospace;">11</span>
+                            <button onclick="adjQsSet('hdrFs', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Vertical Padding</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrPadV', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrPadV" style="width:36px; text-align:center; font-family:monospace;">0</span>
+                            <button onclick="adjQsSet('hdrPadV', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Horizontal Padding</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrPadH', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrPadH" style="width:36px; text-align:center; font-family:monospace;">0</span>
+                            <button onclick="adjQsSet('hdrPadH', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <span>Border Radius</span>
+                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                            <button onclick="adjQsSet('hdrRad', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                            <span id="qsSetVal_hdrRad" style="width:36px; text-align:center; font-family:monospace;">0</span>
+                            <button onclick="adjQsSet('hdrRad', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                
+
+                <!-- VISIBILITY -->
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
+                    <div style="color:#aaa; font-weight:900; margin-bottom:8px;">VISIBILITY</div>
+                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowHopper" onchange="saveQsSettingsFromInputs()"> Show Hopper</label>
+                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowExtra" onchange="saveQsSettingsFromInputs()"> Show Extra/Other</label>
+                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowRawScans" onchange="saveQsSettingsFromInputs()"> Show Raw Scans</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="qsWorkspaceWrapper" class="w-full flex flex-col h-full" style="max-width:672px;">
+            <input type="file" id="quickStashFileInput" style="display:none;" accept="image/*" multiple onchange="handleQuickStashPhoto(this)">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
+                <div style="width:var(--qs-hdr-active-wd);">
+                    <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
+                        QUICK STASH
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.45</span>
+                        <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
+                    </h2>
+                    <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:var(--qs-hdr-workspace-fs);">LOCAL WORKSPACE • NO DRIVE UPLOAD</span>
+                        <span id="qsStorageUsage" style="background:var(--electric-blue); color:#000; padding:4px 8px; border-radius:6px; font-weight:900;"></span>
+                    </div>
+                    <!-- ACTIVE STASH LABEL -->
+                    <div style="font-size:var(--qs-hdr-active-fs); color:var(--text-primary); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px; margin-top:6px;">
+                        ACTIVE STASH: <span id="qsActiveStashLabel" style="color:var(--emerald-green);">NONE</span>
+                    </div>
+                </div>
+                <button onclick="closeQuickStash()" style="background:none; border:none; font-size:var(--qs-hdr-close-fs); width:var(--qs-hdr-close-wd); padding:0; cursor:pointer; color:var(--crimson-red);">✖</button>
+            </div>
+
+            <div id="quickStashContent" style="flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:15px;">
+
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <button onclick="createNewQuickStash()" class="btn btn-outline" style="border-color:var(--emerald-green); color:var(--emerald-green); font-weight:900;">+ NEW STASH</button>
+                    <button onclick="document.getElementById('quickStashFileInput').click()" class="btn btn-outline" style="border-color:var(--electric-blue); color:var(--electric-blue); font-weight:900;">📸 PICK PHOTO</button>
+                    <button onclick="showQuickStashBrowser()" class="btn btn-outline" style="grid-column:span 2; border-color:#888; color:#ccc; font-weight:900;">📂 BROWSE STASHES</button>
+                </div>
+
+                <!-- Configuration & Hopper -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-4 rounded-lg">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:#aaa; font-weight:900;">REVIEW RESULTS:</span>
+                        <button id="qsToggleReviewBtn" onclick="toggleQsReview()" class="btn-utility" style="padding:4px 8px; font-size:10px;">ON</button>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:#aaa; font-weight:900;">DESTINATION:</span>
+                        <select id="qsDestSelect" onchange="updateQsDest()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:140px;"></select>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:#aaa; font-weight:900;">SCAN PROFILE:</span>
+                        <select id="qsScanType" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:120px;" onchange="updateQsScanType()">
+                            <option value="AUTO">AUTO</option>
+                            <option value="DATA TAG">DATA TAG</option>
+                            <option value="THERMOSTAT">THERMOSTAT</option>
+                            <option value="ELECTRICAL">ELECTRICAL</option>
+                            <option value="MEASUREMENTS">MEASUREMENTS</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:#aaa; font-weight:900;">DEPTH:</span>
+                        <select id="qsScanDepth" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanDepth()">
+                            <option value="QUICK">QUICK</option>
+                            <option value="NORMAL" selected>NORMAL</option>
+                            <option value="DEEP">DEEP</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:#aaa; font-weight:900;">FOCUS:</span>
+                        <select id="qsScanFocus" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanFocus()">
+                            <option value="VALUES">VALUES</option>
+                            <option value="RESULTS">RESULTS</option>
+                            <option value="BOTH" selected>BOTH</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER DETAIL:</span>
+                        <button onclick="toggleQsDetail()" id="qsToggleDetailBtn" class="btn-utility" style="padding:2px 6px; font-size:9px;">MINIMAL</button>
+                    </div>
+                </div>
+
+                <div id="qsHopperSection" style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                        <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER QUEUE</span>
+                    </div>
+                    <div id="quickStashHopperStats" style="font-size:10px; color:#ccc; display:flex; gap:10px; flex-wrap:wrap;"></div>
+                    <div id="quickStashHopperList" style="display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; margin-top:5px;"></div>
+                </div>
+
+                <div id="quickStashStatus" style="display:none; color:var(--amber-orange); font-weight:900; text-align:center; padding:10px; background:rgba(255,171,0,0.1); border-radius:8px;"></div>
+                <div id="quickStashViewArea"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- PHOTO GALLERY OVERLAY (V28.12) -->
     <div id="galleryOverlay" class="modal-overlay"
         style="background:#000; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; top:0; z-index:10000;">
@@ -2154,8 +2537,21 @@
         </div>
     </div>
 
-    <!-- UNIVERSAL FIXED FOOTER (v28.12) -->
-    <nav class="app-nav">
+    <!-- BOTTOM APP NAVIGATION RIBBON -->
+    <div id="bottom-nav-ribbon" class="w-full h-16 bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex justify-start px-2 py-2 overflow-x-auto no-scrollbar gap-2">
+      <a href="Splash.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[10px] shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">v1.20</span></a>
+      <a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.20</span></a>
+      <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.20</span></a>
+      <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.20</span></a>
+      <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.20</span></a>
+      <a href="diagnostics.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Diag<br><span class="text-[8px] font-normal">v1.20</span></a>
+      <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.20</span></a>
+      <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.20</span></a>
+      <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.20</span></a>
+    </div>
+
+    <!-- OLD FOOTER (HIDDEN) -->
+    <nav class="app-nav" style="display:none;">
         <div class="nav-fixed-home">
             <button id="nav-home" onclick="showSection('v23-home')" class="nav-btn active"><span>🏠</span>HOME</button>
         </div>
@@ -2182,7 +2578,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v28.42";
+        const APP_VERSION = "v1.45";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         // Restoration Helpers (v28.42)
@@ -2314,6 +2710,21 @@
         // 🛑 ==========================================
         // 🛑 ZONE 2: UI ENGINE
         // 🛑 ==========================================
+        function updateConflictBadge(conflict) {
+            const cb = document.getElementById('conflictBadgeHeader');
+            if (!cb) return;
+
+            const text = conflict == null ? "" : String(conflict).trim();
+
+            if (text !== "") {
+                cb.style.display = 'block';
+                cb.innerHTML = "⚠️ " + text;
+            } else {
+                cb.style.display = 'none';
+                cb.innerHTML = "";
+            }
+        }
+
         function updateUniversalJobHeaders() {
             const currentJob = localStorage.getItem('hvacActiveJob');
             const bars = document.querySelectorAll('.job-header');
@@ -2539,6 +2950,7 @@
             renderGallery();
         }
         function closeGallery() {
+            localStorage.removeItem('galleryOpen');
             document.getElementById('galleryOverlay').style.display = 'none';
             showSection(previousSection);
         }
@@ -3190,15 +3602,7 @@
                         localStorage.setItem('hvacActiveFolderId', response.data.folderId);
                     }
 
-                    const cb = document.getElementById('conflictBadgeHeader');
-                    if (cb) {
-                        if (response.data.conflict && response.data.conflict.trim() !== "") {
-                            cb.style.display = 'block';
-                            cb.innerHTML = "⚠️ " + response.data.conflict;
-                        } else {
-                            cb.style.display = 'none';
-                        }
-                    }
+                    updateConflictBadge(response.data.conflict);
                     refreshSyncUI();
                     if (response.data.schema && response.data.schema.length > 0) {
                         alignSchemaLabels(response.data.schema);
@@ -3685,6 +4089,7 @@
             localStorage.setItem('hvacActiveJob', jobName);
             isJobMode = true; // Auto-Enable Sync on selection
             refreshSyncUI();
+            updateUniversalJobHeaders();
             closeJobPortal();
             fetchMirrorSync(); // Immediate pull
         }
@@ -3711,7 +4116,7 @@
 
         async function callAppsScript(payload) {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const timeoutId = setTimeout(() => controller.abort(), (payload.action === "uploadPhotoAI" || payload.action === "analyzePhotoOnly") ? 90000 : 30000);
 
             // Inject Sheet Context (v28.23 GOLD0)
             if (currentJob) payload.sheetName = currentJob;
@@ -3722,9 +4127,17 @@
                     body: JSON.stringify(payload),
                     signal: controller.signal
                 });
+                
+                console.log(`APPS SCRIPT REQUEST ACTION: ${payload.action}\nHTTP STATUS: ${response.status}\nHTTP OK: ${response.ok}\nCONTENT TYPE: ${response.headers.get('content-type')}`);
+                
                 clearTimeout(timeoutId);
-                const json = await response.json();
-                return json; // Returns {status, data}
+                const rawText = await response.text();
+                try {
+                    const json = JSON.parse(rawText);
+                    return json; // Returns {status, data}
+                } catch (parseErr) {
+                    throw new Error(`Parse failed. HTTP STATUS: ${response.status} | CONTENT TYPE: ${response.headers.get('content-type')} | RAW: ${rawText.substring(0, 500)}`);
+                }
             } catch (err) {
                 clearTimeout(timeoutId);
                 throw err;
@@ -3809,10 +4222,2011 @@
             if (typeof renderDraftBlock === 'function') renderDraftBlock();
         }
 
+        // 🛑 ==========================================
+        // 🛑 QUICK STASH ENGINE
+        // 🛑 ==========================================
+        let quickStashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1')) || {};
+        let activeQuickStashId = localStorage.getItem('hvacActiveQuickStashId') || null;
+
+        let qsSettings = JSON.parse(localStorage.getItem('qsSettingsV1_18')) || JSON.parse(localStorage.getItem('qsSettingsV1_17')) || JSON.parse(localStorage.getItem('qsSettingsV1_16')) || {
+            showHopper: true,
+            showExtra: true,
+            showRawScans: true,
+            collapseExtra: false,
+            collapseRawScans: true,
+            collapseCustomer: false,
+            collapseEquipment: false,
+            collapseReadings: false,
+            collapseCopyOptions: false,
+            
+            // Tuner Settings - GLOBAL
+            widthMode: 'Standard', 
+            fixedWidth: 800,
+            outerPadding: 15,
+            sectionGap: 15,
+            
+            // Tuner Settings - FIELD ROWS
+            rowMode: 'Fixed',
+            lblWeight: 2,
+            datWeight: 3,
+            rowMinHeight: 24,
+            rowPadV: 10,
+            rowPadH: 10,
+            cbSize: 1.2,
+            lblFs: 11,
+            datFs: 13,
+            lblColW: 120,
+            rowGap: 8,
+            rowRad: 8,
+            datAlign: 'right',
+            
+            // Tuner Settings - SECTION HEADERS
+            hdrFs: 11,
+            hdrPadV: 0,
+            hdrPadH: 0,
+            hdrRad: 0,
+            
+            // Tuner Settings - HEADER
+            hdrTitleFs: 20,
+            hdrTitleWd: 0,
+            hdrCloseWd: 30,
+            hdrCloseFs: 20,
+            hdrVerFs: 14,
+            hdrStorageFs: 14,
+            hdrWorkspaceFs: 10
+        };
+
+        let savedSettings = JSON.parse(localStorage.getItem('qsSettingsV1_25')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_24')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_23')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_22')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_21')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_20')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_19')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_18')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_17')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_16')) 
+                         || {};
+        qsSettings = { ...qsSettings, ...savedSettings };
+
+        // -------------------------------------------------------------
+        // FLOATING TUNER DRAG & BEHAVIOR
+        // -------------------------------------------------------------
+        let isQsTunerDragging = false;
+        let qsTunerDragStartX, qsTunerDragStartY;
+        
+        function initQsTunerDrag(e) {
+            if (e.target.closest('button, input, select')) return;
+            isQsTunerDragging = true;
+            let el = document.getElementById('qsSettingsPanel');
+            let rect = el.getBoundingClientRect();
+            qsTunerDragStartX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+            qsTunerDragStartY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+            e.preventDefault();
+        }
+        
+        function onQsTunerDrag(e) {
+            if (!isQsTunerDragging) return;
+            let el = document.getElementById('qsSettingsPanel');
+            let ex = e.clientX || (e.touches && e.touches[0].clientX);
+            let ey = e.clientY || (e.touches && e.touches[0].clientY);
+            let x = ex - qsTunerDragStartX;
+            let y = ey - qsTunerDragStartY;
+            
+            let maxX = window.innerWidth - el.offsetWidth;
+            let maxY = window.innerHeight - el.offsetHeight;
+            
+            x = Math.max(0, Math.min(x, maxX));
+            y = Math.max(0, Math.min(y, maxY));
+            
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.transform = 'none';
+            el.style.bottom = 'auto';
+            el.style.right = 'auto';
+        }
+        
+        function stopQsTunerDrag() {
+            isQsTunerDragging = false;
+        }
+
+        document.addEventListener('mousemove', onQsTunerDrag);
+        document.addEventListener('mouseup', stopQsTunerDrag);
+        document.addEventListener('touchmove', onQsTunerDrag, {passive: false});
+        document.addEventListener('touchend', stopQsTunerDrag);
+
+        function toggleQsTunerSize() {
+            let el = document.getElementById('qsSettingsPanel');
+            let content = document.getElementById('qsSettingsContent');
+            if (el.style.width === '400px' || !el.style.width) {
+                el.style.width = '700px';
+                content.style.gridTemplateColumns = '1fr 1fr';
+            } else {
+                el.style.width = '400px';
+                content.style.gridTemplateColumns = '1fr';
+            }
+        }
+        
+        function toggleQsTunerCollapse() {
+            let content = document.getElementById('qsSettingsContent');
+            content.style.display = content.style.display === 'none' ? 'grid' : 'none';
+        }
+
+        function toggleQsSettings() {
+            let el = document.getElementById('qsSettingsPanel');
+            if (el) {
+                if (el.style.display === 'none') {
+                    el.style.display = 'flex';
+                    updateQsTunerDisplays();
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+        }
+
+        function adjQsSet(key, step) {
+            let cur = parseFloat(qsSettings[key] || 0);
+            let next = cur + step;
+            if (next < 0) next = 0; // Prevent negative limits
+            if (key === 'cbSize') next = parseFloat(next.toFixed(1));
+            if (key === 'lblWeight' || key === 'datWeight' || key === 'hdrSplitTitleWeight' || key.includes('Weight')) {
+                if (next < 1) next = 1;
+                if (next > 10) next = 10;
+            }
+            qsSettings[key] = next;
+            localStorage.setItem('qsSettingsV1_20', JSON.stringify(qsSettings));
+            updateQsTunerDisplays();
+            applyQsLiveSettings();
+        }
+
+        function saveQsSettingsFromInputs() {
+            let v = id => { let e = document.getElementById(id); return e ? e.value : null; };
+            let c = id => { let e = document.getElementById(id); return e ? e.checked : false; };
+            qsSettings.widthMode = v('qsTunerWidthMode') || 'Standard';
+            qsSettings.rowMode = v('qsTunerRowMode') || 'Fixed';
+            qsSettings.datAlign = v('qsTunerDatAlign') || 'left';
+            qsSettings.hdrSplitAlignL = v('qsTunerHdrSplitAlignL') || 'left';
+            qsSettings.hdrSplitAlignC = v('qsTunerHdrSplitAlignC') || 'center';
+            qsSettings.hdrSplitAlignR = v('qsTunerHdrSplitAlignR') || 'right';
+            qsSettings.showHopper = c('qsSetShowHopper');
+            qsSettings.showExtra = c('qsSetShowExtra');
+            qsSettings.showRawScans = c('qsSetShowRawScans');
+            localStorage.setItem('qsSettingsV1_20', JSON.stringify(qsSettings));
+            updateHopperVisibility();
+            applyQsLiveSettings();
+        }
+
+        function updateQsTunerDisplays() {
+            const upd = (key) => { let e = document.getElementById('qsSetVal_' + key); if (e) e.innerText = qsSettings[key]; };
+            upd('fixedWidth');
+            upd('outerPadding');
+            upd('sectionGap');
+            upd('rowPadV');
+            upd('rowPadH');
+            upd('rowMinHeight');
+            upd('cbSize');
+            upd('lblFs');
+            upd('datFs');
+            upd('lblColW');
+            upd('lblWeight');
+            upd('datWeight');
+            upd('hdrSplitTitleWeight');
+            upd('hdrSplitLWeight');
+            upd('hdrSplitCWeight');
+            upd('hdrSplitRWeight');
+            upd('hdrSplitFs');
+            upd('rowGap');
+            upd('rowRad');
+            upd('hdrFs');
+            upd('hdrPadV');
+            upd('hdrPadH');
+            upd('hdrRad');
+            upd('hdrActiveFs');
+            upd('hdrActiveWd');
+            upd('hdrCloseWd');
+            upd('hdrCloseFs');
+            upd('hdrStorageFs');
+            upd('hdrVerFs');
+            upd('hdrWorkspaceFs');
+            upd('hdrTitleFs');
+            upd('hdrTitleWd');
+            upd('hdrCloseWd');
+            upd('hdrCloseFs');
+            upd('hdrStorageFs');
+            upd('hdrVerFs');
+            upd('hdrWorkspaceFs');
+            
+            let wMode = document.getElementById('qsTunerWidthMode');
+            if (wMode) wMode.value = qsSettings.widthMode;
+            
+            let dAlign = document.getElementById('qsTunerDatAlign');
+            if (dAlign) dAlign.value = qsSettings.datAlign;
+            
+            let rMode = document.getElementById('qsTunerRowMode');
+            if (rMode) rMode.value = qsSettings.rowMode;
+            let hl = document.getElementById('qsTunerHdrSplitAlignL');
+            if (hl) hl.value = qsSettings.hdrSplitAlignL;
+            let hc = document.getElementById('qsTunerHdrSplitAlignC');
+            if (hc) hc.value = qsSettings.hdrSplitAlignC;
+            let hr = document.getElementById('qsTunerHdrSplitAlignR');
+            if (hr) hr.value = qsSettings.hdrSplitAlignR;
+            
+            let c = (id, val) => { let e = document.getElementById(id); if (e) e.checked = val; };
+            c('qsSetShowHopper', qsSettings.showHopper);
+            c('qsSetShowExtra', qsSettings.showExtra);
+            c('qsSetShowRawScans', qsSettings.showRawScans);
+        }
+
+        // Backward compatibility stub if anywhere else invokes this
+        function saveQsSettings() {}
+
+        function applyQsLiveSettings() {
+            let modal = document.getElementById('qsWorkspaceWrapper');
+            if (modal) {
+                let mw = '672px';
+                if (qsSettings.widthMode === 'Compact') mw = '400px';
+                if (qsSettings.widthMode === 'Standard') mw = '672px';
+                if (qsSettings.widthMode === 'Wide') mw = '900px';
+                if (qsSettings.widthMode === 'Full') mw = '100%';
+                if (qsSettings.widthMode === 'Fixed') mw = qsSettings.fixedWidth + 'px';
+                
+                modal.style.maxWidth = mw;
+            }
+
+            let styleEl = document.getElementById('qsLiveStyle');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'qsLiveStyle';
+                document.head.appendChild(styleEl);
+            }
+            
+            styleEl.innerHTML = `
+                :root {
+                    --qs-lbl-col: ${qsSettings.lblColW}px;
+                    --qs-row-gap: ${qsSettings.rowGap}px;
+                    --qs-row-rad: ${qsSettings.rowRad}px;
+                    --qs-row-min-ht: ${qsSettings.rowMinHeight}px;
+                    --qs-row-pad: ${qsSettings.rowPadV}px ${qsSettings.rowPadH}px;
+                    --qs-cb-size: ${qsSettings.cbSize};
+                    --qs-lbl-fs: ${qsSettings.lblFs}px;
+                    --qs-dat-fs: ${qsSettings.datFs}px;
+                    --qs-dat-align: ${qsSettings.datAlign};
+                    --qs-hdr-fs: ${qsSettings.hdrFs}px;
+                    --qs-hdr-pad: ${qsSettings.hdrPadV}px ${qsSettings.hdrPadH}px;
+                    --qs-hdr-rad: ${qsSettings.hdrRad}px;
+                    --qs-outer-padding: ${qsSettings.outerPadding}px;
+                    --qs-section-gap: ${qsSettings.sectionGap}px;
+                    --qs-hdr-active-fs: ${qsSettings.hdrActiveFs || 20}px;
+                    --qs-hdr-active-wd: ${qsSettings.hdrActiveWd ? qsSettings.hdrActiveWd + 'px' : 'auto'};
+                    --qs-hdr-close-wd: ${qsSettings.hdrCloseWd || 30}px;
+                    --qs-hdr-close-fs: ${qsSettings.hdrCloseFs || 20}px;
+                    --qs-hdr-ver-fs: ${qsSettings.hdrVerFs || 10}px;
+                    --qs-hdr-storage-fs: ${qsSettings.hdrStorageFs || 10}px;
+                    --qs-hdr-workspace-fs: ${qsSettings.hdrWorkspaceFs || 10}px;
+                }
+                #quickStashContent {
+                    padding: var(--qs-outer-padding) !important;
+                    gap: var(--qs-section-gap) !important;
+                }
+                .qs-field-row {
+                    display: grid !important;
+                    grid-template-columns: ${qsSettings.rowMode === 'Weight' ? `24px ${qsSettings.lblWeight}fr ${qsSettings.datWeight}fr` : `24px var(--qs-lbl-col) 1fr`} !important;
+                    gap: var(--qs-row-gap) !important;
+                    padding: var(--qs-row-pad) !important;
+                    border-radius: var(--qs-row-rad) !important;
+                    min-height: var(--qs-row-min-ht) !important;
+                    align-items: start;
+                    background: rgba(255,255,255,0.03);
+                    margin-bottom: 4px;
+                }
+                .qs-field-select {
+                    transform: scale(var(--qs-cb-size)) !important;
+                    accent-color: var(--electric-blue);
+                }
+                .qs-field-label {
+                    font-size: var(--qs-lbl-fs) !important;
+                    color: #aaa;
+                    font-weight: 900;
+                    line-height: 1.2;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    padding-top: 2px;
+                }
+                .qs-textarea {
+                    width: 100%;
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    font-weight: 900;
+                    font-size: var(--qs-dat-fs) !important;
+                    text-align: var(--qs-dat-align) !important;
+                    outline: none;
+                    resize: none;
+                    overflow: hidden;
+                    font-family: inherit;
+                    line-height: 1.4;
+                    padding: 0;
+                    margin: 0;
+                }
+                .qs-section-header {
+                    font-size: var(--qs-hdr-fs) !important;
+                    padding: var(--qs-hdr-pad) !important;
+                    border-radius: var(--qs-hdr-rad) !important;
+                    font-weight: 900;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    cursor: pointer;
+                    margin: 15px 0 5px 0;
+                }
+            `;
+            
+            setTimeout(() => {
+                document.querySelectorAll('.qs-textarea').forEach(ta => {
+                    ta.style.height = '';
+                    ta.style.height = ta.scrollHeight + 'px';
+                });
+            }, 10);
+        }
+
+        function toggleQsSection(key) {
+            qsSettings['collapse' + key] = !qsSettings['collapse' + key];
+            localStorage.setItem('qsSettingsV1_20', JSON.stringify(qsSettings));
+            let el = document.getElementById('qsSec_' + key);
+            let arrow = document.getElementById('qsSecArr_' + key);
+            if (el) el.style.display = qsSettings['collapse' + key] ? 'none' : 'block';
+            if (arrow) arrow.innerText = qsSettings['collapse' + key] ? '▶' : '▼';
+        }
+
+        function updateHopperVisibility() {
+            let hopperEl = document.getElementById('qsHopperSection');
+            if (hopperEl) hopperEl.style.display = qsSettings.showHopper ? 'block' : 'none';
+        }
+
+        let quickStashQueue = [];
+        let quickStashQueueRunning = false;
+
+        let qsReviewResults = localStorage.getItem('qsReviewResults') !== 'false';
+        let qsPhotoDetail = localStorage.getItem('qsPhotoDetail') || 'MINIMAL';
+        let qsActiveDest = localStorage.getItem('qsActiveDest') || 'CURRENT';
+
+        function initQsUI() {
+            let btn = document.getElementById('qsToggleReviewBtn');
+            if (btn) btn.innerText = qsReviewResults ? 'ON' : 'OFF';
+            let detailBtn = document.getElementById('qsToggleDetailBtn');
+            if (detailBtn) detailBtn.innerText = qsPhotoDetail;
+            
+            let typeSel = document.getElementById('qsScanType');
+            if (typeSel) typeSel.value = localStorage.getItem('qsScanProfile') || 'AUTO';
+            let depthSel = document.getElementById('qsScanDepth');
+            if (depthSel) depthSel.value = localStorage.getItem('qsScanDepthProfile') || 'NORMAL';
+            let focusSel = document.getElementById('qsScanFocus');
+            if (focusSel) focusSel.value = localStorage.getItem('qsScanFocusProfile') || 'BOTH';
+
+            updateDestDropdown();
+            renderHopper();
+            updateHopperVisibility();
+            applyQsLiveSettings();
+            updateQsTunerDisplays();
+        }
+
+        function toggleQsReview() {
+            qsReviewResults = !qsReviewResults;
+            localStorage.setItem('qsReviewResults', qsReviewResults);
+            let btn = document.getElementById('qsToggleReviewBtn');
+            if (btn) btn.innerText = qsReviewResults ? 'ON' : 'OFF';
+        }
+
+        function toggleQsDetail() {
+            qsPhotoDetail = (qsPhotoDetail === 'MINIMAL') ? 'DETAIL' : 'MINIMAL';
+            localStorage.setItem('qsPhotoDetail', qsPhotoDetail);
+            let detailBtn = document.getElementById('qsToggleDetailBtn');
+            if (detailBtn) detailBtn.innerText = qsPhotoDetail;
+            renderHopper();
+        }
+
+        function updateQsDest() {
+            let sel = document.getElementById('qsDestSelect');
+            if (sel) {
+                qsActiveDest = sel.value;
+                localStorage.setItem('qsActiveDest', qsActiveDest);
+                renderHopper();
+            }
+        }
+
+        function updateActiveStashLabel() {
+            let lbl = document.getElementById('qsActiveStashLabel');
+            if (lbl) {
+                if (activeQuickStashId && quickStashes[activeQuickStashId]) {
+                    lbl.innerText = quickStashes[activeQuickStashId].name.toUpperCase();
+                    lbl.style.color = 'var(--emerald-green)';
+                } else {
+                    lbl.innerText = 'NONE';
+                    lbl.style.color = '#888';
+                }
+            }
+        }
+
+        function updateQsScanType() {
+            let sel = document.getElementById('qsScanType');
+            if (sel) localStorage.setItem('qsScanProfile', sel.value);
+        }
+
+        function updateQsScanDepth() {
+            let sel = document.getElementById('qsScanDepth');
+            if (sel) localStorage.setItem('qsScanDepthProfile', sel.value);
+        }
+
+        function updateQsScanFocus() {
+            let sel = document.getElementById('qsScanFocus');
+            if (sel) localStorage.setItem('qsScanFocusProfile', sel.value);
+        }
+
+        function updateDestDropdown() {
+            let sel = document.getElementById('qsDestSelect');
+            if (!sel) return;
+            
+            // Auto-sync active stash to active dest if opening a stash or defaulting
+            if (activeQuickStashId && (!qsActiveDest || qsActiveDest === 'CURRENT' || qsActiveDest === 'NEW')) {
+                qsActiveDest = activeQuickStashId;
+                localStorage.setItem('qsActiveDest', qsActiveDest);
+            } else if (!activeQuickStashId && qsActiveDest === 'CURRENT') {
+                qsActiveDest = 'NEW';
+                localStorage.setItem('qsActiveDest', qsActiveDest);
+            }
+            
+            let options = '';
+            
+            if (qsActiveDest !== 'NEW' && quickStashes[qsActiveDest]) {
+                options += `<option value="${qsActiveDest}" selected>MERGE INTO: ${quickStashes[qsActiveDest].name}</option>`;
+            }
+            
+            options += `<option value="NEW" ${qsActiveDest==='NEW'?'selected':''}>CREATE NEW STASH</option>`;
+            
+            let stashes = Object.values(quickStashes).sort((a,b) => b.updatedAt - a.updatedAt);
+            let pinned = stashes.filter(s => s.pinned && s.id !== qsActiveDest);
+            let unpinned = stashes.filter(s => !s.pinned && s.id !== qsActiveDest).slice(0, 5);
+            
+            if (pinned.length > 0) {
+                options += `<optgroup label="PINNED">`;
+                pinned.forEach(s => options += `<option value="${s.id}">📌 ${s.name}</option>`);
+                options += `</optgroup>`;
+            }
+            if (unpinned.length > 0) {
+                options += `<optgroup label="RECENT">`;
+                unpinned.forEach(s => options += `<option value="${s.id}">${s.name}</option>`);
+                options += `</optgroup>`;
+            }
+            sel.innerHTML = options;
+        }
+
+        function updateQsStorageUsage() {
+            const el = document.getElementById('qsStorageUsage');
+            if (el) {
+                const str = localStorage.getItem('hvacQuickStashesV1') || "{}";
+                const kb = (str.length / 1024).toFixed(1);
+                el.innerText = kb + " KB";
+            }
+        }
+
+        function openQuickStash() {
+            closeAllModals();
+            document.getElementById('quickStashModal').style.display = 'flex';
+            initQsUI();
+            renderQuickStashHome();
+        }
+
+        function closeQuickStash() {
+            document.getElementById('quickStashModal').style.display = 'none';
+            showSection(previousSection);
+        }
+
+        function renderQuickStashHome() {
+            updateQsStorageUsage();
+            const view = document.getElementById('quickStashViewArea');
+            if (activeQuickStashId && quickStashes[activeQuickStashId]) {
+                renderActiveQuickStash();
+                return;
+            }
+            
+            const stashes = Object.values(quickStashes).sort((a,b) => {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+                return b.updatedAt - a.updatedAt;
+            });
+            
+            if (stashes.length === 0) {
+                view.innerHTML = `
+                    <div style="text-align:center; padding:40px; color:#888;">
+                        <div style="font-size:40px; margin-bottom:15px;">📦</div>
+                        <div style="font-weight:900; margin-bottom:10px;">NO STASHES YET</div>
+                        <button onclick="createNewQuickStash()" class="btn btn-outline" style="border-color:var(--emerald-green); color:var(--emerald-green); font-weight:900; padding:12px 24px;">+ CREATE NEW STASH</button>
+                    </div>
+                `;
+            } else {
+                let html = `<div style="font-size:12px; color:var(--electric-blue); font-weight:900; margin-bottom:10px;">RECENT STASHES</div>`;
+                stashes.slice(0, 10).forEach(s => {
+                    html += `
+                        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                            <div onclick="switchQuickStash('${s.id}')" style="cursor:pointer; flex:1;">
+                                <div style="color:var(--text-primary); font-weight:900;">${s.pinned?'📌 ':''}${s.name}</div>
+                                <div style="color:#666; font-size:10px;">Updated: ${new Date(s.updatedAt).toLocaleTimeString()}</div>
+                            </div>
+                            <button onclick="toggleQsPin('${s.id}')" style="background:none; border:none; color:${s.pinned?'var(--amber-orange)':'#444'}; font-size:16px;">📌</button>
+                            <span onclick="switchQuickStash('${s.id}')" style="color:var(--electric-blue); cursor:pointer; margin-left:10px;">→</span>
+                        </div>
+                    `;
+                });
+                view.innerHTML = html;
+            }
+        }
+
+        function toggleQsPin(id) {
+            if (quickStashes[id]) {
+                quickStashes[id].pinned = !quickStashes[id].pinned;
+                localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+                renderQuickStashHome();
+                updateDestDropdown();
+            }
+        }
+
+        function switchQuickStash(id) {
+            activeQuickStashId = id;
+            localStorage.setItem('hvacActiveQuickStashId', id);
+            qsActiveDest = id;
+            localStorage.setItem('qsActiveDest', qsActiveDest);
+            updateActiveStashLabel();
+            renderActiveQuickStash();
+        }
+
+        function createNewQuickStash(initialName = null) {
+            let today = new Date();
+            let yyyy = today.getFullYear();
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let dd = String(today.getDate()).padStart(2, '0');
+            let dateStr = `${yyyy}-${mm}-${dd}`;
+            
+            const id = 'stash_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+            quickStashes[id] = {
+                id: id,
+                name: "",
+                pinned: false,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+                customer: { date: dateStr, invoiceDate: "", name: initialName || "", address: "", phone: "", email: "" , latitude: null, longitude: null, locationSource: null, locationConfirmed: false, locationTimestamp: null },
+                equipment: { outdoorModel: "", outdoorSerial: "", indoorModel: "", indoorSerial: "", thermostatModel: "" },
+                readings: { odat: "", suctionPressure: "", liquidPressure: "", vaporSaturation: "", liquidSaturation: "", suctionLineTemp: "", liquidLineTemp: "", superheat: "", subcool: "", returnTemp: "", returnHumidity: "", supplyTemp: "", deltaT: "" },
+                diagnostics: { hermVolts: "", hermAmps: "", hermCalculatedUf: "", hermBenchUf: "", fanVolts: "", fanAmps: "", fanCalculatedUf: "", fanBenchUf: "", capacitorResult: "", capacitorDeviationPercent: "", compressorRlaRating: "", compressorLraRating: "", fanFlaRating: "", targetSubcool: "", rlaMeasured: "", rla2Measured: "", flaOdfMeasured: "", compressorLoadPercent: "", fanLoadPercent: "", motorLoadResult: "" },
+                extra: {},
+                rawScans: [],
+                fieldMeta: {}
+            };
+            updateStashIdentity(quickStashes[id]);
+            localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+            activeQuickStashId = id;
+            localStorage.setItem('hvacActiveQuickStashId', id);
+            qsActiveDest = id;
+            localStorage.setItem('qsActiveDest', qsActiveDest);
+            updateActiveStashLabel();
+            updateDestDropdown();
+            renderActiveQuickStash();
+            return id;
+        }
+
+        function getQuickStashValue(fieldName) {
+            if (!activeQuickStashId || !quickStashes[activeQuickStashId]) return "";
+            let stash = quickStashes[activeQuickStashId];
+            
+            let target = fieldName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            for (let cat of ['customer', 'equipment', 'readings', 'extra']) {
+                if (stash[cat] && stash[cat][fieldName] !== undefined && stash[cat][fieldName] !== "") {
+                    return stash[cat][fieldName];
+                }
+            }
+            for (let cat of ['customer', 'equipment', 'readings', 'extra']) {
+                if (!stash[cat]) continue;
+                for (let key in stash[cat]) {
+                    if (key.toLowerCase().replace(/[^a-z0-9]/g, '') === target && stash[cat][key] !== "") return stash[cat][key];
+                    let meta = stash.fieldMeta && stash.fieldMeta[`${cat}.${key}`];
+                    if (meta && meta.rawLabel && meta.rawLabel.toLowerCase().replace(/[^a-z0-9]/g, '') === target && stash[cat][key] !== "") return stash[cat][key];
+                }
+            }
+            return "";
+        }
+
+        function renderActiveQuickStash() {
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) { activeQuickStashId = null; localStorage.removeItem('hvacActiveQuickStashId'); renderQuickStashHome(); return; }
+            
+            updateActiveStashLabel();
+
+            // backward compatibility
+            if (!stash.rawScans) stash.rawScans = [];
+            if (!stash.fieldMeta) stash.fieldMeta = {};
+            if (stash.pinned === undefined) stash.pinned = false;
+
+            let html = `
+                <div style="background:rgba(0,0,0,0.4); border:1px solid #444; border-radius:12px; padding:15px; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">
+                        <div style="flex:1; min-width:0; padding-right:10px;">
+                            <div style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden;">
+                                <button onclick="toggleQsPin('${stash.id}')" style="background:none; border:none; padding:0; color:${stash.pinned?'var(--amber-orange)':'#444'}; font-size:18px; flex-shrink:0;">📌</button>
+                                <div style="font-size:18px; font-weight:900; color:var(--text-primary); cursor:pointer; overflow:hidden; text-overflow:ellipsis;" onclick="renameQuickStash('${stash.id}')">${stash.name}</div>
+                            </div>
+                            <div style="font-size:10px; color:#888; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Updated: ${new Date(stash.updatedAt).toLocaleString()}</div>
+                        </div>
+                        <button onclick="activeQuickStashId=null; localStorage.removeItem('hvacActiveQuickStashId'); renderQuickStashHome();" class="btn btn-outline" style="width:auto; white-space:nowrap; flex-shrink:0; padding:6px 12px; font-size:10px; border-color:#888; color:#888;">⬅ BACK</button>
+                    </div>
+            `;
+
+            updateQsStorageUsage();
+            
+            function buildHeader(title, color, key, customHtml = null) {
+                let isCol = qsSettings['collapse' + key];
+                let disp = isCol ? 'none' : 'block';
+                let arr = isCol ? '▼' : '▲';
+                let content = customHtml ? customHtml : `<span>${title}</span>`;
+                return `
+                    <div class="qs-section-header" style="color:${color}; display:flex; justify-content:space-between; align-items:center;" onclick="toggleQsSection('${key}')">
+                        <div style="flex:1; display:flex;">${content}</div>
+                        <span id="qsSecArr_${key}" style="color:#666; margin-left:10px;">${arr}</span>
+                    </div>
+                    <div id="qsSec_${key}" style="display:${disp};">
+                `;
+            }
+            
+            function buildField(cat, key, label) {
+                let rawVal = stash[cat] && stash[cat][key] !== undefined ? stash[cat][key] : "";
+                if (!rawVal || String(rawVal).trim() === "") {
+                    rawVal = getQuickStashValue(label) || "";
+                }
+                const val = (rawVal || "").toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                
+                let safeLabelStr = label.replace(/'/g, "\\'");
+                let mapBtn = `<button onclick="openQsFieldMapper('${cat}', '${key}', '${safeLabelStr}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:9px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; margin-left:5px; margin-top:1px; flex-shrink:0;">MAP</button>`;
+                let clearBtn = `<button onclick="clearQsField('${cat}', '${key}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:9px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; margin-left:5px; margin-top:1px; flex-shrink:0;">CLR</button>`;
+
+                let inputHtml = `
+                    <div style="display:flex; align-items:flex-start; width:100%;">
+                        <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1">${val}</textarea>
+                        ${mapBtn}
+                        ${clearBtn}
+                    </div>
+                `;
+                
+                if (cat === 'customer' && (key === 'date' || key === 'invoiceDate')) {
+                    inputHtml = `
+                    <div style="display:flex; align-items:flex-start; width:100%;">
+                        <input type="date" class="qs-textarea" style="flex:1; cursor:pointer; color-scheme:dark;" value="${val}" onclick="if(this.showPicker) this.showPicker();" onchange="updateStashField('${cat}', '${key}', this.value); renderActiveQuickStash();">
+                        ${mapBtn}
+                        ${clearBtn}
+                    </div>`;
+                }
+                if (cat === 'customer' && key === 'address') {
+                    let pinBtn = '';
+                    let confirmedBadge = '';
+                    if (val && val.trim() !== '') {
+                        pinBtn = `<button onclick="openQsMap()" style="background:#333; color:var(--electric-blue); font-size:10px; padding:4px 8px; border-radius:4px; margin-left:8px; border:1px solid #555; cursor:pointer; font-weight:bold; flex-shrink:0;">📍 DROP PIN</button>`;
+                    }
+                    if (stash.customer && stash.customer.locationConfirmed) {
+                        confirmedBadge = `<div style="color:var(--emerald-green); font-size:9px; font-weight:bold; margin-top:4px;">📍 LOCATION CONFIRMED</div>`;
+                    }
+                    inputHtml = `
+                        <div style="display:flex; flex-direction:column; width:100%;">
+                            <div style="display:flex; align-items:flex-start; width:100%;">
+                                <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1">${val}</textarea>
+                                ${pinBtn}
+                                ${mapBtn}
+                                ${clearBtn}
+                            </div>
+                            ${confirmedBadge}
+                        </div>
+                    `;
+                }
+                
+                if (cat === 'extra') {
+                    inputHtml = `
+                        <div style="display:flex; align-items:flex-start; width:100%;">
+                            <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1">${val}</textarea>
+                            ${clearBtn}
+                        </div>
+                    `;
+                }
+
+                let isChecked = true;
+                if (stash.fieldSelection && typeof stash.fieldSelection[`${cat}.${key}`] !== 'undefined') {
+                    isChecked = stash.fieldSelection[`${cat}.${key}`];
+                }
+
+                return `
+                    <div class="qs-field-row">
+                        <div style="padding-top:2px;"><input type="checkbox" class="qs-field-select" data-cat="${cat}" data-key="${key}" data-label="${label}" ${isChecked ? 'checked' : ''} onchange="updateQsCheckbox('${cat}', '${key}', this.checked); updateQsPreview()"></div>
+                        <div class="qs-field-label">${label}</div>
+                        ${inputHtml}
+                    </div>
+                `;
+            }
+
+            window.clearQsField = function(cat, key) {
+                updateStashField(cat, key, "");
+                renderActiveQuickStash();
+            };
+
+            html += buildHeader('CUSTOMER', 'var(--electric-blue)', 'Customer');
+            html += buildField('customer', 'date', 'Date');
+            html += buildField('customer', 'invoiceDate', 'Invoice Date');
+            html += buildField('customer', 'name', 'Customer Name');
+            html += buildField('customer', 'address', 'Address');
+            html += buildField('customer', 'phone', 'Phone');
+            html += buildField('customer', 'email', 'Email');
+            html += `</div>`;
+
+            html += buildHeader('EQUIPMENT', 'var(--emerald-green)', 'Equipment');
+            html += buildField('equipment', 'outdoorModel', 'Outdoor Model');
+            html += buildField('equipment', 'outdoorSerial', 'Outdoor Serial');
+            html += buildField('equipment', 'indoorModel', 'Indoor Model');
+            html += buildField('equipment', 'indoorSerial', 'Indoor Serial');
+            html += buildField('equipment', 'thermostatModel', 'Thermostat Model');
+            html += `</div>`;
+
+            html += buildHeader('READINGS', 'var(--amber-orange)', 'Readings');
+            html += buildField('readings', 'odat', 'ODAT');
+            html += buildField('readings', 'suctionPressure', 'Suction Pressure');
+            html += buildField('readings', 'liquidPressure', 'Liquid Pressure');
+            html += buildField('readings', 'vaporSaturation', 'Vapor Saturation');
+            html += buildField('readings', 'liquidSaturation', 'Liquid Saturation');
+            html += buildField('readings', 'suctionLineTemp', 'Suction Line Temp');
+            html += buildField('readings', 'liquidLineTemp', 'Liquid Line Temp');
+            html += buildField('readings', 'superheat', 'Superheat');
+            html += buildField('readings', 'subcool', 'Subcool');
+            html += buildField('readings', 'returnTemp', 'Return Temp');
+            html += buildField('readings', 'returnHumidity', 'Return Humidity');
+            html += buildField('readings', 'supplyTemp', 'Supply Temp');
+            html += buildField('readings', 'deltaT', 'ΔT');
+            html += `</div>`;
+
+              html += buildHeader('DIAGNOSTICS', 'var(--crimson-red)', 'Diagnostics');
+              html += buildField('diagnostics', 'hermVolts', 'Herm Volts');
+              html += buildField('diagnostics', 'hermAmps', 'Herm Amps');
+              html += buildField('diagnostics', 'hermCalculatedUf', 'Herm Calculated \u00B5F');
+              html += buildField('diagnostics', 'hermBenchUf', 'Herm Bench \u00B5F');
+              html += buildField('diagnostics', 'fanVolts', 'Fan Volts');
+              html += buildField('diagnostics', 'fanAmps', 'Fan Amps');
+              html += buildField('diagnostics', 'fanCalculatedUf', 'Fan Calculated \u00B5F');
+              html += buildField('diagnostics', 'fanBenchUf', 'Fan Bench \u00B5F');
+              html += buildField('diagnostics', 'capacitorResult', 'Capacitor Result');
+              html += buildField('diagnostics', 'capacitorDeviationPercent', 'Capacitor Deviation %');
+              html += buildField('diagnostics', 'compressorRlaRating', 'Compressor RLA Rating');
+              html += buildField('diagnostics', 'compressorLraRating', 'Compressor LRA Rating');
+              html += buildField('diagnostics', 'fanFlaRating', 'Fan FLA Rating');
+              html += buildField('diagnostics', 'targetSubcool', 'Target Subcool');
+              html += buildField('diagnostics', 'rlaMeasured', 'RLA Measured');
+              html += buildField('diagnostics', 'rla2Measured', 'RLA 2 Measured');
+              html += buildField('diagnostics', 'flaOdfMeasured', 'FLA ODF Measured');
+              html += buildField('diagnostics', 'compressorLoadPercent', 'Compressor Load %');
+              html += buildField('diagnostics', 'fanLoadPercent', 'Fan Load %');
+              html += buildField('diagnostics', 'motorLoadResult', 'Motor Load Result');
+              html += `</div>`;
+
+            if (qsSettings.showExtra && Object.keys(stash.extra).length > 0) {
+                html += buildHeader('EXTRA / OTHER', '#aaa', 'Extra');
+                for (let k in stash.extra) {
+                    html += buildField('extra', k, k);
+                }
+                html += `</div>`;
+            }
+
+            html += `
+                <div style="margin-top:20px; background:rgba(0,0,0,0.4); border:1px solid #444; border-radius:12px; padding:15px;">
+                    ${buildHeader('COPY OPTIONS', 'var(--electric-blue)', 'CopyOptions')}
+                        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+                            <label style="font-size:10px; color:#aaa; display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="checkbox" id="qsCopyLabels" checked onchange="updateQsPreview()" style="accent-color:var(--electric-blue); transform:scale(1.2);"> LABELS ON</label>
+                            <select id="qsCopyFormat" onchange="updateQsPreview()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; font-size:10px; padding:2px 5px;">
+                                <option value="BLOCK">BLOCK</option>
+                                <option value="TABLE">TABLE/TSV</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <button onclick="copyStashSelected()" class="btn btn-outline" style="flex:1; min-width:100px; border-color:var(--electric-blue); color:var(--electric-blue); font-weight:900; font-size:10px;">📋 COPY SELECTED</button>
+                            <button onclick="copyStashAll()" class="btn btn-outline" style="flex:1; min-width:100px; border-color:var(--electric-blue); color:var(--electric-blue); font-weight:900; font-size:10px;">📋 COPY ALL</button>
+                            <button onclick="copyStashProposal()" class="btn btn-outline" style="flex:1; min-width:100px; border-color:var(--emerald-green); color:var(--emerald-green); font-weight:900; font-size:10px;">📄 PROPOSAL</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            html += `</div>`;
+
+            if (qsSettings.showRawScans && stash.rawScans && stash.rawScans.length > 0) {
+                html += `
+                    <div style="margin-bottom:15px; background:rgba(0,0,0,0.4); border:1px solid #444; border-radius:12px; padding:15px;">
+                        ${buildHeader('RAW SCANS (' + stash.rawScans.length + ')', '#aaa', 'RawScans')}
+                `;
+                stash.rawScans.forEach(scan => {
+                    html += `<div style="font-size:11px; color:#888; font-weight:900; margin-bottom:5px;">${scan.filename} <span style="color:#555;">(${new Date(scan.timestamp).toLocaleString()})</span></div>`;
+                    html += `<div style="font-family:monospace; font-size:10px; color:#bbb; background:rgba(0,0,0,0.5); padding:8px; border-radius:4px; margin-bottom:10px; white-space:pre-wrap; word-break:break-word;">${JSON.stringify(scan.data, null, 2)}</div>`;
+                });
+                html += `</div></div>`;
+            }
+
+            html += buildHeader('COMBINED STASH BLOCK (SELECTABLE)', '#888', 'Combined');
+            html += `
+                <div style="padding:15px; border:1px dashed #444; border-top:none; border-radius:0 0 12px 12px; background:rgba(0,0,0,0.2); margin-top:-10px;">
+                    <div id="quickStashCombinedText" style="user-select:all; -webkit-user-select:all; font-family:monospace; font-size:12px; color:#ddd; white-space:pre-wrap; word-break:break-word;"></div>
+                </div>
+            </div>`;
+
+            const canCreateJob = stash.customer && stash.customer.name && stash.customer.name.trim() !== '' && stash.customer.date && stash.customer.date.trim() !== '';
+            
+            html += `
+                <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+                    <button id="qsBtnCreateJob" ${canCreateJob ? '' : 'disabled'} onclick="createJobFromActiveStash()" class="btn btn-primary" style="width:100%; font-size:14px; font-weight:900; background:${canCreateJob ? 'var(--emerald-green)' : '#444'}; color:${canCreateJob ? 'black' : '#888'}; border:none; padding:12px;">🛠 CREATE JOB FROM STASH</button>
+                    <button id="qsBtnSendJob" onclick="sendSelectedToActiveJob()" class="btn btn-primary" style="width:100%; font-size:14px; font-weight:900; background:var(--electric-blue); color:black; border:none; padding:12px;">📤 SEND SELECTED TO ACTIVE JOB</button>
+                </div>
+            `;
+
+            document.getElementById('quickStashViewArea').innerHTML = html;
+            
+            document.querySelectorAll('.qs-textarea').forEach(ta => {
+                ta.style.height = '';
+                ta.style.height = ta.scrollHeight + 'px';
+            });
+            
+            updateQsPreview();
+        }
+
+        function renameQuickStash(id) {
+            if(!quickStashes[id]) return;
+            let newName = prompt("Rename Stash Customer Name:", quickStashes[id].customer.name);
+            if(newName !== null) {
+                quickStashes[id].customer.name = newName.trim();
+                quickStashes[id]._nameManuallyEdited = true;
+                updateStashIdentity(quickStashes[id]);
+                localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+                renderActiveQuickStash();
+                updateDestDropdown();
+            }
+        }
+
+        async function createJobFromActiveStash() {
+            if (!activeQuickStashId) return;
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash || !stash.customer || !stash.customer.name || !stash.customer.date) {
+                alert("Cannot create job: Customer Name and Date are required.");
+                return;
+            }
+            
+            const btn = document.getElementById('qsBtnCreateJob');
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = "⏳ CREATING JOB...";
+            btn.style.background = "#f39c12"; 
+            btn.disabled = true;
+
+            try {
+                const reqDate = stash.customer.date; 
+                const reqName = stash.customer.name.trim();
+                
+                const shellRes = await callAppsScript({
+                    action: "createJob",
+                    name: reqName,
+                    date: reqDate
+                });
+
+                if (!shellRes || shellRes.status !== "success" || !shellRes.data || shellRes.data.status !== "success") {
+                    throw new Error("Failed to create job shell.");
+                }
+
+                const newSheetName = shellRes.data.newSheetName;
+                const folderId = shellRes.data.folderId;
+                
+                currentJob = newSheetName;
+                currentJobTab = newSheetName;
+                localStorage.setItem('hvacCurrentJobTabV20', currentJobTab);
+                localStorage.setItem('hvacActiveJob', currentJobTab); 
+                localStorage.setItem('hvacActiveFolderId', folderId);
+                if (typeof saveRecentFolder === 'function') {
+                    saveRecentFolder(currentJobTab, folderId);
+                }
+
+                let payloadArr = [
+                    `Date\u25D8${reqDate}`,
+                    `Customer Name\u25D8${reqName}`
+                ];
+                if (stash.customer.address) payloadArr.push(`Address\u25D8${stash.customer.address}`);
+                if (stash.customer.phone) payloadArr.push(`Phone\u25D8${stash.customer.phone}`);
+                if (stash.customer.email) payloadArr.push(`Email\u25D8${stash.customer.email}`);
+                if (stash.customer.invoiceDate) payloadArr.push(`Invoice Date\u25D8${stash.customer.invoiceDate}`);
+                if (stash.customer.latitude) payloadArr.push(`Latitude\u25D8${stash.customer.latitude}`);
+                if (stash.customer.longitude) payloadArr.push(`Longitude\u25D8${stash.customer.longitude}`);
+
+                const payloadStr = payloadArr.join('|');
+
+                btn.innerHTML = "⏳ WRITING METADATA...";
+                const syncRes = await callAppsScript({
+                    action: "syncVoice",
+                    payload: payloadStr,
+                    sheetName: newSheetName
+                });
+
+                if (syncRes.status !== "success") {
+                    console.warn("syncVoice identity override failed", syncRes);
+                }
+
+                btn.innerHTML = "⏳ RUNNING PIPELINE...";
+                
+                const pipelinePromise = callAppsScript({ 
+                    action: "runPipeline", 
+                    sheetName: newSheetName 
+                });
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Pipeline request timed out.")), 30000)
+                );
+                
+                const pipeRes = await Promise.race([pipelinePromise, timeoutPromise]);
+
+                if (pipeRes && pipeRes.status === "success" && pipeRes.data && pipeRes.data.newName) {
+                    currentJob = pipeRes.data.newName;
+                    currentJobTab = pipeRes.data.newName;
+                    localStorage.setItem('hvacActiveJob', currentJob);
+                    localStorage.setItem('hvacCurrentJobTabV20', currentJobTab);
+                }
+
+                updateUniversalJobHeaders();
+                if (typeof updateJobBadge === 'function') updateJobBadge();
+                if (typeof pullMirror === 'function') pullMirror(); 
+                if (typeof showToast === 'function') showToast("Job Created: " + currentJobTab);
+                
+                if (typeof toggleQuickStash === 'function') toggleQuickStash();
+
+            } catch (e) {
+                alert("Create Job Failed: " + e.message);
+                btn.innerHTML = origHtml;
+                btn.style.background = "var(--emerald-green)";
+                btn.disabled = false;
+            }
+        }
+
+
+
+        async function sendSelectedToActiveJob() {
+    if (!activeQuickStashId) return;
+
+    const stash = quickStashes[activeQuickStashId];
+    if (!stash) return;
+
+    if (!currentJobTab || currentJobTab.trim() === "") {
+        alert("Cannot send: No active job selected. Please create or open a job first.");
+        return;
+    }
+
+    const confirmMsg =
+        "Send selected Quick Stash data to active job:\n\n" +
+        currentJobTab +
+        "\n\nThis will not create a new job or run the pipeline.";
+
+    if (!confirm(confirmMsg)) return;
+
+    const btn = document.getElementById("qsBtnSendJob");
+    const origHtml = btn ? btn.innerHTML : "";
+
+    if (btn) {
+        btn.innerHTML = "FETCHING SCHEMA...";
+        btn.style.background = "#f39c12";
+        btn.disabled = true;
+    }
+
+    try {
+        const schemaRes = await callAppsScript({
+            action: "getJobData"
+        });
+
+        if (
+            !schemaRes ||
+            schemaRes.status !== "success" ||
+            !schemaRes.data ||
+            !Array.isArray(schemaRes.data.schema) ||
+            schemaRes.data.schema.length === 0
+        ) {
+            throw new Error("Failed to retrieve schema from active job.");
+        }
+
+        const liveSchema = schemaRes.data.schema;
+
+        function resolveLabel(qsLabel) {
+            if (!qsLabel) return null;
+
+            const clean = String(qsLabel).trim().toLowerCase();
+
+            const exact = liveSchema.find(function (s) {
+                return String(s).trim().toLowerCase() === clean;
+            });
+
+            if (exact) return exact;
+
+            const mirrorMatch = findSheetLabelFor(qsLabel);
+
+            if (mirrorMatch) {
+                const mapped = liveSchema.find(function (s) {
+                    return String(s).trim().toLowerCase() ===
+                        String(mirrorMatch).trim().toLowerCase();
+                });
+
+                if (mapped) return mapped;
+            }
+
+            const fuzzy = liveSchema.find(function (s) {
+                const sheetLabel = String(s).trim().toLowerCase();
+
+                if (sheetLabel.length < 3 || clean.length < 3) return false;
+
+                return sheetLabel.includes(clean) ||
+                    clean.includes(sheetLabel);
+            });
+
+            return fuzzy || null;
+        }
+
+        const payloadArr = [];
+        const unresolvedFields = [];
+
+        const checkboxes =
+            document.querySelectorAll(".qs-field-select");
+
+        checkboxes.forEach(function (cb) {
+            const cat = cb.getAttribute("data-cat");
+            const key = cb.getAttribute("data-key");
+            const label = cb.getAttribute("data-label");
+
+            const selectionKey = cat + "." + key;
+
+            let isChecked = true;
+
+            if (
+                stash.fieldSelection &&
+                stash.fieldSelection[selectionKey] !== undefined
+            ) {
+                isChecked = stash.fieldSelection[selectionKey];
+            }
+
+            if (isChecked === false) return;
+            if (!stash[cat]) return;
+            if (stash[cat][key] === undefined) return;
+
+            const val = String(stash[cat][key]).trim();
+
+            if (val === "") return;
+
+            const resolvedLabel = resolveLabel(label);
+
+            if (resolvedLabel) {
+                payloadArr.push(
+                    resolvedLabel + "◘" + val
+                );
+            } else {
+                unresolvedFields.push(label);
+            }
+        });
+
+        if (
+            stash.customer &&
+            stash.customer.locationConfirmed
+        ) {
+            const lat =
+                String(stash.customer.latitude || "").trim();
+
+            const lng =
+                String(stash.customer.longitude || "").trim();
+
+            if (lat !== "") {
+                const latLabel = resolveLabel("Latitude");
+
+                if (latLabel) {
+                    payloadArr.push(
+                        latLabel + "◘" + lat
+                    );
+                } else {
+                    unresolvedFields.push("Latitude");
+                }
+            }
+
+            if (lng !== "") {
+                const lngLabel = resolveLabel("Longitude");
+
+                if (lngLabel) {
+                    payloadArr.push(
+                        lngLabel + "◘" + lng
+                    );
+                } else {
+                    unresolvedFields.push("Longitude");
+                }
+            }
+        }
+
+        if (unresolvedFields.length > 0) {
+            const msg =
+                "The following fields could not be matched to the live sheet schema:\n\n" +
+                unresolvedFields.map(function (f) {
+                    return "- " + f;
+                }).join("\n") +
+                "\n\nThey will NOT be sent. Send the remaining matched fields anyway?";
+
+            if (!confirm(msg)) {
+                if (btn) {
+                    btn.innerHTML = origHtml;
+                    btn.style.background = "";
+                    btn.disabled = false;
+                }
+                return;
+            }
+        }
+
+        if (payloadArr.length === 0) {
+            throw new Error("No matched fields contain data to send.");
+        }
+
+        if (btn) {
+            btn.innerHTML = "SENDING...";
+        }
+
+        const payloadStr = payloadArr.join("|");
+
+        const syncRes = await callAppsScript({
+            action: "syncVoice",
+            payload: payloadStr,
+            sheetName: currentJobTab
+        });
+
+        if (!syncRes || syncRes.status !== "success") {
+            throw new Error(
+                (syncRes && syncRes.message) ||
+                "Failed to sync to sheet."
+            );
+        }
+
+        if (btn) {
+            btn.innerHTML = "SENT TO " + currentJobTab;
+            btn.style.background = "var(--emerald-green)";
+            btn.style.color = "black";
+
+            setTimeout(function () {
+                btn.innerHTML = origHtml;
+                btn.style.background = "";
+                btn.style.color = "";
+                btn.disabled = false;
+            }, 4000);
+        }
+
+    } catch (e) {
+        console.error(e);
+        alert("Error sending to job: " + e.message);
+
+        if (btn) {
+            btn.innerHTML = origHtml;
+            btn.style.background = "";
+            btn.style.color = "";
+            btn.disabled = false;
+        }
+    }
+}
+
+        function updateStashIdentity(stash) {
+            let n = stash.customer.name ? stash.customer.name.trim() : "";
+            let d = stash.customer.date ? stash.customer.date.trim() : "";
+            
+            let displayName = n ? n : "PENDING JOB";
+            if (d) {
+                displayName += " | " + d;
+            }
+            stash.name = displayName;
+        }
+
+        
+        window.updateQsCheckbox = function(cat, key, isChecked) {
+            if (!activeQuickStashId) return;
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return;
+            if (!stash.fieldSelection) stash.fieldSelection = {};
+            stash.fieldSelection[`${cat}.${key}`] = isChecked;
+            stash.updatedAt = Date.now();
+            localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+        };
+
+        function updateStashField(cat, key, val) {
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return;
+            stash[cat][key] = val;
+            
+            if (cat === 'customer' && key === 'name') stash._nameManuallyEdited = true;
+            if (cat === 'customer' && key === 'date') stash._dateManuallyEdited = true;
+            
+            if (cat === 'customer' && (key === 'name' || key === 'date')) {
+                updateStashIdentity(stash);
+                updateActiveStashLabel();
+                updateDestDropdown();
+            }
+            
+            stash.updatedAt = Date.now();
+            localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+            updateQsPreview();
+        }
+
+        function getCopyOptions() {
+            const labelsEl = document.getElementById('qsCopyLabels');
+            const formatEl = document.getElementById('qsCopyFormat');
+            return {
+                labels: labelsEl ? labelsEl.checked : true,
+                format: formatEl ? formatEl.value : 'BLOCK'
+            };
+        }
+
+        function generateStashCustom(stash, selectedOnly = false) {
+            const opts = getCopyOptions();
+            let block = "";
+            let tsv = "";
+            
+            const add = (cat, key, label) => {
+                if (selectedOnly) {
+                    const cb = document.querySelector(`.qs-field-select[data-cat="${cat}"][data-key="${key}"]`);
+                    if (!cb || !cb.checked) return false;
+                }
+                const val = stash[cat][key] || "";
+                if (val.trim() === "") return false;
+                
+                if (opts.format === 'TABLE') {
+                    tsv += opts.labels ? `${label}\t${val}\n` : `${val}\n`;
+                } else {
+                    block += opts.labels ? `${label}: ${val}\n` : `${val}\n`;
+                }
+                return true;
+            };
+
+            const addSection = (fields) => {
+                let added = false;
+                fields.forEach(f => { if (add(f.c, f.k, f.l)) added = true; });
+                if (added && opts.format === 'BLOCK') block += "\n";
+            };
+
+            addSection([
+                {c:'customer', k:'date', l:'Date'},
+                {c:'customer', k:'name', l:'Customer Name'},
+                {c:'customer', k:'address', l:'Address'},
+                {c:'customer', k:'phone', l:'Phone'},
+                {c:'customer', k:'email', l:'Email'}
+            ]);
+            
+            addSection([
+                {c:'equipment', k:'outdoorModel', l:'Outdoor Model'},
+                {c:'equipment', k:'outdoorSerial', l:'Outdoor Serial'},
+                {c:'equipment', k:'indoorModel', l:'Indoor Model'},
+                {c:'equipment', k:'indoorSerial', l:'Indoor Serial'},
+                {c:'equipment', k:'thermostatModel', l:'Thermostat Model'}
+            ]);
+
+            addSection([
+                {c:'readings', k:'odat', l:'ODAT'},
+                {c:'readings', k:'suctionPressure', l:'Suction Pressure'},
+                {c:'readings', k:'liquidPressure', l:'Liquid Pressure'},
+                {c:'readings', k:'vaporSaturation', l:'Vapor Saturation'},
+                {c:'readings', k:'liquidSaturation', l:'Liquid Saturation'},
+                {c:'readings', k:'suctionLineTemp', l:'Suction Line Temp'},
+                {c:'readings', k:'liquidLineTemp', l:'Liquid Line Temp'},
+                {c:'readings', k:'superheat', l:'Superheat'},
+                {c:'readings', k:'subcool', l:'Subcool'},
+                {c:'readings', k:'returnTemp', l:'Return Temp'},
+                {c:'readings', k:'returnHumidity', l:'Return Humidity'},
+                {c:'readings', k:'supplyTemp', l:'Supply Temp'},
+                {c:'readings', k:'deltaT', l:'ΔT'}
+            ]);
+
+            let addedExtra = false;
+            for (let k in stash.extra) {
+                if (add('extra', k, k)) addedExtra = true;
+            }
+            if (addedExtra && opts.format === 'BLOCK') block += "\n";
+
+            let result = opts.format === 'TABLE' ? tsv : block;
+            return result.trim();
+        }
+
+        function updateQsPreview() {
+            if (!activeQuickStashId) return;
+            const stash = quickStashes[activeQuickStashId];
+            const tb = document.getElementById('quickStashCombinedText');
+            if (tb) tb.innerText = generateStashCustom(stash, true);
+        }
+
+        function copyToClipboard(text, btnMsg = 'COPIED!') {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => showQuickStashToast(btnMsg)).catch(err => copyFallback(text, btnMsg));
+            } else {
+                copyFallback(text, btnMsg);
+            }
+        }
+
+        function copyFallback(text, btnMsg) {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed"; ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            document.body.removeChild(ta);
+            showQuickStashToast(btnMsg);
+        }
+
+        function showQuickStashToast(msg) {
+            const st = document.getElementById('quickStashStatus');
+            st.innerText = msg;
+            st.style.display = 'block';
+            setTimeout(() => st.style.display = 'none', 3000);
+        }
+
+        function copyStashSelected() {
+            if (!activeQuickStashId) return;
+            const text = generateStashCustom(quickStashes[activeQuickStashId], true);
+            copyToClipboard(text, "COPIED SELECTED");
+        }
+
+        function copyStashAll() {
+            if (!activeQuickStashId) return;
+            const text = generateStashCustom(quickStashes[activeQuickStashId], false);
+            copyToClipboard(text, "COPIED ALL");
+        }
+
+        function copyStashProposal() {
+            if (!activeQuickStashId) return;
+            const stash = quickStashes[activeQuickStashId];
+            let text = "";
+            text += `Date: ${stash.customer.date || ""}\n`;
+            text += `Customer Name: ${stash.customer.name || ""}\n`;
+            text += `Address: ${stash.customer.address || ""}\n`;
+            text += `Phone: ${stash.customer.phone || ""}\n`;
+            text += `Email: ${stash.customer.email || ""}\n`;
+            copyToClipboard(text.trim(), "COPIED PROPOSAL BLOCK");
+        }
+
+        function showQuickStashBrowser() {
+            activeQuickStashId = null;
+            localStorage.removeItem('hvacActiveQuickStashId');
+            updateActiveStashLabel();
+            const view = document.getElementById('quickStashViewArea');
+            const stashes = Object.values(quickStashes).sort((a,b) => {
+                if(a.pinned && !b.pinned) return -1;
+                if(!a.pinned && b.pinned) return 1;
+                return b.updatedAt - a.updatedAt;
+            });
+            
+            let html = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <div style="font-size:16px; color:var(--text-primary); font-weight:900;">ALL STASHES</div>
+                    <button onclick="renderQuickStashHome()" class="btn-utility">BACK</button>
+                </div>
+            `;
+
+            if (stashes.length === 0) {
+                html += `<div style="text-align:center; padding:20px; color:#888;">No saved stashes.</div>`;
+            } else {
+                stashes.forEach(s => {
+                    html += `
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid #333; padding:15px; border-radius:10px; margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <div style="flex:1;">
+                                    <div style="display:flex; align-items:center; gap:5px;">
+                                        <button onclick="toggleQsPin('${s.id}')" style="background:none; border:none; padding:0; color:${s.pinned?'var(--amber-orange)':'#444'}; font-size:14px;">📌</button>
+                                        <div style="color:white; font-weight:900; font-size:16px;">${s.name}</div>
+                                    </div>
+                                    <div style="color:#666; font-size:10px; margin-left:22px;">Updated: ${new Date(s.updatedAt).toLocaleString()}</div>
+                                </div>
+                                <div style="display:flex; gap:5px;">
+                                    <button onclick="switchQuickStash('${s.id}')" class="btn btn-outline" style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:10px; padding:6px 12px;">OPEN</button>
+                                    <button onclick="deleteQuickStash('${s.id}')" class="btn btn-outline" style="border-color:var(--crimson-red); color:var(--crimson-red); font-size:10px; padding:6px 12px;">DEL</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            view.innerHTML = html;
+        }
+
+        function deleteQuickStash(id) {
+            if (!confirm("Delete this stash?")) return;
+            delete quickStashes[id];
+            localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+            showQuickStashBrowser();
+            updateDestDropdown();
+        }
+
+        async function handleQuickStashPhoto(input) {
+            const files = Array.from(input.files);
+            if (files.length === 0) return;
+            
+            let typeSel = document.getElementById('qsScanType');
+            let depthSel = document.getElementById('qsScanDepth');
+            let focusSel = document.getElementById('qsScanFocus');
+            let scanType = typeSel ? typeSel.value : 'AUTO';
+            let scanDepth = depthSel ? depthSel.value : 'NORMAL';
+            let scanFocus = focusSel ? focusSel.value : 'BOTH';
+
+            for (let i = 0; i < files.length; i++) {
+                let f = files[i];
+                let qId = 'qitem_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+                let qObj = {
+                    id: qId,
+                    file: f,
+                    filename: f.name,
+                    lastModified: f.lastModified,
+                    scanType: scanType,
+                    scanDepth: scanDepth,
+                    scanFocus: scanFocus,
+                    status: 'QUEUED',
+                    extractedData: null,
+                    errorMsg: null
+                };
+                quickStashQueue.push(qObj);
+            }
+            input.value = ""; 
+            renderHopper();
+            
+            if(!quickStashQueueRunning) {
+                processQuickStashQueue();
+            }
+        }
+
+        function renderHopper() {
+            let listEl = document.getElementById('quickStashHopperList');
+            let statsEl = document.getElementById('quickStashHopperStats');
+            if(!listEl || !statsEl) return;
+            
+            let pending = quickStashQueue.filter(q => q.status === 'QUEUED').length;
+            let analyzing = quickStashQueue.filter(q => q.status === 'ANALYZING').length;
+            let review = quickStashQueue.filter(q => q.status === 'REVIEW').length;
+            let done = quickStashQueue.filter(q => q.status === 'MERGED' || q.status === 'DISCARDED').length;
+            let err = quickStashQueue.filter(q => q.status === 'ERROR').length;
+            
+            statsEl.innerHTML = `
+                <div>TOTAL: ${quickStashQueue.length}</div>
+                <div style="color:var(--emerald-green);">DONE: ${done}</div>
+                ${analyzing > 0 ? `<div style="color:var(--electric-blue); font-weight:900;">ANALYZING: ${analyzing}</div>` : ''}
+                ${review > 0 ? `<div style="color:var(--amber-orange); font-weight:900;">REVIEW: ${review}</div>` : ''}
+                ${pending > 0 ? `<div>WAITING: ${pending}</div>` : ''}
+                ${err > 0 ? `<div style="color:var(--crimson-red);">ERRORS: ${err}</div>` : ''}
+            `;
+            
+            if(quickStashQueue.length === 0) {
+                listEl.innerHTML = '<div style="color:#555; text-align:center; padding:10px;">Queue is empty</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            // Group by date logic
+            let grouped = {};
+            quickStashQueue.forEach(q => {
+                let d = new Date(q.lastModified);
+                let dStr = d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+                if(!grouped[dStr]) grouped[dStr] = [];
+                grouped[dStr].push(q);
+            });
+            
+            for(let dStr in grouped) {
+                html += `<div style="font-size:10px; color:#888; font-weight:900; margin-top:5px; border-bottom:1px solid #333;">${dStr.toUpperCase()}</div>`;
+                grouped[dStr].forEach(q => {
+                    let icon = '⏳';
+                    let color = '#ccc';
+                    if (q.status === 'ANALYZING') { icon = '⚡'; color = 'var(--electric-blue)'; }
+                    else if (q.status === 'REVIEW') { icon = '👁️'; color = 'var(--amber-orange)'; }
+                    else if (q.status === 'MERGED') { icon = '✅'; color = 'var(--emerald-green)'; }
+                    else if (q.status === 'DISCARDED') { icon = '🗑️'; color = '#666'; }
+                    else if (q.status === 'ERROR') { icon = '❌'; color = 'var(--crimson-red)'; }
+                    
+                    html += `
+                        <div style="background:rgba(0,0,0,0.3); border-left:3px solid ${color}; padding:8px; border-radius:4px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-size:11px; font-weight:900; color:${color}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${icon} ${q.filename}</div>
+                                <div style="font-size:9px; color:#888;">${new Date(q.lastModified).toLocaleTimeString()}</div>
+                            </div>
+                    `;
+                    
+                    if(qsPhotoDetail === 'DETAIL') {
+                        let sizeKB = (q.file.size / 1024).toFixed(1);
+                        let sizeStr = sizeKB > 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+                        html += `<div style="font-size:9px; color:#666; margin-top:4px;">Profile: ${q.scanType} / ${q.scanDepth} | ${sizeStr}</div>`;
+                    }
+                    
+                    if (q.status === 'REVIEW') {
+                        html += `
+                            <div style="margin-top:8px; display:flex; gap:5px;">
+                                <button onclick="reviewQsItem('${q.id}')" class="btn btn-outline" style="flex:1; border-color:var(--amber-orange); color:var(--amber-orange); font-size:10px; padding:4px;">REVIEW DATA</button>
+                            </div>
+                        `;
+                    } else if (q.status === 'ERROR') {
+                        html += `
+                            <div style="font-size:9px; color:var(--crimson-red); margin-top:4px;">${q.errorMsg || 'Failed'}</div>
+                            <button onclick="retryQsItem('${q.id}')" class="btn btn-outline" style="border-color:var(--crimson-red); color:var(--crimson-red); font-size:9px; padding:2px 6px; margin-top:4px;">RETRY</button>
+                        `;
+                    }
+                    html += `</div>`;
+                });
+            }
+            
+            listEl.innerHTML = html;
+        }
+
+        function retryQsItem(id) {
+            let q = quickStashQueue.find(x => x.id === id);
+            if(q) {
+                q.status = 'QUEUED';
+                q.errorMsg = null;
+                renderHopper();
+                if(!quickStashQueueRunning) processQuickStashQueue();
+            }
+        }
+
+        async function processQuickStashQueue() {
+            quickStashQueueRunning = true;
+            let nextItem = quickStashQueue.find(q => q.status === 'QUEUED');
+            
+            if(!nextItem) {
+                quickStashQueueRunning = false;
+                renderHopper();
+                return;
+            }
+            
+            nextItem.status = 'ANALYZING';
+            renderHopper();
+            
+            try {
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result.split(',')[1]);
+                    reader.onerror = e => reject(e);
+                    reader.readAsDataURL(nextItem.file);
+                });
+
+                const res = await callAppsScript({
+                    action: "analyzePhotoOnly",
+                    data: base64,
+                    filename: nextItem.filename,
+                    mimeType: nextItem.file.type,
+                    scanType: nextItem.scanType,
+                    scanDepth: nextItem.scanDepth,
+                    scanFocus: nextItem.scanFocus
+                });
+
+                if (res.status === "success" && res.data && res.data.extractedData) {
+                    nextItem.extractedData = normalizeQuickStashData(res.data.extractedData);
+                    nextItem.rawData = res.data.extractedData;
+                    
+                    // Auto name generic stashes
+                    let parsedCustName = nextItem.extractedData.customer.name;
+                    let destStash = null;
+                    if (qsActiveDest !== 'NEW' && quickStashes[qsActiveDest]) {
+                        destStash = quickStashes[qsActiveDest];
+                    }
+                    if (parsedCustName && parsedCustName.trim() && destStash) {
+                        if (destStash.name.match(/^Stash \d+$/)) {
+                            destStash.name = parsedCustName.trim();
+                            localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+                            if(activeQuickStashId === destStash.id) renderActiveQuickStash();
+                        }
+                    }
+                    
+                    if (qsReviewResults) {
+                        nextItem.status = 'REVIEW';
+                    } else {
+                        commitReviewItem(nextItem.id, qsActiveDest);
+                    }
+                } else {
+                    throw new Error(res.message || "Failed to extract data");
+                }
+            } catch (err) {
+                nextItem.status = 'ERROR';
+                nextItem.errorMsg = err.message;
+            }
+            
+            renderHopper();
+            // Continue processing sequentially
+            setTimeout(processQuickStashQueue, 100);
+        }
+
+        let tempQuickStashData = null;
+
+        function reviewQsItem(id) {
+            let q = quickStashQueue.find(x => x.id === id);
+            if(!q || !q.extractedData) return;
+            
+            tempQuickStashData = q.extractedData;
+            
+            const view = document.getElementById('quickStashViewArea');
+            
+            let html = `
+                <div style="background:rgba(0,229,255,0.05); border:1px solid var(--amber-orange); border-radius:12px; padding:15px; margin-bottom:15px;">
+                    <div style="color:var(--amber-orange); font-weight:900; font-size:16px; margin-bottom:15px;">REVIEW DATA: ${q.filename}</div>
+                    <div style="max-height:250px; overflow-y:auto; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; margin-bottom:15px; font-family:monospace; font-size:11px; color:#ddd;">
+            `;
+
+            function formatQsVal(val) {
+                if (val === null || val === undefined) return '';
+                if (typeof val === 'object') {
+                    if (Array.isArray(val)) return val.map(formatQsVal).join(', ');
+                    return Object.entries(val).map(([k, v]) => `${k}: ${formatQsVal(v)}`).join(' | ');
+                }
+                return val;
+            }
+
+            for (let cat in tempQuickStashData) {
+                if (cat === '_meta') continue;
+                if (cat === 'extra') {
+                    for (let k in tempQuickStashData.extra) {
+                        let val = tempQuickStashData.extra[k];
+                        if (val) html += `<div><span style="color:#888;">${k}:</span> <span style="color:white;">${formatQsVal(val)}</span></div>`;
+                    }
+                } else {
+                    for (let k in tempQuickStashData[cat]) {
+                        let val = tempQuickStashData[cat][k];
+                        if (val) html += `<div><span style="color:#888;">${k}:</span> <span style="color:white;">${formatQsVal(val)}</span></div>`;
+                    }
+                }
+            }
+
+            html += `
+                    </div>
+                    <div style="font-size:11px; color:#aaa; font-weight:900; margin-bottom:8px;">SAVE DATA TO STASH:</div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+            `;
+
+            let activeDestText = "CREATE NEW STASH";
+            if (qsActiveDest !== 'NEW' && quickStashes[qsActiveDest]) activeDestText = quickStashes[qsActiveDest].name;
+
+            html += `<button onclick="commitReviewItem('${q.id}', qsActiveDest)" class="btn btn-outline" style="border-color:var(--electric-blue); color:var(--electric-blue); font-weight:900;">MERGE INTO: ${activeDestText}</button>`;
+            
+            html += `
+                <div style="display:flex; gap:5px; margin-top:5px;">
+                    <select id="qsAltDestSelect" style="flex:1; background:#222; color:white; border:1px solid #444; border-radius:4px; padding:6px; font-size:10px;"></select>
+                    <button onclick="commitReviewItem('${q.id}', document.getElementById('qsAltDestSelect').value)" class="btn-utility" style="padding:6px 12px; font-size:10px;">ROUTE ALT</button>
+                </div>
+            `;
+
+            html += `<button onclick="discardReviewItem('${q.id}')" class="btn-utility" style="margin-top:10px;">DISCARD</button>`;
+            html += `</div></div>`;
+            
+            view.innerHTML = html;
+            
+            // populate alt
+            let altSel = document.getElementById('qsAltDestSelect');
+            if(altSel) {
+                let stashes = Object.values(quickStashes).sort((a,b) => b.updatedAt - a.updatedAt);
+                let opts = `<option value="NEW">NEW STASH</option>`;
+                stashes.forEach(s => {
+                    if(s.id !== qsActiveDest) opts += `<option value="${s.id}">${s.name}</option>`;
+                });
+                altSel.innerHTML = opts;
+            }
+        }
+
+        function discardReviewItem(qId) {
+            let q = quickStashQueue.find(x => x.id === qId);
+            if(q) q.status = 'DISCARDED';
+            tempQuickStashData = null;
+            renderHopper();
+            renderQuickStashHome(); // Go back to main
+        }
+
+        function commitReviewItem(qId, targetId) {
+            let q = quickStashQueue.find(x => x.id === qId);
+            if(!q || !q.extractedData) return;
+            
+            let id = targetId;
+            if (id === 'NEW') {
+                id = createNewQuickStash();
+                if (!id) return; // cancelled
+            } else if (id === 'CURRENT') {
+                if (activeQuickStashId) {
+                    id = activeQuickStashId;
+                } else {
+                    id = createNewQuickStash();
+                    if (!id) return;
+                }
+            }
+
+            const stash = quickStashes[id];
+            if (!stash) return;
+
+            let dt = q.extractedData;
+            if (!stash.fieldMeta) stash.fieldMeta = {};
+            if (!stash.rawScans) stash.rawScans = [];
+            
+            stash.rawScans.push({
+                scanId: q.id,
+                filename: q.filename,
+                fileDate: q.lastModified,
+                timestamp: Date.now(),
+                scanType: q.scanType,
+                scanDepth: q.scanDepth,
+                data: q.rawData || dt
+            });
+
+            // Merge nonblank fields
+            for (let cat in dt) {
+                if (cat === 'extra' || cat === '_meta') continue;
+                for (let k in dt[cat]) {
+                    if (dt[cat][k]) {
+                        if (cat === 'customer' && k === 'name' && stash._nameManuallyEdited) continue;
+                        if (cat === 'customer' && k === 'date' && stash._dateManuallyEdited) continue;
+                        
+                        stash[cat][k] = dt[cat][k];
+                        let meta = (dt._meta && dt._meta[`${cat}.${k}`]) ? dt._meta[`${cat}.${k}`] : {};
+                        stash.fieldMeta[`${cat}.${k}`] = { 
+                            scanId: q.id,
+                            filename: q.filename,
+                            scanType: q.scanType,
+                            scanDepth: q.scanDepth,
+                            rawLabel: meta.rawLabel || k,
+                            rawValue: meta.rawValue || dt[cat][k]
+                        };
+                    }
+                }
+            }
+            if (dt.extra) {
+                for (let k in dt.extra) {
+                    if (dt.extra[k]) {
+                        stash.extra[k] = dt.extra[k];
+                        let meta = (dt._meta && dt._meta[`extra.${k}`]) ? dt._meta[`extra.${k}`] : {};
+                        stash.fieldMeta[`extra.${k}`] = { 
+                            scanId: q.id,
+                            filename: q.filename,
+                            scanType: q.scanType,
+                            scanDepth: q.scanDepth,
+                            rawLabel: meta.rawLabel || k,
+                            rawValue: meta.rawValue || dt.extra[k]
+                        };
+                    }
+                }
+            }
+            
+            // Auto update identity
+            updateStashIdentity(stash);
+
+            stash.updatedAt = Date.now();
+            localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+            
+            q.status = 'MERGED';
+            
+            if (tempQuickStashData === dt) {
+                tempQuickStashData = null;
+                renderQuickStashHome();
+            }
+            renderHopper();
+            updateDestDropdown();
+            if (activeQuickStashId === id) renderActiveQuickStash();
+        }
+
+        function normalizeQuickStashData(raw) {
+            const out = {
+                customer: { date: "", invoiceDate: "", name: "", address: "", phone: "", email: "" , latitude: null, longitude: null, locationSource: null, locationConfirmed: false, locationTimestamp: null },
+                equipment: { outdoorModel: "", outdoorSerial: "", indoorModel: "", indoorSerial: "", thermostatModel: "" },
+                readings: { odat: "", suctionPressure: "", liquidPressure: "", vaporSaturation: "", liquidSaturation: "", suctionLineTemp: "", liquidLineTemp: "", superheat: "", subcool: "", returnTemp: "", returnHumidity: "", supplyTemp: "", deltaT: "" },
+                diagnostics: { hermVolts: "", hermAmps: "", hermCalculatedUf: "", hermBenchUf: "", fanVolts: "", fanAmps: "", fanCalculatedUf: "", fanBenchUf: "", capacitorResult: "", capacitorDeviationPercent: "", compressorRlaRating: "", compressorLraRating: "", fanFlaRating: "", targetSubcool: "", rlaMeasured: "", rla2Measured: "", flaOdfMeasured: "", compressorLoadPercent: "", fanLoadPercent: "", motorLoadResult: "" },
+                extra: {},
+                _meta: {}
+            };
+
+            const setF = (cat, key, rK, rV) => {
+                out[cat][key] = rV;
+                out._meta[`${cat}.${key}`] = { rawLabel: rK, rawValue: rV };
+            };
+
+            for (let rawKey in raw) {
+                const k = rawKey.toUpperCase().trim();
+                const v = raw[rawKey];
+                if (!v || v.trim() === "") continue;
+
+                if (['INVOICE DATE'].includes(k)) {
+                    let dStr = v;
+                    let d = new Date(v);
+                    if (!isNaN(d.valueOf())) {
+                        let yyyy = d.getFullYear();
+                        let mm = String(d.getMonth() + 1).padStart(2, '0');
+                        let dd = String(d.getDate()).padStart(2, '0');
+                        dStr = `${yyyy}-${mm}-${dd}`;
+                    }
+                    setF('customer', 'invoiceDate', rawKey, dStr);
+                    setF('customer', 'date', rawKey, dStr);
+                }
+                else if (['DATE', 'SERVICE DATE', 'WORK DATE', 'JOB DATE'].includes(k)) {
+                    let dStr = v;
+                    let d = new Date(v);
+                    if (!isNaN(d.valueOf())) {
+                        let yyyy = d.getFullYear();
+                        let mm = String(d.getMonth() + 1).padStart(2, '0');
+                        let dd = String(d.getDate()).padStart(2, '0');
+                        dStr = `${yyyy}-${mm}-${dd}`;
+                    }
+                    setF('customer', 'date', rawKey, dStr);
+                }
+                else if (k === 'CUSTOMER NAME' || k === 'NAME') setF('customer', 'name', rawKey, v);
+                else if (k === 'ADDRESS') setF('customer', 'address', rawKey, v);
+                else if (k === 'PHONE') setF('customer', 'phone', rawKey, v);
+                else if (k === 'EMAIL') setF('customer', 'email', rawKey, v);
+                else if (k === 'WORK ORDER NUMBER') { out.extra[rawKey] = v; out._meta[`extra.${rawKey}`] = { rawLabel: rawKey, rawValue: v }; }
+
+                else if (['OUTDOOR MODEL', 'CONDENSER MODEL', 'HEAT PUMP MODEL', 'RTU MODEL', 'PACKAGE UNIT MODEL'].includes(k)) setF('equipment', 'outdoorModel', rawKey, v);
+                else if (['OUTDOOR SERIAL', 'CONDENSER SERIAL', 'HEAT PUMP SERIAL', 'RTU SERIAL', 'PACKAGE UNIT SERIAL'].includes(k)) setF('equipment', 'outdoorSerial', rawKey, v);
+                else if (['INDOOR MODEL', 'AIR HANDLER MODEL', 'FAN COIL MODEL', 'FURNACE MODEL'].includes(k)) setF('equipment', 'indoorModel', rawKey, v);
+                else if (['INDOOR SERIAL', 'AIR HANDLER SERIAL', 'FAN COIL SERIAL', 'FURNACE SERIAL'].includes(k)) setF('equipment', 'indoorSerial', rawKey, v);
+                else if (k === 'THERMOSTAT MODEL') setF('equipment', 'thermostatModel', rawKey, v);
+
+                else if (['ODAT', 'OUTDOOR AIR TEMP', 'OUTDOOR AIR TEMPERATURE'].includes(k)) setF('readings', 'odat', rawKey, v);
+                else if (k === 'SUCTION PRESSURE') setF('readings', 'suctionPressure', rawKey, v);
+                else if (k === 'LIQUID PRESSURE') setF('readings', 'liquidPressure', rawKey, v);
+                else if (k === 'VAPOR SATURATION') setF('readings', 'vaporSaturation', rawKey, v);
+                else if (k === 'LIQUID SATURATION') setF('readings', 'liquidSaturation', rawKey, v);
+                else if (['SUCTION LINE TEMP', 'SUCTION LINE TEMPERATURE'].includes(k)) setF('readings', 'suctionLineTemp', rawKey, v);
+                else if (['LIQUID LINE TEMP', 'LIQUID LINE TEMPERATURE'].includes(k)) setF('readings', 'liquidLineTemp', rawKey, v);
+                else if (['SH', 'SUPERHEAT'].includes(k)) setF('readings', 'superheat', rawKey, v);
+                else if (['SC', 'SUBCOOL'].includes(k)) setF('readings', 'subcool', rawKey, v);
+                else if (['RETURN TEMP', 'RETURN TEMPERATURE'].includes(k)) setF('readings', 'returnTemp', rawKey, v);
+                else if (['RETURN HUMIDITY', 'RETURN RH'].includes(k)) setF('readings', 'returnHumidity', rawKey, v);
+                else if (['SUPPLY TEMP', 'SUPPLY TEMPERATURE'].includes(k)) setF('readings', 'supplyTemp', rawKey, v);
+                else if (['DELTA T', 'ΔT', '∆T'].includes(k)) setF('readings', 'deltaT', rawKey, v);
+
+                else { out.extra[rawKey] = v; out._meta[`extra.${rawKey}`] = { rawLabel: rawKey, rawValue: v }; }
+            }
+            return out;
+        }
+
+        
+        // 🛑 ==========================================
+        // 🛑 QUICK STASH MAP LOGIC
+        // 🛑 ==========================================
+        let qsLeafletMap = null;
+
+        let qsLeafletSatLayer = null;
+        let qsLeafletMapLayer = null;
+        let qsCurrentMapMode = 'sat';
+
+        function setQsMapMode(mode) {
+            if (!qsLeafletMap || !qsLeafletSatLayer || !qsLeafletMapLayer) return;
+            qsCurrentMapMode = mode;
+            if (mode === 'sat') {
+                qsLeafletMap.removeLayer(qsLeafletMapLayer);
+                qsLeafletSatLayer.addTo(qsLeafletMap);
+                document.getElementById('qsMapBtnSat').style.background = 'var(--electric-blue)';
+                document.getElementById('qsMapBtnSat').style.color = 'black';
+                document.getElementById('qsMapBtnMap').style.background = '#222';
+                document.getElementById('qsMapBtnMap').style.color = '#888';
+            } else {
+                qsLeafletMap.removeLayer(qsLeafletSatLayer);
+                qsLeafletMapLayer.addTo(qsLeafletMap);
+                document.getElementById('qsMapBtnMap').style.background = 'var(--electric-blue)';
+                document.getElementById('qsMapBtnMap').style.color = 'black';
+                document.getElementById('qsMapBtnSat').style.background = '#222';
+                document.getElementById('qsMapBtnSat').style.color = '#888';
+            }
+        }
+
+        async function openQsMap() {
+            if (!activeQuickStashId) return;
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return;
+
+            document.getElementById('qsMapModal').style.display = 'flex';
+            initQsPopup('qsMapModal', 'qsMapHeader', ['#qsMapCoords', '#qsMapContainer', 'div:last-child']);
+            
+            let center = [39.8283, -98.5795];
+            let zoom = 4;
+            
+            const needsGeocode = (!stash.customer.latitude || !stash.customer.longitude) && stash.customer.address && stash.customer.address.trim() !== '';
+            let geocodeSuccess = false;
+            let exactQuery = '';
+            let fallbackQuery = '';
+
+            if (stash.customer.latitude && stash.customer.longitude) {
+                center = [stash.customer.latitude, stash.customer.longitude];
+                zoom = 18;
+            } else if (needsGeocode) {
+                document.getElementById('qsMapCoords').innerText = "LOCATING ADDRESS...";
+                exactQuery = stash.customer.address.trim().replace(/\s+/g, ' ');
+                
+                try {
+                    const res = await fetch('https://nominatim.openstreetmap.org/search?limit=1&format=json&q=' + encodeURIComponent(exactQuery));
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                        center = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                        zoom = 18;
+                        geocodeSuccess = true;
+                    } else {
+                        let parts = exactQuery.split(',').map(s => s.trim());
+                        parts = parts.filter(p => !/^united states$|^usa$|^us$/i.test(p));
+                        fallbackQuery = parts.join(', ');
+                        
+                        if (fallbackQuery && fallbackQuery !== exactQuery) {
+                            const res2 = await fetch('https://nominatim.openstreetmap.org/search?limit=1&format=json&q=' + encodeURIComponent(fallbackQuery));
+                            const data2 = await res2.json();
+                            if (data2 && data2.length > 0) {
+                                center = [parseFloat(data2[0].lat), parseFloat(data2[0].lon)];
+                                zoom = 18;
+                                geocodeSuccess = true;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Geocoding error", e);
+                }
+            }
+
+            if (!qsLeafletMap) {
+                qsLeafletMap = L.map('qsMapContainer', { zoomControl: false }).setView(center, zoom);
+                
+                qsLeafletMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                });
+                
+                qsLeafletSatLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 19,
+                    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                });
+
+                // Default is satellite
+                if (qsCurrentMapMode === 'sat') {
+                    qsLeafletSatLayer.addTo(qsLeafletMap);
+                } else {
+                    qsLeafletMapLayer.addTo(qsLeafletMap);
+                }
+
+                qsLeafletMap.on('move', () => {
+                    const c = qsLeafletMap.getCenter();
+                    document.getElementById('qsMapCoords').innerText = `Lat: ${c.lat.toFixed(6)} | Lng: ${c.lng.toFixed(6)}`;
+                });
+            } else {
+                qsLeafletMap.setView(center, zoom);
+            }
+
+            setTimeout(() => {
+                qsLeafletMap.invalidateSize();
+                const c = qsLeafletMap.getCenter();
+                if (needsGeocode && !geocodeSuccess) {
+                    document.getElementById('qsMapCoords').innerText = `ADDRESS NOT FOUND - MANUAL POSITIONING`;
+                } else {
+                    document.getElementById('qsMapCoords').innerText = `Lat: ${c.lat.toFixed(6)} | Lng: ${c.lng.toFixed(6)}`;
+                }
+            }, 300);
+            
+            console.log("Geocoding attempt:");
+            console.log("Exact Query: ", exactQuery);
+            console.log("Fallback Query: ", fallbackQuery);
+            console.log("Geocode Succeeded Before Init: ", geocodeSuccess);
+        }
+
+        function cancelQsMap() {
+            document.getElementById('qsMapModal').style.display = 'none';
+        }
+
+        function confirmQsMap() {
+            if (!activeQuickStashId || !qsLeafletMap) return;
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return;
+
+            const c = qsLeafletMap.getCenter();
+            stash.customer.latitude = c.lat;
+            stash.customer.longitude = c.lng;
+            stash.customer.locationSource = 'manual-pin';
+            stash.customer.locationConfirmed = true;
+            stash.customer.locationTimestamp = Date.now();
+            
+            stash.updatedAt = Date.now();
+            localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+            
+            document.getElementById('qsMapModal').style.display = 'none';
+            renderActiveQuickStash();
+        }
+
         initSplash();
         initV2Controls();
         updateShellButton();
-        if (localStorage.getItem('galleryOpen') === 'true') openGallery();
+        // Gallery auto-open removed for v1.02 stabilization
 
 
         async function initSplash() {
@@ -3829,6 +6243,8 @@
                         mirrorState = res.data.fields || {};
                         mirrorPMI = res.data.pmi || []; // FIX: Capture PMI data on refresh
 
+                        updateConflictBadge(res.data.conflict);
+
                         if (res.data.folderId && res.data.folderId !== "") {
                             localStorage.setItem('hvacActiveFolderId', res.data.folderId);
                         }
@@ -3844,6 +6260,7 @@
                     console.warn("SYNC: Startup link failed. Stale job detected:", e.message);
                     isJobMode = false;
                     refreshSyncUI();
+                    updateConflictBadge("");
                     // Show Disconnected State
                     const nameHome = document.getElementById('hookedJobNameHome');
                     if (nameHome) {
@@ -5348,10 +7765,22 @@
 
         function closeReport() { showSection('v23-home'); }
         function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); showSection('v23-home'); }
+        
+        function setCreateShellDiagnostic(text, isError = false) {
+            const el = document.getElementById('createShellDiagnostic');
+            if (!el) return;
+            el.style.display = 'block';
+            el.style.borderColor = isError ? 'var(--crimson-red)' : 'var(--amber-orange)';
+            el.style.color = isError ? '#ff8a9e' : '#ffd166';
+            el.textContent = text;
+        }
         async function startJob() {
             const nameInput = document.getElementById('custName');
             const shellBtn = document.getElementById('shellBtn');
             const name = nameInput.value.trim();
+
+            const diagEl = document.getElementById('createShellDiagnostic');
+            if (diagEl) diagEl.style.display = 'none';
 
             // UI Status Sequence
             const originalText = shellBtn.innerHTML;
@@ -5363,11 +7792,29 @@
                 shellBtn.style.background = "var(--amber-orange)";
                 shellBtn.style.color = "black";
 
+                const requestDate = new Date().toISOString().split('T')[0];
+                setCreateShellDiagnostic(`CREATE SHELL DIAGNOSTIC\nStage: Sending Request\nAction: createJob\nName: ${name}\nDate: ${requestDate}\nActive Job Before Request: ${currentJob || 'NONE'}`);
+
                 const res = await callAppsScript({
                     action: "createJob",
                     name: name,
-                    date: new Date().toISOString().split('T')[0]
+                    date: requestDate
                 });
+                
+                console.log("CREATE SHELL RAW RESPONSE:", res);
+                setCreateShellDiagnostic(`CREATE SHELL DIAGNOSTIC\nStage: Response Received\nAction: createJob\nRaw Response:\n${JSON.stringify(res, null, 2)}`);
+
+                const failWith = (msg) => {
+                    setCreateShellDiagnostic(`CREATE SHELL FAILED\nStage: Backend Response\nMessage: ${msg}\nRaw Response:\n${JSON.stringify(res, null, 2)}`, true);
+                    throw new Error(msg);
+                };
+
+                if (!res) throw new Error("FAILED STAGE: No Response Object");
+                if (res.status === "error") failWith(res.message || "FAILED STAGE: Backend Error");
+                if (res.status === "success" && !res.data) failWith("FAILED STAGE: Missing Response Data");
+                if (res.data && res.data.status !== "success") failWith(res.data.message || "FAILED STAGE: Create Job Returned Failure");
+                if (res.data && res.data.status === "success" && !res.data.newSheetName) failWith("FAILED STAGE: Missing newSheetName");
+                if (res.data && res.data.status === "success" && !res.data.folderId) failWith("FAILED STAGE: Missing folderId");
 
                 if (res && res.status === "success" && res.data.status === "success") {
                     const response = res.data;
@@ -5398,7 +7845,7 @@
                     }, 3000);
 
                 } else {
-                    throw new Error(res.data ? res.data.message : "Creation Failed");
+                    failWith("Creation Failed - no backend message returned");
                 }
             } catch (e) {
                 alert("Creation Error: " + e.message);
@@ -5519,6 +7966,287 @@
             });
         }
     </script>
+
+    <!-- QUICK STASH MAP MODAL -->
+    <div id="qsMapModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
+        <div id="qsMapHeader" style="background:var(--card-bg); border-bottom:1px solid #333; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="color:var(--electric-blue); font-weight:900; font-size:16px; pointer-events:none;">?? PIN LOCATION</div>
+            <div style="display:flex; background:#222; border-radius:6px; overflow:hidden; border:1px solid #444;">
+                <button id="qsMapBtnSat" onclick="setQsMapMode('sat')" style="padding:4px 12px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--electric-blue); color:black; border:none;">SATELLITE</button>
+                <button id="qsMapBtnMap" onclick="setQsMapMode('map')" style="padding:4px 12px; font-size:11px; font-weight:bold; cursor:pointer; background:#222; color:#888; border:none;">MAP</button>
+            </div>
+            <button onclick="cancelQsMap()" style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
+        </div>
+        <div style="padding:10px; text-align:center; background:#222; font-size:12px; color:#aaa;" id="qsMapCoords">
+            Latitude: -- | Longitude: --
+        </div>
+        <div style="flex:1; position:relative; overflow:hidden;">
+            <div id="qsMapContainer" style="width:100%; height:100%;"></div>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:red; font-size:32px; font-weight:bold; z-index:1000; pointer-events:none; text-shadow:0 0 5px white;">+</div>
+        </div>
+        <div style="padding:15px; background:var(--card-bg); border-top:1px solid #333; display:flex; gap:10px;">
+            <button onclick="cancelQsMap()" style="flex:1; padding:12px; border-radius:8px; background:#444; color:white; border:none; font-weight:bold; cursor:pointer;">CANCEL</button>
+            <button onclick="confirmQsMap()" style="flex:1; padding:12px; border-radius:8px; background:var(--emerald-green); color:black; border:none; font-weight:bold; cursor:pointer;">CONFIRM PIN</button>
+        </div>
+    </div>
+    <!-- QUICK STASH MAPPER MODAL -->
+    <div id="qsMapperModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
+        <div id="qsMapperHeader" style="background:var(--card-bg); border-bottom:1px solid #333; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+            <div id="qsMapperTitle" style="color:var(--electric-blue); font-weight:900; font-size:16px; pointer-events:none;">MAP INTO FIELD</div>
+            <button onclick="document.getElementById('qsMapperModal').style.display='none';" style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
+        </div>
+        <div style="padding:15px; flex:1; overflow-y:auto; background:var(--bg-dark);" id="qsMapperList">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+    
+    <script>
+        let qsMapperTargetCat = null;
+        let qsMapperTargetKey = null;
+
+        
+        function initQsPopup(modalId, headerId, bodyIds) {
+            const modal = document.getElementById(modalId);
+            const header = document.getElementById(headerId);
+            if (!modal || !header || modal.dataset.popupInit) return;
+            modal.dataset.popupInit = "true";
+
+            // Add controls to header
+            const controls = document.createElement('div');
+            controls.style.display = 'flex';
+            controls.style.gap = '15px';
+            controls.style.alignItems = 'center';
+            controls.style.marginLeft = 'auto';
+
+            const btnCollapse = document.createElement('button');
+            btnCollapse.innerHTML = '?';
+            btnCollapse.style.cssText = 'background:none; border:none; color:white; cursor:pointer; font-size:14px;';
+            
+            const btnExpand = document.createElement('button');
+            btnExpand.innerHTML = '??';
+            btnExpand.style.cssText = 'background:none; border:none; color:white; cursor:pointer; font-size:14px;';
+            
+            // Find existing close button
+            const existingBtn = header.querySelector('button');
+            const rightContainer = document.createElement('div');
+            rightContainer.style.display = 'flex';
+            rightContainer.style.alignItems = 'center';
+            rightContainer.style.gap = '15px';
+            
+            if (existingBtn) {
+                // If there are other buttons (like the Map Satellite/Map toggles), leave them alone
+                // We just want to put collapse/expand next to the close button
+                existingBtn.parentNode.insertBefore(rightContainer, existingBtn);
+                rightContainer.appendChild(btnCollapse);
+                rightContainer.appendChild(btnExpand);
+                rightContainer.appendChild(existingBtn);
+            } else {
+                header.appendChild(rightContainer);
+                rightContainer.appendChild(btnCollapse);
+                rightContainer.appendChild(btnExpand);
+            }
+
+            let isCollapsed = false;
+            let isExpanded = false;
+            let preExpandState = { top: '', left: '', width: '', height: '' };
+
+            const fireResize = () => {
+                if (typeof qsLeafletMap !== 'undefined' && qsLeafletMap) {
+                    setTimeout(() => qsLeafletMap.invalidateSize(), 50);
+                    setTimeout(() => qsLeafletMap.invalidateSize(), 300);
+                }
+            };
+
+            btnCollapse.onclick = (e) => {
+                e.stopPropagation();
+                isCollapsed = !isCollapsed;
+                bodyIds.forEach(selector => {
+                    const el = modal.querySelector(selector);
+                    if (el) {
+                        if (!el.dataset.origDisplay) el.dataset.origDisplay = getComputedStyle(el).display;
+                        el.style.display = isCollapsed ? 'none' : el.dataset.origDisplay;
+                    }
+                });
+                modal.style.height = isCollapsed ? 'auto' : (isExpanded ? '96vh' : 'auto');
+                if (isCollapsed) modal.style.bottom = 'auto';
+                fireResize();
+            };
+
+            btnExpand.onclick = (e) => {
+                e.stopPropagation();
+                if (!isExpanded) {
+                    preExpandState = { top: modal.style.top, left: modal.style.left, width: modal.style.width, height: modal.style.height, bottom: modal.style.bottom, right: modal.style.right, transform: modal.style.transform };
+                    modal.style.top = '2%';
+                    modal.style.left = '2%';
+                    modal.style.width = '96%';
+                    modal.style.height = '96vh';
+                    modal.style.maxWidth = 'none';
+                    modal.style.bottom = 'auto';
+                    modal.style.right = 'auto';
+                    modal.style.transform = 'none';
+                } else {
+                    modal.style.top = preExpandState.top;
+                    modal.style.left = preExpandState.left;
+                    modal.style.width = preExpandState.width;
+                    modal.style.height = preExpandState.height;
+                    modal.style.bottom = preExpandState.bottom;
+                    modal.style.right = preExpandState.right;
+                    modal.style.transform = preExpandState.transform;
+                    modal.style.maxWidth = '600px';
+                }
+                isExpanded = !isExpanded;
+                
+                // If we expand while collapsed, uncollapse
+                if (isExpanded && isCollapsed) {
+                    btnCollapse.click();
+                } else {
+                    fireResize();
+                }
+            };
+
+            // Drag logic
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+
+            const startDrag = (e) => {
+                if (e.target.tagName.toLowerCase() === 'button' || e.target.closest('button')) return;
+                isDragging = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                startX = clientX;
+                startY = clientY;
+                const rect = modal.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+                e.preventDefault();
+            };
+
+            const doDrag = (e) => {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+                
+                let newX = initialX + dx;
+                let newY = initialY + dy;
+                
+                // bounds
+                if (newY < 0) newY = 0;
+                if (newX < 0) newX = 0;
+                if (newX + modal.offsetWidth > window.innerWidth) newX = window.innerWidth - modal.offsetWidth;
+                if (newY + header.offsetHeight > window.innerHeight) newY = window.innerHeight - header.offsetHeight;
+                
+                modal.style.left = newX + 'px';
+                modal.style.top = newY + 'px';
+                modal.style.bottom = 'auto';
+                modal.style.right = 'auto';
+                modal.style.transform = 'none';
+            };
+
+            const stopDrag = () => {
+                isDragging = false;
+            };
+
+            header.style.cursor = 'grab';
+            header.addEventListener('mousedown', startDrag);
+            header.addEventListener('touchstart', startDrag, {passive: false});
+            document.addEventListener('mousemove', doDrag);
+            document.addEventListener('touchmove', doDrag, {passive: false});
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+            
+            // Set initial floating styles if not already set
+            if (!modal.style.maxWidth) {
+                modal.style.position = 'fixed';
+                modal.style.top = '10vh';
+                modal.style.left = '50%';
+                modal.style.transform = 'translateX(-50%)';
+                modal.style.width = '90vw';
+                modal.style.maxWidth = '600px';
+                modal.style.height = 'auto';
+                modal.style.maxHeight = '85vh';
+                modal.style.borderRadius = '12px';
+                modal.style.boxShadow = '0 10px 40px rgba(0,0,0,0.8)';
+                modal.style.border = '1px solid #444';
+                modal.style.overflow = 'hidden';
+            }
+        }
+
+        function openQsFieldMapper(cat, key, label) {
+            if (!activeQuickStashId) return;
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return;
+
+            qsMapperTargetCat = cat;
+            qsMapperTargetKey = key;
+            
+            document.getElementById('qsMapperTitle').innerText = `MAP INTO [${label.toUpperCase()}]`;
+            
+            let html = '';
+            
+            const cats = [
+                { id: 'extra', title: 'EXTRA / OTHER' },
+                { id: 'customer', title: 'CUSTOMER' },
+                { id: 'equipment', title: 'EQUIPMENT' },
+                { id: 'readings', title: 'READINGS' }
+            ];
+
+            cats.forEach(c => {
+                const fields = stash[c.id];
+                if (!fields) return;
+                let hasFields = false;
+                let cHtml = `<div style="margin-bottom:20px;">
+                                <div style="color:var(--electric-blue); font-weight:bold; margin-bottom:10px; font-size:12px; border-bottom:1px solid #333; padding-bottom:5px;">${c.title}</div>
+                                <div style="display:flex; flex-direction:column; gap:8px;">`;
+                                
+                for (let k in fields) {
+                    if (c.id === cat && k === key) continue; // skip self
+                    const val = fields[k];
+                    if (val && String(val).trim() !== '') {
+                        hasFields = true;
+                        const safeVal = String(val).replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const safeLabel = String(k).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        cHtml += `
+                            <div onclick="applyQsFieldMapping('${safeVal}')" style="background:#222; border:1px solid #444; border-radius:6px; padding:10px; cursor:pointer;">
+                                <div style="font-size:10px; color:#888; margin-bottom:4px; font-weight:bold;">${safeLabel.toUpperCase()}</div>
+                                <div style="font-size:14px; color:white; font-weight:bold; word-break:break-word;">${String(val).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                            </div>
+                        `;
+                    }
+                }
+                cHtml += `</div></div>`;
+                if (hasFields) {
+                    html += cHtml;
+                }
+            });
+
+            if (!html) {
+                html = `<div style="text-align:center; color:#888; font-size:12px; padding:20px;">No available source values found in this stash.</div>`;
+            }
+
+            document.getElementById('qsMapperList').innerHTML = html;
+            document.getElementById('qsMapperModal').style.display = 'flex';
+            initQsPopup('qsMapperModal', 'qsMapperHeader', ['#qsMapperList']);
+        }
+
+        function applyQsFieldMapping(val) {
+            if (!activeQuickStashId || !qsMapperTargetCat || !qsMapperTargetKey) return;
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return;
+
+            updateStashField(qsMapperTargetCat, qsMapperTargetKey, val);
+            
+            document.getElementById('qsMapperModal').style.display = 'none';
+            renderActiveQuickStash();
+        }
+    </script>
 </body>
 
 </html>
+
+
+
+
+
+
