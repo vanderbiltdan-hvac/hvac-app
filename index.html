@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.47</title>
+    <title>HVAC Splash v1.48</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -14,6 +14,8 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .action-pill { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; }
+        .qs-action-col { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; margin-left: 5px; }
+        @media (min-width: 500px) { .qs-action-col { flex-direction: row; margin-top: 1px; } }
     </style>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1313,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.47</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.48</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1897,7 +1899,7 @@
             <div onmousedown="initQsTunerDrag(event)" ontouchstart="initQsTunerDrag(event)" style="padding:10px 15px; background:rgba(255,255,255,0.05); border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; cursor:move; border-radius:8px 8px 0 0; user-select:none; -webkit-user-select:none;">
                 <div style="font-weight:900; color:var(--electric-blue); font-size:14px; pointer-events:none;">QUICK STASH TUNER</div>
                 <div style="display:flex; gap:10px;">
-                    <button onclick="toggleQsTunerSize()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Toggle Size">↔</button>
+                    <button onclick="toggleQsTunerSize()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Toggle Size">↕</button>
                     <button onclick="toggleQsTunerCollapse()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Minimize">_</button>
                     <button onclick="toggleQsSettings()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Close">✕</button>
                 </div>
@@ -2175,9 +2177,9 @@
                 <!-- VISIBILITY -->
                 <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
                     <div style="color:#aaa; font-weight:900; margin-bottom:8px;">VISIBILITY</div>
-                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowHopper" onchange="saveQsSettingsFromInputs()"> Show Hopper</label>
-                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowExtra" onchange="saveQsSettingsFromInputs()"> Show Extra/Other</label>
-                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowRawScans" onchange="saveQsSettingsFromInputs()"> Show Raw Scans</label>
+                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowHopper" onchange="saveQsSettingsFromInputs()" style="width:auto; margin:0;"> Show Hopper</label>
+                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowExtra" onchange="saveQsSettingsFromInputs()" style="width:auto; margin:0;"> Show Extra/Other</label>
+                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowRawScans" onchange="saveQsSettingsFromInputs()" style="width:auto; margin:0;"> Show Raw Scans</label>
                 </div>
             </div>
         </div>
@@ -2189,7 +2191,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.47</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.48</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2578,7 +2580,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.47";
+        const APP_VERSION = "v1.48";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         // Restoration Helpers (v28.42)
@@ -4884,14 +4886,16 @@
                 const val = (rawVal || "").toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 
                 let safeLabelStr = label.replace(/'/g, "\\'");
-                let mapBtn = `<button onclick="openQsFieldMapper('${cat}', '${key}', '${safeLabelStr}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:9px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; margin-left:5px; margin-top:1px; flex-shrink:0;">MAP</button>`;
-                let clearBtn = `<button onclick="clearQsField('${cat}', '${key}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:9px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; margin-left:5px; margin-top:1px; flex-shrink:0;">CLR</button>`;
+                let mapBtn = `<button onclick="openQsFieldMapper('${cat}', '${key}', '${safeLabelStr}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:9px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">MAP</button>`;
+                let clearBtn = `<button onclick="clearQsField('${cat}', '${key}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:9px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">CLR</button>`;
 
                 let inputHtml = `
                     <div style="display:flex; align-items:flex-start; width:100%;">
                         <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1">${val}</textarea>
-                        ${mapBtn}
-                        ${clearBtn}
+                        <div class="qs-action-col">
+                            ${mapBtn}
+                            ${clearBtn}
+                        </div>
                     </div>
                 `;
                 
@@ -4899,8 +4903,10 @@
                     inputHtml = `
                     <div style="display:flex; align-items:flex-start; width:100%;">
                         <input type="date" class="qs-textarea" style="flex:1; cursor:pointer; color-scheme:dark;" value="${val}" onclick="if(this.showPicker) this.showPicker();" onchange="updateStashField('${cat}', '${key}', this.value); renderActiveQuickStash();">
-                        ${mapBtn}
-                        ${clearBtn}
+                        <div class="qs-action-col">
+                            ${mapBtn}
+                            ${clearBtn}
+                        </div>
                     </div>`;
                 }
                 if (cat === 'customer' && key === 'address') {
