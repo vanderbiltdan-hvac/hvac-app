@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.45</title>
+    <title>HVAC Splash v1.47</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1313,7 +1313,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.45</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.47</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1892,7 +1892,7 @@
     <!-- QUICK STASH MODAL -->
     <div id="quickStashModal" class="modal-overlay" style="background:#121212; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; top:0; z-index:10000; align-items:center;">
         <!-- QUICK STASH TUNER PANEL -->
-        <div id="qsSettingsPanel" style="display:none; position:fixed; top:50px; right:20px; z-index:10001; background:rgba(18,18,18,0.95); border:1px solid #444; border-radius:8px; width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); flex-direction:column; max-height:85vh; transition: width 0.2s;">
+        <div id="qsSettingsPanel" style="display:none; position:fixed; top:50px; right:20px; z-index:10001; background:rgba(18,18,18,0.95); border:1px solid #444; border-radius:8px; width:90vw; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); flex-direction:column; max-height:85vh; transition: max-height 0.2s;">
             <!-- Header / Drag Handle -->
             <div onmousedown="initQsTunerDrag(event)" ontouchstart="initQsTunerDrag(event)" style="padding:10px 15px; background:rgba(255,255,255,0.05); border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; cursor:move; border-radius:8px 8px 0 0; user-select:none; -webkit-user-select:none;">
                 <div style="font-weight:900; color:var(--electric-blue); font-size:14px; pointer-events:none;">QUICK STASH TUNER</div>
@@ -2189,7 +2189,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.45</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.47</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2578,7 +2578,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.45";
+        const APP_VERSION = "v1.47";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         // Restoration Helpers (v28.42)
@@ -4228,7 +4228,7 @@
         let quickStashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1')) || {};
         let activeQuickStashId = localStorage.getItem('hvacActiveQuickStashId') || null;
 
-        let qsSettings = JSON.parse(localStorage.getItem('qsSettingsV1_18')) || JSON.parse(localStorage.getItem('qsSettingsV1_17')) || JSON.parse(localStorage.getItem('qsSettingsV1_16')) || {
+        const defaultQsSettings = {
             showHopper: true,
             showExtra: true,
             showRawScans: true,
@@ -4239,13 +4239,11 @@
             collapseReadings: false,
             collapseCopyOptions: false,
             
-            // Tuner Settings - GLOBAL
             widthMode: 'Standard', 
             fixedWidth: 800,
             outerPadding: 15,
             sectionGap: 15,
             
-            // Tuner Settings - FIELD ROWS
             rowMode: 'Fixed',
             lblWeight: 2,
             datWeight: 3,
@@ -4260,20 +4258,22 @@
             rowRad: 8,
             datAlign: 'right',
             
-            // Tuner Settings - SECTION HEADERS
             hdrFs: 11,
             hdrPadV: 0,
             hdrPadH: 0,
             hdrRad: 0,
             
-            // Tuner Settings - HEADER
-            hdrTitleFs: 20,
-            hdrTitleWd: 0,
+            hdrActiveFs: 20,
+            hdrActiveWd: 0,
             hdrCloseWd: 30,
             hdrCloseFs: 20,
             hdrVerFs: 14,
             hdrStorageFs: 14,
-            hdrWorkspaceFs: 10
+            hdrWorkspaceFs: 10,
+
+            hdrSplitAlignL: 'left',
+            hdrSplitAlignC: 'center',
+            hdrSplitAlignR: 'right'
         };
 
         let savedSettings = JSON.parse(localStorage.getItem('qsSettingsV1_25')) 
@@ -4287,7 +4287,14 @@
                          || JSON.parse(localStorage.getItem('qsSettingsV1_17')) 
                          || JSON.parse(localStorage.getItem('qsSettingsV1_16')) 
                          || {};
-        qsSettings = { ...qsSettings, ...savedSettings };
+                         
+        let qsSettings = { ...defaultQsSettings };
+        for (const key in savedSettings) {
+            if (savedSettings[key] !== undefined && savedSettings[key] !== null) {
+                if (typeof savedSettings[key] === 'number' && Number.isNaN(savedSettings[key])) continue;
+                qsSettings[key] = savedSettings[key];
+            }
+        }
 
         // -------------------------------------------------------------
         // FLOATING TUNER DRAG & BEHAVIOR
@@ -4338,12 +4345,12 @@
         function toggleQsTunerSize() {
             let el = document.getElementById('qsSettingsPanel');
             let content = document.getElementById('qsSettingsContent');
-            if (el.style.width === '400px' || !el.style.width) {
-                el.style.width = '700px';
-                content.style.gridTemplateColumns = '1fr 1fr';
+            if (el.style.maxHeight === '40vh') {
+                el.style.maxHeight = '85vh';
+                content.style.maxHeight = 'calc(85vh - 40px)';
             } else {
-                el.style.width = '400px';
-                content.style.gridTemplateColumns = '1fr';
+                el.style.maxHeight = '40vh';
+                content.style.maxHeight = 'calc(40vh - 40px)';
             }
         }
         
@@ -4423,13 +4430,6 @@
             upd('hdrRad');
             upd('hdrActiveFs');
             upd('hdrActiveWd');
-            upd('hdrCloseWd');
-            upd('hdrCloseFs');
-            upd('hdrStorageFs');
-            upd('hdrVerFs');
-            upd('hdrWorkspaceFs');
-            upd('hdrTitleFs');
-            upd('hdrTitleWd');
             upd('hdrCloseWd');
             upd('hdrCloseFs');
             upd('hdrStorageFs');
