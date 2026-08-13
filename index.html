@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.52</title> 
+    <title>HVAC Splash v1.53</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.52</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.53</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1897,7 +1897,7 @@
         <div id="qsSettingsPanel" style="display:none; position:fixed; top:50px; right:20px; z-index:10001; background:rgba(18,18,18,0.95); border:1px solid #444; border-radius:8px; width:90vw; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); flex-direction:column; max-height:85vh; transition: max-height 0.2s;">
             <!-- Header / Drag Handle -->
             <div onmousedown="initQsTunerDrag(event)" ontouchstart="initQsTunerDrag(event)" style="padding:10px 15px; background:rgba(255,255,255,0.05); border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; cursor:move; border-radius:8px 8px 0 0; user-select:none; -webkit-user-select:none;">
-                <div style="font-weight:900; color:var(--electric-blue); font-size:14px; pointer-events:none;">QUICK STASH TUNER</div>
+                <div style="font-weight:900; color:var(--electric-blue); font-size:14px; pointer-events:none;" id="qsTunerHeaderTitle">QUICK STASH TUNER</div>
                 <div style="display:flex; gap:10px;">
                     <button onclick="toggleQsTunerSize()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Toggle Size">↕</button>
                     <button onclick="toggleQsTunerCollapse()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Minimize">_</button>
@@ -1906,377 +1906,7 @@
             </div>
             <!-- Scrollable content -->
             <div id="qsSettingsContent" style="padding:15px; font-size:11px; color:#ccc; overflow-y:auto; display:grid; grid-template-columns:1fr; gap:15px; max-height:calc(85vh - 40px);">
-                <!-- GLOBAL -->
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
-                    <div style="color:var(--emerald-green); font-weight:900; margin-bottom:8px;">GLOBAL</div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Width Mode</span>
-                        <select id="qsTunerWidthMode" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
-                            <option value="Compact">Compact</option>
-                            <option value="Standard">Standard</option>
-                            <option value="Wide">Wide</option>
-                            <option value="Full">Full</option>
-                            <option value="Fixed">Fixed</option>
-                        </select>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Fixed Width (px)</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('fixedWidth', -10)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_fixedWidth" style="width:36px; text-align:center; font-family:monospace;">800</span>
-                            <button onclick="adjQsSet('fixedWidth', 10)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Outer Padding</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('outerPadding', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_outerPadding" style="width:36px; text-align:center; font-family:monospace;">15</span>
-                            <button onclick="adjQsSet('outerPadding', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Section Gap</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('sectionGap', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_sectionGap" style="width:36px; text-align:center; font-family:monospace;">15</span>
-                            <button onclick="adjQsSet('sectionGap', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                </div>
-
-                                <!-- HEADER LAYOUT -->
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom: 15px;">
-                    <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">QUICK STASH TOP HEADER</div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Active Stash Title Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrActiveFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrActiveFs" style="width:30px; text-align:center;">20</span>
-                            <button onclick="adjQsSet('hdrActiveFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Active Stash Title Width (0=Auto)</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrActiveWd', -10)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrActiveWd" style="width:30px; text-align:center;">0</span>
-                            <button onclick="adjQsSet('hdrActiveWd', 10)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Close Button Width</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrCloseWd', -2)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrCloseWd" style="width:30px; text-align:center;">30</span>
-                            <button onclick="adjQsSet('hdrCloseWd', 2)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Close Button Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrCloseFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrCloseFs" style="width:30px; text-align:center;">20</span>
-                            <button onclick="adjQsSet('hdrCloseFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Local Workspace Label Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrWorkspaceFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrWorkspaceFs" style="width:30px; text-align:center;">10</span>
-                            <button onclick="adjQsSet('hdrWorkspaceFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Storage Reading Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrStorageFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrStorageFs" style="width:30px; text-align:center;">10</span>
-                            <button onclick="adjQsSet('hdrStorageFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>QS Version Badge Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrVerFs', -1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrVerFs" style="width:30px; text-align:center;">10</span>
-                            <button onclick="adjQsSet('hdrVerFs', 1)" style="background:none; border:none; color:white; padding:2px 8px; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                </div>
-
-                <!-- FIELD ROWS -->
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
-                    <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">FIELD ROWS</div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Field Layout</span>
-                        <select id="qsTunerFieldLayout" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
-                            <option value="ROW">ROW</option>
-                            <option value="STACK">STACK</option>
-                        </select>
-                    </div>
-
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Row Mode</span>
-                        <select id="qsTunerRowMode" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
-                            <option value="Fixed">Fixed</option>
-                            <option value="Weight">Weight</option>
-                        </select>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Label Weight</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('lblWeight', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_lblWeight" style="width:36px; text-align:center; font-family:monospace;">2</span>
-                            <button onclick="adjQsSet('lblWeight', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Data Weight</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('datWeight', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_datWeight" style="width:36px; text-align:center; font-family:monospace;">3</span>
-                            <button onclick="adjQsSet('datWeight', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Vertical Padding</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('rowPadV', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_rowPadV" style="width:36px; text-align:center; font-family:monospace;">10</span>
-                            <button onclick="adjQsSet('rowPadV', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Horizontal Padding</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('rowPadH', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_rowPadH" style="width:36px; text-align:center; font-family:monospace;">10</span>
-                            <button onclick="adjQsSet('rowPadH', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Min Height</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('rowMinHeight', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_rowMinHeight" style="width:36px; text-align:center; font-family:monospace;">24</span>
-                            <button onclick="adjQsSet('rowMinHeight', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Checkbox Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('cbSize', -0.1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_cbSize" style="width:36px; text-align:center; font-family:monospace;">1.2</span>
-                            <button onclick="adjQsSet('cbSize', 0.1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Label Font Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('lblFs', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_lblFs" style="width:36px; text-align:center; font-family:monospace;">11</span>
-                            <button onclick="adjQsSet('lblFs', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Data Font Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('datFs', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_datFs" style="width:36px; text-align:center; font-family:monospace;">13</span>
-                            <button onclick="adjQsSet('datFs', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Label Col Width</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('lblColW', -5)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_lblColW" style="width:36px; text-align:center; font-family:monospace;">120</span>
-                            <button onclick="adjQsSet('lblColW', 5)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Col Gap</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('rowGap', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_rowGap" style="width:36px; text-align:center; font-family:monospace;">8</span>
-                            <button onclick="adjQsSet('rowGap', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Border Radius</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('rowRad', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_rowRad" style="width:36px; text-align:center; font-family:monospace;">8</span>
-                            <button onclick="adjQsSet('rowRad', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Data Align</span>
-                        <select id="qsTunerDatAlign" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
-                            <option value="left">Left</option>
-                            <option value="center">Center</option>
-                            <option value="right">Right</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- HEADERS -->
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
-                    <div style="color:var(--electric-blue); font-weight:900; margin-bottom:8px;">HEADERS</div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Font Size</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrFs', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrFs" style="width:36px; text-align:center; font-family:monospace;">11</span>
-                            <button onclick="adjQsSet('hdrFs', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Vertical Padding</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrPadV', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrPadV" style="width:36px; text-align:center; font-family:monospace;">0</span>
-                            <button onclick="adjQsSet('hdrPadV', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Horizontal Padding</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrPadH', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrPadH" style="width:36px; text-align:center; font-family:monospace;">0</span>
-                            <button onclick="adjQsSet('hdrPadH', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
-                        <span>Border Radius</span>
-                        <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
-                            <button onclick="adjQsSet('hdrRad', -1)" style="width:24px; color:#aaa; cursor:pointer;">-</button>
-                            <span id="qsSetVal_hdrRad" style="width:36px; text-align:center; font-family:monospace;">0</span>
-                            <button onclick="adjQsSet('hdrRad', 1)" style="width:24px; color:#aaa; cursor:pointer;">+</button>
-                        </div>
-                    </div>
-                </div>
-
-                
-
-                <!-- VISIBILITY -->
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px;">
-                    <div style="color:#aaa; font-weight:900; margin-bottom:8px;">VISIBILITY</div>
-                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowHopper" onchange="saveQsSettingsFromInputs()" style="width:auto; margin:0;"> Show Hopper</label>
-                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowExtra" onchange="saveQsSettingsFromInputs()" style="width:auto; margin:0;"> Show Extra/Other</label>
-                    <label style="display:flex; align-items:center; gap:5px; margin-bottom:4px;"><input type="checkbox" id="qsSetShowRawScans" onchange="saveQsSettingsFromInputs()" style="width:auto; margin:0;"> Show Raw Scans</label>
-                </div>
-            </div>
-        </div>
-
-        <div id="qsWorkspaceWrapper" class="w-full flex flex-col h-full" style="max-width:672px;">
-            <input type="file" id="quickStashFileInput" style="display:none;" accept="image/*" multiple onchange="handleQuickStashPhoto(this)">
-
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
-                <div style="width:var(--qs-hdr-active-wd);">
-                    <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
-                        QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.52</span>
-                        <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
-                    </h2>
-                    <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:var(--qs-hdr-workspace-fs);">LOCAL WORKSPACE • NO DRIVE UPLOAD</span>
-                        <span id="qsStorageUsage" style="background:var(--electric-blue); color:#000; padding:4px 8px; border-radius:6px; font-weight:900;"></span>
-                    </div>
-                    <!-- ACTIVE STASH LABEL -->
-                    <div style="font-size:var(--qs-hdr-active-fs); color:var(--text-primary); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px; margin-top:6px;">
-                        ACTIVE STASH: <span id="qsActiveStashLabel" style="color:var(--emerald-green);">NONE</span>
-                    </div>
-                </div>
-                <button onclick="closeQuickStash()" style="background:none; border:none; font-size:var(--qs-hdr-close-fs); width:var(--qs-hdr-close-wd); padding:0; cursor:pointer; color:var(--crimson-red);">✖</button>
-            </div>
-
-            <div id="quickStashContent" style="flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:15px;">
-
-
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <button onclick="createNewQuickStash()" class="btn btn-outline" style="border-color:var(--emerald-green); color:var(--emerald-green); font-weight:900;">+ NEW STASH</button>
-                    <button onclick="document.getElementById('quickStashFileInput').click()" class="btn btn-outline" style="border-color:var(--electric-blue); color:var(--electric-blue); font-weight:900;">📸 PICK PHOTO</button>
-                    <button onclick="showQuickStashBrowser()" class="btn btn-outline" style="grid-column:span 2; border-color:#888; color:#ccc; font-weight:900;">📂 BROWSE STASHES</button>
-                </div>
-
-                <!-- Configuration & Hopper -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-4 rounded-lg">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">REVIEW RESULTS:</span>
-                        <button id="qsToggleReviewBtn" onclick="toggleQsReview()" class="btn-utility" style="padding:4px 8px; font-size:10px;">ON</button>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">DESTINATION:</span>
-                        <select id="qsDestSelect" onchange="updateQsDest()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:140px;"></select>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">SCAN PROFILE:</span>
-                        <select id="qsScanType" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:120px;" onchange="updateQsScanType()">
-                            <option value="AUTO">AUTO</option>
-                            <option value="DATA TAG">DATA TAG</option>
-                            <option value="THERMOSTAT">THERMOSTAT</option>
-                            <option value="ELECTRICAL">ELECTRICAL</option>
-                            <option value="MEASUREMENTS">MEASUREMENTS</option>
-                        </select>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">DEPTH:</span>
-                        <select id="qsScanDepth" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanDepth()">
-                            <option value="QUICK">QUICK</option>
-                            <option value="NORMAL" selected>NORMAL</option>
-                            <option value="DEEP">DEEP</option>
-                        </select>
-                    </div>
-
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">FOCUS:</span>
-                        <select id="qsScanFocus" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanFocus()">
-                            <option value="VALUES">VALUES</option>
-                            <option value="RESULTS">RESULTS</option>
-                            <option value="BOTH" selected>BOTH</option>
-                        </select>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER DETAIL:</span>
-                        <button onclick="toggleQsDetail()" id="qsToggleDetailBtn" class="btn-utility" style="padding:2px 6px; font-size:9px;">MINIMAL</button>
-                    </div>
-                </div>
-
-                <div id="qsHopperSection" style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                        <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER QUEUE</span>
-                    </div>
-                    <div id="quickStashHopperStats" style="font-size:10px; color:#ccc; display:flex; gap:10px; flex-wrap:wrap;"></div>
-                    <div id="quickStashHopperList" style="display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; margin-top:5px;"></div>
-                </div>
-
-                <div id="quickStashStatus" style="display:none; color:var(--amber-orange); font-weight:900; text-align:center; padding:10px; background:rgba(255,171,0,0.1); border-radius:8px;"></div>
-                <div id="quickStashViewArea"></div>
+                <!-- Dynamic fields rendered here by JS -->
             </div>
         </div>
     </div>
@@ -2588,7 +2218,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.52";
+        const APP_VERSION = "v1.53";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         // Restoration Helpers (v28.42)
@@ -4238,7 +3868,7 @@
         let quickStashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1')) || {};
         let activeQuickStashId = localStorage.getItem('hvacActiveQuickStashId') || null;
 
-        const defaultQsSettings = {
+        const defaultQsGlobalSettings = {
             showHopper: true,
             showExtra: true,
             showRawScans: true,
@@ -4253,22 +3883,6 @@
             fixedWidth: 800,
             outerPadding: 15,
             sectionGap: 15,
-            
-            fieldLayout: 'ROW',
-            
-            rowMode: 'Fixed',
-            lblWeight: 2,
-            datWeight: 3,
-            rowMinHeight: 24,
-            rowPadV: 10,
-            rowPadH: 10,
-            cbSize: 1.2,
-            lblFs: 11,
-            datFs: 13,
-            lblColW: 120,
-            rowGap: 8,
-            rowRad: 8,
-            datAlign: 'right',
             
             hdrFs: 11,
             hdrPadV: 0,
@@ -4288,29 +3902,147 @@
             hdrSplitAlignR: 'right'
         };
 
-        let savedSettings = JSON.parse(localStorage.getItem('qsSettingsV1_25')) 
+        const defaultQsSectionSettingsTemplate = {
+            fieldLayout: 'ROW',
+            rowMode: 'Fixed',
+            lblWeight: 2,
+            datWeight: 3,
+            rowMinHeight: 24,
+            rowPadV: 10,
+            rowPadH: 10,
+            cbSize: 1.2,
+            lblFs: 11,
+            datFs: 13,
+            lblColW: 120,
+            rowGap: 8,
+            rowRad: 8,
+            datAlign: 'right',
+            actionBtnSize: 9,
+            actionBtnGap: 2,
+            lockedFields: {}
+        };
+
+        let savedGlobalSettings = JSON.parse(localStorage.getItem('qsSettingsV1_26')) 
+                         || JSON.parse(localStorage.getItem('qsSettingsV1_25')) 
                          || JSON.parse(localStorage.getItem('qsSettingsV1_24')) 
                          || JSON.parse(localStorage.getItem('qsSettingsV1_23')) 
                          || JSON.parse(localStorage.getItem('qsSettingsV1_22')) 
                          || JSON.parse(localStorage.getItem('qsSettingsV1_21')) 
                          || JSON.parse(localStorage.getItem('qsSettingsV1_20')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_19')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_18')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_17')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_16')) 
                          || {};
                          
-        let qsSettings = { ...defaultQsSettings };
-        for (const key in savedSettings) {
-            if (savedSettings[key] !== undefined && savedSettings[key] !== null) {
-                if (typeof savedSettings[key] === 'number' && Number.isNaN(savedSettings[key])) continue;
-                qsSettings[key] = savedSettings[key];
+        let qsSettings = { ...defaultQsGlobalSettings };
+        for (const key in savedGlobalSettings) {
+            if (savedGlobalSettings[key] !== undefined && savedGlobalSettings[key] !== null && qsSettings.hasOwnProperty(key)) {
+                if (typeof savedGlobalSettings[key] === 'number' && Number.isNaN(savedGlobalSettings[key])) continue;
+                qsSettings[key] = savedGlobalSettings[key];
             }
         }
 
-        // -------------------------------------------------------------
+        let savedSectionSettings = JSON.parse(localStorage.getItem('qsSectionSettingsV1_26'));
+        let qsSectionSettings = {};
+        ['customer', 'equipment', 'readings', 'diagnostics', 'extra'].forEach(sec => {
+            qsSectionSettings[sec] = { ...defaultQsSectionSettingsTemplate };
+            if (!savedSectionSettings) {
+                for (const key in defaultQsSectionSettingsTemplate) {
+                    if (savedGlobalSettings[key] !== undefined && savedGlobalSettings[key] !== null && key !== 'lockedFields') {
+                        qsSectionSettings[sec][key] = savedGlobalSettings[key];
+                    }
+                }
+            } else if (savedSectionSettings[sec]) {
+                for (const key in defaultQsSectionSettingsTemplate) {
+                    if (savedSectionSettings[sec][key] !== undefined && savedSectionSettings[sec][key] !== null) {
+                        qsSectionSettings[sec][key] = savedSectionSettings[sec][key];
+                    }
+                }
+                if (savedSectionSettings[sec].lockedFields) {
+                    qsSectionSettings[sec].lockedFields = { ...savedSectionSettings[sec].lockedFields };
+                }
+            }
+        });
+        
+        if (!savedSectionSettings) {
+            localStorage.setItem('qsSectionSettingsV1_26', JSON.stringify(qsSectionSettings));
+            localStorage.setItem('qsSettingsV1_26', JSON.stringify(qsSettings));
+        }
+
+        let activeTunerSection = 'customer';
+
+        let qsLongPressTimer = null;
+        let qsLongPressTarget = null;
+        let qsLongPressFired = false;
+        let qsPointerStartX = 0;
+        let qsPointerStartY = 0;
+        
+        function qsHandlePointerDown(e, sectionKey, fieldPath) {
+            qsLongPressFired = false;
+            qsLongPressTarget = e.target;
+            let touch = e.touches ? e.touches[0] : e;
+            qsPointerStartX = touch.clientX;
+            qsPointerStartY = touch.clientY;
+            
+            qsLongPressTimer = setTimeout(() => {
+                qsLongPressFired = true;
+                toggleQsFieldLock(sectionKey, fieldPath);
+                if (navigator.vibrate) navigator.vibrate(50);
+            }, 600);
+        }
+        
+        function qsHandlePointerMove(e) {
+            if (qsLongPressTimer) {
+                let touch = e.touches ? e.touches[0] : e;
+                let dx = Math.abs(touch.clientX - qsPointerStartX);
+                let dy = Math.abs(touch.clientY - qsPointerStartY);
+                if (dx > 10 || dy > 10) {
+                    clearTimeout(qsLongPressTimer);
+                    qsLongPressTimer = null;
+                }
+            }
+        }
+        
+        function qsHandlePointerUp(e) {
+            if (qsLongPressTimer) {
+                clearTimeout(qsLongPressTimer);
+                qsLongPressTimer = null;
+            }
+        }
+        
+        function qsHandleClick(e) {
+            if (qsLongPressFired) {
+                e.preventDefault();
+                e.stopPropagation();
+                qsLongPressFired = false;
+            }
+        }
+        
+        function toggleQsFieldLock(sectionKey, fieldPath) {
+            if (!qsSectionSettings[sectionKey].lockedFields) qsSectionSettings[sectionKey].lockedFields = {};
+            let isLocked = !qsSectionSettings[sectionKey].lockedFields[fieldPath];
+            qsSectionSettings[sectionKey].lockedFields[fieldPath] = isLocked;
+            
+            if (isLocked) {
+                let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+                let stash = stashes[activeQuickStashId];
+                if (stash) {
+                    if (!stash.fieldSelection) stash.fieldSelection = {};
+                    stash.fieldSelection[fieldPath] = true;
+                    localStorage.setItem('hvacQuickStashesV1', JSON.stringify(stashes));
+                    if (window.quickStashes && quickStashes[activeQuickStashId]) {
+                        quickStashes[activeQuickStashId].fieldSelection = stash.fieldSelection;
+                    }
+                }
+            }
+            
+            localStorage.setItem('qsSectionSettingsV1_26', JSON.stringify(qsSectionSettings));
+            renderActiveQuickStash();
+            
+            let el = document.getElementById('qsSettingsPanel');
+            if (el && el.style.display !== 'none') {
+                updateQsTunerDisplays();
+            }
+        }
+
         // FLOATING TUNER DRAG & BEHAVIOR
-        // -------------------------------------------------------------
         let isQsTunerDragging = false;
         let qsTunerDragStartX, qsTunerDragStartY;
         
@@ -4382,95 +4114,175 @@
                 }
             }
         }
-
-        function adjQsSet(key, step) {
-            let cur = parseFloat(qsSettings[key] || 0);
-            let next = cur + step;
-            if (next < 0) next = 0; // Prevent negative limits
-            if (key === 'cbSize') next = parseFloat(next.toFixed(1));
-            if (key === 'lblWeight' || key === 'datWeight' || key === 'hdrSplitTitleWeight' || key.includes('Weight')) {
-                if (next < 1) next = 1;
-                if (next > 10) next = 10;
+        
+        function openQsTunerForSection(sec, e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            activeTunerSection = sec;
+            let el = document.getElementById('qsSettingsPanel');
+            if (el) {
+                el.style.display = 'flex';
+                updateQsTunerDisplays();
             }
-            qsSettings[key] = next;
-            localStorage.setItem('qsSettingsV1_20', JSON.stringify(qsSettings));
+        }
+
+        function adjQsSet(key, step, isGlobal=false) {
+            if (isGlobal) {
+                let cur = parseFloat(qsSettings[key] || 0);
+                let next = cur + step;
+                if (next < 0) next = 0;
+                qsSettings[key] = next;
+                localStorage.setItem('qsSettingsV1_26', JSON.stringify(qsSettings));
+            } else {
+                let sSet = qsSectionSettings[activeTunerSection];
+                let cur = parseFloat(sSet[key] || 0);
+                let next = cur + step;
+                if (next < 0) next = 0;
+                if (key === 'cbSize') next = parseFloat(next.toFixed(1));
+                if (key.includes('Weight')) {
+                    if (next < 1) next = 1;
+                    if (next > 10) next = 10;
+                }
+                sSet[key] = next;
+                localStorage.setItem('qsSectionSettingsV1_26', JSON.stringify(qsSectionSettings));
+            }
             updateQsTunerDisplays();
             applyQsLiveSettings();
         }
 
-        function saveQsSettingsFromInputs() {
+        function saveQsSettingsFromInputs(isGlobal=false) {
             let v = id => { let e = document.getElementById(id); return e ? e.value : null; };
             let c = id => { let e = document.getElementById(id); return e ? e.checked : false; };
-            qsSettings.widthMode = v('qsTunerWidthMode') || 'Standard';
-            qsSettings.rowMode = v('qsTunerRowMode') || 'Fixed';
-            qsSettings.datAlign = v('qsTunerDatAlign') || 'left';
-            qsSettings.hdrSplitAlignL = v('qsTunerHdrSplitAlignL') || 'left';
-            qsSettings.hdrSplitAlignC = v('qsTunerHdrSplitAlignC') || 'center';
-            qsSettings.hdrSplitAlignR = v('qsTunerHdrSplitAlignR') || 'right';
-            qsSettings.showHopper = c('qsSetShowHopper');
-            qsSettings.showExtra = c('qsSetShowExtra');
-            qsSettings.showRawScans = c('qsSetShowRawScans');
-            qsSettings.fieldLayout = v('qsTunerFieldLayout') || 'ROW';
-            localStorage.setItem('qsSettingsV1_20', JSON.stringify(qsSettings));
+            
+            if (isGlobal) {
+                qsSettings.widthMode = v('qsTunerWidthMode') || 'Standard';
+                qsSettings.showHopper = c('qsSetShowHopper');
+                qsSettings.showExtra = c('qsSetShowExtra');
+                qsSettings.showRawScans = c('qsSetShowRawScans');
+                localStorage.setItem('qsSettingsV1_26', JSON.stringify(qsSettings));
+            } else {
+                let sSet = qsSectionSettings[activeTunerSection];
+                sSet.fieldLayout = v('qsTunerFieldLayout') || 'ROW';
+                sSet.datAlign = v('qsTunerDatAlign') || 'left';
+                sSet.rowMode = v('qsTunerRowMode') || 'Fixed';
+                localStorage.setItem('qsSectionSettingsV1_26', JSON.stringify(qsSectionSettings));
+            }
             updateHopperVisibility();
             applyQsLiveSettings();
         }
 
         function updateQsTunerDisplays() {
-            const upd = (key) => { let e = document.getElementById('qsSetVal_' + key); if (e) e.innerText = qsSettings[key]; };
-            upd('fixedWidth');
-            upd('outerPadding');
-            upd('sectionGap');
-            upd('rowPadV');
-            upd('rowPadH');
-            upd('rowMinHeight');
-            upd('cbSize');
-            upd('lblFs');
-            upd('datFs');
-            upd('lblColW');
-            upd('lblWeight');
-            upd('datWeight');
-            upd('hdrSplitTitleWeight');
-            upd('hdrSplitLWeight');
-            upd('hdrSplitCWeight');
-            upd('hdrSplitRWeight');
-            upd('hdrSplitFs');
-            upd('rowGap');
-            upd('rowRad');
-            upd('hdrFs');
-            upd('hdrPadV');
-            upd('hdrPadH');
-            upd('hdrRad');
-            upd('hdrActiveFs');
-            upd('hdrActiveWd');
-            upd('hdrCloseWd');
-            upd('hdrCloseFs');
-            upd('hdrStorageFs');
-            upd('hdrVerFs');
-            upd('hdrWorkspaceFs');
+            let content = document.getElementById('qsSettingsContent');
+            if (!content) return;
             
-            let wMode = document.getElementById('qsTunerWidthMode');
-            if (wMode) wMode.value = qsSettings.widthMode;
+            let sSet = qsSectionSettings[activeTunerSection];
+            let secName = activeTunerSection.toUpperCase();
             
-            let fLayout = document.getElementById('qsTunerFieldLayout');
-            if (fLayout) fLayout.value = qsSettings.fieldLayout || 'ROW';
+            let titleEl = document.getElementById('qsTunerHeaderTitle');
+            if (titleEl) titleEl.innerText = secName + " TUNER";
             
-            let dAlign = document.getElementById('qsTunerDatAlign');
-            if (dAlign) dAlign.value = qsSettings.datAlign;
+            let html = '';
             
-            let rMode = document.getElementById('qsTunerRowMode');
-            if (rMode) rMode.value = qsSettings.rowMode;
-            let hl = document.getElementById('qsTunerHdrSplitAlignL');
-            if (hl) hl.value = qsSettings.hdrSplitAlignL;
-            let hc = document.getElementById('qsTunerHdrSplitAlignC');
-            if (hc) hc.value = qsSettings.hdrSplitAlignC;
-            let hr = document.getElementById('qsTunerHdrSplitAlignR');
-            if (hr) hr.value = qsSettings.hdrSplitAlignR;
+            const bGrp = (label, key, isGlobal=false) => {
+                let val = isGlobal ? qsSettings[key] : sSet[key];
+                return `<div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                            <span>${label}</span>
+                            <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
+                                <button onclick="adjQsSet('${key}', -1, ${isGlobal})" style="width:24px; color:#aaa; cursor:pointer;">-</button>
+                                <span style="width:36px; text-align:center; font-family:monospace;">${val}</span>
+                                <button onclick="adjQsSet('${key}', 1, ${isGlobal})" style="width:24px; color:#aaa; cursor:pointer;">+</button>
+                            </div>
+                        </div>`;
+            };
             
-            let c = (id, val) => { let e = document.getElementById(id); if (e) e.checked = val; };
-            c('qsSetShowHopper', qsSettings.showHopper);
-            c('qsSetShowExtra', qsSettings.showExtra);
-            c('qsSetShowRawScans', qsSettings.showRawScans);
+            // GLOBAL SECTION
+            html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
+                        <div style="color:var(--emerald-green); font-weight:900; margin-bottom:8px;">GLOBAL</div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                            <span>Width Mode</span>
+                            <select id="qsTunerWidthMode" onchange="saveQsSettingsFromInputs(true)" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
+                                <option value="Compact" ${qsSettings.widthMode==='Compact'?'selected':''}>Compact</option>
+                                <option value="Standard" ${qsSettings.widthMode==='Standard'?'selected':''}>Standard</option>
+                                <option value="Wide" ${qsSettings.widthMode==='Wide'?'selected':''}>Wide</option>
+                                <option value="Full" ${qsSettings.widthMode==='Full'?'selected':''}>Full</option>
+                                <option value="Fixed" ${qsSettings.widthMode==='Fixed'?'selected':''}>Fixed</option>
+                            </select>
+                        </div>
+                        ${bGrp('Fixed Width (px)', 'fixedWidth', true)}
+                        ${bGrp('Outer Padding', 'outerPadding', true)}
+                        ${bGrp('Section Gap', 'sectionGap', true)}
+                        <div style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px solid #444; padding-top:8px;">
+                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowHopper" ${qsSettings.showHopper?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Hopper</label>
+                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowExtra" ${qsSettings.showExtra?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Extra</label>
+                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowRawScans" ${qsSettings.showRawScans?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Raw Scans</label>
+                        </div>
+                    </div>`;
+                    
+            // FIELD ROWS SECTION
+            html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
+                        <div style="color:var(--electric-blue); font-weight:900; margin-bottom:8px;">FIELD ROWS (${secName})</div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                            <span>Field Layout</span>
+                            <select id="qsTunerFieldLayout" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
+                                <option value="ROW" ${sSet.fieldLayout==='ROW'?'selected':''}>ROW</option>
+                                <option value="STACK" ${sSet.fieldLayout==='STACK'?'selected':''}>STACK</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                            <span>Row Mode</span>
+                            <select id="qsTunerRowMode" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
+                                <option value="Fixed" ${sSet.rowMode==='Fixed'?'selected':''}>Fixed</option>
+                                <option value="Weight" ${sSet.rowMode==='Weight'?'selected':''}>Weight</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                            <span>Data Align</span>
+                            <select id="qsTunerDatAlign" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
+                                <option value="left" ${sSet.datAlign==='left'?'selected':''}>Left</option>
+                                <option value="center" ${sSet.datAlign==='center'?'selected':''}>Center</option>
+                                <option value="right" ${sSet.datAlign==='right'?'selected':''}>Right</option>
+                            </select>
+                        </div>
+                        ${bGrp('Label Font Size', 'lblFs')}
+                        ${bGrp('Data Font Size', 'datFs')}
+                        ${bGrp('Label Col Width', 'lblColW')}
+                        ${bGrp('Label Weight', 'lblWeight')}
+                        ${bGrp('Data Weight', 'datWeight')}
+                        ${bGrp('Min Height', 'rowMinHeight')}
+                        ${bGrp('Row Gap', 'rowGap')}
+                        ${bGrp('Row Radius', 'rowRad')}
+                        ${bGrp('Padding V', 'rowPadV')}
+                        ${bGrp('Padding H', 'rowPadH')}
+                        ${bGrp('Action Btn Size', 'actionBtnSize')}
+                        ${bGrp('Action Btn Gap', 'actionBtnGap')}
+                    </div>`;
+
+            // LOCKED FIELDS SECTION
+            html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
+                        <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">LOCKED FIELDS (${secName})</div>
+                        <div style="display:grid; grid-template-columns:1fr; gap:5px;">`;
+            
+            // Collect keys for active section
+            let keys = [];
+            if (activeTunerSection === 'customer') keys = ['date', 'invoiceDate', 'name', 'address', 'phone', 'email'];
+            else if (activeTunerSection === 'equipment') keys = ['outdoorModel', 'outdoorSerial', 'indoorModel', 'indoorSerial', 'thermostatModel'];
+            else if (activeTunerSection === 'readings') keys = ['odat', 'suctionPressure', 'liquidPressure', 'vaporSaturation', 'liquidSaturation', 'suctionLineTemp', 'liquidLineTemp', 'superheat', 'subcool', 'returnTemp', 'returnHumidity', 'supplyTemp', 'deltaT'];
+            else if (activeTunerSection === 'diagnostics') keys = ['hermVolts', 'hermAmps', 'hermCalculatedUf', 'hermBenchUf', 'fanVolts', 'fanAmps', 'fanCalculatedUf', 'fanBenchUf', 'capacitorResult', 'capacitorDeviationPercent', 'compressorRlaRating', 'compressorLraRating', 'fanFlaRating', 'targetSubcool', 'rlaMeasured', 'rla2Measured', 'flaOdfMeasured', 'compressorLoadPercent', 'fanLoadPercent', 'motorLoadResult'];
+            else if (activeTunerSection === 'extra') {
+                if (window.quickStashes && quickStashes[activeQuickStashId] && quickStashes[activeQuickStashId].extra) {
+                    keys = Object.keys(quickStashes[activeQuickStashId].extra);
+                }
+            }
+            
+            keys.forEach(k => {
+                let fp = `${activeTunerSection}.${k}`;
+                let isLocked = sSet.lockedFields && sSet.lockedFields[fp];
+                html += `<label style="display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" ${isLocked?'checked':''} onchange="toggleQsFieldLock('${activeTunerSection}', '${fp}')"> ${k}
+                        </label>`;
+            });
+            html += `</div></div>`;
+            
+            content.innerHTML = html;
         }
 
         // Backward compatibility stub if anywhere else invokes this
@@ -4496,17 +4308,8 @@
                 document.head.appendChild(styleEl);
             }
             
-            styleEl.innerHTML = `
+            let css = `
                 :root {
-                    --qs-lbl-col: ${qsSettings.lblColW}px;
-                    --qs-row-gap: ${qsSettings.rowGap}px;
-                    --qs-row-rad: ${qsSettings.rowRad}px;
-                    --qs-row-min-ht: ${qsSettings.rowMinHeight}px;
-                    --qs-row-pad: ${qsSettings.rowPadV}px ${qsSettings.rowPadH}px;
-                    --qs-cb-size: ${qsSettings.cbSize};
-                    --qs-lbl-fs: ${qsSettings.lblFs}px;
-                    --qs-dat-fs: ${qsSettings.datFs}px;
-                    --qs-dat-align: ${qsSettings.datAlign};
                     --qs-hdr-fs: ${qsSettings.hdrFs}px;
                     --qs-hdr-pad: ${qsSettings.hdrPadV}px ${qsSettings.hdrPadH}px;
                     --qs-hdr-rad: ${qsSettings.hdrRad}px;
@@ -4516,54 +4319,13 @@
                     --qs-hdr-active-wd: ${qsSettings.hdrActiveWd ? qsSettings.hdrActiveWd + 'px' : 'auto'};
                     --qs-hdr-close-wd: ${qsSettings.hdrCloseWd || 30}px;
                     --qs-hdr-close-fs: ${qsSettings.hdrCloseFs || 20}px;
-                    --qs-hdr-ver-fs: ${qsSettings.hdrVerFs || 10}px;
-                    --qs-hdr-storage-fs: ${qsSettings.hdrStorageFs || 10}px;
+                    --qs-hdr-ver-fs: ${qsSettings.hdrVerFs || 14}px;
+                    --qs-hdr-storage-fs: ${qsSettings.hdrStorageFs || 14}px;
                     --qs-hdr-workspace-fs: ${qsSettings.hdrWorkspaceFs || 10}px;
                 }
                 #quickStashContent {
                     padding: var(--qs-outer-padding) !important;
                     gap: var(--qs-section-gap) !important;
-                }
-                .qs-field-row {
-                    display: grid !important;
-                    grid-template-columns: ${qsSettings.rowMode === 'Weight' ? `24px ${qsSettings.lblWeight}fr ${qsSettings.datWeight}fr` : `24px var(--qs-lbl-col) 1fr`} !important;
-                    gap: var(--qs-row-gap) !important;
-                    padding: var(--qs-row-pad) !important;
-                    border-radius: var(--qs-row-rad) !important;
-                    min-height: var(--qs-row-min-ht) !important;
-                    align-items: start;
-                    background: rgba(255,255,255,0.03);
-                    margin-bottom: 4px;
-                }
-                .qs-field-select {
-                    transform: scale(var(--qs-cb-size)) !important;
-                    accent-color: var(--electric-blue);
-                }
-                .qs-field-label {
-                    font-size: var(--qs-lbl-fs) !important;
-                    color: #aaa;
-                    font-weight: 900;
-                    line-height: 1.2;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    padding-top: 2px;
-                }
-                .qs-textarea {
-                    width: 100%;
-                    background: transparent;
-                    border: none;
-                    color: white;
-                    font-weight: 900;
-                    font-size: var(--qs-dat-fs) !important;
-                    text-align: var(--qs-dat-align) !important;
-                    outline: none;
-                    resize: none;
-                    overflow: hidden;
-                    font-family: inherit;
-                    line-height: 1.4;
-                    padding: 0;
-                    margin: 0;
                 }
                 .qs-section-header {
                     font-size: var(--qs-hdr-fs) !important;
@@ -4576,7 +4338,86 @@
                     cursor: pointer;
                     margin: 15px 0 5px 0;
                 }
+                .qs-field-select {
+                    accent-color: var(--electric-blue);
+                }
+                /* Active fields get white border when checked, amber when locked. Done via inline style mostly, but can add css here */
             `;
+            
+            ['customer', 'equipment', 'readings', 'diagnostics', 'extra'].forEach(sec => {
+                let sSet = qsSectionSettings[sec];
+                if(!sSet) return;
+                
+                let id = 'qsSec_' + sec.charAt(0).toUpperCase() + sec.slice(1);
+                if (sec === 'diagnostics') id = 'qsSec_Diagnostics'; // already matched above but ensuring case
+                
+                let gridCols = sSet.rowMode === 'Weight' ? `24px ${sSet.lblWeight}fr ${sSet.datWeight}fr` : `var(--qs-lbl-col) 1fr`;
+                if(sSet.fieldLayout === 'STACK') gridCols = '1fr';
+
+                css += `
+                    #${id} {
+                        --qs-lbl-col: ${sSet.lblColW}px;
+                        --qs-row-gap: ${sSet.rowGap}px;
+                        --qs-row-rad: ${sSet.rowRad}px;
+                        --qs-row-min-ht: ${sSet.rowMinHeight}px;
+                        --qs-row-pad: ${sSet.rowPadV}px ${sSet.rowPadH}px;
+                        --qs-cb-size: ${sSet.cbSize};
+                        --qs-lbl-fs: ${sSet.lblFs}px;
+                        --qs-dat-fs: ${sSet.datFs}px;
+                        --qs-dat-align: ${sSet.datAlign};
+                    }
+                    #${id} .qs-field-row {
+                        gap: var(--qs-row-gap) !important;
+                        padding: var(--qs-row-pad) !important;
+                        border-radius: var(--qs-row-rad) !important;
+                        min-height: var(--qs-row-min-ht) !important;
+                        align-items: start;
+                        background: rgba(255,255,255,0.03);
+                        margin-bottom: 4px;
+                    }
+                    #${id} .qs-field-label {
+                        font-size: var(--qs-lbl-fs) !important;
+                        color: #aaa;
+                        font-weight: 900;
+                        line-height: 1.2;
+                        white-space: normal !important;
+                        overflow: visible !important;
+                        padding-top: 2px;
+                    }
+                    #${id} .qs-textarea {
+                        font-size: var(--qs-dat-fs) !important;
+                        text-align: var(--qs-dat-align) !important;
+                        width: 100%;
+                        background: transparent;
+                        color: white;
+                        border: none;
+                        outline: none;
+                        resize: none;
+                        overflow: hidden;
+                        font-family: inherit;
+                        font-weight: 900;
+                        line-height: 1.4;
+                        padding: 0;
+                        margin: 0;
+                    }
+                `;
+                
+                if (sSet.fieldLayout !== 'STACK') {
+                    css += `
+                        #${id} .qs-field-row {
+                            display: grid !important;
+                            grid-template-columns: ${gridCols} !important;
+                        }
+                        #${id} .qs-field-label {
+                            white-space: nowrap !important;
+                            overflow: hidden !important;
+                            text-overflow: ellipsis;
+                        }
+                    `;
+                }
+            });
+            
+            styleEl.innerHTML = css;
             
             setTimeout(() => {
                 document.querySelectorAll('.qs-textarea').forEach(ta => {
@@ -4878,20 +4719,98 @@
 
             updateQsStorageUsage();
             
-            function buildHeader(title, color, key, customHtml = null) {
+            window.qsSelectSection = function(cat, isSelectAll, e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                let stash = quickStashes[activeQuickStashId];
+                if (!stash.fieldSelection) stash.fieldSelection = {};
+                
+                let keys = [];
+                if (cat === 'customer') keys = ['date', 'invoiceDate', 'name', 'address', 'phone', 'email'];
+                else if (cat === 'equipment') keys = ['outdoorModel', 'outdoorSerial', 'indoorModel', 'indoorSerial', 'thermostatModel'];
+                else if (cat === 'readings') keys = ['odat', 'suctionPressure', 'liquidPressure', 'vaporSaturation', 'liquidSaturation', 'suctionLineTemp', 'liquidLineTemp', 'superheat', 'subcool', 'returnTemp', 'returnHumidity', 'supplyTemp', 'deltaT'];
+                else if (cat === 'diagnostics') keys = ['hermVolts', 'hermAmps', 'hermCalculatedUf', 'hermBenchUf', 'fanVolts', 'fanAmps', 'fanCalculatedUf', 'fanBenchUf', 'capacitorResult', 'capacitorDeviationPercent', 'compressorRlaRating', 'compressorLraRating', 'fanFlaRating', 'targetSubcool', 'rlaMeasured', 'rla2Measured', 'flaOdfMeasured', 'compressorLoadPercent', 'fanLoadPercent', 'motorLoadResult'];
+                else if (cat === 'extra' && stash.extra) keys = Object.keys(stash.extra);
+                
+                let sSet = qsSectionSettings[cat] || {};
+                
+                for (let k of keys) {
+                    let fp = `${cat}.${k}`;
+                    if (isSelectAll) {
+                        stash.fieldSelection[fp] = true;
+                    } else {
+                        let isLocked = sSet.lockedFields && sSet.lockedFields[fp];
+                        if (!isLocked) {
+                            stash.fieldSelection[fp] = false;
+                        }
+                    }
+                }
+                localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+                updateQsPreview();
+                renderActiveQuickStash();
+            };
+
+            function buildHeader(cat, title, color, key, customHtml = null) {
                 let isCol = qsSettings['collapse' + key];
                 let disp = isCol ? 'none' : 'block';
                 let arr = isCol ? '▼' : '▲';
                 let content = customHtml ? customHtml : `<span>${title}</span>`;
+                
+                let controls = '';
+                if (['customer', 'equipment', 'readings', 'diagnostics', 'extra'].includes(cat)) {
+                    let total = 0;
+                    let populated = 0;
+                    
+                    let keys = [];
+                    if (cat === 'customer') keys = ['date', 'invoiceDate', 'name', 'address', 'phone', 'email'];
+                    else if (cat === 'equipment') keys = ['outdoorModel', 'outdoorSerial', 'indoorModel', 'indoorSerial', 'thermostatModel'];
+                    else if (cat === 'readings') keys = ['odat', 'suctionPressure', 'liquidPressure', 'vaporSaturation', 'liquidSaturation', 'suctionLineTemp', 'liquidLineTemp', 'superheat', 'subcool', 'returnTemp', 'returnHumidity', 'supplyTemp', 'deltaT'];
+                    else if (cat === 'diagnostics') keys = ['hermVolts', 'hermAmps', 'hermCalculatedUf', 'hermBenchUf', 'fanVolts', 'fanAmps', 'fanCalculatedUf', 'fanBenchUf', 'capacitorResult', 'capacitorDeviationPercent', 'compressorRlaRating', 'compressorLraRating', 'fanFlaRating', 'targetSubcool', 'rlaMeasured', 'rla2Measured', 'flaOdfMeasured', 'compressorLoadPercent', 'fanLoadPercent', 'motorLoadResult'];
+                    else if (cat === 'extra' && stash.extra) keys = Object.keys(stash.extra);
+                    
+                    for (let k of keys) {
+                        total++;
+                        let v = stash[cat] ? stash[cat][k] : "";
+                        if (v !== undefined && v !== null && v.toString().trim() !== '') populated++;
+                    }
+                    
+                    content = `
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span>${title}</span>
+                            <span style="font-size:10px; color:#888; font-family:monospace; background:rgba(0,0,0,0.4); padding:2px 4px; border-radius:4px;">${populated}/${total}</span>
+                        </div>
+                    `;
+                    
+                    controls = `
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <button onclick="qsSelectSection('${cat}', true, event)" style="background:none; border:1px solid #555; color:#aaa; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; cursor:pointer;">ALL</button>
+                            <button onclick="qsSelectSection('${cat}', false, event)" style="background:none; border:1px solid #555; color:#aaa; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; cursor:pointer;">CLR</button>
+                            <button onclick="openQsTunerForSection('${cat}', event)" style="background:none; border:none; color:#aaa; font-size:14px; cursor:pointer;" title="Tuner">⚙️</button>
+                        </div>
+                    `;
+                }
+
                 return `
                     <div class="qs-section-header" style="color:${color}; display:flex; justify-content:space-between; align-items:center;" onclick="toggleQsSection('${key}')">
                         <div style="flex:1; display:flex;">${content}</div>
+                        ${controls}
                         <span id="qsSecArr_${key}" style="color:#666; margin-left:10px;">${arr}</span>
                     </div>
                     <div id="qsSec_${key}" style="display:${disp};">
                 `;
             }
             
+            window.toggleQsCheckbox = function(cat, key, nextState) {
+                let stash = quickStashes[activeQuickStashId];
+                let sSet = qsSectionSettings[cat] || {};
+                let isLocked = sSet.lockedFields && sSet.lockedFields[`${cat}.${key}`];
+                if (isLocked) {
+                    return; // Cannot toggle if locked
+                }
+                updateQsCheckbox(cat, key, nextState);
+                updateQsPreview();
+                renderActiveQuickStash();
+            };
+
             function buildField(cat, key, label) {
                 let rawVal = stash[cat] && stash[cat][key] !== undefined ? stash[cat][key] : "";
                 if (!rawVal || String(rawVal).trim() === "") {
@@ -4900,13 +4819,16 @@
                 const val = (rawVal || "").toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 
                 let safeLabelStr = label.replace(/'/g, "\\'");
-                let mapBtn = `<button onclick="openQsFieldMapper('${cat}', '${key}', '${safeLabelStr}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:9px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">MAP</button>`;
-                let clearBtn = `<button onclick="clearQsField('${cat}', '${key}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:9px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">CLR</button>`;
+                
+                let sSet = qsSectionSettings[cat] || defaultQsSectionSettingsTemplate;
+                
+                let mapBtn = `<button onclick="openQsFieldMapper('${cat}', '${key}', '${safeLabelStr}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:${sSet.actionBtnSize||9}px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">MAP</button>`;
+                let clearBtn = `<button onclick="clearQsField('${cat}', '${key}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:${sSet.actionBtnSize||9}px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">CLR</button>`;
 
                 let inputHtml = `
                     <div style="display:flex; align-items:flex-start; width:100%;">
-                        <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1">${val}</textarea>
-                        <div class="qs-action-col">
+                        <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1" onpointerdown="qsHandlePointerDown(event, '${cat}', '${cat}.${key}')" onpointermove="qsHandlePointerMove(event)" onpointerup="qsHandlePointerUp(event)" onclick="qsHandleClick(event)">${val}</textarea>
+                        <div class="qs-action-col" style="gap:${sSet.actionBtnGap||2}px;">
                             ${mapBtn}
                             ${clearBtn}
                         </div>
@@ -4916,8 +4838,8 @@
                 if (cat === 'customer' && (key === 'date' || key === 'invoiceDate')) {
                     inputHtml = `
                     <div style="display:flex; align-items:flex-start; width:100%;">
-                        <input type="date" class="qs-textarea" style="flex:1; cursor:pointer; color-scheme:dark;" value="${val}" onclick="if(this.showPicker) this.showPicker();" onchange="updateStashField('${cat}', '${key}', this.value); renderActiveQuickStash();">
-                        <div class="qs-action-col">
+                        <input type="date" class="qs-textarea" style="flex:1; cursor:pointer; color-scheme:dark;" value="${val}" onclick="if(this.showPicker) this.showPicker(); qsHandleClick(event);" onchange="updateStashField('${cat}', '${key}', this.value); renderActiveQuickStash();" onpointerdown="qsHandlePointerDown(event, '${cat}', '${cat}.${key}')" onpointermove="qsHandlePointerMove(event)" onpointerup="qsHandlePointerUp(event)">
+                        <div class="qs-action-col" style="gap:${sSet.actionBtnGap||2}px;">
                             ${mapBtn}
                             ${clearBtn}
                         </div>
@@ -4935,9 +4857,9 @@
                     inputHtml = `
                         <div style="display:flex; flex-direction:column; width:100%;">
                             <div style="display:flex; align-items:flex-start; width:100%;">
-                                <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1">${val}</textarea>
+                                <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1" onpointerdown="qsHandlePointerDown(event, '${cat}', '${cat}.${key}')" onpointermove="qsHandlePointerMove(event)" onpointerup="qsHandlePointerUp(event)" onclick="qsHandleClick(event)">${val}</textarea>
                                 ${pinBtn}
-                                <div class="qs-action-col">
+                                <div class="qs-action-col" style="gap:${sSet.actionBtnGap||2}px;">
                                     ${mapBtn}
                                     ${clearBtn}
                                 </div>
@@ -4950,8 +4872,10 @@
                 if (cat === 'extra') {
                     inputHtml = `
                         <div style="display:flex; align-items:flex-start; width:100%;">
-                            <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1">${val}</textarea>
-                            ${clearBtn}
+                            <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1" onpointerdown="qsHandlePointerDown(event, '${cat}', '${cat}.${key}')" onpointermove="qsHandlePointerMove(event)" onpointerup="qsHandlePointerUp(event)" onclick="qsHandleClick(event)">${val}</textarea>
+                            <div class="qs-action-col" style="gap:${sSet.actionBtnGap||2}px;">
+                                ${clearBtn}
+                            </div>
                         </div>
                     `;
                 }
@@ -4960,23 +4884,34 @@
                 if (stash.fieldSelection && typeof stash.fieldSelection[`${cat}.${key}`] !== 'undefined') {
                     isChecked = stash.fieldSelection[`${cat}.${key}`];
                 }
-
-                if (qsSettings.fieldLayout === 'STACK') {
+                let isLocked = sSet.lockedFields && sSet.lockedFields[`${cat}.${key}`];
+                
+                let borderStyle = 'border:1px solid transparent;';
+                let lockIcon = '';
+                if (isLocked) {
+                    borderStyle = 'border:1px solid var(--amber-orange) !important;';
+                    lockIcon = '<span style="font-size:10px; margin-right:4px;">🔒</span>';
+                } else if (isChecked) {
+                    borderStyle = 'border:1px solid white;';
+                }
+                
+                let rowStyle = '';
+                if (sSet.fieldLayout === 'STACK') {
+                    rowStyle = `display:flex !important; align-items:flex-start; width:100%; ${borderStyle}`;
                     return `
-                        <div class="qs-field-row" style="display:flex !important; align-items:flex-start; width:100%;">
-                            <div style="padding-top:2px; flex-shrink:0; width:24px; margin-right:var(--qs-row-gap);"><input type="checkbox" class="qs-field-select" data-cat="${cat}" data-key="${key}" data-label="${label}" ${isChecked ? 'checked' : ''} onchange="updateQsCheckbox('${cat}', '${key}', this.checked); updateQsPreview()"></div>
+                        <div class="qs-field-row" style="${rowStyle}">
                             <div style="display:flex; flex-direction:column; flex:1; min-width:0;">
-                                <div class="qs-field-label" style="width:100%; white-space:normal !important; overflow:visible !important; text-align:left; margin-bottom:2px; margin-left:2px;">${label}</div>
+                                <div class="qs-field-label" style="width:100%; white-space:normal !important; overflow:visible !important; text-align:left; margin-bottom:2px; margin-left:2px; cursor:pointer;" onclick="toggleQsCheckbox('${cat}', '${key}', ${!isChecked})">${lockIcon}${label}</div>
                                 ${inputHtml}
                             </div>
                         </div>
                     `;
                 }
 
+                rowStyle = borderStyle;
                 return `
-                    <div class="qs-field-row">
-                        <div style="padding-top:2px; flex-shrink:0;"><input type="checkbox" class="qs-field-select" data-cat="${cat}" data-key="${key}" data-label="${label}" ${isChecked ? 'checked' : ''} onchange="updateQsCheckbox('${cat}', '${key}', this.checked); updateQsPreview()"></div>
-                        <div class="qs-field-label">${label}</div>
+                    <div class="qs-field-row" style="${rowStyle}">
+                        <div class="qs-field-label" style="cursor:pointer;" onclick="toggleQsCheckbox('${cat}', '${key}', ${!isChecked})">${lockIcon}${label}</div>
                         ${inputHtml}
                     </div>
                 `;
@@ -4987,7 +4922,21 @@
                 renderActiveQuickStash();
             };
 
-            html += buildHeader('CUSTOMER', 'var(--electric-blue)', 'Customer');
+            
+            window.qsSelectGlobal = function(isSelectAll, e) {
+                if (e) { e.preventDefault(); e.stopPropagation(); }
+                ['customer', 'equipment', 'readings', 'diagnostics', 'extra'].forEach(cat => {
+                    qsSelectSection(cat, isSelectAll, null);
+                });
+            };
+
+            html += `
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
+                    <button onclick="qsSelectGlobal(true, event)" style="background:rgba(0,229,255,0.1); border:1px solid var(--electric-blue); color:var(--electric-blue); font-size:10px; padding:4px 10px; border-radius:4px; font-weight:900; cursor:pointer;">SELECT ALL</button>
+                    <button onclick="qsSelectGlobal(false, event)" style="background:rgba(255,255,255,0.05); border:1px solid #555; color:#aaa; font-size:10px; padding:4px 10px; border-radius:4px; font-weight:900; cursor:pointer;">CLEAR ALL</button>
+                </div>
+            `;
+            html += buildHeader('customer', 'CUSTOMER', 'var(--electric-blue)', 'Customer');
             html += buildField('customer', 'date', 'Date');
             html += buildField('customer', 'invoiceDate', 'Invoice Date');
             html += buildField('customer', 'name', 'Customer Name');
@@ -4996,7 +4945,7 @@
             html += buildField('customer', 'email', 'Email');
             html += `</div>`;
 
-            html += buildHeader('EQUIPMENT', 'var(--emerald-green)', 'Equipment');
+            html += buildHeader('equipment', 'EQUIPMENT', 'var(--emerald-green)', 'Equipment');
             html += buildField('equipment', 'outdoorModel', 'Outdoor Model');
             html += buildField('equipment', 'outdoorSerial', 'Outdoor Serial');
             html += buildField('equipment', 'indoorModel', 'Indoor Model');
@@ -5004,7 +4953,7 @@
             html += buildField('equipment', 'thermostatModel', 'Thermostat Model');
             html += `</div>`;
 
-            html += buildHeader('READINGS', 'var(--amber-orange)', 'Readings');
+            html += buildHeader('readings', 'READINGS', 'var(--amber-orange)', 'Readings');
             html += buildField('readings', 'odat', 'ODAT');
             html += buildField('readings', 'suctionPressure', 'Suction Pressure');
             html += buildField('readings', 'liquidPressure', 'Liquid Pressure');
@@ -5020,7 +4969,7 @@
             html += buildField('readings', 'deltaT', 'ΔT');
             html += `</div>`;
 
-              html += buildHeader('DIAGNOSTICS', 'var(--crimson-red)', 'Diagnostics');
+              html += buildHeader('diagnostics', 'DIAGNOSTICS', 'var(--crimson-red)', 'Diagnostics');
               html += buildField('diagnostics', 'hermVolts', 'Herm Volts');
               html += buildField('diagnostics', 'hermAmps', 'Herm Amps');
               html += buildField('diagnostics', 'hermCalculatedUf', 'Herm Calculated \u00B5F');
@@ -5074,7 +5023,7 @@
             if (qsSettings.showRawScans && stash.rawScans && stash.rawScans.length > 0) {
                 html += `
                     <div style="margin-bottom:15px; background:rgba(0,0,0,0.4); border:1px solid #444; border-radius:12px; padding:15px;">
-                        ${buildHeader('RAW SCANS (' + stash.rawScans.length + ')', '#aaa', 'RawScans')}
+                        ${buildHeader('rawscans', 'RAW SCANS (' + stash.rawScans.length + ')', '#aaa', 'RawScans')}
                 `;
                 stash.rawScans.forEach((scan, scanIndex) => {
                     html += `<div style="font-size:11px; color:#888; font-weight:900; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
@@ -5086,7 +5035,7 @@
                 html += `</div></div>`;
             }
 
-            html += buildHeader('COMBINED STASH BLOCK (SELECTABLE)', '#888', 'Combined');
+            html += buildHeader('combined', 'COMBINED STASH BLOCK (SELECTABLE)', '#888', 'Combined');
             html += `
                 <div style="padding:15px; border:1px dashed #444; border-top:none; border-radius:0 0 12px 12px; background:rgba(0,0,0,0.2); margin-top:-10px;">
                     <div id="quickStashCombinedText" style="user-select:all; -webkit-user-select:all; font-family:monospace; font-size:12px; color:#ddd; white-space:pre-wrap; word-break:break-word;"></div>
