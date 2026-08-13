@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.51</title>
+    <title>HVAC Splash v1.52</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.51</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.52</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -2199,7 +2199,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.51</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.52</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2588,7 +2588,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.51";
+        const APP_VERSION = "v1.52";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         // Restoration Helpers (v28.42)
@@ -4937,8 +4937,10 @@
                             <div style="display:flex; align-items:flex-start; width:100%;">
                                 <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1">${val}</textarea>
                                 ${pinBtn}
-                                ${mapBtn}
-                                ${clearBtn}
+                                <div class="qs-action-col">
+                                    ${mapBtn}
+                                    ${clearBtn}
+                                </div>
                             </div>
                             ${confirmedBadge}
                         </div>
@@ -6057,7 +6059,7 @@
 
         function restoreQuickStashRawScan(scanIndex) {
             if (!confirm("Restore empty Quick Stash fields from this saved scan?")) return;
-            let quickStashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+            quickStashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
             let stash = quickStashes[activeQuickStashId];
             if (!stash || !stash.rawScans || !stash.rawScans[scanIndex]) return;
 
