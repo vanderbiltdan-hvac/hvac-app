@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.10</title>
+<title>Diagnostics v5.12</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center uppercase">[ Build: v5_10 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -463,11 +463,11 @@ HUB
 <!-- BOTTOM APP NAVIGATION RIBBON -->
 <div id="bottom-nav-ribbon" class="w-full h-16 bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex justify-start px-2 py-2 overflow-x-auto no-scrollbar gap-2">
 <a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.02</span></a>
-<button onclick="openSplashHome()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-indigo-500 rounded text-indigo-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Splash<br><span class="text-[8px] font-normal">Quick Stash</span></button>
+<a href="Splash.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">Quick Stash</span></a>
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="#" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.10</span></a>
+<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -548,8 +548,8 @@ const liveAppState = {
     flowMode: 'tool',
     diag_herm_bench: null, diag_fan_bench: null,
     target_mfd: 35, target_fan_mfd: 5,
-    cRlaRating: 14.20, odfFlaRating: 1.10,
-    cRla2Rating: 14.20, odfFla2Rating: 1.10,
+    cRlaRating: null, cLraRating: null, odfFlaRating: null,
+    cRla2Rating: null, cLra2Rating: null, odfFla2Rating: null, targetSubcool: null,
     circ_a: "Herm", circ_b: "Fan",
     comp_qty: 1, fan_qty: 1,
     selectedTolerance: 0.06,
@@ -693,10 +693,13 @@ function toggleConfigModal() {
 
             document.getElementById('config-target-fan-mfd').value = liveAppState.target_fan_mfd || 5;
 
-            document.getElementById('config-comp-rla-rating').value = liveAppState.cRlaRating || 14.20;
-            document.getElementById('config-comp-rla-2-rating').value = liveAppState.cRla2Rating || 14.20;
-            document.getElementById('config-fan-fla-rating').value = liveAppState.odfFlaRating || 1.10;
-            document.getElementById('config-fan-fla-2-rating').value = liveAppState.odfFla2Rating || 1.10;
+            document.getElementById('config-comp-rla-rating').value = liveAppState.cRlaRating ?? '';
+            document.getElementById('config-comp-lra-rating').value = liveAppState.cLraRating ?? '';
+            document.getElementById('config-comp-rla-2-rating').value = liveAppState.cRla2Rating ?? '';
+            document.getElementById('config-comp-lra-2-rating').value = liveAppState.cLra2Rating ?? '';
+            document.getElementById('config-fan-fla-rating').value = liveAppState.odfFlaRating ?? '';
+            document.getElementById('config-fan-fla-2-rating').value = liveAppState.odfFla2Rating ?? '';
+            document.getElementById('config-target-subcool').value = liveAppState.targetSubcool ?? '';
             renderCustomFlowBuilder();
             toggleModalVisibility();
         }
@@ -714,13 +717,17 @@ function saveSystemConfig() {
 
     liveAppState.target_fan_mfd = parseFloat(document.getElementById('config-target-fan-mfd').value) || 5;
 
-    liveAppState.cRlaRating = parseFloat(document.getElementById('config-comp-rla-rating').value) || 14.20;
-liveAppState.cLraRating = parseFloat(document.getElementById('config-comp-lra-rating').value) || null;
-liveAppState.cRla2Rating = parseFloat(document.getElementById('config-comp-rla-2-rating').value) || 14.20;
-liveAppState.cLra2Rating = parseFloat(document.getElementById('config-comp-lra-2-rating').value) || null;
-    liveAppState.odfFlaRating = parseFloat(document.getElementById('config-fan-fla-rating').value) || 1.10;
-    liveAppState.odfFla2Rating = parseFloat(document.getElementById('config-fan-fla-2-rating').value) || 1.10;
-    liveAppState.targetSubcool = parseFloat(document.getElementById('config-target-subcool').value) || null;
+    const parseIfSet = (id) => {
+        const val = document.getElementById(id).value;
+        return val !== '' ? parseFloat(val) : null;
+    };
+    liveAppState.cRlaRating = parseIfSet('config-comp-rla-rating');
+    liveAppState.cLraRating = parseIfSet('config-comp-lra-rating');
+    liveAppState.cRla2Rating = parseIfSet('config-comp-rla-2-rating');
+    liveAppState.cLra2Rating = parseIfSet('config-comp-lra-2-rating');
+    liveAppState.odfFlaRating = parseIfSet('config-fan-fla-rating');
+    liveAppState.odfFla2Rating = parseIfSet('config-fan-fla-2-rating');
+    liveAppState.targetSubcool = parseIfSet('config-target-subcool');
 
     const activeSeq = getActiveSequence();
     if (!activeSeq.find(s => s.id === liveAppState.activeField) && activeSeq.length > 0) {
@@ -857,7 +864,8 @@ function renderAdvancedPageRows() {
     let hMfdAuto = '--', fMfdAuto = '--', rlaAuto = '--', lraAuto = '--', flaAuto = '--', scAuto = '--';
     
     if (stash) {
-        if (stash.customerName) autoName = `🟢 AUTO / ${stash.customerName}`;
+        let cName = stash.customer?.name || stash.name || 'QUICK STASH';
+        if (cName) autoName = `🟢 AUTO / ${cName}`;
         
         const sections = [
             stash.diagnostics || {},
@@ -881,9 +889,9 @@ function renderAdvancedPageRows() {
             return foundValues.length === 1 ? foundValues[0] : '--';
         }
         
-        rlaAuto = resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compRla');
-        lraAuto = resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compLra');
-        flaAuto = resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'odfFla');
+        rlaAuto = resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compressorRlaRating');
+        lraAuto = resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compressorLraRating');
+        flaAuto = resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'fanFlaRating');
         scAuto = resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool');
         
         if (stash.diagnostics) {
@@ -959,19 +967,19 @@ function handleAdvancedPageSelect(val) {
                     }
                     return foundValues.length === 1 ? foundValues[0] : null;
                 }
-                const rla = resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compRla');
-                const lra = resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compLra');
-                const fla = resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'odfFla');
+                const rla = resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compressorRlaRating');
+                const lra = resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compressorLraRating');
+                const fla = resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'fanFlaRating');
                 const sc = resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool');
-                if (rla !== null) liveAppState.cRlaRating = parseFloat(rla);
-                if (lra !== null) liveAppState.cLraRating = parseFloat(lra);
-                if (fla !== null) liveAppState.odfFlaRating = parseFloat(fla);
-                if (sc !== null) liveAppState.targetSubcool = parseFloat(sc);
+                if (rla !== null && !liveAppState.cRlaRating) liveAppState.cRlaRating = parseFloat(rla);
+                if (lra !== null && !liveAppState.cLraRating) liveAppState.cLraRating = parseFloat(lra);
+                if (fla !== null && !liveAppState.odfFlaRating) liveAppState.odfFlaRating = parseFloat(fla);
+                if (sc !== null && !liveAppState.targetSubcool) liveAppState.targetSubcool = parseFloat(sc);
                 if (stash.diagnostics) {
-                    if (stash.diagnostics.target_mfd !== undefined) liveAppState.target_mfd = parseFloat(stash.diagnostics.target_mfd);
-                    else if (stash.diagnostics.hermMfd !== undefined) liveAppState.target_mfd = parseFloat(stash.diagnostics.hermMfd);
-                    if (stash.diagnostics.target_fan_mfd !== undefined) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.target_fan_mfd);
-                    else if (stash.diagnostics.fanMfd !== undefined) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.fanMfd);
+                    if (stash.diagnostics.target_mfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.target_mfd);
+                    else if (stash.diagnostics.hermMfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.hermMfd);
+                    if (stash.diagnostics.target_fan_mfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.target_fan_mfd);
+                    else if (stash.diagnostics.fanMfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.fanMfd);
                 }
             }
         }
@@ -1450,9 +1458,9 @@ function saveResultsToQuickStash() {
     if (!stash.diagnostics) stash.diagnostics = {};
     const d = stash.diagnostics;
 
-    if (!d.compRla && liveAppState.cRlaRating) d.compRla = liveAppState.cRlaRating;
-    if (!d.compLra && liveAppState.cLraRating) d.compLra = liveAppState.cLraRating;
-    if (!d.odfFla && liveAppState.odfFlaRating) d.odfFla = liveAppState.odfFlaRating;
+    if (!d.compressorRlaRating && liveAppState.cRlaRating) d.compressorRlaRating = liveAppState.cRlaRating;
+    if (!d.compressorLraRating && liveAppState.cLraRating) d.compressorLraRating = liveAppState.cLraRating;
+    if (!d.fanFlaRating && liveAppState.odfFlaRating) d.fanFlaRating = liveAppState.odfFlaRating;
     if (!d.targetSubcool && liveAppState.targetSubcool) d.targetSubcool = liveAppState.targetSubcool;
 
     if (liveAppState.diag_herm_v) d.hermVolts = liveAppState.diag_herm_v;
@@ -1461,35 +1469,35 @@ function saveResultsToQuickStash() {
     if (liveAppState.diag_fan_a) d.fanAmps = liveAppState.diag_fan_a;
     
     if (liveAppState.diag_herm_v && liveAppState.diag_herm_a) {
-        d.hermCalculatedMfd = ((liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v).toFixed(2);
+        d.hermCalculatedUf = ((liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v).toFixed(2);
     }
     if (liveAppState.diag_fan_v && liveAppState.diag_fan_a) {
-        d.fanCalculatedMfd = ((liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v).toFixed(2);
+        d.fanCalculatedUf = ((liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v).toFixed(2);
     }
     
-    if (liveAppState.diag_herm_bench) d.hermBenchMfd = liveAppState.diag_herm_bench;
-    if (liveAppState.diag_fan_bench) d.fanBenchMfd = liveAppState.diag_fan_bench;
+    if (liveAppState.diag_herm_bench) d.hermBenchUf = liveAppState.diag_herm_bench;
+    if (liveAppState.diag_fan_bench) d.fanBenchUf = liveAppState.diag_fan_bench;
 
     if (liveAppState.diag_comp_rla) d.rlaMeasured = liveAppState.diag_comp_rla;
     if (liveAppState.diag_comp_rla_2) d.rla2Measured = liveAppState.diag_comp_rla_2;
     if (liveAppState.diag_odf_fla) d.flaOdfMeasured = liveAppState.diag_odf_fla;
 
-    if (liveAppState.target_mfd && d.hermCalculatedMfd) {
-        d.capacitorDeviation = (((d.hermCalculatedMfd - liveAppState.target_mfd) / liveAppState.target_mfd) * 100).toFixed(1) + '%';
+    if (liveAppState.target_mfd && d.hermCalculatedUf) {
+        d.capacitorDeviationPercent = (((d.hermCalculatedUf - liveAppState.target_mfd) / liveAppState.target_mfd) * 100).toFixed(1) + '%';
         if (liveAppState.capacitorReportSentence) {
             d.capacitorResult = liveAppState.capacitorReportSentence;
         }
     }
 
     if (liveAppState.cRlaRating && liveAppState.diag_comp_rla) {
-        d.compressorLoadPct = ((liveAppState.diag_comp_rla / liveAppState.cRlaRating) * 100).toFixed(1) + '%';
+        d.compressorLoadPercent = ((liveAppState.diag_comp_rla / liveAppState.cRlaRating) * 100).toFixed(1) + '%';
         if (liveAppState.motorLoadReportSentence) {
             d.motorLoadResult = liveAppState.motorLoadReportSentence;
         }
     }
 
     if (liveAppState.odfFlaRating && liveAppState.diag_odf_fla) {
-        d.fanLoadPct = ((liveAppState.diag_odf_fla / liveAppState.odfFlaRating) * 100).toFixed(1) + '%';
+        d.fanLoadPercent = ((liveAppState.diag_odf_fla / liveAppState.odfFlaRating) * 100).toFixed(1) + '%';
     }
 
     stashes[activeStashId] = stash;
@@ -1993,8 +2001,8 @@ function refreshLedger() {
 
         if (canCalculate) {
             const hTgt = liveAppState.target_mfd || 35;
-            const hDev = ((hAct - hTgt) / hTgt) * 100;
             const fTgt = liveAppState.target_fan_mfd || 5;
+            const hDev = ((hAct - hTgt) / hTgt) * 100;
             const fDev = ((fAct - fTgt) / fTgt) * 100;
             const tol = liveAppState.selectedTolerance || 0.06;
             const hPass = Math.abs(hDev) <= (tol * 100);
@@ -2167,9 +2175,9 @@ function loadAutoQuickStash() {
     const stash = stashes[activeStashId];
     
     const fields = [
-        { id: 'config-comp-rla-rating', ind: 'ind-comp-rla', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], stashKey: 'compRla' },
-        { id: 'config-comp-lra-rating', ind: 'ind-comp-lra', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps'], stashKey: 'compLra' },
-        { id: 'config-fan-fla-rating', ind: 'ind-fan-fla', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], stashKey: 'odfFla' },
+        { id: 'config-comp-rla-rating', ind: 'ind-comp-rla', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], stashKey: 'compressorRlaRating' },
+        { id: 'config-comp-lra-rating', ind: 'ind-comp-lra', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps'], stashKey: 'compressorLraRating' },
+        { id: 'config-fan-fla-rating', ind: 'ind-fan-fla', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], stashKey: 'fanFlaRating' },
         { id: 'config-target-subcool', ind: 'ind-target-sc', aliases: ['Target SC', 'Target Subcool', 'Subcool Target'], stashKey: 'targetSubcool' }
     ];
 
@@ -2227,7 +2235,7 @@ function loadAutoQuickStash() {
         const vals = resolveTarget(f.aliases, f.stashKey);
         
         if (vals.length === 1) {
-            if (input) {
+            if (input && (!input.value || input.value.trim() === '')) {
                 input.value = parseFloat(vals[0]) || vals[0];
                 input.dispatchEvent(new Event('change'));
             }
@@ -2275,11 +2283,15 @@ function loadAutoQuickStash() {
         const name = document.getElementById('custom-profile-name').value.trim();
         if(!name) return;
         const custom = JSON.parse(localStorage.getItem('hvac_custom_profiles') || '{}');
+        const parseIfSet = (id) => {
+            const val = document.getElementById(id).value;
+            return val !== '' ? parseFloat(val) : null;
+        };
         custom[name] = {
-            compRla: parseFloat(document.getElementById('config-comp-rla-rating').value) || 14.2,
-            odfFla: parseFloat(document.getElementById('config-fan-fla-rating').value) || 1.1,
-            c2Rla: parseFloat(document.getElementById('config-comp-rla-2-rating').value) || 14.2,
-            f2Fla: parseFloat(document.getElementById('config-fan-fla-2-rating').value) || 1.1,
+            compRla: parseIfSet('config-comp-rla-rating'),
+            odfFla: parseIfSet('config-fan-fla-rating'),
+            c2Rla: parseIfSet('config-comp-rla-2-rating'),
+            f2Fla: parseIfSet('config-fan-fla-2-rating'),
             mfd: liveAppState.target_mfd || 35,
             fanMfd: liveAppState.target_fan_mfd || 5
         };
@@ -2921,33 +2933,33 @@ fBPass = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= t
         hasElectrical = true;
     }
 
-    if (c.diag_comp_rla && l.diag_comp_rla) {
+    if (c.diag_comp_rla && l.diag_comp_rla && l.cRlaRating) {
         const act = l.diag_comp_rla.toFixed(2);
-        const tgt = l.cRlaRating || 14.20;
+        const tgt = l.cRlaRating;
         const isPass = parseFloat(act) <= tgt;
         const pct = ((l.diag_comp_rla / tgt) * 100).toFixed(1);
         elecHtml += buildRow('RLA (Measured)', `${act} A`, `(${pct}%) (${tgt.toFixed(2)} A)`, isPass);
         hasElectrical = true;
     }
-    if (c.diag_comp_rla_2 && l.diag_comp_rla_2 && l.comp_qty === 2) {
+    if (c.diag_comp_rla_2 && l.diag_comp_rla_2 && l.comp_qty === 2 && l.cRla2Rating) {
         const act = l.diag_comp_rla_2.toFixed(2);
-        const tgt = l.cRla2Rating || 14.20;
+        const tgt = l.cRla2Rating;
         const isPass = parseFloat(act) <= tgt;
         const pct = ((l.diag_comp_rla_2 / tgt) * 100).toFixed(1);
         elecHtml += buildRow('RLA 2 (Measured)', `${act} A`, `(${pct}%) (${tgt.toFixed(2)} A)`, isPass);
         hasElectrical = true;
     }
-    if (c.diag_odf_fla && l.diag_odf_fla) {
+    if (c.diag_odf_fla && l.diag_odf_fla && l.odfFlaRating) {
         const act = l.diag_odf_fla.toFixed(2);
-        const tgt = l.odfFlaRating || 1.10;
+        const tgt = l.odfFlaRating;
         const isPass = parseFloat(act) <= tgt;
         const pct = ((l.diag_odf_fla / tgt) * 100).toFixed(1);
         elecHtml += buildRow('FLA ODF (Measured)', `${act} A`, `(${pct}%) (${tgt.toFixed(2)} A)`, isPass);
         hasElectrical = true;
     }
-    if (c.diag_odf_fla_2 && l.diag_odf_fla_2 && l.fan_qty === 2) {
+    if (c.diag_odf_fla_2 && l.diag_odf_fla_2 && l.fan_qty === 2 && l.odfFla2Rating) {
         const act = l.diag_odf_fla_2.toFixed(2);
-        const tgt = l.odfFla2Rating || 1.10;
+        const tgt = l.odfFla2Rating;
         const isPass = parseFloat(act) <= tgt;
         const pct = ((l.diag_odf_fla_2 / tgt) * 100).toFixed(1);
         elecHtml += buildRow('FLA ODF2 (Measured)', `${act} A`, `(${pct}%) (${tgt.toFixed(2)} A)`, isPass);
@@ -2991,19 +3003,19 @@ buildReport('Capacitor Results', sentence, isPass);
 }
 
 // 5. Motor Load Final Report Sentence
-const c1Comm = c.diag_comp_rla && l.diag_comp_rla > 0;
-const c2Comm = l.comp_qty !== 2 || (c.diag_comp_rla_2 && l.diag_comp_rla_2 > 0);
-const f1Comm = c.diag_odf_fla && l.diag_odf_fla > 0;
-const f2Comm = l.fan_qty !== 2 || (c.diag_odf_fla_2 && l.diag_odf_fla_2 > 0);
+const c1Comm = c.diag_comp_rla && l.diag_comp_rla > 0 && l.cRlaRating;
+const c2Comm = l.comp_qty !== 2 || (c.diag_comp_rla_2 && l.diag_comp_rla_2 > 0 && l.cRla2Rating);
+const f1Comm = c.diag_odf_fla && l.diag_odf_fla > 0 && l.odfFlaRating;
+const f2Comm = l.fan_qty !== 2 || (c.diag_odf_fla_2 && l.diag_odf_fla_2 > 0 && l.odfFla2Rating);
 
 if (c1Comm && c2Comm && f1Comm && f2Comm) {
 const c1Act = l.diag_comp_rla;
-const c1Tgt = l.cRlaRating || 14.20;
+const c1Tgt = l.cRlaRating;
 const c1Pass = c1Act <= c1Tgt;
 const c1Status = c1Pass ? "within range" : "OUT OF RANGE";
 
 const f1Act = l.diag_odf_fla;
-const f1Tgt = l.odfFlaRating || 1.10;
+const f1Tgt = l.odfFlaRating;
 const f1Pass = f1Act <= f1Tgt;
 const f1Status = f1Pass ? "within range" : "OUT OF RANGE";
 
@@ -3012,7 +3024,7 @@ let sentence = `🌀 RLA ${c1Tgt.toFixed(2)} tested ${c1Status} at ${c1Act.toFix
 
 if (l.comp_qty === 2) {
 const c2Act = l.diag_comp_rla_2;
-const c2Tgt = l.cRla2Rating || 14.20;
+const c2Tgt = l.cRla2Rating;
 const c2Pass = c2Act <= c2Tgt;
 const c2Status = c2Pass ? "within range" : "OUT OF RANGE";
 isPass = isPass && c2Pass;
@@ -3023,7 +3035,7 @@ sentence += ` and FLA ODF ${f1Tgt.toFixed(2)} tested ${f1Status} at ${f1Act.toFi
 
 if (l.fan_qty === 2) {
 const f2Act = l.diag_odf_fla_2;
-const f2Tgt = l.odfFla2Rating || 1.10;
+const f2Tgt = l.odfFla2Rating;
 const f2Pass = f2Act <= f2Tgt;
 const f2Status = f2Pass ? "within range" : "OUT OF RANGE";
 isPass = isPass && f2Pass;
