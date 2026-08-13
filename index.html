@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.53</title>
+    <title>HVAC Splash v1.54</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.53</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.54</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -2305,7 +2305,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.53";
+        const APP_VERSION = "v1.54";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         // Restoration Helpers (v28.42)
@@ -4836,7 +4836,8 @@
                 renderActiveQuickStash();
             };
 
-            function buildHeader(cat, title, color, key, customHtml = null) {
+            function buildHeader(title, color, key, customHtml = null) {
+                let cat = (key || "").toLowerCase();
                 let isCol = qsSettings['collapse' + key];
                 let disp = isCol ? 'none' : 'block';
                 let arr = isCol ? '▼' : '▲';
@@ -5023,7 +5024,7 @@
                     <button onclick="qsSelectGlobal(false, event)" style="background:rgba(255,255,255,0.05); border:1px solid #555; color:#aaa; font-size:10px; padding:4px 10px; border-radius:4px; font-weight:900; cursor:pointer;">CLEAR ALL</button>
                 </div>
             `;
-            html += buildHeader('customer', 'CUSTOMER', 'var(--electric-blue)', 'Customer');
+            html += buildHeader('CUSTOMER', 'var(--electric-blue)', 'Customer');
             html += buildField('customer', 'date', 'Date');
             html += buildField('customer', 'invoiceDate', 'Invoice Date');
             html += buildField('customer', 'name', 'Customer Name');
@@ -5032,7 +5033,7 @@
             html += buildField('customer', 'email', 'Email');
             html += `</div>`;
 
-            html += buildHeader('equipment', 'EQUIPMENT', 'var(--emerald-green)', 'Equipment');
+            html += buildHeader('EQUIPMENT', 'var(--emerald-green)', 'Equipment');
             html += buildField('equipment', 'outdoorModel', 'Outdoor Model');
             html += buildField('equipment', 'outdoorSerial', 'Outdoor Serial');
             html += buildField('equipment', 'indoorModel', 'Indoor Model');
@@ -5040,7 +5041,7 @@
             html += buildField('equipment', 'thermostatModel', 'Thermostat Model');
             html += `</div>`;
 
-            html += buildHeader('readings', 'READINGS', 'var(--amber-orange)', 'Readings');
+            html += buildHeader('READINGS', 'var(--amber-orange)', 'Readings');
             html += buildField('readings', 'odat', 'ODAT');
             html += buildField('readings', 'suctionPressure', 'Suction Pressure');
             html += buildField('readings', 'liquidPressure', 'Liquid Pressure');
@@ -5056,7 +5057,7 @@
             html += buildField('readings', 'deltaT', 'ΔT');
             html += `</div>`;
 
-              html += buildHeader('diagnostics', 'DIAGNOSTICS', 'var(--crimson-red)', 'Diagnostics');
+              html += buildHeader('DIAGNOSTICS', 'var(--crimson-red)', 'Diagnostics');
               html += buildField('diagnostics', 'hermVolts', 'Herm Volts');
               html += buildField('diagnostics', 'hermAmps', 'Herm Amps');
               html += buildField('diagnostics', 'hermCalculatedUf', 'Herm Calculated \u00B5F');
