@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.12</title>
+<title>Diagnostics v5.12.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_1 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -467,7 +467,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12</span></a>
+<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.1</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
@@ -2043,12 +2043,12 @@ function refreshLedger() {
 
         if (c1Comm && f1Comm && c2Comm && f2Comm) {
             const c1Act = liveAppState.diag_comp_rla;
-            const c1Tgt = liveAppState.cRlaRating || 14.20;
+            const c1Tgt = liveAppState.cRlaRating;
             const c1Pass = c1Act <= c1Tgt;
             const c1Status = c1Pass ? "within range" : "OUT OF RANGE";
 
             const f1Act = liveAppState.diag_odf_fla;
-            const f1Tgt = liveAppState.odfFlaRating || 1.10;
+            const f1Tgt = liveAppState.odfFlaRating;
             const f1Pass = f1Act <= f1Tgt;
             const f1Status = f1Pass ? "within range" : "OUT OF RANGE";
 
@@ -2120,19 +2120,19 @@ function renderAllPills() {
     <div class="selector-pill p-1 min-w-[75px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
         <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">Comp RLA</div>
         <div class="flex justify-center items-center text-[14px] font-bold ${rlaCol} mt-0.5">
-            <input type="number" id="input-cRlaRating" value="${liveAppState.cRlaRating || 14.2}" onchange="updateManualValue('cRlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+            <input type="number" id="input-cRlaRating" value="${liveAppState.cRlaRating ?? ''}" onchange="updateManualValue('cRlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
         </div>
     </div>
     <div class="selector-pill p-1 min-w-[75px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
         <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">ODF FLA</div>
         <div class="flex justify-center items-center text-[14px] font-bold ${flaCol} mt-0.5">
-            <input type="number" id="input-odfFlaRating" value="${liveAppState.odfFlaRating || 1.1}" onchange="updateManualValue('odfFlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+            <input type="number" id="input-odfFlaRating" value="${liveAppState.odfFlaRating ?? ''}" onchange="updateManualValue('odfFlaRating', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
         </div>
     </div>
     <div class="selector-pill p-1 min-w-[75px] rounded flex flex-col justify-center transition-colors" style="background:#1e2530; border:2px solid transparent;">
         <div class="text-[10px] text-slate-400 font-bold whitespace-nowrap text-center">🎯 Target SC</div>
         <div class="flex justify-center items-center text-[14px] font-bold text-slate-300 mt-0.5">
-            <input type="number" id="input-targetSubcool" value="${liveAppState.targetSubcool || 10.0}" onchange="updateManualValue('targetSubcool', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+            <input type="number" id="input-targetSubcool" value="${liveAppState.targetSubcool ?? ''}" onchange="updateManualValue('targetSubcool', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
         </div>
     </div>`;
 
