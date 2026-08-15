@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.12.5</title>
+<title>Diagnostics v5.12.6</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -125,7 +125,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_5 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_6 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -492,11 +492,11 @@ HUB
 <!-- BOTTOM APP NAVIGATION RIBBON -->
 <div id="bottom-nav-ribbon" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex justify-start px-2 overflow-x-auto no-scrollbar gap-2">
 <a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.02</span></a>
-<a href="Splash.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">Quick Stash</span></a>
+<a href="Splash.html" onclick="event.preventDefault(); openSplashHome();" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">Quick Stash</span></a>
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[10px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[10px] font-normal">v1.32</span></a>
-<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.5</span></a>
+<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.6</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[10px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[10px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[10px] font-normal">v1.00</span></a>
@@ -3165,8 +3165,63 @@ document.getElementById('preview-results-modal').classList.add('flex');
         renderHistoryList();
         }
 
-// Auto-Center the Active Navigation Button
+function initBottomNavTouchScroll() {
+    const ribbon = document.getElementById('bottom-nav-ribbon');
+    if (!ribbon) return;
+
+    let startX = 0;
+    let startY = 0;
+    let startScrollLeft = 0;
+    let intentConfirmed = false;
+    let horizontalIntent = false;
+    let dragging = false;
+
+    ribbon.addEventListener('touchstart', (e) => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startScrollLeft = ribbon.scrollLeft;
+        intentConfirmed = false;
+        horizontalIntent = false;
+        dragging = false;
+        window.bottomNavDragged = false;
+    }, { passive: true });
+
+    ribbon.addEventListener('touchmove', (e) => {
+        if (!e.touches.length) return;
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const dx = currentX - startX;
+        const dy = currentY - startY;
+
+        if (!intentConfirmed) {
+            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+                intentConfirmed = true;
+                if (Math.abs(dx) > Math.abs(dy)) {
+                    horizontalIntent = true;
+                }
+            }
+        }
+
+        if (intentConfirmed && horizontalIntent) {
+            dragging = true;
+            window.bottomNavDragged = true;
+            e.preventDefault();
+            ribbon.scrollLeft = startScrollLeft - dx;
+        }
+    }, { passive: false });
+
+    ribbon.addEventListener('click', (e) => {
+        if (window.bottomNavDragged) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.bottomNavDragged = false;
+        }
+    }, true);
+}
+
+// Auto-Center the Active Navigation Button & Init Touch
 window.addEventListener('DOMContentLoaded', () => {
+    initBottomNavTouchScroll();
     setTimeout(() => {
         const activeNavBtn = document.querySelector('#bottom-nav-ribbon .bg-slate-700');
         if (activeNavBtn) {
