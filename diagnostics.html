@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.12.2</title>
+<title>Diagnostics v5.12.3</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_2 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_3 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -470,7 +470,7 @@ HUB
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[10px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[10px] font-normal">v1.32</span></a>
-<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.2</span></a>
+<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.3</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[10px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[10px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[10px] font-normal">v1.00</span></a>
@@ -692,9 +692,9 @@ function toggleConfigModal() {
 
             document.getElementById('config-fan-qty').value = liveAppState.fan_qty || 1;
 
-            document.getElementById('config-target-mfd').value = liveAppState.target_mfd;
+            document.getElementById('config-target-mfd').value = liveAppState.target_mfd ?? '';
 
-            document.getElementById('config-target-fan-mfd').value = liveAppState.target_fan_mfd;
+            document.getElementById('config-target-fan-mfd').value = liveAppState.target_fan_mfd ?? '';
 
             document.getElementById('config-comp-rla-rating').value = liveAppState.cRlaRating ?? '';
             document.getElementById('config-comp-lra-rating').value = liveAppState.cLraRating ?? '';
@@ -716,14 +716,14 @@ function saveSystemConfig() {
 
     liveAppState.fan_qty = parseInt(document.getElementById('config-fan-qty').value) || 1;
 
-    liveAppState.target_mfd = parseFloat(document.getElementById('config-target-mfd').value) || 35;
-
-    liveAppState.target_fan_mfd = parseFloat(document.getElementById('config-target-fan-mfd').value) || 5;
-
     const parseIfSet = (id) => {
         const val = document.getElementById(id).value;
         return val !== '' ? parseFloat(val) : null;
     };
+
+    liveAppState.target_mfd = parseIfSet('config-target-mfd');
+    liveAppState.target_fan_mfd = parseIfSet('config-target-fan-mfd');
+
     liveAppState.cRlaRating = parseIfSet('config-comp-rla-rating');
     liveAppState.cLraRating = parseIfSet('config-comp-lra-rating');
     liveAppState.cRla2Rating = parseIfSet('config-comp-rla-2-rating');
@@ -898,10 +898,12 @@ function renderAdvancedPageRows() {
         scAuto = resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool');
         
         if (stash.diagnostics) {
-            if (stash.diagnostics.target_mfd !== undefined) hMfdAuto = stash.diagnostics.target_mfd;
+            if (stash.diagnostics.hermTargetMfd !== undefined) hMfdAuto = stash.diagnostics.hermTargetMfd;
+            else if (stash.diagnostics.target_mfd !== undefined) hMfdAuto = stash.diagnostics.target_mfd;
             else if (stash.diagnostics.hermMfd !== undefined) hMfdAuto = stash.diagnostics.hermMfd;
             
-            if (stash.diagnostics.target_fan_mfd !== undefined) fMfdAuto = stash.diagnostics.target_fan_mfd;
+            if (stash.diagnostics.fanTargetMfd !== undefined) fMfdAuto = stash.diagnostics.fanTargetMfd;
+            else if (stash.diagnostics.target_fan_mfd !== undefined) fMfdAuto = stash.diagnostics.target_fan_mfd;
             else if (stash.diagnostics.fanMfd !== undefined) fMfdAuto = stash.diagnostics.fanMfd;
         }
     }
@@ -979,9 +981,12 @@ function handleAdvancedPageSelect(val) {
                 if (fla !== null && !liveAppState.odfFlaRating) liveAppState.odfFlaRating = parseFloat(fla);
                 if (sc !== null && !liveAppState.targetSubcool) liveAppState.targetSubcool = parseFloat(sc);
                 if (stash.diagnostics) {
-                    if (stash.diagnostics.target_mfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.target_mfd);
+                    if (stash.diagnostics.hermTargetMfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.hermTargetMfd);
+                    else if (stash.diagnostics.target_mfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.target_mfd);
                     else if (stash.diagnostics.hermMfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.hermMfd);
-                    if (stash.diagnostics.target_fan_mfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.target_fan_mfd);
+                    
+                    if (stash.diagnostics.fanTargetMfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.fanTargetMfd);
+                    else if (stash.diagnostics.target_fan_mfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.target_fan_mfd);
                     else if (stash.diagnostics.fanMfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.fanMfd);
                 }
             }
@@ -2271,10 +2276,10 @@ function loadAutoQuickStash(isManualSync = false) {
             const parsed = parseFloat(vals[0]);
             const finalVal = !isNaN(parsed) ? parsed : vals[0];
             
-            // For manual sync or auto, only fill if blank/null
+            // For manual sync or auto, only fill if blank/null OR if force sync
             const isBlank = (currentStateVal === null || currentStateVal === undefined || currentStateVal === "");
             
-            if (isBlank) {
+            if (isBlank || isManualSync) {
                 if (f.stateKey) liveAppState[f.stateKey] = finalVal;
                 if (input) input.value = finalVal;
                 syncedAnything = true;
