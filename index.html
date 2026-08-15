@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.54.4</title>
+    <title>HVAC Splash v1.54.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.54.4</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.54.5</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1916,7 +1916,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.54.4</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.54.5</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2305,7 +2305,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.54.4";
+        const APP_VERSION = "v1.54.5";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         // Restoration Helpers (v28.42)
@@ -6106,28 +6106,50 @@
             }
             
             // Auto-parse Dual-Run Capacitor Ratings
-            let parsedCap = null;
+            let foundHerm = null;
+            let foundFan = null;
+            let foundCapKeys = []; // For debugging/reporting
+            
             ['diagnostics', 'equipment', 'extra', 'readings'].forEach(cat => {
                 if (stash[cat]) {
                     for (let k in stash[cat]) {
                         let kl = k.toLowerCase();
-                        if (kl.includes('capacitor') || kl.includes('cap rating') || kl === 'cap') {
+                        if (kl.includes('capacitor') || kl.includes('cap rating') || kl === 'cap' || kl.includes('capacitance')) {
+                            foundCapKeys.push(k);
+                            
+                            // First try combined format (e.g. 40+5)
                             let res = parseDualCapacitor(stash[cat][k]);
-                            if (res && !parsedCap) {
-                                parsedCap = res;
+                            if (res && foundHerm === null && foundFan === null) {
+                                foundHerm = res.herm;
+                                foundFan = res.fan;
+                            } 
+                            // If combined parser fails, check if the key explicitly identifies Herm or Fan
+                            else if (!res) {
+                                let valMatch = String(stash[cat][k]).match(/[\d\.]+/);
+                                if (valMatch) {
+                                    let num = parseFloat(valMatch[0]);
+                                    // Make sure it's not a voltage rating like 440V
+                                    if (!isNaN(num) && num < 300) {
+                                        if (kl.includes('herm') || kl.includes('main') || kl.includes('compressor') || kl.includes('comp')) {
+                                            if (foundHerm === null) foundHerm = num;
+                                        } else if (kl.includes('fan')) {
+                                            if (foundFan === null) foundFan = num;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             });
 
-            if (parsedCap) {
+            if (foundHerm !== null || foundFan !== null) {
                 if (!stash.diagnostics) stash.diagnostics = {};
-                if (stash.diagnostics.hermTargetMfd === undefined || stash.diagnostics.hermTargetMfd === "") {
-                    stash.diagnostics.hermTargetMfd = parsedCap.herm;
+                if (foundHerm !== null && (stash.diagnostics.hermTargetMfd === undefined || stash.diagnostics.hermTargetMfd === "")) {
+                    stash.diagnostics.hermTargetMfd = foundHerm;
                 }
-                if (stash.diagnostics.fanTargetMfd === undefined || stash.diagnostics.fanTargetMfd === "") {
-                    stash.diagnostics.fanTargetMfd = parsedCap.fan;
+                if (foundFan !== null && (stash.diagnostics.fanTargetMfd === undefined || stash.diagnostics.fanTargetMfd === "")) {
+                    stash.diagnostics.fanTargetMfd = foundFan;
                 }
             }
 
