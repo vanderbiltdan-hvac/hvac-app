@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.12.1</title>
+<title>Diagnostics v5.12.2</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -99,7 +99,7 @@ input[type="number"].no-spinners {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_1 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_2 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -132,9 +132,12 @@ input[type="number"].no-spinners {
 </div>
 
 
-<div class="w-full px-2 py-2 bg-slate-900 border-t border-slate-800">
+<div class="w-full px-2 py-2 bg-slate-900 border-t border-slate-800 grid grid-cols-2 gap-2">
+    <button onclick="syncFromQuickStash()" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
+        <span>⚡</span> SYNC
+    </button>
     <button onclick="saveResultsToQuickStash()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
-        <span>💾</span> SAVE RESULTS TO QUICK STASH
+        <span>💾</span> SAVE
     </button>
 </div>
 
@@ -465,14 +468,14 @@ HUB
 <a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.02</span></a>
 <a href="Splash.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">Quick Stash</span></a>
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
-<a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.01</span></a>
-<a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[8px] font-normal">v1.32</span></a>
-<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.1</span></a>
-<a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[8px] font-normal">v1.28</span></a>
-<a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[8px] font-normal">v1.00</span></a>
-<a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[8px] font-normal">v1.00</span></a>
-<a href="reports.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Reports<br><span class="text-[8px] font-normal">v1.00</span></a>
-<a href="datablock.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Data Block<br><span class="text-[8px] font-normal">v1.00</span></a>
+<a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[10px] font-normal">v1.01</span></a>
+<a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[10px] font-normal">v1.32</span></a>
+<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.2</span></a>
+<a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[10px] font-normal">v1.28</span></a>
+<a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[10px] font-normal">v1.00</span></a>
+<a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[10px] font-normal">v1.00</span></a>
+<a href="reports.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Reports<br><span class="text-[10px] font-normal">v1.00</span></a>
+<a href="datablock.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Data Block<br><span class="text-[10px] font-normal">v1.00</span></a>
 </div>
 
 <script>
@@ -547,7 +550,7 @@ const liveAppState = {
     testMode: 'live',
     flowMode: 'tool',
     diag_herm_bench: null, diag_fan_bench: null,
-    target_mfd: 35, target_fan_mfd: 5,
+    target_mfd: null, target_fan_mfd: null,
     cRlaRating: null, cLraRating: null, odfFlaRating: null,
     cRla2Rating: null, cLra2Rating: null, odfFla2Rating: null, targetSubcool: null,
     circ_a: "Herm", circ_b: "Fan",
@@ -689,9 +692,9 @@ function toggleConfigModal() {
 
             document.getElementById('config-fan-qty').value = liveAppState.fan_qty || 1;
 
-            document.getElementById('config-target-mfd').value = liveAppState.target_mfd || 35;
+            document.getElementById('config-target-mfd').value = liveAppState.target_mfd;
 
-            document.getElementById('config-target-fan-mfd').value = liveAppState.target_fan_mfd || 5;
+            document.getElementById('config-target-fan-mfd').value = liveAppState.target_fan_mfd;
 
             document.getElementById('config-comp-rla-rating').value = liveAppState.cRlaRating ?? '';
             document.getElementById('config-comp-lra-rating').value = liveAppState.cLraRating ?? '';
@@ -1202,8 +1205,8 @@ function updateDashLabels() {
         flaCol = act <= liveAppState.odfFlaRating ? 'text-emerald-400' : 'text-rose-400';
         flaActText = `${act.toFixed(2)} A (${pct.toFixed(2)}%)`;
     }    if (dashLeft) {
-        const hMfd = liveAppState.isHermEnabled ? `<span class="${hCol}">${liveAppState.target_mfd || 35}</span>` : 0;
-        const fMfd = liveAppState.isFanEnabled ? `<span class="${fCol}">${liveAppState.target_fan_mfd || 5}</span>` : 0;
+        const hMfd = liveAppState.isHermEnabled ? `<span class="${hCol}">${liveAppState.target_mfd ?? '---'}</span>` : 0;
+        const fMfd = liveAppState.isFanEnabled ? `<span class="${fCol}">${liveAppState.target_fan_mfd ?? '---'}</span>` : 0;
         dashLeft.innerHTML = `<span>CAP: ${hMfd}/${fMfd} &micro;F<br>&plusmn;${(tol * 100).toFixed(0)}%</span>`;
     }
     if (dashRight) {
@@ -1926,7 +1929,7 @@ function refreshLedger() {
         const specDiv = spec ? `<div style="color: #000000; font-weight: bold; margin-left: auto;">${spec}</div>` : '';
         if (committedState.diag_herm_v && committedState.diag_herm_a && liveAppState.diag_herm_v > 0 && liveAppState.diag_herm_a > 0) {
             const act = (liveAppState.diag_herm_a * 2652) / liveAppState.diag_herm_v;
-            const tgt = liveAppState.target_mfd || 35;
+            const tgt = liveAppState.target_mfd;
             const dev = ((act - tgt) / tgt) * 100;
             const isPass = Math.abs(dev) <= (tol * 100);
             const sign = dev > 0 ? '+' : '';
@@ -1955,7 +1958,7 @@ function refreshLedger() {
         const specDiv = spec ? `<div style="color: #000000; font-weight: bold; margin-left: auto;">${spec}</div>` : '';
         if (committedState.diag_fan_v && committedState.diag_fan_a && liveAppState.diag_fan_v > 0 && liveAppState.diag_fan_a > 0) {
             const act = (liveAppState.diag_fan_a * 2652) / liveAppState.diag_fan_v;
-            const tgt = liveAppState.target_fan_mfd || 5;
+            const tgt = liveAppState.target_fan_mfd;
             const dev = ((act - tgt) / tgt) * 100;
             const isPass = Math.abs(dev) <= (tol * 100);
             const sign = dev > 0 ? '+' : '';
@@ -2000,8 +2003,8 @@ function refreshLedger() {
         }
 
         if (canCalculate) {
-            const hTgt = liveAppState.target_mfd || 35;
-            const fTgt = liveAppState.target_fan_mfd || 5;
+            const hTgt = liveAppState.target_mfd;
+            const fTgt = liveAppState.target_fan_mfd;
             const hDev = ((hAct - hTgt) / hTgt) * 100;
             const fDev = ((fAct - fTgt) / fTgt) * 100;
             const tol = liveAppState.selectedTolerance || 0.06;
@@ -2098,7 +2101,7 @@ function renderAllPills() {
         </div>
         <div class="flex justify-between items-center text-[14px] font-bold ${hCol} mt-0.5">
             <button onclick="cycleMfd('target_mfd', -1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">◀</button>
-            <input type="number" id="input-target_mfd" value="${liveAppState.target_mfd || 35}" onchange="updateManualValue('target_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+            <input type="number" id="input-target_mfd" value="${liveAppState.target_mfd ?? '---'}" onchange="updateManualValue('target_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
             <button onclick="cycleMfd('target_mfd', 1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">▶</button>
         </div>
     </div>
@@ -2109,7 +2112,7 @@ function renderAllPills() {
         </div>
         <div class="flex justify-between items-center text-[14px] font-bold ${fCol} mt-0.5">
             <button onclick="cycleMfd('target_fan_mfd', -1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">◀</button>
-            <input type="number" id="input-target_fan_mfd" value="${liveAppState.target_fan_mfd || 5}" onchange="updateManualValue('target_fan_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
+            <input type="number" id="input-target_fan_mfd" value="${liveAppState.target_fan_mfd ?? '---'}" onchange="updateManualValue('target_fan_mfd', this.value)" style="width:100%; text-align:center; background:transparent; border:none; outline:none; color:inherit; font:inherit;" class="no-spinners" step="any">
             <button onclick="cycleMfd('target_fan_mfd', 1)" class="px-1 flex-shrink-0 cursor-pointer text-slate-400 hover:text-white">▶</button>
         </div>
     </div>
@@ -2169,23 +2172,50 @@ function renderAllPills() {
         // --- PROFILES & SNAPSHOT LOGIC ---
 
     
-function loadAutoQuickStash() {
+function showDiagToast(msg, colorClass) {
+    let t = document.getElementById('diag-toast');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'diag-toast';
+        document.body.appendChild(t);
+    }
+    t.className = `fixed top-4 left-1/2 transform -translate-x-1/2 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300 font-bold text-xs uppercase tracking-widest ${colorClass}`;
+    t.innerText = msg;
+    t.style.opacity = '1';
+    
+    if (t._timeout) clearTimeout(t._timeout);
+    t._timeout = setTimeout(() => {
+        t.style.opacity = '0';
+    }, 2500);
+}
+
+function syncFromQuickStash() {
+    loadAutoQuickStash(true);
+}
+
+function loadAutoQuickStash(isManualSync = false) {
     const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
     const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
     const stash = stashes[activeStashId];
     
     const fields = [
-        { id: 'config-comp-rla-rating', ind: 'ind-comp-rla', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], stashKey: 'compressorRlaRating' },
-        { id: 'config-comp-lra-rating', ind: 'ind-comp-lra', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps'], stashKey: 'compressorLraRating' },
-        { id: 'config-fan-fla-rating', ind: 'ind-fan-fla', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], stashKey: 'fanFlaRating' },
-        { id: 'config-target-subcool', ind: 'ind-target-sc', aliases: ['Target SC', 'Target Subcool', 'Subcool Target'], stashKey: 'targetSubcool' }
+        { id: 'config-comp-rla-rating', ind: 'ind-comp-rla', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], stashKey: 'compressorRlaRating', stateKey: 'cRlaRating' },
+        { id: 'config-comp-lra-rating', ind: 'ind-comp-lra', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps'], stashKey: 'compressorLraRating', stateKey: 'cLraRating' },
+        { id: 'config-fan-fla-rating', ind: 'ind-fan-fla', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], stashKey: 'fanFlaRating', stateKey: 'odfFlaRating' },
+        { id: 'config-target-subcool', ind: 'ind-target-sc', aliases: ['Target SC', 'Target Subcool', 'Subcool Target'], stashKey: 'targetSubcool', stateKey: 'targetSubcool' },
+        { id: 'config-target-mfd', ind: 'ind-target-mfd', aliases: ['Herm Target MFD', 'Herm MFD'], stashKey: 'hermTargetMfd', stateKey: 'target_mfd' },
+        { id: 'config-target-fan-mfd', ind: 'ind-target-fan-mfd', aliases: ['Fan Target MFD', 'Fan MFD'], stashKey: 'fanTargetMfd', stateKey: 'target_fan_mfd' }
     ];
 
     if(!stash) {
-        fields.forEach(f => {
-            const ind = document.getElementById(f.ind);
-            if(ind) ind.innerHTML = '<span class="text-slate-500" title="No active stash">⚪</span>';
-        });
+        if (isManualSync) {
+            showDiagToast("NO ACTIVE QUICK STASH", "bg-amber-600");
+        } else {
+            fields.forEach(f => {
+                const ind = document.getElementById(f.ind);
+                if(ind) ind.innerHTML = '<span class="text-slate-500" title="No active stash">⚪</span>';
+            });
+        }
         return;
     }
 
@@ -2228,16 +2258,26 @@ function loadAutoQuickStash() {
         return uniqueVals;
     }
 
+    let syncedAnything = false;
+
     fields.forEach(f => {
         const ind = document.getElementById(f.ind);
         const input = document.getElementById(f.id);
+        const currentStateVal = f.stateKey ? liveAppState[f.stateKey] : null;
         
         const vals = resolveTarget(f.aliases, f.stashKey);
         
         if (vals.length === 1) {
-            if (input && (!input.value || input.value.trim() === '')) {
-                input.value = parseFloat(vals[0]) || vals[0];
-                input.dispatchEvent(new Event('change'));
+            const parsed = parseFloat(vals[0]);
+            const finalVal = !isNaN(parsed) ? parsed : vals[0];
+            
+            // For manual sync or auto, only fill if blank/null
+            const isBlank = (currentStateVal === null || currentStateVal === undefined || currentStateVal === "");
+            
+            if (isBlank) {
+                if (f.stateKey) liveAppState[f.stateKey] = finalVal;
+                if (input) input.value = finalVal;
+                syncedAnything = true;
             }
             if (ind) ind.innerHTML = '<span class="text-emerald-500" title="Resolved: ' + vals[0] + '">🟢</span>';
         } else if (vals.length > 1) {
@@ -2246,6 +2286,14 @@ function loadAutoQuickStash() {
             if (ind) ind.innerHTML = '<span class="text-slate-500" title="Missing">⚪</span>';
         }
     });
+
+    if (syncedAnything) {
+        renderAllPills();
+        if (typeof updateDashLabels === 'function') updateDashLabels();
+        if (isManualSync) showDiagToast("SYNCED FROM QUICK STASH", "bg-emerald-600");
+    } else {
+        if (isManualSync) showDiagToast("NO NEW QUICK STASH VALUES", "bg-amber-600");
+    }
 }
 
     function populateConfigProfiles() {
@@ -2292,8 +2340,8 @@ function loadAutoQuickStash() {
             odfFla: parseIfSet('config-fan-fla-rating'),
             c2Rla: parseIfSet('config-comp-rla-2-rating'),
             f2Fla: parseIfSet('config-fan-fla-2-rating'),
-            mfd: liveAppState.target_mfd || 35,
-            fanMfd: liveAppState.target_fan_mfd || 5
+            mfd: liveAppState.target_mfd,
+            fanMfd: liveAppState.target_fan_mfd
         };
         localStorage.setItem('hvac_custom_profiles', JSON.stringify(custom));
         document.getElementById('custom-profile-name').value = '';
@@ -2910,7 +2958,7 @@ fBPass = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= t
         hasElectrical = true;
     } else if (c.diag_herm_bench && l.diag_herm_bench > 0) {
         const act = l.diag_herm_bench.toFixed(2);
-        const tgt = l.target_mfd || 35;
+        const tgt = l.target_mfd;
         const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
         const pct = ((act / tgt) * 100).toFixed(1);
         elecHtml += buildRow(l.circ_a + ' Results (Bench)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
@@ -2926,7 +2974,7 @@ fBPass = (Math.abs(l.diag_fan_bench - l.target_fan_mfd) / l.target_fan_mfd) <= t
         hasElectrical = true;
     } else if (c.diag_fan_bench && l.diag_fan_bench > 0) {
         const act = l.diag_fan_bench.toFixed(2);
-        const tgt = l.target_fan_mfd || 5;
+        const tgt = l.target_fan_mfd;
         const isPass = (Math.abs(act - tgt) / tgt) <= tolCheck;
         const pct = ((act / tgt) * 100).toFixed(1);
         elecHtml += buildRow(l.circ_b + ' Results (Bench)', `${act} µF`, `(${pct}%) (${tgt} µF)`, isPass);
@@ -2983,8 +3031,8 @@ canCalcCap = true;
 }
 
 if (canCalcCap) {
-const hTgt = l.target_mfd || 35;
-const fTgt = l.target_fan_mfd || 5;
+const hTgt = l.target_mfd;
+const fTgt = l.target_fan_mfd;
 const hDev = ((hAct - hTgt)/hTgt)*100;
 const fDev = ((fAct - fTgt)/fTgt)*100;
 const hPass = Math.abs(hDev) <= (tol*100);
