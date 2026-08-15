@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.12.7</title>
+<title>Diagnostics v5.12.8</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -31,18 +31,6 @@ body {
     height: 80px;
     padding-top: 8px;
     padding-bottom: 8px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    max-width: 100vw;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    user-select: none;
-    -webkit-user-select: none;
-}
-#bottom-nav-ribbon > a {
-    touch-action: manipulation;
-    -webkit-user-drag: none;
 }
 </style>
 </head>
@@ -122,7 +110,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_7 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_8 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -487,22 +475,18 @@ HUB
 </div>
 
 <!-- BOTTOM APP NAVIGATION RIBBON -->
-<div class="w-full mt-auto sticky bottom-0 z-40 bg-slate-900 border-t border-slate-700 relative flex items-center">
-<button onclick="scrollBottomNav(-1)" class="absolute left-0 top-0 bottom-0 w-[44px] flex items-center justify-center bg-slate-900/90 shadow-[2px_0_5px_rgba(0,0,0,0.5)] z-50 text-slate-400 hover:text-white text-xl">◀</button>
-<div id="bottom-nav-ribbon" class="w-full flex justify-start px-[46px] overflow-x-auto no-scrollbar gap-2">
+<div id="bottom-nav-ribbon" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex justify-start overflow-x-auto no-scrollbar gap-2 px-2">
 <a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.02</span></a>
 <a href="Splash.html" onclick="event.preventDefault(); openSplashHome();" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">Quick Stash</span></a>
 <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
 <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[10px] font-normal">v1.01</span></a>
 <a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[10px] font-normal">v1.32</span></a>
-<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.7</span></a>
+<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.8</span></a>
 <a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[10px] font-normal">v1.28</span></a>
 <a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[10px] font-normal">v1.00</span></a>
 <a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[10px] font-normal">v1.00</span></a>
 <a href="reports.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Reports<br><span class="text-[10px] font-normal">v1.00</span></a>
 <a href="datablock.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Data Block<br><span class="text-[10px] font-normal">v1.00</span></a>
-</div>
-<button onclick="scrollBottomNav(1)" class="absolute right-0 top-0 bottom-0 w-[44px] flex items-center justify-center bg-slate-900/90 shadow-[-2px_0_5px_rgba(0,0,0,0.5)] z-50 text-slate-400 hover:text-white text-xl">▶</button>
 </div>
 
 <script>
@@ -3165,16 +3149,6 @@ document.getElementById('preview-results-modal').classList.add('flex');
         localStorage.setItem('hvac_snapshot_registry', JSON.stringify(history));
         renderHistoryList();
         }
-
-function scrollBottomNav(direction) {
-    const ribbon = document.getElementById('bottom-nav-ribbon');
-    if (ribbon) {
-        ribbon.scrollBy({
-            left: direction * 270,
-            behavior: 'smooth'
-        });
-    }
-}
 
 // Auto-Center the Active Navigation Button
 window.addEventListener('DOMContentLoaded', () => {
