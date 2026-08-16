@@ -2320,7 +2320,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.55.4";
+        const APP_VERSION = "v1.55.5";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         function toggleBottomNav() {
@@ -2526,7 +2526,11 @@
 
             const target = document.getElementById(id);
             if (target) {
-                target.style.display = (target.classList.contains('container') ? 'block' : 'flex');
+                if (id === 'v23-home') {
+                    target.style.display = 'block';
+                } else {
+                    target.style.display = target.classList.contains('container') ? 'block' : 'flex';
+                }
             }
 
             // Sync Safe Sync Checkboxes and Job Headers on enter
