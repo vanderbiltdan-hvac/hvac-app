@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.55.4</title>
+    <title>HVAC Splash v1.55.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1312,7 +1312,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.55.4</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.55.5</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1913,7 +1913,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.55.4</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.55.5</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2269,7 +2269,7 @@
         <!-- 3x3 Grid -->
         <div class="grid grid-cols-3 gap-2">
           <!-- Row 1 -->
-          <a href="Splash.html" class="flex flex-col items-center justify-center h-16 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight">Splash<br><span class="text-[10px] font-normal text-slate-300">v1.55.4</span></a>
+          <a href="Splash.html" class="flex flex-col items-center justify-center h-16 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight">Splash<br><span class="text-[10px] font-normal text-slate-300">v1.55.5</span></a>
           <a href="notes.html" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded text-slate-300 font-bold text-[13px] shadow-sm text-center leading-tight">Notes<br><span class="text-[10px] font-normal text-slate-400">v1.20</span></a>
           <a href="mirror.html" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded text-slate-300 font-bold text-[13px] shadow-sm text-center leading-tight">Mirror<br><span class="text-[10px] font-normal text-slate-400">v1.20</span></a>
           
@@ -4407,9 +4407,9 @@
             keys.forEach(k => {
                 let fp = `${activeTunerSection}.${k}`;
                 let isLocked = sSet.lockedFields && sSet.lockedFields[fp];
-                html += `<label style="display:flex; align-items:center; gap:8px; box-sizing:border-box; padding:4px 0; min-height:var(--qs-tuner-row-ht, 44px); cursor:pointer;">
-                            <input type="checkbox" ${isLocked?'checked':''} onchange="toggleQsFieldLock('${activeTunerSection}', '${fp}')" style="margin:0; flex-shrink:0; transform:scale(1.2);">
-                            <span style="word-wrap:break-word; line-height:1.2;">${k}</span>
+                html += `<label style="display:flex; align-items:center; justify-content:flex-start; gap:10px; width:100%; box-sizing:border-box; padding:4px 0; min-height:var(--qs-tuner-row-ht, 44px); cursor:pointer;">
+                            <input type="checkbox" ${isLocked?'checked':''} onchange="toggleQsFieldLock('${activeTunerSection}', '${fp}')" style="width: 22px !important; height: 22px !important; padding: 0 !important; margin: 0 !important; flex-shrink: 0; outline: none;">
+                            <span style="flex:1; word-wrap:break-word; line-height:1.2; font-size:12px;">${k}</span>
                         </label>`;
             });
             html += `</div></div>`;
