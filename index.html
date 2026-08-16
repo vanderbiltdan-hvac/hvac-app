@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.55.2</title>
+    <title>HVAC Splash v1.55.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1312,7 +1312,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.55.2</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.55.3</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1913,7 +1913,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.55.2</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.55.3</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2269,7 +2269,7 @@
         <!-- 3x3 Grid -->
         <div class="grid grid-cols-3 gap-2">
           <!-- Row 1 -->
-          <a href="Splash.html" class="flex flex-col items-center justify-center h-16 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight">Splash<br><span class="text-[10px] font-normal text-slate-300">v1.55.2</span></a>
+          <a href="Splash.html" class="flex flex-col items-center justify-center h-16 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight">Splash<br><span class="text-[10px] font-normal text-slate-300">v1.55.3</span></a>
           <a href="notes.html" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded text-slate-300 font-bold text-[13px] shadow-sm text-center leading-tight">Notes<br><span class="text-[10px] font-normal text-slate-400">v1.20</span></a>
           <a href="mirror.html" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded text-slate-300 font-bold text-[13px] shadow-sm text-center leading-tight">Mirror<br><span class="text-[10px] font-normal text-slate-400">v1.20</span></a>
           
@@ -2320,7 +2320,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.55.2";
+        const APP_VERSION = "v1.55.3";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         function toggleBottomNav() {
@@ -4015,7 +4015,8 @@
 
             hdrSplitAlignL: 'left',
             hdrSplitAlignC: 'center',
-            hdrSplitAlignR: 'right'
+            hdrSplitAlignR: 'right',
+            tunerRowMinHt: 44
         };
 
         const defaultQsSectionSettingsTemplate = {
@@ -4250,6 +4251,10 @@
                 let cur = parseFloat(qsSettings[key] || 0);
                 let next = cur + step;
                 if (next < 0) next = 0;
+                if (key === 'tunerRowMinHt') {
+                    if (next < 24) next = 24;
+                    if (next > 80) next = 80;
+                }
                 qsSettings[key] = next;
                 localStorage.setItem('qsSettingsV1_26', JSON.stringify(qsSettings));
             } else {
@@ -4257,6 +4262,10 @@
                 let cur = parseFloat(sSet[key] || 0);
                 let next = cur + step;
                 if (next < 0) next = 0;
+                if (key === 'rowMinHeight') {
+                    if (next < 10) next = 10;
+                    if (next > 120) next = 120;
+                }
                 if (key === 'cbSize') next = parseFloat(next.toFixed(1));
                 if (key.includes('Weight')) {
                     if (next < 1) next = 1;
@@ -4304,7 +4313,7 @@
             
             const bGrp = (label, key, isGlobal=false) => {
                 let val = isGlobal ? qsSettings[key] : sSet[key];
-                return `<div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                return `<div class="qs-tuner-row">
                             <span>${label}</span>
                             <div style="display:flex; align-items:center; background:#222; border-radius:4px; border:1px solid #444;">
                                 <button onclick="adjQsSet('${key}', -1, ${isGlobal})" style="width:24px; color:#aaa; cursor:pointer;">-</button>
@@ -4317,7 +4326,7 @@
             // GLOBAL SECTION
             html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
                         <div style="color:var(--emerald-green); font-weight:900; margin-bottom:8px;">GLOBAL</div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <div class="qs-tuner-row">
                             <span>Width Mode</span>
                             <select id="qsTunerWidthMode" onchange="saveQsSettingsFromInputs(true)" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
                                 <option value="Compact" ${qsSettings.widthMode==='Compact'?'selected':''}>Compact</option>
@@ -4331,6 +4340,7 @@
                         ${bGrp('Outer Padding', 'outerPadding', true)}
                         ${bGrp('Section Gap', 'sectionGap', true)}
                         ${bGrp('Header Min Height', 'hdrMinHt', true)}
+                        ${bGrp('Tuner Row Height', 'tunerRowMinHt', true)}
                         <div style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px solid #444; padding-top:8px;">
                             <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowHopper" ${qsSettings.showHopper?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Hopper</label>
                             <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowExtra" ${qsSettings.showExtra?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Extra</label>
@@ -4341,21 +4351,21 @@
             // FIELD ROWS SECTION
             html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
                         <div style="color:var(--electric-blue); font-weight:900; margin-bottom:8px;">FIELD ROWS (${secName})</div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <div class="qs-tuner-row">
                             <span>Field Layout</span>
                             <select id="qsTunerFieldLayout" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
                                 <option value="ROW" ${sSet.fieldLayout==='ROW'?'selected':''}>ROW</option>
                                 <option value="STACK" ${sSet.fieldLayout==='STACK'?'selected':''}>STACK</option>
                             </select>
                         </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <div class="qs-tuner-row">
                             <span>Row Mode</span>
                             <select id="qsTunerRowMode" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
                                 <option value="Fixed" ${sSet.rowMode==='Fixed'?'selected':''}>Fixed</option>
                                 <option value="Weight" ${sSet.rowMode==='Weight'?'selected':''}>Weight</option>
                             </select>
                         </div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; align-items:center;">
+                        <div class="qs-tuner-row">
                             <span>Data Align</span>
                             <select id="qsTunerDatAlign" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px;">
                                 <option value="left" ${sSet.datAlign==='left'?'selected':''}>Left</option>
@@ -4397,8 +4407,9 @@
             keys.forEach(k => {
                 let fp = `${activeTunerSection}.${k}`;
                 let isLocked = sSet.lockedFields && sSet.lockedFields[fp];
-                html += `<label style="display:flex; align-items:center; gap:8px;">
-                            <input type="checkbox" ${isLocked?'checked':''} onchange="toggleQsFieldLock('${activeTunerSection}', '${fp}')"> ${k}
+                html += `<label style="display:flex; align-items:center; justify-content:flex-start; gap:8px; width:100%; box-sizing:border-box; padding:4px 0; min-height:var(--qs-tuner-row-ht, 44px); cursor:pointer;">
+                            <input type="checkbox" ${isLocked?'checked':''} onchange="toggleQsFieldLock('${activeTunerSection}', '${fp}')" style="margin:0; flex-shrink:0; transform:scale(1.2);">
+                            <span style="flex:1; line-height:1.2; word-wrap:break-word;">${k}</span>
                         </label>`;
             });
             html += `</div></div>`;
