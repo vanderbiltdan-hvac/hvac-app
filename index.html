@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.55</title>
+    <title>HVAC Splash v1.55.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1312,7 +1312,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.55</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.55.2</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1889,7 +1889,7 @@
     </div>
 
     <!-- QUICK STASH MODAL -->
-    <div id="quickStashModal" class="modal-overlay" style="background:#121212; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; top:0; z-index:10000; align-items:center;">
+    <div id="quickStashModal" class="modal-overlay" style="background:#121212; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; overflow-x:hidden; top:0; z-index:10000; align-items:center;">
         <!-- QUICK STASH TUNER PANEL -->
         <div id="qsSettingsPanel" style="display:none; position:fixed; top:50px; right:20px; z-index:10001; background:rgba(18,18,18,0.95); border:1px solid #444; border-radius:8px; width:90vw; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); flex-direction:column; max-height:85vh; transition: max-height 0.2s;">
             <!-- Header / Drag Handle -->
@@ -1906,14 +1906,14 @@
                 <!-- Dynamic fields rendered here by JS -->
             </div>
 </div>
-        <div id="qsWorkspaceWrapper" class="w-full flex flex-col h-full" style="max-width:672px;">
+        <div id="qsWorkspaceWrapper" class="w-full flex flex-col h-full" style="max-width:672px; box-sizing:border-box; overflow-x:clip;">
             <input type="file" id="quickStashFileInput" style="display:none;" accept="image/*" multiple onchange="handleQuickStashPhoto(this)">
 
             <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.55</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.55.2</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -1928,7 +1928,7 @@
                 <button onclick="closeQuickStash()" style="background:none; border:none; font-size:var(--qs-hdr-close-fs); width:var(--qs-hdr-close-wd); padding:0; cursor:pointer; color:var(--crimson-red);">✖</button>
             </div>
 
-            <div id="quickStashContent" style="flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:15px;">
+            <div id="quickStashContent" style="flex:1; overflow-y:auto; overflow-x:hidden; padding:15px; display:flex; flex-direction:column; gap:15px; box-sizing:border-box;">
 
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -2269,7 +2269,7 @@
         <!-- 3x3 Grid -->
         <div class="grid grid-cols-3 gap-2">
           <!-- Row 1 -->
-          <a href="Splash.html" class="flex flex-col items-center justify-center h-16 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight">Splash<br><span class="text-[10px] font-normal text-slate-300">v1.55</span></a>
+          <a href="Splash.html" class="flex flex-col items-center justify-center h-16 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight">Splash<br><span class="text-[10px] font-normal text-slate-300">v1.55.2</span></a>
           <a href="notes.html" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded text-slate-300 font-bold text-[13px] shadow-sm text-center leading-tight">Notes<br><span class="text-[10px] font-normal text-slate-400">v1.20</span></a>
           <a href="mirror.html" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded text-slate-300 font-bold text-[13px] shadow-sm text-center leading-tight">Mirror<br><span class="text-[10px] font-normal text-slate-400">v1.20</span></a>
           
@@ -2320,7 +2320,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.55";
+        const APP_VERSION = "v1.55.2";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         function toggleBottomNav() {
@@ -3986,11 +3986,12 @@
             showHopper: true,
             showExtra: true,
             showRawScans: true,
-            collapseExtra: false,
+            collapseExtra: true,
             collapseRawScans: true,
-            collapseCustomer: false,
-            collapseEquipment: false,
-            collapseReadings: false,
+            collapseCustomer: true,
+            collapseEquipment: true,
+            collapseReadings: true,
+            collapseDiagnostics: true,
             collapseCopyOptions: false,
             
             widthMode: 'Standard', 
@@ -3999,6 +4000,7 @@
             sectionGap: 15,
             
             hdrFs: 11,
+            hdrMinHt: 40,
             hdrPadV: 0,
             hdrPadH: 0,
             hdrRad: 0,
@@ -4049,6 +4051,7 @@
         for (const key in savedGlobalSettings) {
             if (savedGlobalSettings[key] !== undefined && savedGlobalSettings[key] !== null && qsSettings.hasOwnProperty(key)) {
                 if (typeof savedGlobalSettings[key] === 'number' && Number.isNaN(savedGlobalSettings[key])) continue;
+                if (key.startsWith('collapse') && key !== 'collapseCopyOptions') continue;
                 qsSettings[key] = savedGlobalSettings[key];
             }
         }
@@ -4327,6 +4330,7 @@
                         ${bGrp('Fixed Width (px)', 'fixedWidth', true)}
                         ${bGrp('Outer Padding', 'outerPadding', true)}
                         ${bGrp('Section Gap', 'sectionGap', true)}
+                        ${bGrp('Header Min Height', 'hdrMinHt', true)}
                         <div style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px solid #444; padding-top:8px;">
                             <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowHopper" ${qsSettings.showHopper?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Hopper</label>
                             <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowExtra" ${qsSettings.showExtra?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Extra</label>
@@ -4428,6 +4432,7 @@
             let css = `
                 :root {
                     --qs-hdr-fs: ${qsSettings.hdrFs}px;
+                    --qs-hdr-min-ht: ${qsSettings.hdrMinHt||40}px;
                     --qs-hdr-pad: ${qsSettings.hdrPadV}px ${qsSettings.hdrPadH}px;
                     --qs-hdr-rad: ${qsSettings.hdrRad}px;
                     --qs-outer-padding: ${qsSettings.outerPadding}px;
@@ -4445,6 +4450,7 @@
                     gap: var(--qs-section-gap) !important;
                 }
                 .qs-section-header {
+                    min-height: var(--qs-hdr-min-ht) !important;
                     font-size: var(--qs-hdr-fs) !important;
                     padding: var(--qs-hdr-pad) !important;
                     border-radius: var(--qs-hdr-rad) !important;
@@ -4479,6 +4485,7 @@
                         --qs-row-min-ht: ${sSet.rowMinHeight}px;
                         --qs-row-pad: ${sSet.rowPadV}px ${sSet.rowPadH}px;
                         --qs-cb-size: ${sSet.cbSize};
+                        --qs-action-btn-size: ${sSet.actionBtnSize||9}px;
                         --qs-lbl-fs: ${sSet.lblFs}px;
                         --qs-dat-fs: ${sSet.datFs}px;
                         --qs-dat-align: ${sSet.datAlign};
@@ -4942,8 +4949,8 @@
                 
                 let sSet = qsSectionSettings[cat] || defaultQsSectionSettingsTemplate;
                 
-                let mapBtn = `<button onclick="openQsFieldMapper('${cat}', '${key}', '${safeLabelStr}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:${sSet.actionBtnSize||9}px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">MAP</button>`;
-                let clearBtn = `<button onclick="clearQsField('${cat}', '${key}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:${sSet.actionBtnSize||9}px; font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">CLR</button>`;
+                let mapBtn = `<button onclick="openQsFieldMapper('${cat}', '${key}', '${safeLabelStr}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:var(--qs-action-btn-size, 9px); font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">MAP</button>`;
+                let clearBtn = `<button onclick="clearQsField('${cat}', '${key}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:var(--qs-action-btn-size, 9px); font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">CLR</button>`;
 
                 let inputHtml = `
                     <div style="display:flex; align-items:flex-start; width:100%;">
