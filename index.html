@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.54.7</title>
+    <title>HVAC Splash v1.54.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1312,7 +1312,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.54.7</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.54.8</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1913,7 +1913,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.54.7</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.54.8</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2263,7 +2263,7 @@
 
     <!-- BOTTOM APP NAVIGATION RIBBON -->
     <div id="bottom-nav-ribbon" class="w-full h-16 bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex justify-start px-2 py-2 overflow-x-auto no-scrollbar gap-2">
-      <a href="Splash.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[10px] shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">v1.54.7</span></a>
+      <a href="Splash.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[10px] shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">v1.54.8</span></a>
       <a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.20</span></a>
       <a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.20</span></a>
       <a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-12 bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[8px] font-normal">v1.20</span></a>
@@ -2302,7 +2302,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.54.7";
+        const APP_VERSION = "v1.54.8";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         // Restoration Helpers (v28.42)
@@ -4138,10 +4138,13 @@
             qsTunerDragStartX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
             qsTunerDragStartY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
             e.preventDefault();
+            document.addEventListener('mousemove', onQsTunerDrag);
+            document.addEventListener('touchmove', onQsTunerDrag, {passive: false});
         }
         
         function onQsTunerDrag(e) {
             if (!isQsTunerDragging) return;
+            if (e.cancelable !== false) e.preventDefault();
             let el = document.getElementById('qsSettingsPanel');
             let ex = e.clientX || (e.touches && e.touches[0].clientX);
             let ey = e.clientY || (e.touches && e.touches[0].clientY);
@@ -4163,11 +4166,11 @@
         
         function stopQsTunerDrag() {
             isQsTunerDragging = false;
+            document.removeEventListener('mousemove', onQsTunerDrag);
+            document.removeEventListener('touchmove', onQsTunerDrag);
         }
 
-        document.addEventListener('mousemove', onQsTunerDrag);
         document.addEventListener('mouseup', stopQsTunerDrag);
-        document.addEventListener('touchmove', onQsTunerDrag, {passive: false});
         document.addEventListener('touchend', stopQsTunerDrag);
 
         function toggleQsTunerSize() {
