@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.12.9</title>
+<title>Diagnostics v5.13</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -110,7 +110,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_12_9 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -143,6 +143,11 @@ body {
 </div>
 
 
+<div class="w-full px-2 pt-2 bg-slate-900 grid grid-cols-1">
+    <button onclick="openSnapshotModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 border border-slate-700">
+        <span>💾</span> SAVE SNAPSHOT
+    </button>
+</div>
 <div class="w-full px-2 py-2 bg-slate-900 border-t border-slate-800 grid grid-cols-2 gap-2">
     <button onclick="syncFromQuickStash()" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
         <span>⚡</span> SYNC
@@ -474,30 +479,85 @@ HUB
     </div>
 </div>
 
-<!-- BOTTOM APP NAVIGATION RIBBON -->
-<div id="bottom-nav-container" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40">
-<div id="bottom-nav-ribbon" class="w-full flex justify-start overflow-x-auto no-scrollbar gap-2 px-2">
-<a href="notes.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Notes<br><span class="text-[8px] font-normal">v1.02</span></a>
-<a href="Splash.html" onclick="event.preventDefault(); openSplashHome();" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Splash<br><span class="text-[8px] font-normal">Quick Stash</span></a>
-<a href="mirror.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Mirror<br><span class="text-[8px] font-normal">v1.10</span></a>
-<a href="specs.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Specs<br><span class="text-[10px] font-normal">v1.01</span></a>
-<a href="pmi.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">PMI<br><span class="text-[10px] font-normal">v1.32</span></a>
-<a href="diagnostics.html" onclick="openSnapshotModal()" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-700 border border-emerald-500 rounded text-emerald-400 font-bold text-[10px] shadow-sm text-center leading-tight transition-transform transform hover:scale-105">Diag<br><span class="text-[8px] font-normal">v5.12.9</span></a>
-<a href="startup.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Startup<br><span class="text-[10px] font-normal">v1.28</span></a>
-<a href="compiler.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Compiler<br><span class="text-[10px] font-normal">v1.00</span></a>
-<a href="templates.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Templates<br><span class="text-[10px] font-normal">v1.00</span></a>
-<a href="reports.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Reports<br><span class="text-[10px] font-normal">v1.00</span></a>
-<a href="datablock.html" class="flex flex-col items-center justify-center flex-shrink-0 min-w-[80px] h-[64px] bg-slate-900 border border-slate-700 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200 font-bold text-[10px] transition-colors shadow-sm text-center leading-tight">Data Block<br><span class="text-[10px] font-normal">v1.00</span></a>
-</div>
+<!-- BOTTOM APP NAVIGATION PANEL -->
+<div id="bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
+  <!-- Expanded Grid (Hidden by default) -->
+  <div id="bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+    <!-- Dynamic Grid -->
+    <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+  </div>
+  <!-- Launcher / Collapse Control -->
+  <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-12 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
+    <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+  </button>
 </div>
 
 <script>
 const mfdArray = [2.5, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70, 80];
 
+const APP_PAGES_REGISTRY = [
+    { name: "Splash", file: "Splash.html", state: "ACTIVE" },
+    { name: "Notes", file: "notes.html", state: "PLANNED" },
+    { name: "Mirror", file: "mirror.html", state: "PLANNED" },
+    { name: "Specs", file: "specs.html", state: "PLANNED" },
+    { name: "PMI", file: "pmi.html", state: "PLANNED" },
+    { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
+    { name: "Startup", file: "startup.html", state: "PLANNED" },
+    { name: "Compiler", file: "compiler.html", state: "PLANNED" },
+    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Reports", file: "reports.html", state: "PLANNED" },
+    { name: "Data Block", file: "datablock.html", state: "PLANNED" }
+];
+
+function renderBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid-inner');
+    if (!grid) return;
+    
+    let currentPath = window.location.pathname.split('/').pop().toLowerCase();
+    if (!currentPath || currentPath === "" || currentPath === "index.html") {
+        currentPath = "diagnostics.html";
+    }
+    
+    let html = "";
+    APP_PAGES_REGISTRY.forEach(p => {
+        let isCurrent = (p.file.toLowerCase() === currentPath);
+        
+        if (isCurrent) {
+            html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-blue-900 border-2 border-blue-400 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                ${p.name}<br><span class="text-[10px] font-bold text-blue-200 mt-1 tracking-widest">CURRENT</span>
+            </a>`;
+        } else if (p.state === "ACTIVE") {
+            html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-100 font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                ${p.name}
+            </a>`;
+        } else {
+            html += `<div class="flex flex-col items-center justify-center h-16 bg-slate-900 border border-dashed border-slate-700 rounded text-slate-500 font-bold text-[13px] shadow-none text-center leading-tight opacity-70">
+                ${p.name}<br><span class="text-[9px] font-normal text-slate-600 mt-1 uppercase tracking-wider">PLANNED</span>
+            </div>`;
+        }
+    });
+    grid.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', renderBottomNav);
+renderBottomNav();
+
+function toggleBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid');
+    const icon = document.getElementById('bottom-nav-icon');
+    if (grid.classList.contains('hidden')) {
+        grid.classList.remove('hidden');
+        icon.textContent = '▲';
+    } else {
+        grid.classList.add('hidden');
+        icon.textContent = '☰';
+    }
+}
+
 // GLOBAL HEADER FUNCTIONS
 
 function openSplashHome() {
-    window.location.href = location.protocol === "file:" ? "Splash.html" : "index.html";
+    window.location.href = "Splash.html";
 }
 
 function toggleTopRibbon() {
