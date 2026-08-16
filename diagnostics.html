@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.13.3</title>
+<title>Diagnostics v5.13.4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -36,7 +36,7 @@ body {
 </head>
 <body class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen" style="overscroll-behavior-y: contain;">
 
-<div id="fixed-dashboard-hdr" class="w-full sticky top-0 z-50 bg-slate-900">
+<div id="fixed-dashboard-hdr" class="w-full sticky top-0 z-50 bg-slate-900" style="padding-top: env(safe-area-inset-top, 0px);">
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-1.5 cursor-pointer hover:bg-slate-800 transition-colors">
 <div id="active-job-ticket" class="text-slate-400 font-mono text-[9px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
@@ -114,7 +114,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_3 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_4 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -142,23 +142,9 @@ body {
 </div>
 
 <!-- JOB LEDGER (HIGH-CONTRAST SUNLIGHT STYLING) -->
-<div id="job-ledger-container" class="flex-1 bg-slate-900 w-full px-2 py-2 overflow-y-auto">
+<div id="job-ledger-container" class="flex-1 bg-slate-900 w-full px-2 py-2 overflow-y-auto" style="padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));">
     <!-- LEDGER ROWS GENERATED HERE -->
 </div>
-
-
-<div class="w-full px-2 py-2 bg-slate-900 border-t border-slate-800 grid grid-cols-3 gap-2" style="padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));">
-    <button onclick="openSnapshotModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1 border border-slate-700">
-        <span class="text-xs">💾</span> SNAPSHOT
-    </button>
-    <button onclick="syncFromQuickStash()" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1">
-        <span class="text-xs">⚡</span> SYNC
-    </button>
-    <button onclick="saveResultsToQuickStash()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1">
-        <span class="text-xs">💾</span> SAVE
-    </button>
-</div>
-
 
 <!-- ADVANCED PAGE MODAL -->
 <div id="advanced-page-modal" class="fixed top-10 left-4 right-4 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl z-50 flex flex-col hidden" style="max-height: 80vh;">
@@ -483,8 +469,22 @@ body {
     <!-- Dynamic Grid -->
     <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
   </div>
-  <!-- Launcher / Collapse Control -->
-  <div class="flex w-full h-12 bg-slate-800">
+
+  <!-- ROW 1: Action Buttons -->
+  <div class="w-full px-2 py-2 grid grid-cols-3 gap-2 border-b border-slate-800 bg-slate-900 shrink-0">
+      <button onclick="openSnapshotModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1 border border-slate-700">
+          <span class="text-xs">💾</span> SNAPSHOT
+      </button>
+      <button onclick="syncFromQuickStash()" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1">
+          <span class="text-xs">⚡</span> SYNC
+      </button>
+      <button onclick="saveResultsToQuickStash()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1">
+          <span class="text-xs">💾</span> SAVE
+      </button>
+  </div>
+
+  <!-- ROW 2: Launcher / Collapse Control -->
+  <div class="flex w-full h-12 bg-slate-800 shrink-0">
     <button onclick="toggleFullScreen()" class="w-[35%] h-full flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest hover:bg-slate-700 transition-colors active:bg-slate-600 border-r border-slate-700">
       <span class="mr-2 text-base">⛶</span> FULLSCREEN
     </button>
