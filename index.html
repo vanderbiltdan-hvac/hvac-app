@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.55.9</title>
+    <title>HVAC Splash v1.56</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1312,7 +1312,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.55.9</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.56</span>
                 </h2>
                 <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
             </div>
@@ -1913,7 +1913,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.55.9</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.56</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -1938,46 +1938,55 @@
                 </div>
 
                 <!-- Configuration & Hopper -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-4 rounded-lg">
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; cursor:pointer; margin-bottom:-5px;" onclick="toggleQsSection('ScanSettings')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">REVIEW RESULTS:</span>
-                        <button id="qsToggleReviewBtn" onclick="toggleQsReview()" class="btn-utility" style="padding:4px 8px; font-size:10px;">ON</button>
+                        <span style="font-size:12px; color:var(--electric-blue); font-weight:900;">SCAN SETTINGS</span>
+                        <span id="qsSecArr_ScanSettings" style="color:#aaa;">▼</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">DESTINATION:</span>
-                        <select id="qsDestSelect" onchange="updateQsDest()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:140px;"></select>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">SCAN PROFILE:</span>
-                        <select id="qsScanType" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:120px;" onchange="updateQsScanType()">
-                            <option value="AUTO">AUTO</option>
-                            <option value="DATA TAG">DATA TAG</option>
-                            <option value="THERMOSTAT">THERMOSTAT</option>
-                            <option value="ELECTRICAL">ELECTRICAL</option>
-                            <option value="MEASUREMENTS">MEASUREMENTS</option>
-                        </select>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">DEPTH:</span>
-                        <select id="qsScanDepth" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanDepth()">
-                            <option value="QUICK">QUICK</option>
-                            <option value="NORMAL" selected>NORMAL</option>
-                            <option value="DEEP">DEEP</option>
-                        </select>
-                    </div>
+                    <div id="qsScanSettingsSummary" style="font-size:10px; color:#aaa; margin-top:4px;">AUTO • NORMAL • BOTH</div>
+                </div>
+                <div id="qsSec_ScanSettings" style="display:none; border-top:1px solid #333; padding-top:10px;">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-4 rounded-b-lg">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:12px; color:#aaa; font-weight:900;">REVIEW RESULTS:</span>
+                            <button id="qsToggleReviewBtn" onclick="toggleQsReview()" class="btn-utility" style="padding:4px 8px; font-size:10px;">ON</button>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:12px; color:#aaa; font-weight:900;">DESTINATION:</span>
+                            <select id="qsDestSelect" onchange="updateQsDest()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:140px;"></select>
+                        </div>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:12px; color:#aaa; font-weight:900;">SCAN PROFILE:</span>
+                            <select id="qsScanType" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:120px;" onchange="updateQsScanType()">
+                                <option value="AUTO">AUTO</option>
+                                <option value="DATA TAG">DATA TAG</option>
+                                <option value="THERMOSTAT">THERMOSTAT</option>
+                                <option value="ELECTRICAL">ELECTRICAL</option>
+                                <option value="MEASUREMENTS">MEASUREMENTS</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:12px; color:#aaa; font-weight:900;">DEPTH:</span>
+                            <select id="qsScanDepth" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanDepth()">
+                                <option value="QUICK">QUICK</option>
+                                <option value="NORMAL" selected>NORMAL</option>
+                                <option value="DEEP">DEEP</option>
+                            </select>
+                        </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:#aaa; font-weight:900;">FOCUS:</span>
-                        <select id="qsScanFocus" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanFocus()">
-                            <option value="VALUES">VALUES</option>
-                            <option value="RESULTS">RESULTS</option>
-                            <option value="BOTH" selected>BOTH</option>
-                        </select>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER DETAIL:</span>
-                        <button onclick="toggleQsDetail()" id="qsToggleDetailBtn" class="btn-utility" style="padding:2px 6px; font-size:9px;">MINIMAL</button>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:12px; color:#aaa; font-weight:900;">FOCUS:</span>
+                            <select id="qsScanFocus" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanFocus()">
+                                <option value="VALUES">VALUES</option>
+                                <option value="RESULTS">RESULTS</option>
+                                <option value="BOTH" selected>BOTH</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER DETAIL:</span>
+                            <button onclick="toggleQsDetail()" id="qsToggleDetailBtn" class="btn-utility" style="padding:2px 6px; font-size:9px;">MINIMAL</button>
+                        </div>
                     </div>
                 </div>
 
@@ -2269,7 +2278,7 @@
         <!-- 3x3 Grid -->
         <div class="grid grid-cols-3 gap-2">
           <!-- Row 1 -->
-          <a href="Splash.html" class="flex flex-col items-center justify-center h-16 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight">Splash<br><span class="text-[10px] font-normal text-slate-300">v1.55.9</span></a>
+          <a href="Splash.html" class="flex flex-col items-center justify-center h-16 bg-slate-700 border border-blue-500 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight">Splash<br><span class="text-[10px] font-normal text-slate-300">v1.56</span></a>
           <a href="notes.html" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded text-slate-300 font-bold text-[13px] shadow-sm text-center leading-tight">Notes<br><span class="text-[10px] font-normal text-slate-400">v1.20</span></a>
           <a href="mirror.html" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-700 hover:bg-slate-700 rounded text-slate-300 font-bold text-[13px] shadow-sm text-center leading-tight">Mirror<br><span class="text-[10px] font-normal text-slate-400">v1.20</span></a>
           
@@ -2320,7 +2329,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.55.9";
+        const APP_VERSION = "v1.56";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         function toggleBottomNav() {
@@ -3997,6 +4006,7 @@
             collapseReadings: true,
             collapseDiagnostics: true,
             collapseCopyOptions: false,
+            collapseScanSettings: true,
             
             widthMode: 'Standard', 
             fixedWidth: 800,
@@ -4056,7 +4066,7 @@
         for (const key in savedGlobalSettings) {
             if (savedGlobalSettings[key] !== undefined && savedGlobalSettings[key] !== null && qsSettings.hasOwnProperty(key)) {
                 if (typeof savedGlobalSettings[key] === 'number' && Number.isNaN(savedGlobalSettings[key])) continue;
-                if (key.startsWith('collapse') && key !== 'collapseCopyOptions') continue;
+                if (key.startsWith('collapse') && key !== 'collapseCopyOptions' && key !== 'collapseScanSettings') continue;
                 qsSettings[key] = savedGlobalSettings[key];
             }
         }
@@ -4614,6 +4624,8 @@
             let focusSel = document.getElementById('qsScanFocus');
             if (focusSel) focusSel.value = localStorage.getItem('qsScanFocusProfile') || 'BOTH';
 
+            updateQsScanSummary();
+
             updateDestDropdown();
             renderHopper();
             updateHopperVisibility();
@@ -4658,19 +4670,30 @@
             }
         }
 
+        function updateQsScanSummary() {
+            let type = document.getElementById('qsScanType')?.value || 'AUTO';
+            let depth = document.getElementById('qsScanDepth')?.value || 'NORMAL';
+            let focus = document.getElementById('qsScanFocus')?.value || 'BOTH';
+            let sumEl = document.getElementById('qsScanSettingsSummary');
+            if (sumEl) sumEl.innerText = `${type} • ${depth} • ${focus}`;
+        }
+
         function updateQsScanType() {
             let sel = document.getElementById('qsScanType');
             if (sel) localStorage.setItem('qsScanProfile', sel.value);
+            updateQsScanSummary();
         }
 
         function updateQsScanDepth() {
             let sel = document.getElementById('qsScanDepth');
             if (sel) localStorage.setItem('qsScanDepthProfile', sel.value);
+            updateQsScanSummary();
         }
 
         function updateQsScanFocus() {
             let sel = document.getElementById('qsScanFocus');
             if (sel) localStorage.setItem('qsScanFocusProfile', sel.value);
+            updateQsScanSummary();
         }
 
         function updateDestDropdown() {
