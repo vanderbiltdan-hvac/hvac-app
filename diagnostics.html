@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.13</title>
+<title>Diagnostics v5.13.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -86,6 +86,10 @@ body {
 
 </button>
 
+<button onclick="openHubModal()" class="flex-shrink-0 min-w-[60px] h-12 bg-blue-700 hover:bg-blue-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-blue-500 shadow-sm" title="HUB">
+<span class="text-base leading-none mb-1">🔷</span><span class="text-[7px] font-bold uppercase tracking-wider">HUB</span>
+</button>
+
 </div>
     <!-- TOP RIBBON SHELF -->
     <div id="production-pill-shelf" class="w-full pt-2 pb-0 px-4 bg-slate-900 box-border border-b border-slate-800">
@@ -110,7 +114,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_1 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -143,24 +147,17 @@ body {
 </div>
 
 
-<div class="w-full px-2 pt-2 bg-slate-900 grid grid-cols-1">
-    <button onclick="openSnapshotModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 border border-slate-700">
-        <span>💾</span> SAVE SNAPSHOT
+<div class="w-full px-2 py-2 bg-slate-900 border-t border-slate-800 grid grid-cols-3 gap-2">
+    <button onclick="openSnapshotModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1 border border-slate-700">
+        <span class="text-xs">💾</span> SNAPSHOT
+    </button>
+    <button onclick="syncFromQuickStash()" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1">
+        <span class="text-xs">⚡</span> SYNC
+    </button>
+    <button onclick="saveResultsToQuickStash()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-1">
+        <span class="text-xs">💾</span> SAVE
     </button>
 </div>
-<div class="w-full px-2 py-2 bg-slate-900 border-t border-slate-800 grid grid-cols-2 gap-2">
-    <button onclick="syncFromQuickStash()" class="w-full bg-blue-700 hover:bg-blue-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
-        <span>⚡</span> SYNC
-    </button>
-    <button onclick="saveResultsToQuickStash()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg text-[10px] uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
-        <span>💾</span> SAVE
-    </button>
-</div>
-
-<!-- DOCK FABs (HOVERING RIGHT) -->
-<button onclick="openHubModal()" class="fixed bottom-20 right-4 z-50 w-14 h-14 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center font-bold tracking-wider text-xs border-2 border-slate-800 transition-transform transform hover:scale-105">
-HUB
-</button>
 
 
 <!-- ADVANCED PAGE MODAL -->
@@ -482,7 +479,7 @@ HUB
 <!-- BOTTOM APP NAVIGATION PANEL -->
 <div id="bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
   <!-- Expanded Grid (Hidden by default) -->
-  <div id="bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+  <div id="bottom-nav-grid" class="hidden absolute bottom-full left-0 w-full p-2 bg-slate-900/95 backdrop-blur-md border-t border-slate-700 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] z-50">
     <!-- Dynamic Grid -->
     <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
   </div>
