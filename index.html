@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HVAC Splash v1.57</title>
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.webmanifest">
+    <title>HVAC Splash v1.58</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -1312,9 +1314,13 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.57</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.58</span>
                 </h2>
-                <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
+                <div class="flex items-center gap-2">
+                    <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
+                    <span id="pwaModeIndicator" class="hidden text-xs font-bold text-blue-400 border border-blue-400 px-2 py-1 rounded">APP MODE</span>
+                    <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
+                </div>
             </div>
             
             <div id="conflictBadgeHeader" style="display:none;" class="w-full text-center p-2 rounded-lg font-bold mb-4 bg-red-900/30 border border-red-500 text-red-500 text-xs"></div>
@@ -2314,7 +2320,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.57";
+        const APP_VERSION = "v1.58";
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         const APP_PAGES_REGISTRY = [
@@ -8586,12 +8592,6 @@
             renderActiveQuickStash();
         }
     </script>
-</body>
-
-</html>
-
-
-
-
-
-
+    <!-- PWA REGISTRATION & INSTALL -->
+    <script>
+        let deferredPrompt;
