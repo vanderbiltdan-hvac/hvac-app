@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.13.5</title>
+<title>Diagnostics v5.13.6</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="pages-registry.js"></script>
 <style>
@@ -115,7 +115,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_5 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_6 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -965,54 +965,22 @@ function closeAdvancedPageModal() {
 function renderAdvancedPageRows() {
     let html = '';
     
-
-    const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
-    const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
-    const stash = activeStashId ? stashes[activeStashId] : null;
+    const targets = getResolvedQuickStashTargets();
     
     let autoName = '🟢 AUTO / QUICK STASH';
     let hMfdAuto = '--', fMfdAuto = '--', rlaAuto = '--', lraAuto = '--', flaAuto = '--', scAuto = '--';
     
-    if (stash) {
-        let cName = stash.customer?.name || stash.name || 'QUICK STASH';
-        if (cName) autoName = `🟢 AUTO / ${cName}`;
+    if (targets) {
+        autoName = `🟢 AUTO / ${targets.name}`;
         
-        const sections = [
-            stash.diagnostics || {},
-            stash.equipment || {},
-            stash.readings || {},
-            stash.extra || {}
-        ];
+        const getVal = (t) => t.status === 'resolved' ? t.val : (t.status === 'conflict' ? '⚠️' : '--');
         
-        function resolveTarget(aliases, stashKey) {
-            let foundValues = [];
-            for (const section of sections) {
-                if (stashKey && section[stashKey] !== undefined && section[stashKey] !== "") {
-                    return section[stashKey];
-                }
-                for (const alias of aliases) {
-                    if (section[alias] !== undefined && section[alias] !== "") {
-                        if (!foundValues.includes(section[alias])) foundValues.push(section[alias]);
-                    }
-                }
-            }
-            return foundValues.length === 1 ? foundValues[0] : '--';
-        }
-        
-        rlaAuto = resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compressorRlaRating');
-        lraAuto = resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compressorLraRating');
-        flaAuto = resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'fanFlaRating');
-        scAuto = resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool');
-        
-        if (stash.diagnostics) {
-            if (stash.diagnostics.hermTargetMfd !== undefined) hMfdAuto = stash.diagnostics.hermTargetMfd;
-            else if (stash.diagnostics.target_mfd !== undefined) hMfdAuto = stash.diagnostics.target_mfd;
-            else if (stash.diagnostics.hermMfd !== undefined) hMfdAuto = stash.diagnostics.hermMfd;
-            
-            if (stash.diagnostics.fanTargetMfd !== undefined) fMfdAuto = stash.diagnostics.fanTargetMfd;
-            else if (stash.diagnostics.target_fan_mfd !== undefined) fMfdAuto = stash.diagnostics.target_fan_mfd;
-            else if (stash.diagnostics.fanMfd !== undefined) fMfdAuto = stash.diagnostics.fanMfd;
-        }
+        rlaAuto = getVal(targets.compressorRlaRating);
+        lraAuto = getVal(targets.compressorLraRating);
+        flaAuto = getVal(targets.fanFlaRating);
+        scAuto = getVal(targets.targetSubcool);
+        hMfdAuto = getVal(targets.hermTargetMfd);
+        fMfdAuto = getVal(targets.fanTargetMfd);
     }
     const lraStrAuto = lraAuto !== '--' ? ` / LRA:${lraAuto}` : '';
 
@@ -1061,45 +1029,6 @@ function renderAdvancedPageRows() {
 
 function handleAdvancedPageSelect(val) {
     if (val === 'auto') {
-        const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
-        if (activeStashId) {
-            const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
-            const stash = stashes[activeStashId];
-            if (stash) {
-                const sections = [stash.diagnostics || {}, stash.equipment || {}, stash.readings || {}, stash.extra || {}];
-                function resolveTarget(aliases, stashKey) {
-                    let foundValues = [];
-                    for (const section of sections) {
-                        if (stashKey && section[stashKey] !== undefined && section[stashKey] !== "") return section[stashKey];
-                        for (const alias of aliases) {
-                            if (section[alias] !== undefined && section[alias] !== "") {
-                                if (!foundValues.includes(section[alias])) foundValues.push(section[alias]);
-                            }
-                        }
-                    }
-                    return foundValues.length === 1 ? foundValues[0] : null;
-                }
-                const rla = resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compressorRlaRating');
-                const lra = resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compressorLraRating');
-                const fla = resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'fanFlaRating');
-                const sc = resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool');
-                if (rla !== null && !liveAppState.cRlaRating) liveAppState.cRlaRating = parseFloat(rla);
-                if (lra !== null && !liveAppState.cLraRating) liveAppState.cLraRating = parseFloat(lra);
-                if (fla !== null && !liveAppState.odfFlaRating) liveAppState.odfFlaRating = parseFloat(fla);
-                if (sc !== null && !liveAppState.targetSubcool) liveAppState.targetSubcool = parseFloat(sc);
-                if (stash.diagnostics) {
-                    if (stash.diagnostics.hermTargetMfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.hermTargetMfd);
-                    else if (stash.diagnostics.target_mfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.target_mfd);
-                    else if (stash.diagnostics.hermMfd !== undefined && !liveAppState.target_mfd) liveAppState.target_mfd = parseFloat(stash.diagnostics.hermMfd);
-                    
-                    if (stash.diagnostics.fanTargetMfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.fanTargetMfd);
-                    else if (stash.diagnostics.target_fan_mfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.target_fan_mfd);
-                    else if (stash.diagnostics.fanMfd !== undefined && !liveAppState.target_fan_mfd) liveAppState.target_fan_mfd = parseFloat(stash.diagnostics.fanMfd);
-                }
-            }
-        }
-        renderAllPills();
-        refreshLedger();
         updateHUD();
         updateDashLabels();
         saveToLocal();
@@ -2301,56 +2230,36 @@ function showDiagToast(msg, colorClass) {
     }, 2500);
 }
 
-function syncFromQuickStash() {
-    loadAutoQuickStash(true);
-}
-
-function loadAutoQuickStash(isManualSync = false) {
+function getResolvedQuickStashTargets() {
     const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
     const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
-    const stash = stashes[activeStashId];
-    
-    const fields = [
-        { id: 'config-comp-rla-rating', ind: 'ind-comp-rla', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], stashKey: 'compressorRlaRating', stateKey: 'cRlaRating' },
-        { id: 'config-comp-lra-rating', ind: 'ind-comp-lra', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps'], stashKey: 'compressorLraRating', stateKey: 'cLraRating' },
-        { id: 'config-fan-fla-rating', ind: 'ind-fan-fla', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], stashKey: 'fanFlaRating', stateKey: 'odfFlaRating' },
-        { id: 'config-target-subcool', ind: 'ind-target-sc', aliases: ['Target SC', 'Target Subcool', 'Subcool Target'], stashKey: 'targetSubcool', stateKey: 'targetSubcool' },
-        { id: 'config-target-mfd', ind: 'ind-target-mfd', aliases: ['Herm Target MFD', 'Herm MFD'], stashKey: 'hermTargetMfd', stateKey: 'target_mfd' },
-        { id: 'config-target-fan-mfd', ind: 'ind-target-fan-mfd', aliases: ['Fan Target MFD', 'Fan MFD'], stashKey: 'fanTargetMfd', stateKey: 'target_fan_mfd' }
+    const stash = activeStashId ? stashes[activeStashId] : null;
+
+    if (!stash) return null;
+
+    const sections = [
+        stash.diagnostics || {},
+        stash.equipment || {},
+        stash.readings || {},
+        stash.extra || {}
     ];
 
-    if(!stash) {
-        if (isManualSync) {
-            showDiagToast("NO ACTIVE QUICK STASH", "bg-amber-600");
-        } else {
-            fields.forEach(f => {
-                const ind = document.getElementById(f.ind);
-                if(ind) ind.innerHTML = '<span class="text-slate-500" title="No active stash">⚪</span>';
-            });
-        }
-        return;
-    }
-
     function resolveTarget(aliases, stashKey) {
-        const sections = [
-            stash.diagnostics || {},
-            stash.equipment || {},
-            stash.readings || {},
-            stash.extra || {}
-        ];
-        
         let foundValues = [];
-        if (stash.diagnostics && stash.diagnostics[stashKey] !== undefined && stash.diagnostics[stashKey] !== "") {
-             foundValues.push(String(stash.diagnostics[stashKey]).trim());
-        }
-
-        for (let i = 1; i < sections.length; i++) {
-            const section = sections[i];
-            if (!section) continue;
-            for (let k in section) {
-                if (aliases.some(a => a.toLowerCase() === k.toLowerCase())) {
-                    const val = String(section[k]).trim();
-                    if (val) foundValues.push(val);
+        for (const section of sections) {
+            if (stashKey && section[stashKey] !== undefined && section[stashKey] !== "") {
+                const val = String(section[stashKey]).trim();
+                if (val && !foundValues.includes(val)) foundValues.push(val);
+            }
+            for (const alias of aliases) {
+                const lowerAlias = alias.toLowerCase();
+                const normAlias = lowerAlias.replace(/[^a-z0-9]/g, '');
+                for (const k in section) {
+                    const lk = k.toLowerCase();
+                    if (lk === lowerAlias || lk.replace(/[^a-z0-9]/g, '') === normAlias) {
+                        const val = String(section[k]).trim();
+                        if (val && !foundValues.includes(val)) foundValues.push(val);
+                    }
                 }
             }
         }
@@ -2367,44 +2276,88 @@ function loadAutoQuickStash(isManualSync = false) {
             }
         });
 
-        return uniqueVals;
+        if (uniqueVals.length === 0) return { val: '--', status: 'missing' };
+        if (uniqueVals.length === 1) return { val: uniqueVals[0], status: 'resolved' };
+        return { val: '--', status: 'conflict', raw: uniqueVals.join(', ') };
+    }
+
+    return {
+        compressorRlaRating: resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compressorRlaRating'),
+        compressorLraRating: resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compressorLraRating'),
+        fanFlaRating: resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'fanFlaRating'),
+        targetSubcool: resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool'),
+        hermTargetMfd: resolveTarget(['Herm Target MFD', 'Herm MFD', 'hermTargetMfd', 'target_mfd', 'hermMfd'], 'hermTargetMfd'),
+        fanTargetMfd: resolveTarget(['Fan Target MFD', 'Fan MFD', 'fanTargetMfd', 'target_fan_mfd', 'fanMfd'], 'fanTargetMfd'),
+        name: stash.customer?.name || stash.name || 'QUICK STASH'
+    };
+}
+
+function applyQuickStashTargets(options = {}) {
+    const targets = getResolvedQuickStashTargets();
+    if (!targets) {
+        return { success: false, status: 'no_stash' };
     }
 
     let syncedAnything = false;
+    let hasConflicts = false;
+
+    const fields = [
+        { key: 'compressorRlaRating', stateKey: 'cRlaRating', ind: 'ind-comp-rla', id: 'config-comp-rla-rating' },
+        { key: 'compressorLraRating', stateKey: 'cLraRating', ind: 'ind-comp-lra', id: 'config-comp-lra-rating' },
+        { key: 'fanFlaRating', stateKey: 'odfFlaRating', ind: 'ind-fan-fla', id: 'config-fan-fla-rating' },
+        { key: 'targetSubcool', stateKey: 'targetSubcool', ind: 'ind-target-sc', id: 'config-target-subcool' },
+        { key: 'hermTargetMfd', stateKey: 'target_mfd', ind: 'ind-target-mfd', id: 'config-target-mfd' },
+        { key: 'fanTargetMfd', stateKey: 'target_fan_mfd', ind: 'ind-target-fan-mfd', id: 'config-target-fan-mfd' }
+    ];
 
     fields.forEach(f => {
+        const target = targets[f.key];
         const ind = document.getElementById(f.ind);
         const input = document.getElementById(f.id);
-        const currentStateVal = f.stateKey ? liveAppState[f.stateKey] : null;
-        
-        const vals = resolveTarget(f.aliases, f.stashKey);
-        
-        if (vals.length === 1) {
-            const parsed = parseFloat(vals[0]);
-            const finalVal = !isNaN(parsed) ? parsed : vals[0];
-            
-            // For manual sync or auto, only fill if blank/null OR if force sync
-            const isBlank = (currentStateVal === null || currentStateVal === undefined || currentStateVal === "");
-            
-            if (isBlank || isManualSync) {
-                if (f.stateKey) liveAppState[f.stateKey] = finalVal;
+
+        if (target.status === 'resolved') {
+            if (options.overwriteTargets) {
+                const parsed = parseFloat(target.val);
+                const finalVal = !isNaN(parsed) ? parsed : target.val;
+                
+                liveAppState[f.stateKey] = finalVal;
                 if (input) input.value = finalVal;
                 syncedAnything = true;
             }
-            if (ind) ind.innerHTML = '<span class="text-emerald-500" title="Resolved: ' + vals[0] + '">🟢</span>';
-        } else if (vals.length > 1) {
-            if (ind) ind.innerHTML = '<span class="text-amber-500" title="Conflict: ' + vals.join(', ') + '">⚠️</span>';
+            if (ind) ind.innerHTML = `<span class="text-emerald-500" title="Resolved: ${target.val}">🟢</span>`;
+        } else if (target.status === 'conflict') {
+            hasConflicts = true;
+            if (ind) ind.innerHTML = `<span class="text-amber-500" title="Conflict: ${target.raw}">⚠️</span>`;
         } else {
-            if (ind) ind.innerHTML = '<span class="text-slate-500" title="Missing">⚪</span>';
+            if (ind) ind.innerHTML = `<span class="text-slate-500" title="Missing">⚪</span>`;
         }
     });
 
     if (syncedAnything) {
         renderAllPills();
+        refreshLedger();
+        updateHUD();
         if (typeof updateDashLabels === 'function') updateDashLabels();
-        if (isManualSync) showDiagToast("SYNCED FROM QUICK STASH", "bg-emerald-600");
-    } else {
-        if (isManualSync) showDiagToast("NO NEW QUICK STASH VALUES", "bg-amber-600");
+        saveToLocal();
+    }
+
+    if (!syncedAnything && !hasConflicts) {
+        return { success: false, status: 'no_targets' };
+    }
+
+    return { success: true, hasConflicts, syncedAnything };
+}
+
+function syncFromQuickStash() {
+    const result = applyQuickStashTargets({ overwriteTargets: true });
+    if (result.status === 'no_stash') {
+        showDiagToast("NO ACTIVE QUICK STASH", "bg-amber-600");
+    } else if (result.status === 'no_targets') {
+        showDiagToast("NO QUICK STASH TARGET VALUES", "bg-amber-600");
+    } else if (result.hasConflicts) {
+        showDiagToast("QUICK STASH LOADED WITH CONFLICTS", "bg-amber-600");
+    } else if (result.syncedAnything) {
+        showDiagToast("SYNCED FROM QUICK STASH", "bg-emerald-600");
     }
 }
 
@@ -2422,7 +2375,7 @@ function loadAutoQuickStash(isManualSync = false) {
 
     function loadQuickProfile(val) {
         if (val === "auto_quick_stash") {
-            loadAutoQuickStash();
+            applyQuickStashTargets({ overwriteTargets: true });
             return;
         }
         if(!val || !val.startsWith("custom_")) return;
