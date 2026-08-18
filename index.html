@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v1.58</title>
+    <title>HVAC Splash v1.59.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -1314,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.58</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.59.4</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1919,17 +1920,18 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.57</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.59.4</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:var(--qs-hdr-workspace-fs);">LOCAL WORKSPACE • NO DRIVE UPLOAD</span>
+                        <span style="font-size:var(--qs-hdr-workspace-fs);">LOCAL STASH</span>
                         <span id="qsStorageUsage" style="background:var(--electric-blue); color:#000; padding:4px 8px; border-radius:6px; font-weight:900;"></span>
                     </div>
                     <!-- ACTIVE STASH LABEL -->
                     <div style="font-size:var(--qs-hdr-active-fs); color:var(--text-primary); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px; margin-top:6px;">
                         ACTIVE STASH: <span id="qsActiveStashLabel" style="color:var(--emerald-green);">NONE</span>
                     </div>
+                    <div id="qsActiveStashJobStatus" style="font-size:12px; color:#888; font-weight:900; margin-top:2px;">JOB: --</div>
                 </div>
                 <button onclick="closeQuickStash()" style="background:none; border:none; font-size:var(--qs-hdr-close-fs); width:var(--qs-hdr-close-wd); padding:0; cursor:pointer; color:var(--crimson-red);">✖</button>
             </div>
@@ -2320,13 +2322,19 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.58";
+        const APP_VERSION = "v1.59.4";
+        var hvacQsAttachMode = false;
+        var hvacQsAttachContext = null;
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
-        const APP_PAGES_REGISTRY = [
-            { name: "Splash", file: "Splash.html", state: "ACTIVE" },
+        function getSplashDestination() {
+            return location.protocol === "file:" ? "Splash.html" : "index.html";
+        }
+
+        const FALLBACK_PAGES_REGISTRY = [
+            { name: "Splash", file: getSplashDestination(), state: "ACTIVE" },
             { name: "Notes", file: "notes.html", state: "PLANNED" },
-            { name: "Mirror", file: "mirror.html", state: "PLANNED" },
+            { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
             { name: "Specs", file: "specs.html", state: "PLANNED" },
             { name: "PMI", file: "pmi.html", state: "PLANNED" },
             { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
@@ -2337,18 +2345,27 @@
             { name: "Data Block", file: "datablock.html", state: "PLANNED" }
         ];
 
+        function getPagesRegistry() {
+            if (
+                Array.isArray(window.PLATTS_PAGES_REGISTRY) &&
+                window.PLATTS_PAGES_REGISTRY.length > 0
+            ) {
+                return window.PLATTS_PAGES_REGISTRY;
+            }
+
+            return FALLBACK_PAGES_REGISTRY;
+        }
+
         function renderBottomNav() {
             const grid = document.getElementById('bottom-nav-grid-inner');
             if (!grid) return;
             
             let currentPath = window.location.pathname.split('/').pop().toLowerCase();
-            if (!currentPath || currentPath === "" || currentPath === "index.html") {
-                currentPath = "splash.html";
-            }
             
             let html = "";
-            APP_PAGES_REGISTRY.forEach(p => {
-                let isCurrent = (p.file.toLowerCase() === currentPath);
+            const registry = getPagesRegistry();
+            registry.forEach(p => {
+                let isCurrent = (currentPath === "splash.html" || currentPath === "index.html" || !currentPath) && p.name === "Splash";
                 
                 if (isCurrent) {
                     html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-blue-900 border-2 border-blue-400 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
@@ -3889,7 +3906,80 @@
 
         function closeJobPortal() { document.getElementById('jobPortalModal').style.display = 'none'; }
 
-        function selectJob(jobName) {
+        async function selectJob(jobName) {
+            if (hvacQsAttachMode && hvacQsAttachContext) {
+                console.log("QS ATTACH JOB SELECTED\n- stashId: " + hvacQsAttachContext.stashId + "\n- jobName: " + jobName);
+                try {
+                    let response = await callAppsScript({ action: 'getJobData', sheetName: jobName });
+                    console.log("QS ATTACH GETJOBDATA\n- status: " + (response ? response.status : "null") + "\n- folderId: " + (response && response.data ? response.data.folderId : "null") + "\n- error: " + (response && response.data ? response.data.error : "null"));
+                    if (response && response.status === "success" && response.data && !response.data.error && response.data.folderId) {
+                        const folderId = response.data.folderId;
+                        currentJob = jobName;
+                        localStorage.setItem('hvacActiveJob', jobName);
+                        isJobMode = true;
+                        refreshSyncUI();
+                        updateUniversalJobHeaders();
+                        
+                        currentJobTab = jobName;
+                        localStorage.setItem('hvacCurrentJobTabV20', jobName);
+                        localStorage.setItem('hvacActiveFolderId', folderId);
+                        
+                        let rawStashes = localStorage.getItem('hvacQuickStashesV1');
+                        if (rawStashes) quickStashes = JSON.parse(rawStashes);
+                        
+                        let targetStashId = hvacQsAttachContext.stashId;
+                        let stash = quickStashes[targetStashId];
+                        
+                        if (stash) {
+                            if (!stash.linkHistory) stash.linkHistory = [];
+                            let actionType = "attached";
+                            if (stash.jobLink && stash.jobLink.attached && stash.jobLink.sheetName !== jobName) {
+                                actionType = "relinked";
+                            }
+                            
+                            stash.jobLink = {
+                                attached: true,
+                                sheetName: jobName,
+                                folderId: folderId,
+                                attachedAt: Date.now()
+                            };
+                            
+                            stash.linkHistory.push({
+                                action: actionType,
+                                sheetName: jobName,
+                                folderId: folderId,
+                                timestamp: Date.now()
+                            });
+                            
+                            localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+                            console.log("QS ATTACH SAVE\n- stashId: " + targetStashId + "\n- sheetName: " + jobName + "\n- folderId: " + folderId + "\n- persisted: YES");
+                            
+                            activeQuickStashId = targetStashId;
+                            localStorage.setItem('hvacActiveQuickStashId', targetStashId);
+                        } else {
+                            console.log("QS ATTACH SAVE\n- stashId: " + targetStashId + "\n- persisted: NO (Stash not found)");
+                        }
+                        
+                        hvacQsAttachMode = false;
+                        hvacQsAttachContext = null;
+                        
+                        closeJobPortal();
+                        document.getElementById('quickStashModal').style.display = 'flex';
+                        renderActiveQuickStash();
+                        console.log("QS ATTACH COMPLETE");
+                        if (typeof showQuickStashToast === 'function') showQuickStashToast("LINKED TO " + jobName);
+                        return;
+                    } else {
+                        console.log("QS ATTACH FAILED\n- stage: getJobData\n- jobName: " + jobName + "\n- error: Missing folderId or valid response structure");
+                        alert("Failed to link: Could not retrieve folder ID for " + jobName);
+                        return;
+                    }
+                } catch (e) {
+                    console.log("QS ATTACH FAILED\n- stage: try-catch\n- jobName: " + jobName + "\n- error: " + e.message);
+                    alert("Error linking job: " + e.message);
+                    return;
+                }
+            }
             currentJob = jobName;
             localStorage.setItem('hvacActiveJob', jobName);
             isJobMode = true; // Auto-Enable Sync on selection
@@ -4706,13 +4796,29 @@
 
         function updateActiveStashLabel() {
             let lbl = document.getElementById('qsActiveStashLabel');
+            let jobStatusLbl = document.getElementById('qsActiveStashJobStatus');
             if (lbl) {
                 if (activeQuickStashId && quickStashes[activeQuickStashId]) {
-                    lbl.innerText = quickStashes[activeQuickStashId].name.toUpperCase();
+                    const stash = quickStashes[activeQuickStashId];
+                    lbl.innerText = stash.name.toUpperCase();
                     lbl.style.color = 'var(--emerald-green)';
+                    
+                    if (jobStatusLbl) {
+                        if (stash.jobLink && stash.jobLink.attached) {
+                            jobStatusLbl.innerHTML = `☁ LINKED JOB: <span style="color:#fff;">${stash.jobLink.sheetName}</span>`;
+                            jobStatusLbl.style.color = 'var(--electric-blue)';
+                        } else {
+                            jobStatusLbl.innerHTML = 'JOB: NOT LINKED';
+                            jobStatusLbl.style.color = '#888';
+                        }
+                    }
                 } else {
                     lbl.innerText = 'NONE';
                     lbl.style.color = '#888';
+                    if (jobStatusLbl) {
+                        jobStatusLbl.innerHTML = 'JOB: --';
+                        jobStatusLbl.style.color = '#888';
+                    }
                 }
             }
         }
@@ -4935,6 +5041,7 @@
                                 <div style="font-size:18px; font-weight:900; color:var(--text-primary); cursor:pointer; overflow:hidden; text-overflow:ellipsis;" onclick="renameQuickStash('${stash.id}')">${stash.name}</div>
                             </div>
                             <div style="font-size:10px; color:#888; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Updated: ${new Date(stash.updatedAt).toLocaleString()}</div>
+                            ${stash.jobLink && stash.jobLink.attached ? `<div style="font-size:10px; color:var(--electric-blue); font-weight:900; margin-top:2px;">☁ LINKED JOB: <span style="color:#fff;">${stash.jobLink.sheetName}</span></div>` : `<div style="font-size:10px; color:#888; font-weight:900; margin-top:2px;">LOCAL ONLY</div>`}
                         </div>
                         <button onclick="activeQuickStashId=null; localStorage.removeItem('hvacActiveQuickStashId'); renderQuickStashHome();" class="btn btn-outline" style="width:auto; white-space:nowrap; flex-shrink:0; padding:6px 12px; font-size:10px; border-color:#888; color:#888;">⬅ BACK</button>
                     </div>
@@ -5274,8 +5381,16 @@
 
             const canCreateJob = stash.customer && stash.customer.name && stash.customer.name.trim() !== '' && stash.customer.date && stash.customer.date.trim() !== '';
             
+            let currentGlobalJob = currentJobTab || currentJob || '';
+            let currentGlobalJobBtn = '';
+            if (currentGlobalJob.trim() !== '') {
+                currentGlobalJobBtn = `<button id="qsBtnAttachCurrentJob" onclick="attachQsToCurrentJob()" class="btn btn-outline" style="width:100%; font-size:14px; font-weight:900; border-color:var(--emerald-green); color:var(--emerald-green); padding:12px; line-height:1.2;">🔗 ATTACH CURRENT JOB<br><span style="font-size:10px; color:#fff;">${currentGlobalJob}</span></button>`;
+            }
+            
             html += `
                 <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+                    ${currentGlobalJobBtn}
+                    <button id="qsBtnAttachJob" onclick="attachQsToExistingJob()" class="btn btn-outline" style="width:100%; font-size:14px; font-weight:900; border-color:var(--amber-orange); color:var(--amber-orange); padding:12px;">🔗 ATTACH EXISTING JOB</button>
                     <button id="qsBtnCreateJob" ${canCreateJob ? '' : 'disabled'} onclick="createJobFromActiveStash()" class="btn btn-primary" style="width:100%; font-size:14px; font-weight:900; background:${canCreateJob ? 'var(--emerald-green)' : '#444'}; color:${canCreateJob ? 'black' : '#888'}; border:none; padding:12px;">🛠 CREATE JOB FROM STASH</button>
                     <button id="qsBtnSendJob" onclick="sendSelectedToActiveJob()" class="btn btn-primary" style="width:100%; font-size:14px; font-weight:900; background:var(--electric-blue); color:black; border:none; padding:12px;">📤 SEND SELECTED TO ACTIVE JOB</button>
                 </div>
@@ -5291,6 +5406,106 @@
             });
             
             updateQsPreview();
+        }
+
+        async function attachQsToCurrentJob() {
+            if (!activeQuickStashId) return;
+            let currentGlobalJob = currentJobTab || currentJob || '';
+            if (!currentGlobalJob || currentGlobalJob.trim() === '') return;
+            
+            let rawStashes = localStorage.getItem('hvacQuickStashesV1');
+            if (rawStashes) quickStashes = JSON.parse(rawStashes);
+            
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return;
+
+            if (stash.jobLink && stash.jobLink.attached) {
+                if (stash.jobLink.sheetName === currentGlobalJob) {
+                    alert(`ALREADY LINKED TO ${currentGlobalJob}`);
+                    return;
+                } else {
+                    if (stash.originJob && stash.jobLink.sheetName === stash.originJob.sheetName) {
+                        if (!confirm(`This stash originally created:\n${stash.originJob.sheetName}\n\nRelinking will not move or alter the original job, folder, photos, or spreadsheet.\n\nAttach future Quick Stash actions to:\n${currentGlobalJob}?`)) {
+                            return;
+                        }
+                    } else {
+                        if (!confirm(`This stash is currently linked to:\n${stash.jobLink.sheetName}\n\nAttach it instead to current job:\n${currentGlobalJob}?`)) {
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            const btn = document.getElementById("qsBtnAttachCurrentJob");
+            const origHtml = btn ? btn.innerHTML : "";
+            if (btn) {
+                btn.innerHTML = "⏳ LINKING...";
+                btn.disabled = true;
+            }
+
+            try {
+                let folderId = localStorage.getItem('hvacActiveFolderId');
+                
+                if (!folderId) {
+                    let response = await callAppsScript({ action: 'getJobData', sheetName: currentGlobalJob });
+                    if (response && response.status === "success" && response.data && !response.data.error && response.data.folderId) {
+                        folderId = response.data.folderId;
+                        localStorage.setItem('hvacActiveFolderId', folderId);
+                    } else {
+                        alert("Failed to link: Could not retrieve folder ID for " + currentGlobalJob);
+                        if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+                        return;
+                    }
+                }
+                
+                if (!stash.linkHistory) stash.linkHistory = [];
+                let actionType = "attached";
+                if (stash.jobLink && stash.jobLink.attached && stash.jobLink.sheetName !== currentGlobalJob) {
+                    actionType = "relinked";
+                }
+                
+                stash.jobLink = {
+                    attached: true,
+                    sheetName: currentGlobalJob,
+                    folderId: folderId,
+                    attachedAt: Date.now()
+                };
+                
+                stash.linkHistory.push({
+                    action: actionType,
+                    sheetName: currentGlobalJob,
+                    folderId: folderId,
+                    timestamp: Date.now()
+                });
+                
+                localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+                renderActiveQuickStash();
+                if (typeof showQuickStashToast === 'function') showQuickStashToast("LINKED TO " + currentGlobalJob);
+                
+            } catch (e) {
+                alert("Error linking to current job: " + e.message);
+                if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+            }
+        }
+
+        function attachQsToExistingJob() {
+            if (!activeQuickStashId) return;
+            const stash = quickStashes[activeQuickStashId];
+            if (stash.jobLink && stash.jobLink.attached) {
+                if (stash.originJob && stash.jobLink.sheetName === stash.originJob.sheetName) {
+                    if (!confirm(`This stash originally created:\n${stash.originJob.sheetName}\n\nRelinking will not move or alter the original job, folder, photos, or spreadsheet.\n\nAttach future Quick Stash actions to a different job?`)) return;
+                } else {
+                    if (!confirm(`This stash is currently linked to:\n${stash.jobLink.sheetName}\n\nRelink it?`)) return;
+                }
+            }
+            hvacQsAttachMode = true;
+            hvacQsAttachContext = {
+                mode: true,
+                stashId: activeQuickStashId
+            };
+            console.log("QS ATTACH START\n- stashId: " + activeQuickStashId);
+            document.getElementById('quickStashModal').style.display = 'none';
+            openJobPortal();
         }
 
         function renameQuickStash(id) {
@@ -5388,6 +5603,32 @@
                     localStorage.setItem('hvacActiveJob', currentJob);
                     localStorage.setItem('hvacCurrentJobTabV20', currentJobTab);
                 }
+                
+                stash.jobLink = {
+                    attached: true,
+                    sheetName: currentJobTab,
+                    folderId: folderId,
+                    attachedAt: Date.now()
+                };
+
+                if (!stash.originJob) {
+                    stash.originJob = {
+                        createdFromThisStash: true,
+                        sheetName: currentJobTab,
+                        folderId: folderId,
+                        createdAt: Date.now()
+                    };
+                }
+
+                if (!stash.linkHistory) stash.linkHistory = [];
+                stash.linkHistory.push({
+                    action: "created",
+                    sheetName: currentJobTab,
+                    folderId: folderId,
+                    timestamp: Date.now()
+                });
+
+                localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
 
                 updateUniversalJobHeaders();
                 if (typeof updateJobBadge === 'function') updateJobBadge();
@@ -5415,6 +5656,12 @@
     if (!currentJobTab || currentJobTab.trim() === "") {
         alert("Cannot send: No active job selected. Please create or open a job first.");
         return;
+    }
+    
+    if (stash.jobLink && stash.jobLink.attached && stash.jobLink.sheetName !== currentJobTab) {
+        if (!confirm(`WARNING: This stash is linked to [${stash.jobLink.sheetName}], but the currently active job is [${currentJobTab}].\n\nAre you sure you want to send data to ${currentJobTab}?`)) {
+            return;
+        }
     }
 
     const confirmMsg =
@@ -8595,3 +8842,59 @@
     <!-- PWA REGISTRATION & INSTALL -->
     <script>
         let deferredPrompt;
+
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('PWA service worker registered', reg.scope))
+                    .catch(err => console.warn('PWA service worker registration failed', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent default prompt
+            e.preventDefault();
+            // Stash the event
+            deferredPrompt = e;
+            // Show install button
+            const installBtn = document.getElementById('pwaInstallBtn');
+            if (installBtn) installBtn.classList.remove('hidden');
+        });
+
+        function installPWA() {
+            const installBtn = document.getElementById('pwaInstallBtn');
+            if (installBtn) installBtn.classList.add('hidden');
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        window.addEventListener('appinstalled', () => {
+            const installBtn = document.getElementById('pwaInstallBtn');
+            if (installBtn) installBtn.classList.add('hidden');
+            deferredPrompt = null;
+        });
+
+        // Detect standalone mode
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+            const modeIndicator = document.getElementById('pwaModeIndicator');
+            if (modeIndicator) modeIndicator.classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+
