@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.13.4</title>
+<title>Diagnostics v5.13.5</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="pages-registry.js"></script>
 <style>
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -114,7 +115,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_4 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_5 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -501,10 +502,10 @@ function getSplashDestination() {
     return location.protocol === "file:" ? "Splash.html" : "index.html";
 }
 
-const APP_PAGES_REGISTRY = [
+const FALLBACK_PAGES_REGISTRY = [
     { name: "Splash", file: getSplashDestination(), state: "ACTIVE" },
     { name: "Notes", file: "notes.html", state: "PLANNED" },
-    { name: "Mirror", file: "mirror.html", state: "PLANNED" },
+    { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
     { name: "Specs", file: "specs.html", state: "PLANNED" },
     { name: "PMI", file: "pmi.html", state: "PLANNED" },
     { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
@@ -515,17 +516,29 @@ const APP_PAGES_REGISTRY = [
     { name: "Data Block", file: "datablock.html", state: "PLANNED" }
 ];
 
+function getPagesRegistry() {
+    if (
+        Array.isArray(window.PLATTS_PAGES_REGISTRY) &&
+        window.PLATTS_PAGES_REGISTRY.length > 0
+    ) {
+        return window.PLATTS_PAGES_REGISTRY;
+    }
+
+    return FALLBACK_PAGES_REGISTRY;
+}
+
 function renderBottomNav() {
     const grid = document.getElementById('bottom-nav-grid-inner');
     if (!grid) return;
     
     let currentPath = window.location.pathname.split('/').pop().toLowerCase();
-    if (!currentPath || currentPath === "" || currentPath === "index.html") {
+    if (!currentPath) {
         currentPath = "diagnostics.html";
     }
     
     let html = "";
-    APP_PAGES_REGISTRY.forEach(p => {
+    const registry = getPagesRegistry();
+    registry.forEach(p => {
         let isCurrent = (p.file.toLowerCase() === currentPath);
         
         if (isCurrent) {
