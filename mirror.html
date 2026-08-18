@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirror Radar v1.13.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pages-registry.js"></script>
+    <script src="mirror-data.js"></script>
+    <style>
+:root {
+  --pmi-row-height: 30px;
+  --pmi-font-size-label: 10px;
+  --pmi-font-size-content: 10px;
+  --pmi-label-width: 30%;
+  --data-pill-width: 80px;
+  --data-pill-height: 40px;
+  --action-pill-width: 40px;
+  --pill-radius: 8px;
+}
+
+.action-pill {
+  width: var(--action-pill-width);
+  height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+.data-pill {
+  min-width: var(--data-pill-width);
+  min-height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+.pmi-row {
+  min-height: var(--pmi-row-height);
+  flex-basis: 100%;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  line-height: 1;
+}
+
+        .pmi-label {
+            width: var(--pmi-label-width);
+            font-size: var(--pmi-font-size-label);
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .content-cell {
+            font-size: var(--pmi-font-size-content);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen text-white" style="overscroll-behavior-y: contain;">
+
+<!-- FROZEN ROOF MASTER WRAPPER -->
+<div class="sticky top-0 z-50 w-full flex flex-col shadow-md bg-slate-900">
+
+<!-- STATUS BAR LAUNCHER -->
+<div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+</div>
+
+<!-- TOP RIBBON DRAWER (ACCORDION) -->
+<div id="top-ribbon-drawer" class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-2 px-4 py-3 hidden origin-top transition-all duration-300 z-40 shadow-md">
+  <button onclick="createNewJob()" class="flex-shrink-0 min-w-[70px] h-14 bg-blue-600 hover:bg-blue-500 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-blue-400 shadow-sm" title="New Job">
+    <span class="text-lg leading-none mb-1">➕</span><span class="text-[8px] font-bold uppercase tracking-wider">New Job</span>
+  </button>
+  <button onclick="mirrorSync()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mirror Sync">
+    <span class="text-lg leading-none mb-1">📥</span><span class="text-[8px] font-bold uppercase tracking-wider">Mirror</span>
+  </button>
+  <button onclick="openDrive()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Drive">
+    <span class="text-lg leading-none mb-1">📁</span><span class="text-[8px] font-bold uppercase tracking-wider">Drive</span>
+  </button>
+  <button onclick="openAlbum()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Album">
+    <span class="text-lg leading-none mb-1">📷</span><span class="text-[8px] font-bold uppercase tracking-wider">Album</span>
+  </button>
+  <button onclick="openManuals()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Manuals">
+    <span class="text-lg leading-none mb-1">📖</span><span class="text-[8px] font-bold uppercase tracking-wider">Manuals</span>
+  </button>
+  <button onclick="toggleEditFieldsModal()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Edit Fields">
+    <span class="text-lg leading-none mb-1">🛠️</span><span class="text-[8px] font-bold uppercase tracking-wider">Fields</span>
+  </button>
+  <button onclick="toggleMic()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mic">
+    <span class="text-lg leading-none mb-1">🎙️</span><span class="text-[8px] font-bold uppercase tracking-wider">Mic</span>
+  </button>
+  <button onclick="toggleCalibrationDock()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Settings">
+    <span class="text-lg leading-none mb-1">⚙️</span><span class="text-[8px] font-bold uppercase tracking-wider">Settings</span>
+  </button>
+  <button onclick="clearAllPMIData()" class="flex-shrink-0 min-w-[70px] h-14 bg-red-900/80 hover:bg-red-700 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-red-500 shadow-sm" title="Clear Slate">
+    <span class="text-lg leading-none mb-1">🗑️</span><span class="text-[8px] font-bold uppercase tracking-wider">Clear</span>
+  </button>
+</div>
+
+<!-- Radar Master Controls -->
+<div class="flex justify-between items-center bg-slate-800 p-2 border-b border-slate-700">
+        <div class="flex gap-2">
+            <button onclick="syncAllToCompiler()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">🔄 Sync All</button>
+            <button onclick="unsyncAllFromCompiler()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm border border-slate-600">🚫 Unsync All</button>
+        </div>
+    <div class="flex bg-slate-900 rounded overflow-hidden border border-slate-600">
+        <button id="view-all-btn" onclick="toggleRadarView('all')" class="bg-blue-600 text-white font-bold px-3 py-2 text-[9px] uppercase transition-colors">View All</button>
+        <button id="view-pop-btn" onclick="toggleRadarView('populated')" class="bg-slate-800 text-slate-400 hover:text-white font-bold px-3 py-2 text-[9px] uppercase transition-colors">Populated</button>
+    </div>
+</div>
+
+</div>
+<!-- END FROZEN ROOF -->
+
+<div id="mirror-workspace" class="flex-1 w-full px-2 py-2 overflow-y-auto flex flex-col gap-2 bg-slate-900 pb-24"></div>
+
+<!-- EDIT FIELDS MODAL (HIDDEN) -->
+<div id="edit-fields-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+  <div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+    <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+      <h3 class="text-white font-bold tracking-widest text-xs uppercase">Edit Fields Hub</h3>
+      <button onclick="toggleEditFieldsModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+    </div>
+    <!-- 3-Mode Toggle -->
+    <div class="flex bg-slate-900 p-2 border-b border-slate-700">
+      <button class="flex-1 bg-blue-600 text-white font-bold py-2 text-xs uppercase tracking-widest rounded-l-md transition-colors">Add</button>
+      <button class="flex-1 bg-slate-700 text-slate-400 hover:text-white font-bold py-2 text-xs uppercase tracking-widest transition-colors border-y border-r border-slate-600">Remove</button>
+      <button class="flex-1 bg-slate-700 text-slate-400 hover:text-white font-bold py-2 text-xs uppercase tracking-widest rounded-r-md transition-colors border-y border-r border-slate-600">Change</button>
+    </div>
+    <!-- Canvas Placeholder -->
+    <div class="p-4 flex-1 overflow-y-auto flex items-center justify-center text-slate-500 text-sm font-mono text-center">
+      [ Tier 1 & Tier 2 Field Inventories Will Load Here ]
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal (FORMERLY CALIBRATION DOCK) -->
+<div id="pmi-calibration-dock"
+  class="fixed bottom-20 left-4 right-4 z-50 bg-slate-800/95 backdrop-blur-md border border-slate-600 hidden flex flex-col p-4 transition-all shadow-2xl rounded-xl">
+  
+  <div class="flex justify-between items-center border-b border-slate-600 pb-2 mb-2">
+    <h3 class="text-white text-[10px] font-bold uppercase tracking-widest">Global Settings</h3>
+    <button onclick="toggleCalibrationDock()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+  </div>
+  
+  <div class="text-slate-500 text-xs italic text-center py-4">
+    App settings and integrations coming soon.
+  </div>
+</div>
+
+<!-- BOTTOM APP NAVIGATION PANEL -->
+<div id="bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 fixed bottom-0 left-0 z-50 flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
+  <!-- Expanded Grid (Hidden by default) -->
+  <div id="bottom-nav-grid" class="hidden absolute bottom-full left-0 w-full p-2 bg-slate-900/95 backdrop-blur-md border-t border-slate-700 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] z-50">
+    <!-- Dynamic Grid -->
+    <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+  </div>
+
+  <!-- Launcher / Collapse Control -->
+  <div class="flex w-full h-12 bg-slate-800 shrink-0">
+    <button onclick="toggleFullScreen()" class="w-[35%] h-full flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest hover:bg-slate-700 transition-colors active:bg-slate-600 border-r border-slate-700">
+      <span class="mr-2 text-base">⛶</span> FULLSCREEN
+    </button>
+    <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-[65%] h-full flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest hover:bg-slate-700 transition-colors active:bg-slate-600">
+      <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+    </button>
+  </div>
+</div>
+
+<script>
+// LIVE MIRROR BRIDGE (v1.13.2)
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
+let currentJob = localStorage.getItem('hvacActiveJob') || null;
+let mirrorState = {};
+let liveMirrorSchema = [];
+let liveMirrorPMI = [];
+let liveMirrorConflict = "";
+let mirrorUsingFallback = true;
+
+async function callAppsScript(payload) {
+    if (currentJob) payload.sheetName = currentJob;
+    const response = await fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+    });
+    const json = await response.json();
+    return json;
+}
+
+function updateActiveJobTicket() {
+    currentJob = localStorage.getItem('hvacActiveJob') || null;
+    const ticket = document.getElementById('active-job-ticket');
+    if (ticket) ticket.innerText = currentJob ? currentJob : "[ Awaiting New Call Info ]";
+}
+
+// UNIVERSAL DRAWER FUNCTIONS
+function createNewJob() {
+    const name = prompt("Enter new Job Name/ID:");
+    if(name && name.trim() !== '') document.getElementById('active-job-ticket').innerText = name.trim();
+}
+function toggleEditFieldsModal() {
+    const modal = document.getElementById('edit-fields-modal');
+    modal.classList.toggle('hidden');
+    modal.classList.toggle('flex');
+}
+async function mirrorSync() {
+    currentJob = localStorage.getItem('hvacActiveJob') || null;
+    updateActiveJobTicket();
+    
+    if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.refresh === "function") {
+        try {
+            const data = await window.PLATTS_MIRROR_DATA.refresh();
+            if (!data.currentJob) {
+                mirrorUsingFallback = true;
+                initRadar();
+                alert("No active job selected.");
+                return;
+            }
+            
+            mirrorState = data.fields;
+            liveMirrorSchema = data.schema;
+            liveMirrorPMI = data.pmi;
+            liveMirrorConflict = data.conflict;
+            mirrorUsingFallback = false;
+            initRadar();
+        } catch (e) {
+            console.error("Mirror pull failed via shared engine:", e);
+            if (mirrorUsingFallback) initRadar();
+            alert("Mirror pull failed: " + e.message);
+        }
+    } else {
+        if (!currentJob) {
+            mirrorUsingFallback = true;
+            initRadar();
+            alert("No active job selected.");
+            return;
+        }
+        
+        try {
+            const response = await callAppsScript({ action: "getJobData" });
+            if (response.status === "success" && response.data && !response.data.error && response.data.fields && Array.isArray(response.data.schema)) {
+                mirrorState = response.data.fields || {};
+                liveMirrorSchema = response.data.schema || [];
+                liveMirrorPMI = response.data.pmi || [];
+                liveMirrorConflict = response.data.conflict || "";
+                mirrorUsingFallback = false;
+                
+                if (response.data.folderId) {
+                    localStorage.setItem('hvacActiveFolderId', response.data.folderId);
+                }
+                initRadar();
+            } else {
+                throw new Error(response.data?.error || "Invalid response structure");
+            }
+        } catch (e) {
+            console.error("Mirror pull failed:", e);
+            if (mirrorUsingFallback) initRadar();
+            alert("Mirror pull failed: " + e.message);
+        }
+    }
+}
+function syncAllToCompiler() {
+    // Target only the rows that currently have database information in them
+    const populatedRows = document.querySelectorAll('.radar-row[data-populated="true"]');
+    let stampCount = 0;
+
+    populatedRows.forEach(row => {
+        // Extract the specific ID from the row to target its label
+        const id = row.id.replace('row-', '');
+        const label = document.getElementById('label-' + id);
+
+        // If the label is NOT already blue-stamped, apply the push state!
+        if (!label.classList.contains('bg-blue-600')) {
+            label.classList.remove('border-blue-400', 'border-l-2');
+            label.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
+            stampCount++;
+        }
+    });
+
+    // Provide tactile feedback for a bulk action
+    if (navigator.vibrate) navigator.vibrate([1]);
+
+    // Give the technician a clean summary of what was routed
+    alert(`Bulk Sync Complete! ${stampCount} records were successfully blue-stamped for Compiler Staging.`);
+}
+
+function unsyncAllFromCompiler() {
+    // Target only the labels that currently have the Blue Stamp
+    const stampedLabels = document.querySelectorAll('.radar-row .bg-blue-600');
+    let unsyncCount = 0;
+
+    stampedLabels.forEach(label => {
+        // Strip the Blue Stamp and restore the waiting border state
+        label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        label.classList.add('border-blue-400', 'border-l-2'); 
+        unsyncCount++;
+    });
+
+    if (navigator.vibrate) navigator.vibrate([1]);
+    alert(`Bulk Unsync Complete! ${unsyncCount} records were successfully removed from Compiler Staging without deleting data.`);
+}
+function openDrive() { console.log("Google Drive bridge triggered"); }
+function openAlbum() { console.log("Photo Album bridge triggered"); }
+function openManuals() { console.log("Manuals Database bridge triggered"); }
+function toggleMic() { console.log("Microphone triggered"); }
+function clearAllPMIData() { alert("Clear Slate Triggered!"); }
+function toggleCalibrationDock() { console.log("Settings triggered"); }
+function toggleTopRibbon() {
+    document.getElementById('top-ribbon-drawer').classList.toggle('hidden');
+}
+
+// TIER 3 HARDCODED FALLBACK (TRUE SPREADSHEET MAP)
+const hardcodedFieldMap = [
+  "Date | W12 | Specs",
+  "Customer Name | W13 | Specs",
+  "Address | W14 | Specs",
+  "Phone | W15 | Specs",
+  "email | W16 | Specs",
+  "Reason for Call | W17 | Specs",
+  "System # (Service Area) | W18 | Specs",
+  "System Type | W19 | Specs",
+  "Outdoor Model | W21 | Specs",
+  "Outdoor Serial | W22 | Specs",
+  "Indoor Model | W23 | Specs",
+  "Indoor Serial | W24 | Specs",
+  "Furnace Model | W25 | Specs",
+  "Furnace Serial | W26 | Specs",
+  "Refrigerant | W33 | Specs",
+  "Metering Device | W34 | Specs",
+  "Outdoor Tonnage | W35 | Specs",
+  "Indoor Tonnage | W36 | Specs",
+  "Furnace BTU | W37 | Specs",
+  "Heat Strips kW | W39 | Specs",
+  "Thermostat | W40 | Specs",
+  "Filter Size | W41 | Specs",
+  "Capacitor MFD | W42 | Specs",
+  "RLA | W43 | Specs",
+  "RLA 2 | W44 | Specs",
+  "FLA ODF | W45 | Specs",
+  "FLA ODF2 | W46 | Specs",
+  "FLA IDF | W47 | Specs",
+  "Target Subcool | W49 | Specs",
+  "Belts | W50 | Specs",
+  "System Description | W52 | Specs",
+  "Call Summary | W55 | PMI",
+  "Filter | W57 | PMI",
+  "Evaporator Coil | W59 | PMI",
+  "Blower Visual | W65 | PMI",
+  "Blower Mechanical | W68 | PMI",
+  "Drain Pan | W71 | PMI",
+  "Drain | W72 | PMI",
+  "Heater | W77 | PMI",
+  "Float Switch | W78 | PMI",
+  "IAQ | W80 | PMI",
+  "Condenser | W81 | PMI",
+  "Tech Notes | W83 | PMI",
+  "Capacitor Tolerance | W86 | Diag",
+  "Herm MFD Rating | W87 | Diag",
+  "Herm Volts | W88 | Diag",
+  "Herm Amps | W89 | Diag",
+  "Herm Results | W90 | Diag",
+  "Fan MFD Rating | W91 | Diag",
+  "Fan Volts | W92 | Diag",
+  "Fan Amps | W93 | Diag",
+  "Fan Results | W94 | Diag",
+  "Capacitor Results | W95 | Diag",
+  "Capacitor Replaced | W96 | Diag",
+  "RLA (Measured) | W99 | Diag",
+  "RLA 2 (Measured) | W100 | Diag",
+  "FLA ODF (Measured) | W101 | Diag",
+  "FLA ODF2 (Measured) | W102 | Diag",
+  "FLA IDF (Measured) | W103 | Diag",
+  "Motor Load Results | W105 | Diag",
+  "ODAT | W108 | Startup",
+  "Suction Pressure | W109 | Startup",
+  "Liquid Pressure | W110 | Startup",
+  "Suction Line Temp | W111 | Startup",
+  "Vapor Saturation | W112 | Startup",
+  "Indoor Suction Line Temp | W113 | Startup",
+  "Indoor SH | W114 | Startup",
+  "SH | W115 | Startup",
+  "Target SH | W116 | Startup",
+  "Liquid Line Temp | W117 | Startup",
+  "Liquid Saturation | W118 | Startup",
+  "Indoor Liquid Line Temp | W119 | Startup",
+  "Indoor SC | W120 | Startup",
+  "SC | W121 | Startup",
+  "Return Temp | W123 | Startup",
+  "Return Wet Bulb | W124 | Startup",
+  "Return Humidity | W125 | Startup",
+  "Return Dew Point | W126 | Startup",
+  "Supply Temp | W127 | Startup",
+  "∆T | W128 | Startup",
+  "Supply Wet Bulb | W130 | Startup",
+  "Supply Relative Humidity | W131 | Startup",
+  "Supply Dew Point | W133 | Startup",
+  "Return Enthalpy | W134 | Startup",
+  "Supply Enthalpy | W135 | Startup",
+  "Compression Ratio | W160 | Startup",
+  "Approach | W161 | Startup",
+  "CTOA | W162 | Startup",
+  "Evap TD | W163 | Startup",
+  "Pressures | W167 | Startup",
+  "Saturation Temps | W168 | Startup",
+  "SH / SC | W169 | Startup",
+  "Nitrogen Start | W170 | Startup",
+  "Nitrogen Finish | W171 | Startup",
+  "∆ Nitrogen | W172 | Startup",
+  "Nitrogen Duration | W173 | Startup",
+  "∆ N per minute | W174 | Startup",
+  "Micron Low | W176 | Startup",
+  "Micron Decay | W177 | Startup",
+  "(417) 576-0324 | W212 | ",
+  "TOP | W217 | "
+];
+
+function makeMirrorDomId(label, index) {
+    return 'LIVE_' + label.replace(/[^a-zA-Z0-9]/g, '_') + '_' + index;
+}
+
+function initRadar() {
+  const workspace = document.getElementById('mirror-workspace');
+  workspace.innerHTML = ''; 
+
+  const groupedData = { "Unassigned Fields": [] };
+  const labelToMeta = {};
+  hardcodedFieldMap.forEach(item => {
+    const parts = item.split('|').map(s => s.trim());
+    labelToMeta[parts[0]] = { id: parts[1], page: parts[2] || "Unassigned Fields" };
+  });
+
+  if (!mirrorUsingFallback && liveMirrorSchema.length > 0) {
+      liveMirrorSchema.forEach((label, index) => {
+          const meta = labelToMeta[label];
+          const page = meta ? meta.page : "Unassigned Fields";
+          const id = meta ? meta.id : makeMirrorDomId(label, index);
+          const val = mirrorState[label] || '';
+          
+          if (!groupedData[page]) groupedData[page] = [];
+          groupedData[page].push({ id, label, val });
+      });
+  } else {
+      hardcodedFieldMap.forEach(item => {
+        const parts = item.split('|').map(s => s.trim());
+        const label = parts[0];
+        const id = parts[1];
+        const page = parts[2] || "Unassigned Fields";
+        const val = mirrorState[label] || '';
+        
+        if (!groupedData[page]) groupedData[page] = [];
+        groupedData[page].push({ id, label, val });
+      });
+  }
+
+  let isFirst = true;
+
+  // Helper to render an accordion and its fields
+  function renderAccordion(page, fields, isOrphan) {
+    if (fields.length === 0) return;
+
+    const headerColor = isOrphan ? "bg-orange-900/80 border-orange-500 text-orange-200" : "bg-slate-700 border-slate-600 text-white";
+    const icon = isOrphan ? "⚠️ " : "";
+
+    let accordionHtml = `
+      <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" ${isFirst ? 'open' : ''}>
+        <summary class="${headerColor} p-3 text-[10px] font-bold uppercase tracking-widest cursor-pointer select-none">
+          ${icon}${page}
+        </summary>
+        <div class="p-2 flex flex-col gap-1">
+    `;
+
+    fields.forEach(item => {
+      const hasData = item.val !== '';
+      
+      // Calm the Orange Rows: both orphan and normal use standard slate-gray style
+      let labelClasses = "w-[30%] text-[10px] font-bold border-r border-slate-700 cursor-pointer transition-all flex justify-between items-center px-3 relative select-none";
+      if (hasData) labelClasses += " border-blue-400 border-l-2";
+
+      accordionHtml += `
+        <div id="row-${item.id}" class="radar-row flex items-stretch w-full box-border bg-slate-800 border border-slate-700 rounded overflow-hidden h-10" data-populated="${hasData}">
+          <div id="label-${item.id}" class="${labelClasses}"
+               style="-webkit-user-select: none; -webkit-touch-callout: none;"
+               oncontextmenu="return false;"
+               onpointerdown="startPress(event, '${item.id}')"
+               onpointerup="endPress(event, '${item.id}')"
+               onpointerleave="cancelPress(event)">
+            <span class="z-10 pointer-events-none">${item.label}</span>
+            <span id="lock-${item.id}" class="z-10 text-[8px] pointer-events-none hidden">🔒</span>
+          </div>
+          <input type="text" id="input-${item.id}" class="flex-1 bg-slate-700 text-slate-300 font-mono text-[10px] px-3 focus:outline-none focus:bg-slate-600" value="${item.val}" placeholder="Awaiting ${item.id}..." readonly>
+          <button onclick="clearRow('${item.id}')" class="w-8 bg-slate-700 hover:bg-slate-600 border-l border-slate-600 text-slate-400 hover:text-white flex items-center justify-center transition-colors text-xs">⟲</button>
+        </div>`;
+    });
+
+    accordionHtml += `</div></details>`;
+    workspace.innerHTML += accordionHtml;
+    isFirst = false;
+  }
+
+  // Render standard categories first (Specs, PMI, Diag, Startup)
+  for (const [page, fields] of Object.entries(groupedData)) {
+    if (page !== "Unassigned Fields") {
+      renderAccordion(page, fields, false);
+    }
+  }
+
+  // Render Unassigned Fields at the absolute bottom
+  const unassigned = groupedData["Unassigned Fields"] || [];
+  renderAccordion("Unassigned Fields", unassigned, true);
+}
+
+// 2-Tap Smart Label & Long-Press Lock Engine
+let pressTimer;
+let isLongPress = false;
+
+function startPress(e, id) {
+    isLongPress = false;
+    pressTimer = setTimeout(() => {
+        isLongPress = true;
+        triggerMechanicalLock(id);
+    }, 1000); // 1-Second Long-Press
+}
+
+function endPress(e, id) {
+    if (pressTimer) clearTimeout(pressTimer);
+    if (!isLongPress) handleSmartTap(id);
+}
+
+function cancelPress(e) {
+    if (pressTimer) clearTimeout(pressTimer);
+}
+
+function triggerMechanicalLock(id) {
+    // 1. Audio Click (Web Audio API)
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        osc.type = 'square'; 
+        osc.frequency.setValueAtTime(150, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.015);
+        osc.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.015);
+    } catch(e) {}
+    
+    // 2. Haptic Buzz (Vibration API)
+    if (navigator.vibrate) navigator.vibrate(50);
+    
+    // 3. Visual Flash & Inset Lock State
+    const label = document.getElementById('label-' + id);
+    const lock = document.getElementById('lock-' + id);
+    
+    label.style.backgroundColor = '#ffffff'; // Instant Flash
+    setTimeout(() => {
+        label.style.backgroundColor = '';
+        label.classList.toggle('bg-blue-800');
+        label.classList.toggle('shadow-inner');
+        label.classList.toggle('text-slate-200');
+        lock.classList.toggle('hidden');
+    }, 150);
+}
+
+function handleSmartTap(id) {
+    const label = document.getElementById('label-' + id);
+    if (label.classList.contains('bg-blue-600')) {
+        // UN-STAMP (Remove push state, return to waiting state)
+        label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        label.classList.add('border-blue-400', 'border-l-2'); 
+    } else {
+        // STAMP (Apply Electric Blue Push)
+        label.classList.remove('border-blue-400', 'border-l-2');
+        label.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
+    }
+}
+
+function clearRow(id) {
+    const label = document.getElementById('label-' + id);
+    const input = document.getElementById('input-' + id);
+    // Reset to neutral waiting state (Preserving 30% Width and Select-None Lock)
+    label.className = "w-[30%] text-[10px] font-bold border-r border-slate-700 cursor-pointer transition-all flex justify-between items-center px-3 relative select-none";
+    document.getElementById('lock-' + id).classList.add('hidden');
+    input.value = '';
+    input.closest('.radar-row').setAttribute('data-populated', 'false');
+}
+
+// Radar View Logic
+function toggleRadarView(mode) {
+    const btnAll = document.getElementById('view-all-btn');
+    const btnPop = document.getElementById('view-pop-btn');
+    const rows = document.querySelectorAll('.radar-row');
+
+    if (mode === 'all') {
+        btnAll.classList.replace('bg-slate-800', 'bg-blue-600'); btnAll.classList.replace('text-slate-400', 'text-white');
+        btnPop.classList.replace('bg-blue-600', 'bg-slate-800'); btnPop.classList.replace('text-white', 'text-slate-400');
+        rows.forEach(r => r.style.display = 'flex');
+    } else {
+        btnPop.classList.replace('bg-slate-800', 'bg-blue-600'); btnPop.classList.replace('text-slate-400', 'text-white');
+        btnAll.classList.replace('bg-blue-600', 'bg-slate-800'); btnAll.classList.replace('text-white', 'text-slate-400');
+        rows.forEach(r => {
+            r.style.display = r.getAttribute('data-populated') === 'true' ? 'flex' : 'none';
+        });
+    }
+}
+
+function getSplashDestination() {
+    return location.protocol === "file:" ? "Splash.html" : "index.html";
+}
+
+const FALLBACK_PAGES_REGISTRY = [
+    { name: "Splash", file: getSplashDestination(), state: "ACTIVE" },
+    { name: "Notes", file: "notes.html", state: "PLANNED" },
+    { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
+    { name: "Specs", file: "specs.html", state: "PLANNED" },
+    { name: "PMI", file: "pmi.html", state: "PLANNED" },
+    { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
+    { name: "Startup", file: "startup.html", state: "PLANNED" },
+    { name: "Compiler", file: "compiler.html", state: "PLANNED" },
+    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Reports", file: "reports.html", state: "PLANNED" },
+    { name: "Data Block", file: "datablock.html", state: "PLANNED" }
+];
+
+function getPagesRegistry() {
+    if (
+        Array.isArray(window.PLATTS_PAGES_REGISTRY) &&
+        window.PLATTS_PAGES_REGISTRY.length > 0
+    ) {
+        return window.PLATTS_PAGES_REGISTRY;
+    }
+
+    return FALLBACK_PAGES_REGISTRY;
+}
+
+function renderBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid-inner');
+    if (!grid) return;
+    
+    let currentPath = window.location.pathname.split('/').pop().toLowerCase();
+    if (!currentPath) {
+        currentPath = "mirror.html";
+    }
+    
+    let html = "";
+    const registry = getPagesRegistry();
+    registry.forEach(p => {
+        let isCurrent = (p.file.toLowerCase() === currentPath);
+        
+        if (isCurrent) {
+            html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-blue-900 border-2 border-blue-400 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                ${p.name}<br><span class="text-[10px] font-bold text-blue-200 mt-1 tracking-widest">CURRENT</span>
+            </a>`;
+        } else if (p.state === "ACTIVE") {
+            html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-100 font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                ${p.name}
+            </a>`;
+        } else {
+            html += `<div class="flex flex-col items-center justify-center h-16 bg-slate-900 border border-dashed border-slate-700 rounded text-slate-500 font-bold text-[13px] shadow-none text-center leading-tight opacity-70">
+                ${p.name}<br><span class="text-[9px] font-normal text-slate-600 mt-1 uppercase tracking-wider">PLANNED</span>
+            </div>`;
+        }
+    });
+    grid.innerHTML = html;
+}
+
+function toggleBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid');
+    const icon = document.getElementById('bottom-nav-icon');
+    if (grid.classList.contains('hidden')) {
+        grid.classList.remove('hidden');
+        icon.textContent = '▲';
+    } else {
+        grid.classList.add('hidden');
+        icon.textContent = '☰';
+    }
+}
+
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            localStorage.setItem('hvacFullscreenPreferred', 'true');
+        }).catch(err => {
+            console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+            localStorage.setItem('hvacFullscreenPreferred', 'false');
+        }
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => { 
+    renderBottomNav();
+    updateActiveJobTicket();
+    currentJob = localStorage.getItem('hvacActiveJob') || null;
+    if (currentJob) {
+        mirrorSync();
+    } else {
+        initRadar();
+    }
+});
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'hvacActiveJob') {
+        currentJob = e.newValue || null;
+        updateActiveJobTicket();
+        if (currentJob) mirrorSync();
+        else {
+            mirrorUsingFallback = true;
+            mirrorState = {};
+            initRadar();
+        }
+    }
+});
+</script>
+</body>
+
+</html>
