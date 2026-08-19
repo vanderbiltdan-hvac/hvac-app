@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Specs & Intake v1.03.3</title>
+    <title>Specs & Intake v1.03.3.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -81,7 +81,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="absolute right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest">v1.03.3</div>
+    <div class="absolute right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest">v1.03.3.1</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -555,6 +555,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (ticket) ticket.innerText = activeJob ? activeJob : "[ Awaiting New Call Info ]";
     
     loadSpecsData();
+    renderBottomNav();
 
     if (activeJob && window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.refresh === "function") {
         window.PLATTS_MIRROR_DATA.refresh().then(() => {
