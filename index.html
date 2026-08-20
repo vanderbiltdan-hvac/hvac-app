@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v1.59.5.2</title>
+    <title>HVAC Splash v1.60.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.59.5.2</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.60.0</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1920,7 +1920,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.59.5.2</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.60.0</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2322,7 +2322,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.59.5.2";
+        const APP_VERSION = "v1.60.0";
         var hvacQsAttachMode = false;
         var hvacQsAttachContext = null;
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
@@ -8632,7 +8632,7 @@
                     
                     for (let al of exactAliases) {
                         let normAl = al.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        if (normKey === normAl || normKey.includes(normAl) || normAl.includes(normKey)) {
+                        if (normKey === normAl) {
                             let numMatch = String(val).match(/[\d\.]+/);
                             if (numMatch) {
                                 candidates.push(Number(numMatch[0]));
@@ -8813,11 +8813,12 @@
         }
 
         function executeDiagnosticsHandoff() {
-            if (!activeQuickStashId) return;
+            let activeId = localStorage.getItem('hvacActiveQuickStashId');
+            if (!activeId) return;
             let rawStashes = localStorage.getItem('hvacQuickStashesV1');
             if (!rawStashes) return;
             let stashes = JSON.parse(rawStashes);
-            let stash = stashes[activeQuickStashId];
+            let stash = stashes[activeId];
             if (!stash) return;
 
             const targets = [
