@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.13.6.3</title>
+<title>Diagnostics v5.13.6.4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="pages-registry.js"></script>
 <style>
@@ -64,7 +64,7 @@ body {
 <span class="text-base leading-none mb-1">🔀</span><span id="lbl-flow-toggle" class="text-[7px] font-bold uppercase tracking-wider">Comp Flow</span>
 </button>
 <button id="btn-compiler" onclick="toggleCompilerSweep()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-800 hover:bg-slate-700 flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-600 shadow-sm" title="Compiler">
-<span id="icon-compiler" class="text-base leading-none mb-1 text-slate-400 transition-colors">⚡</span><span id="text-compiler" class="text-[7px] font-bold uppercase tracking-wider text-slate-400 transition-colors">Compiler</span><span class="text-xs font-mono font-bold tracking-widest text-slate-500 opacity-60 ml-2">v5_13_6_3</span>
+<span id="icon-compiler" class="text-base leading-none mb-1 text-slate-400 transition-colors">⚡</span><span id="text-compiler" class="text-[7px] font-bold uppercase tracking-wider text-slate-400 transition-colors">Compiler</span><span class="text-xs font-mono font-bold tracking-widest text-slate-500 opacity-60 ml-2">v5_13_6_4</span>
 </button>
 <button onclick="toggleConfigModal()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Config">
 <span class="text-base leading-none mb-1">⚙️</span><span class="text-[7px] font-bold uppercase tracking-wider">Config</span>
@@ -115,7 +115,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_6_3 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_6_4 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -1327,6 +1327,65 @@ window.addEventListener('DOMContentLoaded', () => {
         } catch(e) { console.error('Storage parse error', e); }
     }
     if (!window.capacitorRegistry) window.capacitorRegistry = [];
+
+    // --- SESSION RESET LOGIC ---
+    try {
+        let handoffStr = localStorage.getItem('hvacDiagnosticsHandoffV1');
+        if (handoffStr) {
+            let handoff = JSON.parse(handoffStr);
+            let currentSessionStashId = localStorage.getItem('hvacDiagnosticsSessionStashId');
+            
+            if (handoff.stashId && handoff.stashId !== currentSessionStashId) {
+                // NEW SESSION DETECTED
+                const fieldsToClear = [
+                    'diag_herm_v', 'diag_herm_a', 'diag_fan_v', 'diag_fan_a',
+                    'diag_comp_rla', 'diag_comp_rla_2', 'diag_odf_fla', 'diag_odf_fla_2',
+                    'diag_herm_bench', 'diag_fan_bench'
+                ];
+                fieldsToClear.forEach(f => {
+                    liveAppState[f] = "";
+                });
+                liveAppState.description = "";
+                
+                if (typeof committedState !== 'undefined') {
+                    for (let k in committedState) {
+                        committedState[k] = false;
+                    }
+                }
+                if (typeof window.flagsState !== 'undefined') {
+                    for (let k in window.flagsState) {
+                        window.flagsState[k] = false;
+                    }
+                }
+                if (window.capacitorRegistry && window.capacitorRegistry.length > 0) {
+                     window.capacitorRegistry = [];
+                }
+                
+                localStorage.setItem('hvacDiagnosticsSessionStashId', handoff.stashId);
+            }
+            
+            // Apply Handoff Identity if valid
+            if (handoff.customer || handoff.equipment) {
+                let idParts = [];
+                if (handoff.customer && handoff.customer.name) idParts.push(handoff.customer.name.trim());
+                if (handoff.customer && handoff.customer.address) idParts.push(handoff.customer.address.trim());
+                
+                let eqParts = [];
+                if (handoff.equipment && handoff.equipment.outdoorModel) eqParts.push(handoff.equipment.outdoorModel.trim());
+                if (handoff.equipment && handoff.equipment.outdoorSerial) eqParts.push(handoff.equipment.outdoorSerial.trim());
+                
+                if (eqParts.length > 0) idParts.push(eqParts.join(' / '));
+                
+                if (idParts.length > 0) {
+                    liveAppState.description = idParts.join(' | ');
+                }
+            }
+        }
+    } catch(e) {
+        console.error("Session reset logic failed", e);
+    }
+    // --- END SESSION RESET LOGIC ---
+
     updateLeftButtons();
             // Force the Mode Button to physically match the loaded state
             const btn = document.getElementById('hud-btn-mode');
@@ -2228,11 +2287,18 @@ function showDiagToast(msg, colorClass) {
 }
 
 function getResolvedQuickStashTargets() {
-    const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
+    const sessionStashId = localStorage.getItem('hvacDiagnosticsSessionStashId');
+    if (!sessionStashId) {
+        alert("No valid Quick Stash Diagnostics session active.");
+        return null;
+    }
     const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
-    const stash = activeStashId ? stashes[activeStashId] : null;
+    const stash = stashes[sessionStashId];
 
-    if (!stash) return null;
+    if (!stash) {
+        alert("The original Quick Stash for this session is missing or deleted.");
+        return null;
+    }
 
     const sections = [
         stash.diagnostics || {},
@@ -2241,50 +2307,65 @@ function getResolvedQuickStashTargets() {
         stash.extra || {}
     ];
 
-    function resolveTarget(aliases, stashKey) {
-        let foundValues = [];
+    function resolveTarget(aliases, isHerm = false, isFan = false) {
+        let candidates = [];
         for (const section of sections) {
-            if (stashKey && section[stashKey] !== undefined && section[stashKey] !== "") {
-                const val = String(section[stashKey]).trim();
-                if (val && !foundValues.includes(val)) foundValues.push(val);
-            }
-            for (const alias of aliases) {
-                const lowerAlias = alias.toLowerCase();
-                const normAlias = lowerAlias.replace(/[^a-z0-9]/g, '');
-                for (const k in section) {
-                    const lk = k.toLowerCase();
-                    if (lk === lowerAlias || lk.replace(/[^a-z0-9]/g, '') === normAlias) {
-                        const val = String(section[k]).trim();
-                        if (val && !foundValues.includes(val)) foundValues.push(val);
+            for (const k in section) {
+                let val = section[k];
+                if (val === undefined || val === null || String(val).trim() === '') continue;
+                
+                let normKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                let matched = false;
+                
+                for (let al of aliases) {
+                    let normAl = al.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (normKey === normAl || normKey.includes(normAl) || normAl.includes(normKey)) {
+                        let numMatch = String(val).match(/[\d\.]+/);
+                        if (numMatch) {
+                            candidates.push(Number(numMatch[0]));
+                            matched = true;
+                        }
+                        break;
+                    }
+                }
+                
+                if (matched) continue;
+                
+                if ((isHerm || isFan) && candidates.length === 0) {
+                    let isCompKey = (normKey === 'capacitorrating');
+                    if (isCompKey) {
+                        let strVal = String(val);
+                        if (strVal.includes('+') || strVal.includes('/')) {
+                            let parts = strVal.split(/[\+\/]/).map(p => p.trim());
+                            if (parts.length === 2) {
+                                let num1 = parts[0].match(/[\d\.]+/);
+                                let num2 = parts[1].match(/[\d\.]+/);
+                                if (num1 && num2) {
+                                    if (isHerm) candidates.push(Number(num1[0]));
+                                    else if (isFan) candidates.push(Number(num2[0]));
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
         
-        let uniqueVals = [];
-        foundValues.forEach(v => {
-            const parsed = parseFloat(v);
-            if (!isNaN(parsed)) {
-                if (!uniqueVals.some(uv => parseFloat(uv) === parsed)) {
-                    uniqueVals.push(v);
-                }
-            } else {
-                if (!uniqueVals.includes(v)) uniqueVals.push(v);
-            }
-        });
-
-        if (uniqueVals.length === 0) return { val: '--', status: 'missing' };
-        if (uniqueVals.length === 1) return { val: uniqueVals[0], status: 'resolved' };
-        return { val: '--', status: 'conflict', raw: uniqueVals.join(', ') };
+        if (candidates.length === 0) return { val: '--', status: 'missing' };
+        let uniqueVals = [...new Set(candidates)];
+        if (uniqueVals.length > 1) {
+            return { val: uniqueVals.join(' / '), status: 'conflict', raw: uniqueVals.join(', ') };
+        }
+        return { val: uniqueVals[0], status: 'resolved' };
     }
 
     return {
-        compressorRlaRating: resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps'], 'compressorRlaRating'),
-        compressorLraRating: resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps'], 'compressorLraRating'),
-        fanFlaRating: resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA'], 'fanFlaRating'),
-        targetSubcool: resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target'], 'targetSubcool'),
-        hermTargetMfd: resolveTarget(['Herm Target MFD', 'Herm MFD', 'hermTargetMfd', 'target_mfd', 'hermMfd'], 'hermTargetMfd'),
-        fanTargetMfd: resolveTarget(['Fan Target MFD', 'Fan MFD', 'fanTargetMfd', 'target_fan_mfd', 'fanMfd'], 'fanTargetMfd'),
+        compressorRlaRating: resolveTarget(['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps', 'compressorRlaRating', 'cRlaRating']),
+        compressorLraRating: resolveTarget(['LRA', 'Compressor LRA', 'Locked Rotor Amps', 'compressorLraRating', 'cLraRating']),
+        fanFlaRating: resolveTarget(['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA', 'fanFlaRating', 'odfFlaRating', 'fan amps', 'fanAmps']),
+        targetSubcool: resolveTarget(['Target SC', 'Target Subcool', 'Subcool Target', 'targetSubcool', 'target sc']),
+        hermTargetMfd: resolveTarget(['Capacitor Herm Rating', 'Herm Target MFD', 'Herm MFD', 'hermTargetMfd', 'target_mfd', 'hermMfd'], true, false),
+        fanTargetMfd: resolveTarget(['Capacitor Fan Rating', 'Fan Target MFD', 'Fan MFD', 'fanTargetMfd', 'target_fan_mfd', 'fanMfd'], false, true),
         name: stash.customer?.name || stash.name || 'QUICK STASH'
     };
 }
@@ -2481,29 +2562,29 @@ let prefillName = '';
 let prefillAddress = '';
 
 try {
-    let handoffStr = localStorage.getItem('hvacDiagnosticsHandoffV1');
-    let activeId = localStorage.getItem('hvacActiveQuickStashId');
+    let sessionStashId = localStorage.getItem('hvacDiagnosticsSessionStashId');
     let stashesStr = localStorage.getItem('hvacQuickStashesV1');
-    let activeStash = null;
-    if (stashesStr && activeId) {
+    let sessionStash = null;
+    if (stashesStr && sessionStashId) {
         let stashes = JSON.parse(stashesStr);
-        activeStash = stashes[activeId];
+        sessionStash = stashes[sessionStashId];
     }
     
-    if (handoffStr && activeId) {
+    let handoffStr = localStorage.getItem('hvacDiagnosticsHandoffV1');
+    if (handoffStr && sessionStashId) {
         let handoff = JSON.parse(handoffStr);
-        if (handoff.stashId === activeId) {
+        if (handoff.stashId === sessionStashId) {
             if (handoff.customer) {
                 prefillName = handoff.customer.name || '';
                 prefillAddress = handoff.customer.address || '';
             }
-        } else if (activeStash && activeStash.customer) {
-            prefillName = activeStash.customer.name || '';
-            prefillAddress = activeStash.customer.address || '';
+        } else if (sessionStash && sessionStash.customer) {
+            prefillName = sessionStash.customer.name || '';
+            prefillAddress = sessionStash.customer.address || '';
         }
-    } else if (activeStash && activeStash.customer) {
-        prefillName = activeStash.customer.name || '';
-        prefillAddress = activeStash.customer.address || '';
+    } else if (sessionStash && sessionStash.customer) {
+        prefillName = sessionStash.customer.name || '';
+        prefillAddress = sessionStash.customer.address || '';
     }
 } catch(e) {
     console.error("Error prefilling snapshot identity:", e);
