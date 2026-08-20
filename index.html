@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v1.59.5.1</title>
+    <title>HVAC Splash v1.59.5.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.59.5.1</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.59.5.2</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1920,7 +1920,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.59.5.1</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.59.5.2</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2322,7 +2322,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.59.5.1";
+        const APP_VERSION = "v1.59.5.2";
         var hvacQsAttachMode = false;
         var hvacQsAttachContext = null;
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
@@ -8618,8 +8618,10 @@
         let qsMapperTargetKey = null;
 
         
-        function getDiagnosticHandoffValue(stash, aliases) {
+        function resolveHandoffTarget(stash, targetKey, exactAliases, isHerm, isFan) {
             let candidates = [];
+            let consumedKeys = [];
+            
             ['diagnostics', 'equipment', 'readings', 'extra'].forEach(sec => {
                 if (!stash[sec]) return;
                 Object.keys(stash[sec]).forEach(k => {
@@ -8628,25 +8630,48 @@
                     
                     let normKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
                     
-                    for (let al of aliases) {
+                    for (let al of exactAliases) {
                         let normAl = al.toLowerCase().replace(/[^a-z0-9]/g, '');
                         if (normKey === normAl || normKey.includes(normAl) || normAl.includes(normKey)) {
                             let numMatch = String(val).match(/[\d\.]+/);
                             if (numMatch) {
                                 candidates.push(Number(numMatch[0]));
+                                consumedKeys.push(k);
                             }
-                            break;
+                            return; 
+                        }
+                    }
+                    
+                    if ((isHerm || isFan) && candidates.length === 0) {
+                        let isCompKey = (normKey === 'capacitorrating');
+                        if (isCompKey) {
+                            let strVal = String(val);
+                            if (strVal.includes('+') || strVal.includes('/')) {
+                                let parts = strVal.split(/[\+\/]/).map(p => p.trim());
+                                if (parts.length === 2) {
+                                    let num1 = parts[0].match(/[\d\.]+/);
+                                    let num2 = parts[1].match(/[\d\.]+/);
+                                    if (num1 && num2) {
+                                        if (isHerm) {
+                                            candidates.push(Number(num1[0]));
+                                        } else if (isFan) {
+                                            candidates.push(Number(num2[0]));
+                                        }
+                                        consumedKeys.push(k);
+                                    }
+                                }
+                            }
                         }
                     }
                 });
             });
-            
-            if (candidates.length === 0) return { value: '--', status: 'missing' };
+
+            if (candidates.length === 0) return { value: '--', status: 'missing', consumedKeys: [] };
             let uniqueVals = [...new Set(candidates)];
             if (uniqueVals.length > 1) {
-                return { value: uniqueVals.join(' / '), status: 'conflict' };
+                return { value: uniqueVals.join(' / '), status: 'conflict', consumedKeys };
             }
-            return { value: uniqueVals[0], status: 'resolved' };
+            return { value: uniqueVals[0], status: 'resolved', consumedKeys };
         }
 
         function openDiagnosticsHandoffModal() {
@@ -8664,8 +8689,8 @@
             }
 
             const targets = [
-                { label: 'Herm MFD', key: 'hermTargetMfd', aliases: ['Herm Target MFD', 'Herm MFD', 'hermTargetMfd', 'target_mfd', 'hermMfd'] },
-                { label: 'Fan MFD', key: 'fanTargetMfd', aliases: ['Fan Target MFD', 'Fan MFD', 'fanTargetMfd', 'target_fan_mfd', 'fanMfd', 'µf', 'µF'] },
+                { label: 'Herm MFD', key: 'hermTargetMfd', aliases: ['Capacitor Herm Rating', 'Herm Target MFD', 'Herm MFD', 'hermTargetMfd', 'target_mfd', 'hermMfd'], isHerm: true },
+                { label: 'Fan MFD', key: 'fanTargetMfd', aliases: ['Capacitor Fan Rating', 'Fan Target MFD', 'Fan MFD', 'fanTargetMfd', 'target_fan_mfd', 'fanMfd'], isFan: true },
                 { label: 'Comp RLA', key: 'compressorRlaRating', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps', 'compressorRlaRating', 'cRlaRating'] },
                 { label: 'Comp LRA', key: 'compressorLraRating', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps', 'compressorLraRating', 'cLraRating'] },
                 { label: 'ODF FLA', key: 'fanFlaRating', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA', 'fanFlaRating', 'odfFlaRating', 'fan amps', 'fanAmps'] },
@@ -8714,10 +8739,14 @@
             html += `<div style="display:flex; flex-direction:column; gap:5px;">`;
 
             let unmappedExtraWarnings = [];
+            let allConsumedKeys = new Set();
 
             targets.forEach(t => {
-                let res = getDiagnosticHandoffValue(stash, t.aliases);
-                handoff.diagnostics[t.key] = res;
+                let res = resolveHandoffTarget(stash, t.key, t.aliases, t.isHerm, t.isFan);
+                handoff.diagnostics[t.key] = { value: res.value, status: res.status };
+                if (res.consumedKeys) {
+                    res.consumedKeys.forEach(k => allConsumedKeys.add(k));
+                }
                 
                 let icon = '';
                 let color = '';
@@ -8734,22 +8763,33 @@
                         <div style="color:white; font-size:12px; font-weight:bold; font-family:monospace;">${res.value}</div>
                     </div>
                 `;
-
-                if (res.status !== 'resolved' && stash.extra) {
-                    Object.keys(stash.extra).forEach(k => {
-                        let kNorm = k.toLowerCase();
-                        let kOrig = k;
-                        if ((t.label.toLowerCase().includes('mfd') || t.label.toLowerCase().includes('cap')) && (kNorm.includes('cap') || kNorm.includes('capacitor') || kNorm.includes('mfd') || kNorm.includes('µf'))) {
-                            unmappedExtraWarnings.push(`"${kOrig}": ${stash.extra[kOrig]}`);
-                        } else if ((t.label.toLowerCase().includes('rla') || t.label.toLowerCase().includes('lra') || t.label.toLowerCase().includes('fla')) && (kNorm.includes('rla') || kNorm.includes('lra') || kNorm.includes('fla') || kNorm.includes('amp'))) {
-                            unmappedExtraWarnings.push(`"${kOrig}": ${stash.extra[kOrig]}`);
-                        } else if (t.label.toLowerCase().includes('sc') && (kNorm.includes('target sc') || kNorm.includes('subcool'))) {
-                            unmappedExtraWarnings.push(`"${kOrig}": ${stash.extra[kOrig]}`);
-                        }
-                    });
-                }
             });
             html += `</div>`;
+
+            if (stash.extra) {
+                Object.keys(stash.extra).forEach(k => {
+                    if (allConsumedKeys.has(k)) return;
+                    
+                    let kNorm = k.toLowerCase();
+                    let isResultOrMeasured = kNorm.includes('measured') || kNorm.includes('deviation') || kNorm.includes('tolerance') || kNorm.includes('status') || kNorm.includes('results') || kNorm.includes('bench');
+                    if (isResultOrMeasured) return;
+                    
+                    let isLikelyUnmapped = false;
+                    let targetMissingOrConflict = (key) => handoff.diagnostics[key] && handoff.diagnostics[key].status !== 'resolved';
+                    
+                    if ((kNorm.includes('cap') || kNorm.includes('capacitor') || kNorm.includes('mfd') || kNorm.includes('µf')) && (targetMissingOrConflict('hermTargetMfd') || targetMissingOrConflict('fanTargetMfd'))) {
+                        isLikelyUnmapped = true;
+                    } else if ((kNorm.includes('rla') || kNorm.includes('lra') || kNorm.includes('fla') || kNorm.includes('amp')) && (targetMissingOrConflict('compressorRlaRating') || targetMissingOrConflict('compressorLraRating') || targetMissingOrConflict('fanFlaRating'))) {
+                        isLikelyUnmapped = true;
+                    } else if ((kNorm.includes('target sc') || kNorm.includes('subcool')) && targetMissingOrConflict('targetSubcool')) {
+                        isLikelyUnmapped = true;
+                    }
+                    
+                    if (isLikelyUnmapped) {
+                        unmappedExtraWarnings.push(`"${k}": ${stash.extra[k]}`);
+                    }
+                });
+            }
 
             if (unmappedExtraWarnings.length > 0) {
                 let uniqueWarnings = [...new Set(unmappedExtraWarnings)];
@@ -8773,9 +8813,43 @@
         }
 
         function executeDiagnosticsHandoff() {
-            if (window._tempDiagHandoff) {
-                localStorage.setItem('hvacDiagnosticsHandoffV1', JSON.stringify(window._tempDiagHandoff));
-            }
+            if (!activeQuickStashId) return;
+            let rawStashes = localStorage.getItem('hvacQuickStashesV1');
+            if (!rawStashes) return;
+            let stashes = JSON.parse(rawStashes);
+            let stash = stashes[activeQuickStashId];
+            if (!stash) return;
+
+            const targets = [
+                { key: 'hermTargetMfd', aliases: ['Capacitor Herm Rating', 'Herm Target MFD', 'Herm MFD', 'hermTargetMfd', 'target_mfd', 'hermMfd'], isHerm: true },
+                { key: 'fanTargetMfd', aliases: ['Capacitor Fan Rating', 'Fan Target MFD', 'Fan MFD', 'fanTargetMfd', 'target_fan_mfd', 'fanMfd'], isFan: true },
+                { key: 'compressorRlaRating', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps', 'compressorRlaRating', 'cRlaRating'] },
+                { key: 'compressorLraRating', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps', 'compressorLraRating', 'cLraRating'] },
+                { key: 'fanFlaRating', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA', 'fanFlaRating', 'odfFlaRating', 'fan amps', 'fanAmps'] },
+                { key: 'targetSubcool', aliases: ['Target SC', 'Target Subcool', 'Subcool Target', 'targetSubcool', 'target sc'] }
+            ];
+
+            let handoff = {
+                stashId: stash.id,
+                createdAt: Date.now(),
+                customer: {
+                    name: (stash.customer && stash.customer.name) ? stash.customer.name : '',
+                    address: (stash.customer && stash.customer.address) ? stash.customer.address : ''
+                },
+                equipment: {
+                    outdoorModel: (stash.equipment && stash.equipment.outdoorModel) ? stash.equipment.outdoorModel : '',
+                    outdoorSerial: (stash.equipment && stash.equipment.outdoorSerial) ? stash.equipment.outdoorSerial : '',
+                    description: (stash.equipment && stash.equipment.description) ? stash.equipment.description : ''
+                },
+                diagnostics: {}
+            };
+
+            targets.forEach(t => {
+                let res = resolveHandoffTarget(stash, t.key, t.aliases, t.isHerm, t.isFan);
+                handoff.diagnostics[t.key] = { value: res.value, status: res.status };
+            });
+
+            localStorage.setItem('hvacDiagnosticsHandoffV1', JSON.stringify(handoff));
             window.location.href = 'diagnostics.html';
         }
 
