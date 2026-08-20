@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagnostics v5.13.6.4</title>
+<title>Diagnostics v5.14.1</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="pages-registry.js"></script>
 <style>
@@ -64,7 +64,7 @@ body {
 <span class="text-base leading-none mb-1">🔀</span><span id="lbl-flow-toggle" class="text-[7px] font-bold uppercase tracking-wider">Comp Flow</span>
 </button>
 <button id="btn-compiler" onclick="toggleCompilerSweep()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-800 hover:bg-slate-700 flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-600 shadow-sm" title="Compiler">
-<span id="icon-compiler" class="text-base leading-none mb-1 text-slate-400 transition-colors">⚡</span><span id="text-compiler" class="text-[7px] font-bold uppercase tracking-wider text-slate-400 transition-colors">Compiler</span><span class="text-xs font-mono font-bold tracking-widest text-slate-500 opacity-60 ml-2">v5_13_6_4</span>
+<span id="icon-compiler" class="text-base leading-none mb-1 text-slate-400 transition-colors">⚡</span><span id="text-compiler" class="text-[7px] font-bold uppercase tracking-wider text-slate-400 transition-colors">Compiler</span><span class="text-xs font-mono font-bold tracking-widest text-slate-500 opacity-60 ml-2">v5_14_1</span>
 </button>
 <button onclick="toggleConfigModal()" class="flex-shrink-0 min-w-[60px] h-12 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Config">
 <span class="text-base leading-none mb-1">⚙️</span><span class="text-[7px] font-bold uppercase tracking-wider">Config</span>
@@ -115,7 +115,7 @@ body {
             
             <!-- CENTER PANEL -->
             <div id="hud-center-panel" class="flex-1 min-w-0 overflow-hidden py-4 px-3 flex flex-col items-center justify-center text-center bg-slate-900 relative box-border w-[70%]">
-                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_13_6_4 ]</div>
+                <div class="text-white font-bold font-mono text-[10px] tracking-wider absolute top-2 w-full text-center z-10 opacity-30">[ Build: v5_14_1 ]</div>
                 <div id="hud-status-prompt" class="text-slate-300 font-bold absolute top-6 uppercase tracking-widest text-xs h-4 drop-shadow-md whitespace-nowrap text-ellipsis overflow-hidden w-full">Ready for sequence...</div>
                 <div id="hud-mini-caps" class="absolute bottom-2 left-2 text-left font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
                 <div id="hud-mini-motors" class="absolute bottom-2 right-2 text-right font-mono text-[9px] font-bold z-10 leading-tight tracking-wider"></div>
@@ -1352,33 +1352,39 @@ window.addEventListener('DOMContentLoaded', () => {
                         committedState[k] = false;
                     }
                 }
-                if (typeof window.flagsState !== 'undefined') {
-                    for (let k in window.flagsState) {
-                        window.flagsState[k] = false;
-                    }
-                }
                 if (window.capacitorRegistry && window.capacitorRegistry.length > 0) {
                      window.capacitorRegistry = [];
                 }
+                window.totalCaps = 1;
+                window.activeCap = 0;
                 
                 localStorage.setItem('hvacDiagnosticsSessionStashId', handoff.stashId);
-            }
-            
-            // Apply Handoff Identity if valid
-            if (handoff.customer || handoff.equipment) {
-                let idParts = [];
-                if (handoff.customer && handoff.customer.name) idParts.push(handoff.customer.name.trim());
-                if (handoff.customer && handoff.customer.address) idParts.push(handoff.customer.address.trim());
                 
-                let eqParts = [];
-                if (handoff.equipment && handoff.equipment.outdoorModel) eqParts.push(handoff.equipment.outdoorModel.trim());
-                if (handoff.equipment && handoff.equipment.outdoorSerial) eqParts.push(handoff.equipment.outdoorSerial.trim());
-                
-                if (eqParts.length > 0) idParts.push(eqParts.join(' / '));
-                
-                if (idParts.length > 0) {
-                    liveAppState.description = idParts.join(' | ');
+                if (handoff.customer || handoff.equipment) {
+                    let idParts = [];
+                    if (handoff.customer && handoff.customer.name) idParts.push(handoff.customer.name.trim());
+                    if (handoff.customer && handoff.customer.address) idParts.push(handoff.customer.address.trim());
+                    
+                    let eqParts = [];
+                    if (handoff.equipment && handoff.equipment.outdoorModel) eqParts.push(handoff.equipment.outdoorModel.trim());
+                    if (handoff.equipment && handoff.equipment.outdoorSerial) eqParts.push(handoff.equipment.outdoorSerial.trim());
+                    
+                    if (eqParts.length > 0) idParts.push(eqParts.join(' / '));
+                    
+                    if (idParts.length > 0) {
+                        liveAppState.description = idParts.join(' | ');
+                    }
                 }
+                
+                let resetData = {
+                    liveAppState: liveAppState,
+                    committedState: typeof committedState !== 'undefined' ? committedState : {},
+                    capacitorRegistry: window.capacitorRegistry,
+                    compilerRegistry: window.compilerRegistry || {},
+                    totalCaps: window.totalCaps,
+                    activeCap: window.activeCap
+                };
+                localStorage.setItem('hvac_app_v4', JSON.stringify(resetData));
             }
         }
     } catch(e) {
@@ -1543,15 +1549,15 @@ function clearSpecificSlot(id) {
 
 
 function saveResultsToQuickStash() {
-    const activeStashId = localStorage.getItem('hvacActiveQuickStashId');
-    if (!activeStashId) {
-        alert("No active Quick Stash found. Please open a stash in the Hub first.");
+    const sessionStashId = localStorage.getItem('hvacDiagnosticsSessionStashId');
+    if (!sessionStashId) {
+        alert("No valid Quick Stash Diagnostics session active. Cannot save.");
         return;
     }
     const stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
-    const stash = stashes[activeStashId];
+    const stash = stashes[sessionStashId];
     if (!stash) {
-        alert("Active Quick Stash data not found.");
+        alert("The original Quick Stash for this session is missing or deleted. Cannot save.");
         return;
     }
 
@@ -1600,7 +1606,7 @@ function saveResultsToQuickStash() {
         d.fanLoadPercent = ((liveAppState.diag_odf_fla / liveAppState.odfFlaRating) * 100).toFixed(1) + '%';
     }
 
-    stashes[activeStashId] = stash;
+    stashes[sessionStashId] = stash;
     localStorage.setItem('hvacQuickStashesV1', JSON.stringify(stashes));
     alert("Results explicitly saved to Quick Stash!");
 }
@@ -2319,7 +2325,7 @@ function getResolvedQuickStashTargets() {
                 
                 for (let al of aliases) {
                     let normAl = al.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    if (normKey === normAl || normKey.includes(normAl) || normAl.includes(normKey)) {
+                    if (normKey === normAl) {
                         let numMatch = String(val).match(/[\d\.]+/);
                         if (numMatch) {
                             candidates.push(Number(numMatch[0]));
