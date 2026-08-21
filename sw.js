@@ -1,4 +1,4 @@
-const CACHE_NAME = 'platts-hvac-shell-v1';
+const CACHE_NAME = 'platts-hvac-shell-v2';
 const SHELL_ASSETS = [
   './',
   './index.html',
@@ -12,7 +12,7 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME).then(cache => {
       console.log('Opened cache', CACHE_NAME);
       return cache.addAll(SHELL_ASSETS);
-    })
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -27,13 +27,23 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', event => {
   // Only handle GET requests from the same origin
   if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+  if (url.pathname.endsWith('/pages-registry.js') || url.pathname === 'pages-registry.js') {
+    event.respondWith(
+      fetch(new Request(event.request, { cache: 'no-store' }))
+        .then(networkResponse => networkResponse)
+        .catch(() => caches.match(event.request))
+    );
     return;
   }
 
