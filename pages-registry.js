@@ -7,7 +7,7 @@ window.PLATTS_PAGES_REGISTRY = [
     { name: "Notes", file: "notes.html", state: "ACTIVE" },
     { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
     { name: "Specs", file: "specs.html", state: "ACTIVE" },
-    { name: "PMI", file: "pmi.html", state: "PLANNED" },
+    { name: "PMI", file: "pmi.html", state: "ACTIVE" },
     { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
     { name: "Startup", file: "startup.html", state: "ACTIVE" },
     { name: "Compiler", file: "compiler.html", state: "PLANNED" },
