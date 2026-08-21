@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.00.3</title>
+    <title>HVAC Splash v2.00.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.3</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.4</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1921,7 +1921,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.3</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.4</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2323,7 +2323,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.00.3";
+        const APP_VERSION = "v2.00.4";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, pmi: { label: "PMI", enabled: false }, readings: { label: "READINGS", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
@@ -4506,15 +4506,56 @@
                             <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowRawScans" ${qsSettings.showRawScans?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Raw Scans</label>
                         </div>
                     </div>`;
+            html += `<style>
+                .qs-toggle { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; margin-left: 12px; }
+                .qs-toggle input { opacity: 0; width: 0; height: 0; }
+                .qs-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
+                .qs-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+                input:checked + .qs-slider { background-color: var(--emerald-green); }
+                input:checked + .qs-slider:before { transform: translateX(22px); }
+                input:disabled + .qs-slider { background-color: #222; opacity: 0.5; cursor: not-allowed; }
+                input:disabled + .qs-slider:before { background-color: #555; }
+            </style>`;
+
             // PUSH TO ALL DESTINATIONS SECTION
             html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
                         <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">PUSH TO ALL DESTINATIONS</div>
                         <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px; border-top:1px solid #444; padding-top:8px; width:100%; box-sizing:border-box; min-width:0;">
-                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">SPECS</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"></div></label>
-                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">DIAGNOSTICS</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"></div></label>
-                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">PMI (COMING SOON)</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" disabled></div></label>
-                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">READINGS (COMING SOON)</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" disabled></div></label>
-                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">NOTES (COMING SOON)</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" disabled></div></label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; cursor:pointer;">
+                                <span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">SPECS</span>
+                                <div class="qs-toggle">
+                                    <input type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)">
+                                    <span class="qs-slider"></span>
+                                </div>
+                            </label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; cursor:pointer;">
+                                <span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">DIAGNOSTICS</span>
+                                <div class="qs-toggle">
+                                    <input type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)">
+                                    <span class="qs-slider"></span>
+                                </div>
+                            </label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666; cursor:not-allowed;">
+                                <span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">PMI (COMING SOON)</span>
+                                <div class="qs-toggle">
+                                    <input type="checkbox" disabled>
+                                    <span class="qs-slider"></span>
+                                </div>
+                            </label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666; cursor:not-allowed;">
+                                <span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">READINGS (COMING SOON)</span>
+                                <div class="qs-toggle">
+                                    <input type="checkbox" disabled>
+                                    <span class="qs-slider"></span>
+                                </div>
+                            </label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666; cursor:not-allowed;">
+                                <span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">NOTES (COMING SOON)</span>
+                                <div class="qs-toggle">
+                                    <input type="checkbox" disabled>
+                                    <span class="qs-slider"></span>
+                                </div>
+                            </label>
                         </div>
                     </div>`;
                     
@@ -5275,6 +5316,40 @@
             return '';
         }
 
+        function getQuickStashPageDestination(destinationKey) {
+            const local = location.protocol === 'file:';
+            const routes = {
+                equipment: local ? 'specs.html' : 'specs.html',
+                diagnostics: local ? 'diagnostics.html' : 'diagnostics.html',
+                pmi: local ? 'pmi.html' : 'pmi.html',
+                readings: local ? 'readings.html' : 'readings.html',
+                notes: local ? 'notes.html' : 'notes.html'
+            };
+            return routes[destinationKey] || null;
+        }
+
+        function openQuickStashDestinationPage(destinationKey) {
+            const url = getQuickStashPageDestination(destinationKey);
+            if (!url) return;
+            
+            if (['pmi', 'readings', 'notes'].includes(destinationKey)) {
+                if (typeof showToast === 'function') {
+                    showToast("Destination coming soon!");
+                } else {
+                    alert("Destination coming soon!");
+                }
+                return;
+            }
+
+            const genericModal = document.getElementById('genericPushModal');
+            if (genericModal) genericModal.remove();
+
+            const diagModal = document.getElementById('qsDiagHandoffModal');
+            if (diagModal) diagModal.style.display = 'none';
+
+            window.location.href = url;
+        }
+
         function openQsPushPreview(dests) {
             if (!Array.isArray(dests)) dests = [dests];
             if (!activeQuickStashId) { alert("No active Quick Stash selected."); return; }
@@ -5401,11 +5476,20 @@
 
             html += `</div>`;
 
-            let actionBtn = '';
+            let footerHtml = '';
             if (dests.includes('all')) {
-                actionBtn = `<button onclick="executePushAll('${activeQuickStashId}')" style="background:var(--electric-blue); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH ALL</button>`;
+                footerHtml = `<div id="genericPushModalFooter" style="padding:15px; background:#111; border-top:1px solid #333; display:flex; gap:10px; flex-shrink:0;">
+                    <button onclick="document.getElementById('genericPushModal').remove()" class="btn btn-outline" style="flex:1;">CANCEL</button>
+                    <button onclick="executePushAll('${activeQuickStashId}')" style="background:var(--electric-blue); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH ALL</button>
+                </div>`;
             } else if (dests.includes('equipment')) {
-                actionBtn = `<button onclick="confirmEquipmentPush('${activeQuickStashId}')" style="background:var(--emerald-green); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH TO SPECS</button>`;
+                footerHtml = `<div id="genericPushModalFooter" style="padding:15px; background:#111; border-top:1px solid #333; display:flex; flex-direction:column; gap:10px; flex-shrink:0;">
+                    <div style="display:flex; gap:10px; width:100%;">
+                        <button onclick="document.getElementById('genericPushModal').remove()" class="btn btn-outline" style="flex:1;">CANCEL</button>
+                        <button onclick="openQuickStashDestinationPage('equipment')" class="btn btn-outline" style="flex:1; border-color:var(--emerald-green); color:var(--emerald-green);">OPEN SPECS</button>
+                    </div>
+                    <button onclick="confirmEquipmentPush('${activeQuickStashId}')" style="background:var(--emerald-green); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; width:100%;">PUSH TO SPECS</button>
+                </div>`;
             }
 
             let modalHtml = `
@@ -5417,10 +5501,7 @@
                     <div id="genericPushModalBody" style="flex:1; overflow-y:auto; padding:15px; background:var(--bg-dark);">
                         ${html}
                     </div>
-                    <div id="genericPushModalFooter" style="padding:15px; background:#111; border-top:1px solid #333; display:flex; gap:10px; flex-shrink:0;">
-                        <button onclick="document.getElementById('genericPushModal').remove()" class="btn btn-outline" style="flex:1;">CANCEL</button>
-                        ${actionBtn}
-                    </div>
+                    ${footerHtml}
                 </div>
             `;
             
@@ -9419,7 +9500,7 @@
 
             localStorage.setItem('hvacDiagnosticsHandoffV1', JSON.stringify(handoff));
             if (navigate) {
-                window.location.href = 'diagnostics.html';
+                openQuickStashDestinationPage('diagnostics');
             }
         }
 
