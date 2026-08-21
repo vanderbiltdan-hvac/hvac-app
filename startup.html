@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Startup Tracker v1.29.1</title>
+    <title>Startup Tracker v1.29.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -105,7 +105,7 @@
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div style="width:40px;"></div><!-- Spacer for center alignment -->
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v1.29.1</div>
+    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v1.29.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -553,7 +553,7 @@
 </div>
 
 <script>
-const STARTUP_VERSION = "v1.29.1";
+const STARTUP_VERSION = "v1.29.2";
 
 // PAGE REGISTRY & NAVIGATION
 function getSplashDestination() {
@@ -755,28 +755,53 @@ function pushToCompiler() {
 
 function runAutoMath() {
     const getVal = (match) => {
-        const f = startupFieldMap.find(x => x.label.toLowerCase().includes(match.toLowerCase()));
+        const f = startupFieldMap.find(x => x.label.toLowerCase() === match.toLowerCase());
         if (!f) return NaN;
         const id = f.id;
+        if (!startupMemory[id] || startupMemory[id] === '--') return NaN;
         return parseFloat(startupMemory[id]);
     };
-    const setVal = (match, val) => {
-        if (isNaN(val)) return;
+    const setVal = (match, val, precision = 1) => {
         const f = startupFieldMap.find(x => x.label.toLowerCase() === match.toLowerCase());
         if (!f) return;
         const id = f.id;
         const input = document.getElementById('recorded-' + id);
-        if (input && input.value !== val.toFixed(1)) {
-            input.value = val.toFixed(1);
-            startupMemory[id] = input.value;
+        
+        if (isNaN(val) || val === null || val === undefined) {
+            if (startupMemory[id] !== undefined || (input && input.value !== '')) {
+                if (input) input.value = '';
+                delete startupMemory[id];
+                localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
+            }
+            return;
+        }
+        
+        const strVal = val.toFixed(precision);
+        if (input && input.value !== strVal) {
+            input.value = strVal;
+            startupMemory[id] = strVal;
+            localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
+        } else if (!input && startupMemory[id] !== strVal) {
+            startupMemory[id] = strVal;
             localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
         }
     };
 
-    setVal('∆t', Math.abs(getVal('return temp') - getVal('supply temp')));
-    setVal('sh', getVal('suction line temp') - getVal('vapor saturation'));
-    setVal('sc', getVal('liquid saturation') - getVal('liquid line temp'));
-    setVal('evap td', getVal('return temp') - getVal('vapor saturation'));
+    setVal('∆t', Math.abs(getVal('return temp') - getVal('supply temp')), 1);
+    setVal('sh', getVal('suction line temp') - getVal('vapor saturation'), 1);
+    setVal('sc', getVal('liquid saturation') - getVal('liquid line temp'), 1);
+    setVal('evap td', getVal('return temp') - getVal('vapor saturation'), 1);
+
+    let sucPress = getVal('suction pressure');
+    let liqPress = getVal('liquid pressure');
+    let compRatio = NaN;
+    if (!isNaN(sucPress) && !isNaN(liqPress) && (sucPress + 14.7) > 0) {
+        compRatio = (liqPress + 14.7) / (sucPress + 14.7);
+    }
+    setVal('compression ratio', compRatio, 2);
+
+    setVal('approach', getVal('liquid line temp') - getVal('odat'), 1);
+    setVal('ctoa', getVal('liquid saturation') - getVal('odat'), 1);
 }
 
 // Ensure filters are applied instantly on boot
@@ -810,7 +835,6 @@ const startupFieldMap = [
   { id: 'W128', label: '∆T', category: 'airside', mapped: true },
   { id: 'W130', label: 'Supply Wet Bulb', category: 'airside', mapped: true },
   { id: 'W131', label: 'Supply Relative Humidity', category: 'airside', mapped: true },
-  { id: 'W132', label: 'Return Dew Point', category: 'airside', mapped: true },
   { id: 'W133', label: 'Supply Dew Point', category: 'airside', mapped: true },
   { id: 'W134', label: 'Return Enthalpy', category: 'airside', mapped: true },
   { id: 'W135', label: 'Supply Enthalpy', category: 'airside', mapped: true },
