@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.00.1</title>
+    <title>HVAC Splash v2.00.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.1</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.2</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1921,7 +1921,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.1</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.2</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2323,9 +2323,9 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.00.1";
+        const APP_VERSION = "v2.00.2";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
-        const QS_PUSH_DESTINATIONS = { equipment: { label: "EQUIPMENT", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, pmi: { label: "PMI", enabled: false }, readings: { label: "READINGS", enabled: false }, notes: { label: "NOTES", enabled: false } };
+        const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, pmi: { label: "PMI", enabled: false }, readings: { label: "READINGS", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
         function getQuickStashDestination() {
             if (window.location.protocol === 'file:') {
@@ -4509,12 +4509,12 @@
             // PUSH TO ALL DESTINATIONS SECTION
             html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
                         <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">PUSH TO ALL DESTINATIONS</div>
-                        <div style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px solid #444; padding-top:8px; flex-direction:column; gap:8px;">
-                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px;"><input type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Equipment</label>
-                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px;"><input type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Diagnostics</label>
-                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px; color:#666;"><input type="checkbox" disabled> PMI (COMING SOON)</label>
-                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px; color:#666;"><input type="checkbox" disabled> Readings (COMING SOON)</label>
-                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px; color:#666;"><input type="checkbox" disabled> Notes (COMING SOON)</label>
+                        <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px; border-top:1px solid #444; padding-top:8px; width:100%; box-sizing:border-box; min-width:0;">
+                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Specs</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"></label>
+                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Diagnostics</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"></label>
+                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">PMI (COMING SOON)</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" disabled></label>
+                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Readings (COMING SOON)</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" disabled></label>
+                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Notes (COMING SOON)</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" disabled></label>
                         </div>
                     </div>`;
                     
@@ -5177,24 +5177,60 @@
             }
         }
 
+        function getQuickStashSessionMismatch() {
+            if (!activeQuickStashId) return '';
+            const sessionRaw = localStorage.getItem('hvacLocalJobSessionV1');
+            if (!sessionRaw) return '';
+            try {
+                const session = JSON.parse(sessionRaw);
+                if (session.quickStashId && session.quickStashId !== activeQuickStashId) {
+                    const stashesRaw = localStorage.getItem('hvacQuickStashesV1');
+                    let stashes = {};
+                    if (stashesRaw) stashes = JSON.parse(stashesRaw);
+                    
+                    let activeStashName = 'Unknown Stash';
+                    let sessionStashName = 'Unknown Stash';
+                    
+                    if (stashes[activeQuickStashId]) {
+                        let aName = stashes[activeQuickStashId].customer?.name || '';
+                        let aDate = new Date(stashes[activeQuickStashId].createdAt).toLocaleDateString();
+                        activeStashName = aName ? `${aName} (${aDate})` : `Stash ${aDate}`;
+                    }
+                    if (stashes[session.quickStashId]) {
+                        let sName = stashes[session.quickStashId].customer?.name || '';
+                        let sDate = new Date(stashes[session.quickStashId].createdAt).toLocaleDateString();
+                        sessionStashName = sName ? `${sName} (${sDate})` : `Stash ${sDate}`;
+                    }
+
+                    return `
+                        <div style="background:rgba(255,171,0,0.1); border:1px solid var(--amber-orange); padding:10px; border-radius:8px; margin-bottom:15px;">
+                            <div style="color:var(--amber-orange); font-size:12px; font-weight:900; margin-bottom:5px;">⚠ ACTIVE STASH DIFFERS FROM CURRENT LOCAL SESSION</div>
+                            <div style="font-size:11px; color:#ccc;">
+                                <div style="margin-bottom:2px;"><span style="color:#888;">Active:</span> <span style="font-weight:bold; color:white;">${activeStashName}</span></div>
+                                <div><span style="color:#888;">Session:</span> <span style="font-weight:bold; color:white;">${sessionStashName}</span></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (e) {}
+            return '';
+        }
+
         function openQsPushPreview(dests) {
             if (!Array.isArray(dests)) dests = [dests];
-            let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
-            if (!rawSession) { alert("No Local Job Session found."); return; }
-            let session = JSON.parse(rawSession);
-            if (!session.quickStashId) { alert("Session has no Quick Stash ID."); return; }
+            if (!activeQuickStashId) { alert("No active Quick Stash selected."); return; }
             
             let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
-            let stash = stashes[session.quickStashId];
+            let stash = stashes[activeQuickStashId];
             if (!stash) { alert("Matching Quick Stash not found."); return; }
 
             if (dests.length === 1 && dests[0] === 'diagnostics') {
-                activeQuickStashId = session.quickStashId;
                 openDiagnosticsHandoffModal();
                 return;
             }
 
             let html = `<div style="display:flex; flex-direction:column; gap:15px; padding-bottom:60px;">`;
+            html += getQuickStashSessionMismatch();
             
             if (dests.includes('equipment') || dests.includes('all')) {
                 let eqStats = { ready: 0, matched: 0, conflict: 0, missing: 0 };
@@ -5220,7 +5256,7 @@
                             <span style="color:#aaa;">${label}</span>
                             <span style="color:${color}; font-weight:bold;">${status}</span>
                         </div>
-                        ${sourceVal ? `<div style="font-size:10px; color:#ccc; margin-bottom:8px; padding-left:10px; border-left:2px solid #444; word-break:break-all;">${sourceVal}</div>` : ''}
+                        ${sourceVal ? `<div style="font-size:10px; color:#ccc; margin-bottom:8px; padding-left:10px; border-left:2px solid #444; word-break:break-all; white-space:pre-wrap;">${sourceVal}</div>` : ''}
                     `);
                 }
 
@@ -5240,7 +5276,7 @@
 
                 html += `
                     <div style="background:#222; border:1px solid #444; padding:10px; border-radius:8px;">
-                        <div style="color:var(--emerald-green); font-weight:900; margin-bottom:10px; font-size:13px;">EQUIPMENT</div>
+                        <div style="color:var(--emerald-green); font-weight:900; margin-bottom:10px; font-size:13px;">SPECS</div>
                         <div style="display:flex; gap:10px; margin-bottom:10px; font-size:10px; color:#aaa; font-weight:bold;">
                             <span style="color:var(--emerald-green)">Ready: ${eqStats.ready}</span>
                             <span style="color:var(--electric-blue)">Matched: ${eqStats.matched}</span>
@@ -5308,21 +5344,21 @@
 
             let actionBtn = '';
             if (dests.includes('all')) {
-                actionBtn = `<button onclick="executePushAll('${session.quickStashId}')" style="background:var(--electric-blue); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH ALL</button>`;
+                actionBtn = `<button onclick="executePushAll('${activeQuickStashId}')" style="background:var(--electric-blue); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH ALL</button>`;
             } else if (dests.includes('equipment')) {
-                actionBtn = `<button onclick="confirmEquipmentPush('${session.quickStashId}')" style="background:var(--emerald-green); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH TO EQUIPMENT</button>`;
+                actionBtn = `<button onclick="confirmEquipmentPush('${activeQuickStashId}')" style="background:var(--emerald-green); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH TO SPECS</button>`;
             }
 
             let modalHtml = `
-                <div id="genericPushModal" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; display:flex; flex-direction:column;">
-                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; background:#111; border-bottom:1px solid #333; flex-shrink:0;">
+                <div id="genericPushModal" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
+                    <div id="genericPushModalHeader" style="padding:15px; display:flex; justify-content:space-between; align-items:center; background:#111; border-bottom:1px solid #333; flex-shrink:0;">
                         <h2 style="color:#fff; font-size:16px; font-weight:900; margin:0;">PUSH PREVIEW</h2>
                         <button onclick="document.getElementById('genericPushModal').remove()" style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
                     </div>
-                    <div style="flex:1; overflow-y:auto; padding:15px; background:var(--bg-dark);">
+                    <div id="genericPushModalBody" style="flex:1; overflow-y:auto; padding:15px; background:var(--bg-dark);">
                         ${html}
                     </div>
-                    <div style="padding:15px; background:#111; border-top:1px solid #333; display:flex; gap:10px; flex-shrink:0;">
+                    <div id="genericPushModalFooter" style="padding:15px; background:#111; border-top:1px solid #333; display:flex; gap:10px; flex-shrink:0;">
                         <button onclick="document.getElementById('genericPushModal').remove()" class="btn btn-outline" style="flex:1;">CANCEL</button>
                         ${actionBtn}
                     </div>
@@ -5332,6 +5368,7 @@
             let existing = document.getElementById('genericPushModal');
             if (existing) existing.remove();
             document.body.insertAdjacentHTML('beforeend', modalHtml);
+            initQsPopup('genericPushModal', 'genericPushModalHeader', ['#genericPushModalBody', '#genericPushModalFooter']);
         }
 
         function openEquipmentHandoffPreview() {
@@ -5342,9 +5379,9 @@
             document.getElementById('genericPushModal').remove();
             let res = executeEquipmentPush(stashId);
             if (typeof showToast === 'function') {
-                showToast(`EQUIPMENT PUSH COMPLETE\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}`);
+                showToast(`SPECS PUSH COMPLETE\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}`);
             } else {
-                alert(`EQUIPMENT PUSH COMPLETE\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}`);
+                alert(`SPECS PUSH COMPLETE\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}`);
             }
         }
 
@@ -5359,7 +5396,7 @@
 
             if (pushEq) {
                 let res = executeEquipmentPush(stashId);
-                msg += `EQUIPMENT:\nImported: ${res.imported}, Matched: ${res.matched}, Skipped: ${res.skipped}, Missing: ${res.missing}\n\n`;
+                msg += `SPECS:\nImported: ${res.imported}, Matched: ${res.matched}, Skipped: ${res.skipped}, Missing: ${res.missing}\n\n`;
             }
             if (pushDiag) {
                 activeQuickStashId = stashId;
@@ -5705,7 +5742,7 @@
                 <div style="background:#222; border:1px solid #444; border-radius:12px; padding:15px; margin-bottom:15px;">
                     <div style="font-size:12px; font-weight:900; color:#888; margin-bottom:10px; letter-spacing:1px;">PUSH TO</div>
                     <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <button onclick="openEquipmentHandoffPreview()" style="background:var(--emerald-green); color:#000; border:none; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:pointer;">EQUIPMENT</button>
+                        <button onclick="openEquipmentHandoffPreview()" style="background:var(--emerald-green); color:#000; border:none; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:pointer;">SPECS</button>
                         <button onclick="openQsPushPreview('diagnostics')" style="background:var(--crimson-red); color:#fff; border:none; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:pointer;">DIAGNOSTICS</button>
                         <button disabled style="background:#333; color:#666; border:1px solid #444; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:not-allowed;">PMI <span style="font-size:9px; font-weight:normal;">(COMING SOON)</span></button>
                         <button disabled style="background:#333; color:#666; border:1px solid #444; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:not-allowed;">READINGS <span style="font-size:9px; font-weight:normal;">(COMING SOON)</span></button>
@@ -9182,6 +9219,7 @@
             };
 
             let html = `<div style="display:flex; flex-direction:column; gap:15px;">`;
+            html += getQuickStashSessionMismatch();
 
             // JOB section
             html += `<div style="background:rgba(0,0,0,0.3); border:1px solid #333; padding:10px; border-radius:8px;">`;
@@ -9339,11 +9377,11 @@
             controls.style.marginLeft = 'auto';
 
             const btnCollapse = document.createElement('button');
-            btnCollapse.innerHTML = '?';
+            btnCollapse.innerHTML = '_';
             btnCollapse.style.cssText = 'background:none; border:none; color:white; cursor:pointer; font-size:14px;';
             
             const btnExpand = document.createElement('button');
-            btnExpand.innerHTML = '??';
+            btnExpand.innerHTML = '↕';
             btnExpand.style.cssText = 'background:none; border:none; color:white; cursor:pointer; font-size:14px;';
             
             // Find existing close button
@@ -9357,13 +9395,13 @@
                 // If there are other buttons (like the Map Satellite/Map toggles), leave them alone
                 // We just want to put collapse/expand next to the close button
                 existingBtn.parentNode.insertBefore(rightContainer, existingBtn);
-                rightContainer.appendChild(btnCollapse);
                 rightContainer.appendChild(btnExpand);
+                rightContainer.appendChild(btnCollapse);
                 rightContainer.appendChild(existingBtn);
             } else {
                 header.appendChild(rightContainer);
-                rightContainer.appendChild(btnCollapse);
                 rightContainer.appendChild(btnExpand);
+                rightContainer.appendChild(btnCollapse);
             }
 
             let isCollapsed = false;
