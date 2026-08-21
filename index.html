@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.00.6</title>
+    <title>HVAC Splash v2.00.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.6</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.8</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1921,7 +1921,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.6</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.8</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2010,6 +2010,15 @@
                 <div id="quickStashStatus" style="display:none; color:var(--amber-orange); font-weight:900; text-align:center; padding:10px; background:rgba(255,171,0,0.1); border-radius:8px;"></div>
                 <div id="quickStashViewArea"></div>
             </div>
+        </div>
+        <!-- QUICK STASH NAVIGATION PANEL -->
+        <div id="qs-bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex flex-col pb-[env(safe-area-inset-bottom,0px)]" style="flex-shrink:0;">
+          <div id="qs-bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+            <div id="qs-bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+          </div>
+          <button id="qs-bottom-nav-launcher" onclick="toggleQsBottomNav()" class="w-full h-12 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
+            <span id="qs-bottom-nav-icon" class="mr-2">☰</span> PAGES
+          </button>
         </div>
     </div>
 
@@ -2323,7 +2332,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.00.6";
+        const APP_VERSION = "v2.00.8";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, startup: { label: "STARTUP", enabled: true }, pmi: { label: "PMI", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
@@ -2345,10 +2354,11 @@
 
         const FALLBACK_PAGES_REGISTRY = [
             { name: "Splash", file: getSplashDestination(), state: "ACTIVE" },
-            { name: "Notes", file: "notes.html", state: "PLANNED" },
+            { name: "Quick Stash", file: getQuickStashDestination(), state: "ACTIVE" },
+            { name: "Notes", file: "notes.html", state: "ACTIVE" },
             { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
-            { name: "Specs", file: "specs.html", state: "PLANNED" },
-            { name: "PMI", file: "pmi.html", state: "PLANNED" },
+            { name: "Specs", file: "specs.html", state: "ACTIVE" },
+            { name: "PMI", file: "pmi.html", state: "ACTIVE" },
             { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
             { name: "Startup", file: "startup.html", state: "ACTIVE" },
             { name: "Compiler", file: "compiler.html", state: "PLANNED" },
@@ -2368,23 +2378,34 @@
             return FALLBACK_PAGES_REGISTRY;
         }
 
-        function renderBottomNav() {
-            const grid = document.getElementById('bottom-nav-grid-inner');
-            if (!grid) return;
-            
+        function getNavHtmlForRegistry() {
             let currentPath = window.location.pathname.split('/').pop().toLowerCase();
+            let isQs = window.location.hash === '#quickstash';
             
             let html = "";
             const registry = getPagesRegistry();
             registry.forEach(p => {
-                let isCurrent = (currentPath === "splash.html" || currentPath === "index.html" || !currentPath) && p.name === "Splash";
+                let isCurrent = false;
+                if (isQs && p.name === "Quick Stash") {
+                    isCurrent = true;
+                } else if (!isQs && (currentPath === "splash.html" || currentPath === "index.html" || !currentPath) && p.name === "Splash") {
+                    isCurrent = true;
+                }
                 
+                let clickAction = "";
+                let hrefTarget = p.file;
+                
+                if (isQs && p.name === "Splash") {
+                    hrefTarget = "javascript:void(0);";
+                    clickAction = ` onclick="closeQuickStash(); return false;"`;
+                }
+
                 if (isCurrent) {
-                    html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-blue-900 border-2 border-blue-400 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                    html += `<a href="${hrefTarget}"${clickAction} class="flex flex-col items-center justify-center h-16 bg-blue-900 border-2 border-blue-400 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
                         ${p.name}<br><span class="text-[10px] font-bold text-blue-200 mt-1 tracking-widest">CURRENT</span>
                     </a>`;
                 } else if (p.state === "ACTIVE") {
-                    html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-100 font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                    html += `<a href="${hrefTarget}"${clickAction} class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-100 font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
                         ${p.name}
                     </a>`;
                 } else {
@@ -2393,15 +2414,38 @@
                     </div>`;
                 }
             });
-            grid.innerHTML = html;
+            return html;
+        }
+
+        function renderBottomNav() {
+            const html = getNavHtmlForRegistry();
+            
+            const mainGrid = document.getElementById('bottom-nav-grid-inner');
+            if (mainGrid) mainGrid.innerHTML = html;
+            
+            const qsGrid = document.getElementById('qs-bottom-nav-grid-inner');
+            if (qsGrid) qsGrid.innerHTML = html;
         }
 
         document.addEventListener('DOMContentLoaded', renderBottomNav);
+        window.addEventListener('hashchange', renderBottomNav);
         renderBottomNav();
 
         function toggleBottomNav() {
             const grid = document.getElementById('bottom-nav-grid');
             const icon = document.getElementById('bottom-nav-icon');
+            if (grid.classList.contains('hidden')) {
+                grid.classList.remove('hidden');
+                icon.textContent = '▲';
+            } else {
+                grid.classList.add('hidden');
+                icon.textContent = '☰';
+            }
+        }
+
+        function toggleQsBottomNav() {
+            const grid = document.getElementById('qs-bottom-nav-grid');
+            const icon = document.getElementById('qs-bottom-nav-icon');
             if (grid.classList.contains('hidden')) {
                 grid.classList.remove('hidden');
                 icon.textContent = '▲';
@@ -4971,12 +5015,20 @@
         function openQuickStash() {
             closeAllModals();
             document.getElementById('quickStashModal').style.display = 'flex';
+            if (window.location.hash !== '#quickstash') {
+                window.history.replaceState(null, '', '#quickstash');
+            }
+            if (typeof renderBottomNav === 'function') renderBottomNav();
             initQsUI();
             renderQuickStashHome();
         }
 
         function closeQuickStash() {
             document.getElementById('quickStashModal').style.display = 'none';
+            if (window.location.hash === '#quickstash') {
+                window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            if (typeof renderBottomNav === 'function') renderBottomNav();
             showSection(previousSection);
         }
 
