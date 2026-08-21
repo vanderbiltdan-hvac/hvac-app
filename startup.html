@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startup Tracker v1.29.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pages-registry.js"></script>
+    <style>
+:root {
+  --pmi-row-height: 30px;
+  --pmi-font-size-label: 10px;
+  --pmi-font-size-content: 10px;
+  --pmi-label-width: 30%;
+  --data-pill-width: 80px;
+  --data-pill-height: 40px;
+  --action-pill-width: 40px;
+  --pill-radius: 8px;
+  --label-width: 30%;
+  --recorded-width: 25%;
+  --telemetry-width: 60%;
+  --font-top-label: 7px;
+  --font-bottom-val: 10px;
+  --font-recorded-val: 12px;
+  --font-field-label: 8.5px;
+}
+
+  @media (min-width: 1024px) {
+      :root {
+          --font-top-label: 10px;
+          --font-bottom-val: 16px;
+          --font-recorded-val: 24px;
+          --font-field-label: 14px;
+      }
+      .col-btn { width: 45px; }
+  }
+
+  .matrix-row { display: flex; width: 100%; align-items: stretch; overflow: hidden; }
+  .col-label { width: var(--label-width); flex-shrink: 1; min-width: 0; font-size: var(--font-field-label); }
+  .col-recorded { width: var(--recorded-width); flex-shrink: 1; min-width: 0; }
+  .col-telemetry { width: var(--telemetry-width); flex-shrink: 1; min-width: 0; display: flex; }
+  .col-btn { width: 35px; flex-shrink: 0; }
+
+.action-pill {
+  width: var(--action-pill-width);
+  height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+.data-pill {
+  min-width: var(--data-pill-width);
+  min-height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+.pmi-row {
+  min-height: var(--pmi-row-height);
+  flex-basis: 100%;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  line-height: 1;
+}
+
+        .pmi-label {
+            width: var(--pmi-label-width);
+            font-size: var(--pmi-font-size-label);
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .content-cell {
+            font-size: var(--pmi-font-size-content);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+  summary::marker { font-size: 10px; color: #94a3b8; }
+    </style>
+</head>
+
+<body class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen text-white" style="overscroll-behavior-y: contain;">
+
+<!-- FROZEN ROOF MASTER WRAPPER -->
+<div class="sticky top-0 z-50 w-full flex flex-col shadow-md bg-slate-900">
+
+<!-- STATUS BAR LAUNCHER -->
+<div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
+    <div style="width:40px;"></div><!-- Spacer for center alignment -->
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v1.29.1</div>
+</div>
+
+<!-- TOP RIBBON DRAWER (ACCORDION) -->
+<div id="top-ribbon-drawer" class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-2 px-4 py-3 hidden origin-top transition-all duration-300 z-40 shadow-md">
+    <button onclick="createNewJob()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="New Job">
+        <span class="text-lg leading-none mb-1">➕</span><span class="text-[8px] font-bold uppercase tracking-wider">New Job</span>
+    </button>
+    <button onclick="toggleMirrorPull()" id="btn-mirror" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mirror Sync">
+        <svg class="w-5 h-5 mb-1 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        <span class="text-[8px] font-bold uppercase tracking-wider">Mirror</span>
+    </button>
+    <button onclick="toggleCompilerSweep()" id="btn-compiler" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-blue-400 flex flex-col items-center justify-center rounded-lg transition-colors border border-blue-500 shadow-sm" title="Compile Page">
+        <svg class="w-5 h-5 mb-1 text-blue-500" id="icon-compiler" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+        <span class="text-[8px] font-bold uppercase tracking-wider text-white">Compiler</span>
+    </button>
+    <button onclick="openDrive()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Drive">
+        <span class="text-lg leading-none mb-1">📁</span><span class="text-[8px] font-bold uppercase tracking-wider">Drive</span>
+    </button>
+    <button onclick="openAlbum()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Album">
+        <span class="text-lg leading-none mb-1">📷</span><span class="text-[8px] font-bold uppercase tracking-wider">Album</span>
+    </button>
+    <button onclick="openManuals()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Manuals">
+        <span class="text-lg leading-none mb-1">📖</span><span class="text-[8px] font-bold uppercase tracking-wider">Manuals</span>
+    </button>
+    <button onclick="toggleEditFieldsModal()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Edit Fields">
+        <span class="text-lg leading-none mb-1">🛠️</span><span class="text-[8px] font-bold uppercase tracking-wider">Fields</span>
+    </button>
+    <button onclick="toggleMic()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mic">
+        <span class="text-lg leading-none mb-1">🎙️</span><span class="text-[8px] font-bold uppercase tracking-wider">Mic</span>
+    </button>
+    <button onclick="openBluetoothHub()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Bluetooth">
+        <span class="text-lg leading-none mb-1">📡</span><span class="text-[8px] font-bold uppercase tracking-wider">Bluetooth</span>
+    </button>
+    <button onclick="toggleCalibration()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Settings">
+        <span class="text-lg leading-none mb-1">⚙️</span><span class="text-[8px] font-bold uppercase tracking-wider">Settings</span>
+    </button>
+    <button onclick="filterView('all')" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="View All">
+        <span class="text-lg leading-none mb-1">👁️</span><span class="text-[8px] font-bold uppercase tracking-wider">View All</span>
+    </button>
+    <button onclick="filterView('populated')" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Populated">
+        <span class="text-lg leading-none mb-1">🎯</span><span class="text-[8px] font-bold uppercase tracking-wider">Populated</span>
+    </button>
+    <button onclick="viewSnapshots()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Snapshot Vault">
+        <span class="text-lg leading-none mb-1">🎞️</span><span class="text-[8px] font-bold uppercase tracking-wider">Vault</span>
+    </button>
+    <button onclick="clearAllPMIData()" class="flex-shrink-0 min-w-[70px] h-14 bg-red-900/80 hover:bg-red-700 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-red-500 shadow-sm" title="Clear Slate">
+        <span class="text-lg leading-none mb-1">🗑️</span><span class="text-[8px] font-bold uppercase tracking-wider">Clear</span>
+    </button>
+</div>
+
+
+
+</div>
+<!-- END FROZEN ROOF -->
+
+<div id="startup-workspace" class="flex-1 w-full px-2 py-2 overflow-y-auto flex flex-col gap-2 bg-slate-900">
+<!-- Accordion 1: Pressure Test -->
+<details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="bg-slate-700 border-b border-slate-600 outline-none select-none list-none [&::-webkit-details-marker]:hidden">
+        <div class="matrix-row">
+            <div class="col-label flex flex-col items-start justify-center px-1 py-1 text-white font-bold uppercase cursor-pointer">
+                <button onclick="event.preventDefault(); event.stopPropagation(); toggleHeaderLevels(this)" class="relative z-10 shrink-0 bg-slate-700 active:bg-blue-600 border border-slate-500 rounded px-3 py-0.5 text-slate-300 active:text-white transition-colors text-[10px] leading-none mb-1">↕</button>
+                <span class="text-[9px] tracking-wider leading-tight text-left whitespace-normal break-words w-full">Pressure Test</span>
+            </div>
+            <div class="col-recorded flex flex-col items-center justify-center border-r border-slate-600 cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-pres-1')">
+                <div class="flex-1 flex flex-col items-center justify-center w-full">
+                    <span id="hdr-pres-1-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 1</span>
+                    <span id="hdr-pres-1-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-pres-1-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-pres-1-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-telemetry justify-around">
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-pres-2')">
+                    <span id="hdr-pres-2-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 2</span>
+                    <span id="hdr-pres-2-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-pres-2-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-pres-2-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-pres-3')">
+                    <span id="hdr-pres-3-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 3</span>
+                    <span id="hdr-pres-3-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-pres-3-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-pres-3-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-pres-4')">
+                    <span id="hdr-pres-4-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 4</span>
+                    <span id="hdr-pres-4-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-pres-4-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-pres-4-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-btn ml-1">
+                <button onclick="takeSnapshot('startup-cat-pressure', event)" class="bg-slate-800 hover:bg-slate-600 text-slate-300 w-full h-full rounded transition-colors border border-slate-500 shadow-sm flex items-center justify-center text-xs">📸</button>
+            </div>
+        </div>
+    </summary>
+    <div class="p-2 flex flex-col gap-1" id="startup-cat-pressure"></div>
+    <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden mt-2">
+        <summary class="bg-slate-700 border-b border-slate-600 outline-none select-none list-none [&::-webkit-details-marker]:hidden">
+            <div class="matrix-row">
+                <div class="col-label flex flex-col items-start justify-center px-1 py-1 text-white font-bold uppercase cursor-pointer">
+                    <button onclick="event.preventDefault(); event.stopPropagation(); toggleHeaderLevels(this)" class="relative z-10 shrink-0 bg-slate-700 active:bg-blue-600 border border-slate-500 rounded px-3 py-0.5 text-slate-300 active:text-white transition-colors text-[10px] leading-none mb-1">↕</button>
+                    <span class="text-[9px] tracking-wider leading-tight text-left whitespace-normal break-words w-full">Pressure Log</span>
+                </div>
+                <div class="col-recorded flex flex-col items-center justify-center border-r border-slate-600 cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-stab-1')">
+                    <div class="flex-1 flex flex-col items-center justify-center w-full">
+                        <span id="hdr-stab-1-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Pres Drop</span>
+                        <span id="hdr-stab-1-val" class="text-white font-mono text-[10px]">--</span>
+                        <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                            <span id="hdr-stab-1-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Start Pres</span>
+                            <span id="hdr-stab-1-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-telemetry justify-around">
+                    <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-stab-2')">
+                        <span id="hdr-stab-2-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Live Pres</span>
+                        <span id="hdr-stab-2-val" class="text-white font-mono text-[10px]">--</span>
+                        <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                            <span id="hdr-stab-2-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Overall Avg</span>
+                            <span id="hdr-stab-2-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-stab-3')">
+                        <span id="hdr-stab-3-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Clamp Temp</span>
+                        <span id="hdr-stab-3-val" class="text-white font-mono text-[10px]">--</span>
+                        <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                            <span id="hdr-stab-3-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Start Temp</span>
+                            <span id="hdr-stab-3-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-stab-4')">
+                        <span id="hdr-stab-4-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Temp Drop</span>
+                        <span id="hdr-stab-4-val" class="text-white font-mono text-[10px]">--</span>
+                        <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                            <span id="hdr-stab-4-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Overall Avg</span>
+                            <span id="hdr-stab-4-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-btn ml-1">
+                    <button onclick="event.preventDefault(); alert('Snapshot captured!')" class="bg-slate-800 hover:bg-slate-600 text-slate-300 w-full h-full rounded transition-colors border border-slate-500 shadow-sm flex items-center justify-center text-xs">📸</button>
+                </div>
+            </div>
+        </summary>
+        <div class="p-2 flex flex-col gap-1" id="startup-cat-pressure_log"></div>
+    </details>
+</details>
+
+<!-- Accordion 2: Vacuum -->
+<details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="bg-slate-700 border-b border-slate-600 outline-none select-none list-none [&::-webkit-details-marker]:hidden">
+        <div class="matrix-row">
+            <div class="col-label flex flex-col items-start justify-center px-1 py-1 text-white font-bold uppercase cursor-pointer">
+                <button onclick="event.preventDefault(); event.stopPropagation(); toggleHeaderLevels(this)" class="relative z-10 shrink-0 bg-slate-700 active:bg-blue-600 border border-slate-500 rounded px-3 py-0.5 text-slate-300 active:text-white transition-colors text-[10px] leading-none mb-1">↕</button>
+                <span class="text-[9px] tracking-wider leading-tight text-left whitespace-normal break-words w-full">Vacuum</span>
+            </div>
+            <div class="col-recorded flex flex-col items-center justify-center border-r border-slate-600 cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-vac-1')">
+                <div class="flex-1 flex flex-col items-center justify-center w-full">
+                    <span id="hdr-vac-1-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 1</span>
+                    <span id="hdr-vac-1-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-vac-1-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-vac-1-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-telemetry justify-around">
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-vac-2')">
+                    <span id="hdr-vac-2-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 2</span>
+                    <span id="hdr-vac-2-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-vac-2-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-vac-2-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-vac-3')">
+                    <span id="hdr-vac-3-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 3</span>
+                    <span id="hdr-vac-3-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-vac-3-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-vac-3-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-vac-4')">
+                    <span id="hdr-vac-4-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 4</span>
+                    <span id="hdr-vac-4-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-vac-4-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-vac-4-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-btn ml-1">
+                <button onclick="takeSnapshot('startup-cat-vacuum', event)" class="bg-slate-800 hover:bg-slate-600 text-slate-300 w-full h-full rounded transition-colors border border-slate-500 shadow-sm flex items-center justify-center text-xs">📸</button>
+            </div>
+        </div>
+    </summary>
+    <div class="p-2 flex flex-col gap-1" id="startup-cat-vacuum"></div>
+</details>
+
+<!-- Accordion 3: Refrigerant -->
+<details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="bg-slate-700 border-b border-slate-600 outline-none select-none list-none [&::-webkit-details-marker]:hidden">
+        <div class="matrix-row">
+            <div class="col-label flex flex-col items-start justify-center px-1 py-1 text-white font-bold uppercase cursor-pointer">
+                <button onclick="event.preventDefault(); event.stopPropagation(); toggleHeaderLevels(this)" class="relative z-10 shrink-0 bg-slate-700 active:bg-blue-600 border border-slate-500 rounded px-3 py-0.5 text-slate-300 active:text-white transition-colors text-[10px] leading-none mb-1">↕</button>
+                <span class="text-[9px] tracking-wider leading-tight text-left whitespace-normal break-words w-full">Refrigerant</span>
+            </div>
+            <div class="col-recorded flex flex-col items-center justify-center border-r border-slate-600 cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-ref-1')">
+                <div class="flex-1 flex flex-col items-center justify-center w-full">
+                    <span id="hdr-ref-1-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 1</span>
+                    <span id="hdr-ref-1-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-ref-1-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-ref-1-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-telemetry justify-around">
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-ref-2')">
+                    <span id="hdr-ref-2-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Vapor Saturation</span>
+                    <span id="hdr-ref-2-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-ref-2-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-ref-2-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-ref-3')">
+                    <span id="hdr-ref-3-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Liquid Saturation</span>
+                    <span id="hdr-ref-3-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-ref-3-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-ref-3-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-ref-4')">
+                    <span id="hdr-ref-4-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 4</span>
+                    <span id="hdr-ref-4-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-ref-4-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-ref-4-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-btn ml-1">
+                <button onclick="takeSnapshot('startup-cat-refrigerant', event)" class="bg-slate-800 hover:bg-slate-600 text-slate-300 w-full h-full rounded transition-colors border border-slate-500 shadow-sm flex items-center justify-center text-xs">📸</button>
+            </div>
+        </div>
+    </summary>
+    <div class="p-2 flex flex-col gap-1" id="startup-cat-refrigerant"></div>
+</details>
+
+<!-- Accordion 4: Air Side -->
+<details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="bg-slate-700 border-b border-slate-600 outline-none select-none list-none [&::-webkit-details-marker]:hidden">
+        <div class="matrix-row">
+            <div class="col-label flex flex-col items-start justify-center px-1 py-1 text-white font-bold uppercase cursor-pointer">
+                <button onclick="event.preventDefault(); event.stopPropagation(); toggleHeaderLevels(this)" class="relative z-10 shrink-0 bg-slate-700 active:bg-blue-600 border border-slate-500 rounded px-3 py-0.5 text-slate-300 active:text-white transition-colors text-[10px] leading-none mb-1">↕</button>
+                <span class="text-[9px] tracking-wider leading-tight text-left whitespace-normal break-words w-full">Air Side</span>
+            </div>
+            <div class="col-recorded flex flex-col items-center justify-center border-r border-slate-600 cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-air-1')">
+                <div class="flex-1 flex flex-col items-center justify-center w-full">
+                    <span id="hdr-air-1-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 1</span>
+                    <span id="hdr-air-1-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-air-1-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-air-1-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-telemetry justify-around">
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-air-2')">
+                    <span id="hdr-air-2-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 2</span>
+                    <span id="hdr-air-2-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-air-2-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-air-2-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-600 h-full py-1" onclick="openCategoryModal(event, 'hdr-air-3')">
+                    <span id="hdr-air-3-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 3</span>
+                    <span id="hdr-air-3-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-air-3-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-air-3-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors h-full py-1" onclick="openCategoryModal(event, 'hdr-air-4')">
+                    <span id="hdr-air-4-lbl" class="text-[7px] text-slate-400 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Slot 4</span>
+                    <span id="hdr-air-4-val" class="text-white font-mono text-[10px]">--</span>
+                    <div class="header-level-2 hidden flex-col items-center w-full mt-1 pt-1 border-t border-slate-600/50">
+                        <span id="hdr-air-4-lbl-2" class="text-[7px] text-slate-500 font-bold uppercase text-center whitespace-normal" style="line-height: 1.1;">Level 2</span>
+                        <span id="hdr-air-4-val-2" class="text-slate-400 font-mono text-[10px]">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-btn ml-1">
+                <button onclick="takeSnapshot('startup-cat-airside', event)" class="bg-slate-800 hover:bg-slate-600 text-slate-300 w-full h-full rounded transition-colors border border-slate-500 shadow-sm flex items-center justify-center text-xs">📸</button>
+            </div>
+        </div>
+    </summary>
+    <div class="p-2 flex flex-col gap-1" id="startup-cat-airside"></div>
+</details>
+</div>
+
+<!-- SPLIT-VIEW MODAL (MOD-DASHBOARD) -->
+<div id="category-ribbon-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+    <div class="bg-slate-800 w-full max-w-lg rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+        <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center shrink-0">
+            <h3 class="text-white font-bold tracking-widest text-xs uppercase">Select Data Point</h3>
+            <button onclick="closeCategoryModal(event)" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Left Column: Local Variables -->
+            <div class="flex-1 border-r border-slate-600 flex flex-col">
+                <div class="bg-slate-900 p-2 text-center text-[9px] text-blue-400 font-bold uppercase tracking-widest border-b border-slate-700 shrink-0">Local Variables</div>
+                <div class="flex-1 min-h-0 p-2 overflow-y-auto flex flex-col gap-1" id="modal-local-list">
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('Suction Pressure')">Suction Pressure</button>
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('Liquid Pressure')">Liquid Pressure</button>
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('Vapor Saturation')">Vapor Saturation</button>
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('Liquid Saturation')">Liquid Saturation</button>
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('Superheat')">Superheat</button>
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('Subcooling')">Subcooling</button>
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('Outdoor Air Temp')">Outdoor Air Temp</button>
+                </div>
+            </div>
+            <!-- Right Column: Universal App Pages -->
+            <div class="flex-1 flex flex-col bg-slate-800/50">
+                <div class="bg-slate-900 p-2 text-center text-[9px] text-slate-400 font-bold uppercase tracking-widest border-b border-slate-700 shrink-0">App Pages</div>
+                <div class="flex-1 min-h-0 p-2 overflow-y-auto flex flex-col gap-1">
+                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-700 transition-colors" onclick="loadUniversalPage('Mirror')">Mirror Page</button>
+                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-700 transition-colors" onclick="loadUniversalPage('Specs')">Specs Page</button>
+                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-700 transition-colors" onclick="loadUniversalPage('PMI')">PMI Checklist</button>
+                    <button class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold py-3 px-2 rounded text-left border border-slate-700 transition-colors" onclick="loadUniversalPage('Diagnostic')">Diagnostic Page</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SNAPSHOT VAULT MODAL (HIDDEN) -->
+<div id="snapshot-vault-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-start p-4">
+<div class="bg-slate-800 w-full max-w-lg rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col h-[85vh] mt-10">
+<div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center shrink-0">
+<h3 class="text-white font-bold tracking-widest text-xs uppercase">🎞️ Snapshot Vault</h3>
+<button onclick="closeVaultModal(event)" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+</div>
+<div class="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3" id="snapshot-vault-list"></div>
+<div class="p-3 bg-slate-800 border-t border-slate-600 flex justify-between items-center shrink-0">
+<span id="vault-selection-counter" class="text-xs text-slate-400 font-bold">1 Selected</span>
+<button onclick="closeVaultModal(event)" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 px-6 rounded transition-colors uppercase tracking-widest shadow-sm">Done</button>
+</div>
+</div>
+</div>
+
+<!-- EDIT FIELDS MODAL (HIDDEN) -->
+<div id="edit-fields-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+  <div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+    <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+      <h3 class="text-white font-bold tracking-widest text-xs uppercase">Edit Fields Hub</h3>
+      <button onclick="toggleEditFieldsModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+    </div>
+    <!-- 4-Mode Toggle -->
+    <div class="flex bg-slate-900 p-2 border-b border-slate-700">
+        <button class="flex-1 bg-blue-600 text-white font-bold py-2 text-[10px] uppercase tracking-widest rounded-l-md transition-colors border-r border-slate-600">Add</button>
+        <button class="flex-1 bg-slate-700 text-slate-400 hover:text-white font-bold py-2 text-[10px] uppercase tracking-widest transition-colors border-r border-slate-600">Remove</button>
+        <button class="flex-1 bg-slate-700 text-slate-400 hover:text-white font-bold py-2 text-[10px] uppercase tracking-widest transition-colors border-r border-slate-600">Change</button>
+        <button class="flex-1 bg-slate-700 text-slate-400 hover:text-white font-bold py-2 text-[10px] uppercase tracking-widest rounded-r-md transition-colors">Restore</button>
+    </div>
+    <!-- Canvas Placeholder -->
+    <div id="edit-fields-canvas" class="p-4 flex-1 overflow-y-auto flex items-center justify-center text-slate-500 text-sm font-mono text-center">
+      [ Tier 1 & Tier 2 Field Inventories Will Load Here ]
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal (FORMERLY CALIBRATION DOCK) -->
+<div id="pmi-calibration-dock"
+  class="fixed bottom-20 left-4 right-4 z-50 bg-slate-800/95 backdrop-blur-md border border-slate-600 hidden flex flex-col p-4 transition-all shadow-2xl rounded-xl">
+  
+  <div class="flex justify-between items-center border-b border-slate-600 pb-2 mb-2">
+    <h3 class="text-white text-[10px] font-bold uppercase tracking-widest">Global Settings</h3>
+    <button onclick="toggleCalibrationDock()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+  </div>
+  
+  <div class="text-slate-500 text-xs italic text-center py-4">
+    App settings and integrations coming soon.
+  </div>
+</div>
+
+<div id="calibration-drawer" class="fixed bottom-16 left-2 right-2 bg-slate-800/95 backdrop-blur-md border border-slate-600 shadow-2xl rounded-xl p-4 z-50 hidden flex-col gap-3">
+    <div class="flex justify-between items-center border-b border-slate-600 pb-2">
+        <h3 class="text-white font-bold uppercase tracking-widest text-xs">Layout Studio</h3>
+        <button onclick="toggleCalibration()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase"><span>Label Width</span><span id="val-lw">30%</span></div>
+            <input type="range" min="15" max="50" value="30" oninput="document.documentElement.style.setProperty('--label-width', this.value + '%'); document.getElementById('val-lw').innerText = this.value + '%';">
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase"><span>Recorded Width</span><span id="val-rw">25%</span></div>
+            <input type="range" min="15" max="40" value="25" oninput="document.documentElement.style.setProperty('--recorded-width', this.value + '%'); document.getElementById('val-rw').innerText = this.value + '%';">
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase"><span>Telemetry Width</span><span id="val-tw">45%</span></div>
+            <input type="range" min="20" max="80" value="45" oninput="document.documentElement.style.setProperty('--telemetry-width', this.value + '%'); document.getElementById('val-tw').innerText = this.value + '%';">
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase"><span>Top Labels Font</span><span id="val-ft">7px</span></div>
+            <input type="range" min="5" max="12" value="7" oninput="document.documentElement.style.setProperty('--font-top-label', this.value + 'px'); document.getElementById('val-ft').innerText = this.value + 'px';">
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase"><span>Telemetry Font</span><span id="val-fb">10px</span></div>
+            <input type="range" min="7" max="16" value="10" oninput="document.documentElement.style.setProperty('--font-bottom-val', this.value + 'px'); document.getElementById('val-fb').innerText = this.value + 'px';">
+        </div>
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase"><span>Recorded Font</span><span id="val-fr">14px</span></div>
+            <input type="range" min="10" max="24" value="14" oninput="document.documentElement.style.setProperty('--font-recorded-val', this.value + 'px'); document.getElementById('val-fr').innerText = this.value + 'px';">
+        </div>
+    </div>
+</div>
+
+<!-- BOTTOM APP NAVIGATION PANEL -->
+<div id="bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
+    <!-- Expanded Grid (Hidden by default) -->
+    <div id="bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+        <!-- Dynamic Grid -->
+        <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+    </div>
+    <!-- Launcher / Collapse Control -->
+    <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-12 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
+        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+    </button>
+</div>
+
+<script>
+const STARTUP_VERSION = "v1.29.1";
+
+// PAGE REGISTRY & NAVIGATION
+function getSplashDestination() {
+    return location.protocol === "file:" ? "Splash.html" : "index.html";
+}
+
+const FALLBACK_PAGES_REGISTRY = [
+    { name: "Splash", file: getSplashDestination(), state: "ACTIVE" },
+    { name: "Notes", file: "notes.html", state: "PLANNED" },
+    { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
+    { name: "Specs", file: "specs.html", state: "PLANNED" },
+    { name: "PMI", file: "pmi.html", state: "PLANNED" },
+    { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
+    { name: "Startup", file: "startup.html", state: "ACTIVE" },
+    { name: "Compiler", file: "compiler.html", state: "PLANNED" },
+    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Reports", file: "reports.html", state: "PLANNED" },
+    { name: "Data Block", file: "datablock.html", state: "PLANNED" }
+];
+
+function getPagesRegistry() {
+    if (Array.isArray(window.PLATTS_PAGES_REGISTRY) && window.PLATTS_PAGES_REGISTRY.length > 0) {
+        return window.PLATTS_PAGES_REGISTRY;
+    }
+    return FALLBACK_PAGES_REGISTRY;
+}
+
+function renderBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid-inner');
+    if (!grid) return;
+    
+    let currentPath = window.location.pathname.split('/').pop().toLowerCase();
+    
+    let html = "";
+    const registry = getPagesRegistry();
+    registry.forEach(p => {
+        let isCurrent = (currentPath === "startup.html" || currentPath === "") && p.name === "Startup";
+        
+        if (isCurrent) {
+            html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-blue-900 border-2 border-blue-400 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                ${p.name}<br><span class="text-[10px] font-bold text-blue-200 mt-1 tracking-widest">CURRENT</span>
+            </a>`;
+        } else if (p.state === "ACTIVE") {
+            html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-300 hover:text-white font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                ${p.name}
+            </a>`;
+        } else {
+            html += `<div class="flex flex-col items-center justify-center h-16 bg-slate-900/50 border border-slate-800 rounded text-slate-600 font-bold text-[13px] text-center leading-tight cursor-not-allowed">
+                ${p.name}<br><span class="text-[8px] font-bold text-slate-700 mt-1 tracking-widest">PLANNED</span>
+            </div>`;
+        }
+    });
+    
+    grid.innerHTML = html;
+}
+
+function toggleBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid');
+    const icon = document.getElementById('bottom-nav-icon');
+    if (!grid) return;
+    
+    if (grid.classList.contains('hidden')) {
+        grid.classList.remove('hidden');
+        icon.innerText = '✖';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    } else {
+        grid.classList.add('hidden');
+        icon.innerText = '☰';
+    }
+}
+
+// UNIVERSAL DRAWER FUNCTIONS
+function createNewJob() {
+    const name = prompt("Enter new Job Name/ID:");
+    if(name && name.trim() !== '') document.getElementById('active-job-ticket').innerText = name.trim();
+}
+function toggleEditFieldsModal() {
+    const modal = document.getElementById('edit-fields-modal');
+    modal.classList.toggle('hidden');
+    modal.classList.toggle('flex');
+}
+function mirrorSync() { alert("Bulk Mirror Pull Triggered! Values populated across active page."); }
+
+function openDrive() { console.log("Google Drive bridge triggered"); }
+function openAlbum() { console.log("Photo Album bridge triggered"); }
+function openManuals() { console.log("Manuals Database bridge triggered"); }
+function toggleMic() { console.log("Microphone triggered"); }
+
+function openBluetoothHub() { 
+    alert("Bluetooth Device Manager Hub opening... (Integration pending for external probes)"); 
+}
+
+function toggleHeaderLevels(btn) {
+    const row = btn.closest('.matrix-row');
+    if (!row) return;
+    const level2Blocks = row.querySelectorAll('.header-level-2');
+    level2Blocks.forEach(block => {
+        block.classList.toggle('hidden');
+        block.classList.toggle('flex');
+    });
+}
+function clearAllPMIData() { alert("Clear Slate Triggered!"); }
+function toggleCalibrationDock() { console.log("Settings triggered"); }
+function toggleTopRibbon() {
+    document.getElementById('top-ribbon-drawer').classList.toggle('hidden');
+}
+
+let pressTimer;
+let isDragging = false;
+
+function startPress(id) {
+    isDragging = false;
+    pressTimer = setTimeout(() => { triggerMechanicalLock(id); isDragging = true; }, 1000);
+}
+
+function endPress(id) {
+    clearTimeout(pressTimer);
+    if (!isDragging) handleSmartTap(id);
+}
+
+function cancelPress() {
+    clearTimeout(pressTimer);
+    isDragging = true;
+}
+
+function triggerMechanicalLock(id) {
+    const label = document.getElementById('label-' + id);
+    const lock = document.getElementById('lock-' + id);
+    if (!label) return;
+    
+    label.style.backgroundColor = '#ffffff';
+    setTimeout(() => {
+        label.style.backgroundColor = '';
+        label.classList.toggle('bg-blue-800');
+        label.classList.toggle('shadow-inner');
+        label.classList.toggle('text-slate-200');
+        lock.classList.toggle('hidden');
+    }, 150);
+    
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function handleSmartTap(id) {
+    const label = document.getElementById('label-' + id);
+    if (!label) return;
+    
+    if (label.classList.contains('bg-blue-600')) {
+        label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        label.classList.add('text-slate-300');
+    } else {
+        label.classList.remove('text-slate-300');
+        label.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+    }
+}
+
+function saveStartupData(id, val) {
+    startupMemory[id] = val;
+    localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
+    runAutoMath();
+    updateTelemetryHeaders();
+}
+
+function filterView(mode) {
+    localStorage.setItem('startup_view_pref', mode);
+    startupFieldMap.forEach(f => {
+        const id = f.id;
+        const labelEl = document.getElementById('label-' + id);
+        if (!labelEl) return;
+        const row = document.getElementById('row-' + id) || labelEl.parentElement;
+        
+        // Strict Bypass Rule: Do not show if it's in the Recycle Bin
+        const hiddenIds = recycleBin.map(field => field.id);
+        if (hiddenIds.includes(id)) {
+            row.style.display = 'none';
+            return; 
+        }
+
+        if (mode === 'populated') {
+            const val = startupMemory[id] || '';
+            row.style.display = (val.toString().trim() !== '') ? 'flex' : 'none';
+        } else {
+            row.style.display = 'flex';
+        }
+    });
+}
+
+function pushToCompiler() {
+    startupFieldMap.forEach(f => {
+        const id = f.id;
+        const val = startupMemory[id] || '';
+        const label = document.getElementById('label-' + id);
+        if (val.toString().trim() !== '' && label && !label.classList.contains('bg-blue-600')) {
+            label.classList.remove('text-slate-300', 'text-orange-400');
+            label.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+        }
+    });
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function runAutoMath() {
+    const getVal = (match) => {
+        const f = startupFieldMap.find(x => x.label.toLowerCase().includes(match.toLowerCase()));
+        if (!f) return NaN;
+        const id = f.id;
+        return parseFloat(startupMemory[id]);
+    };
+    const setVal = (match, val) => {
+        if (isNaN(val)) return;
+        const f = startupFieldMap.find(x => x.label.toLowerCase() === match.toLowerCase());
+        if (!f) return;
+        const id = f.id;
+        const input = document.getElementById('recorded-' + id);
+        if (input && input.value !== val.toFixed(1)) {
+            input.value = val.toFixed(1);
+            startupMemory[id] = input.value;
+            localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
+        }
+    };
+
+    setVal('∆t', Math.abs(getVal('return temp') - getVal('supply temp')));
+    setVal('sh', getVal('suction line temp') - getVal('vapor saturation'));
+    setVal('sc', getVal('liquid saturation') - getVal('liquid line temp'));
+    setVal('evap td', getVal('return temp') - getVal('vapor saturation'));
+}
+
+// Ensure filters are applied instantly on boot
+setTimeout(() => {
+    runAutoMath();
+    updateTelemetryHeaders();
+    const pref = localStorage.getItem('startup_view_pref') || 'all';
+    filterView(pref);
+}, 200);
+
+const startupFieldMap = [
+  { id: 'W108', label: 'ODAT', category: 'refrigerant', mapped: true },
+  { id: 'W109', label: 'Suction Pressure', category: 'refrigerant', mapped: true },
+  { id: 'W110', label: 'Liquid Pressure', category: 'refrigerant', mapped: true },
+  { id: 'W111', label: 'Suction Line Temp', category: 'refrigerant', mapped: true },
+  { id: 'W112', label: 'Vapor Saturation', category: 'refrigerant', mapped: true },
+  { id: 'W113', label: 'Indoor Suction Line Temp', category: 'refrigerant', mapped: true },
+  { id: 'W114', label: 'Indoor SH', category: 'refrigerant', mapped: true },
+  { id: 'W115', label: 'SH', category: 'refrigerant', mapped: true },
+  { id: 'W116', label: 'Target SH', category: 'refrigerant', mapped: true },
+  { id: 'W117', label: 'Liquid Line Temp', category: 'refrigerant', mapped: true },
+  { id: 'W118', label: 'Liquid Saturation', category: 'refrigerant', mapped: true },
+  { id: 'W119', label: 'Indoor Liquid Line Temp', category: 'refrigerant', mapped: true },
+  { id: 'W120', label: 'Indoor SC', category: 'refrigerant', mapped: true },
+  { id: 'W121', label: 'SC', category: 'refrigerant', mapped: true },
+  { id: 'W123', label: 'Return Temp', category: 'airside', mapped: true },
+  { id: 'W124', label: 'Return Wet Bulb', category: 'airside', mapped: true },
+  { id: 'W125', label: 'Return Humidity', category: 'airside', mapped: true },
+  { id: 'W126', label: 'Return Dew Point', category: 'airside', mapped: true },
+  { id: 'W127', label: 'Supply Temp', category: 'airside', mapped: true },
+  { id: 'W128', label: '∆T', category: 'airside', mapped: true },
+  { id: 'W130', label: 'Supply Wet Bulb', category: 'airside', mapped: true },
+  { id: 'W131', label: 'Supply Relative Humidity', category: 'airside', mapped: true },
+  { id: 'W132', label: 'Return Dew Point', category: 'airside', mapped: true },
+  { id: 'W133', label: 'Supply Dew Point', category: 'airside', mapped: true },
+  { id: 'W134', label: 'Return Enthalpy', category: 'airside', mapped: true },
+  { id: 'W135', label: 'Supply Enthalpy', category: 'airside', mapped: true },
+  { id: 'W160', label: 'Compression Ratio', category: 'refrigerant', mapped: true },
+  { id: 'W161', label: 'Approach', category: 'refrigerant', mapped: true },
+  { id: 'W162', label: 'CTOA', category: 'refrigerant', mapped: true },
+  { id: 'W163', label: 'Evap TD', category: 'refrigerant', mapped: true },
+  { id: 'W167', label: 'Pressures', category: 'refrigerant', mapped: true },
+  { id: 'W168', label: 'Saturation Temps', category: 'refrigerant', mapped: true },
+  { id: 'W169', label: 'SH / SC', category: 'refrigerant', mapped: true },
+  { id: 'W170', label: 'Nitrogen Start', category: 'pressure', mapped: true },
+  { id: 'W171', label: 'Nitrogen Finish', category: 'pressure', mapped: true },
+  { id: 'W172', label: '∆ Nitrogen', category: 'pressure', mapped: true },
+  { id: 'W173', label: 'Nitrogen Duration', category: 'pressure', mapped: true },
+  { id: 'W174', label: '∆ N per minute', category: 'pressure', mapped: true },
+  { id: 'W176', label: 'Micron Low', category: 'vacuum', mapped: true },
+  { id: 'W177', label: 'Micron Decay', category: 'vacuum', mapped: true },
+  { id: 'vac_beta_rate', label: 'Micron Decay Rate', category: 'vacuum', mapped: false },
+  { id: 'vac_beta_proj', label: '10 Min Projection', category: 'vacuum', mapped: false }
+];
+
+// Generator loop to inject 21 1-minute pressure log buckets dynamically
+for (let i = 0; i < 21; i++) {
+  const startMin = String(i).padStart(2, '0');
+  const endMin = String(i + 1).padStart(2, '0');
+  startupFieldMap.push({
+    id: `pres_log_${i + 1}`,
+    label: `[ ${startMin}:00 - ${endMin}:00 ]`,
+    category: 'pressure_log',
+    mapped: false
+  });
+}
+
+const recycleBin = [];
+
+let startupMemory = JSON.parse(localStorage.getItem('hvac_startup_v1')) || {};
+
+let activeFieldsTab = "add";
+
+function switchEditFieldsTab(tab, btn) {
+    activeFieldsTab = tab;
+    
+    // Update button styles
+    const buttons = btn.parentElement.querySelectorAll('button');
+    buttons.forEach((b, idx) => {
+        b.className = "flex-1 text-[10px] font-bold py-2 uppercase tracking-widest transition-colors " +
+            (b === btn ? "bg-blue-600 text-white" : "bg-slate-700 text-slate-400 hover:text-white");
+        
+        // Add borders/rounded corners matching exact CSS structure
+        if (idx === 0) b.className += " rounded-l-md border-r border-slate-600";
+        else if (idx === 3) b.className += " rounded-r-md";
+        else b.className += " border-r border-slate-600";
+    });
+    
+    renderEditFieldsCanvas();
+}
+
+function renderEditFieldsCanvas() {
+    const canvas = document.getElementById('edit-fields-canvas');
+    if (!canvas) return;
+    
+    // Reset layout styles
+    canvas.className = "p-4 flex-1 overflow-y-auto flex flex-col gap-2";
+    
+    if (activeFieldsTab === "add") {
+        canvas.className += " items-center justify-center text-slate-500 text-sm font-mono text-center";
+        canvas.innerHTML = '[ Tier 1 & Tier 2 Field Inventories Will Load Here ]';
+    } else if (activeFieldsTab === "change") {
+        canvas.className += " items-center justify-center text-slate-500 text-sm font-mono text-center";
+        canvas.innerHTML = '[ Change Field Options coming soon. ]';
+    } else if (activeFieldsTab === "remove") {
+        let html = '<div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Active Fields</div>';
+        
+        const hiddenIds = recycleBin.map(field => field.id);
+        const activeFields = startupFieldMap.filter(field => {
+            return !hiddenIds.includes(field.id);
+        });
+        
+        if (activeFields.length === 0) {
+            html += '<div class="text-slate-500 font-mono text-xs italic py-4 text-center">No active fields.</div>';
+        } else {
+            activeFields.forEach(field => {
+                const label = field.label;
+                const id = field.id;
+                html += `
+                  <div class="flex justify-between items-center bg-slate-900/60 p-2 rounded border border-slate-700">
+                    <span class="text-xs text-slate-300 font-mono">${label} (${id})</span>
+                    <button onclick="hideStartupRow('${id}')" class="bg-red-900/80 hover:bg-red-700 text-red-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-colors border border-red-500">Remove</button>
+                  </div>
+                `;
+            });
+        }
+        canvas.innerHTML = html;
+    } else if (activeFieldsTab === "restore") {
+        let html = '<div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Recycle Bin</div>';
+        if (recycleBin.length === 0) {
+            html += '<div class="text-slate-500 font-mono text-xs italic py-4 text-center">Recycle bin is empty.</div>';
+        } else {
+            recycleBin.forEach(field => {
+                const label = field.label;
+                const id = field.id;
+                html += `
+                  <div class="flex justify-between items-center bg-slate-900/60 p-2 rounded border border-slate-700">
+                    <span class="text-xs text-slate-300 font-mono">${label} (${id})</span>
+                    <button onclick="restoreStartupRow('${id}')" class="bg-blue-900/80 hover:bg-blue-700 text-blue-200 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-colors border border-blue-500">Restore</button>
+                  </div>
+                `;
+            });
+        }
+        canvas.innerHTML = html;
+    }
+}
+
+function getContainerId(item) {
+    return 'startup-cat-' + item.category;
+}
+
+function hideStartupRow(id) {
+    const row = document.getElementById('row-' + id);
+    if (row) {
+        row.style.display = 'none';
+        
+        const field = startupFieldMap.find(item => item.id === id);
+        
+        if (field && !recycleBin.some(item => item.id === id)) {
+            recycleBin.push(field);
+        }
+        renderEditFieldsCanvas();
+    }
+}
+
+function restoreStartupRow(id) {
+    const row = document.getElementById('row-' + id);
+    if (row) {
+        row.style.display = 'flex';
+        
+        const fieldIdx = recycleBin.findIndex(item => item.id === id);
+        if (fieldIdx > -1) {
+            recycleBin.splice(fieldIdx, 1);
+        }
+        renderEditFieldsCanvas();
+    }
+}
+
+function clearStartupRow(id) {
+    const input = document.getElementById('recorded-' + id);
+    if (input) input.value = '';
+    
+    const label = document.getElementById('label-' + id);
+    if (label) {
+        label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        // Restore orange classes if orphan
+        const field = startupFieldMap.find(item => item.id === id);
+        if (field && (field.mapped === false || !field.mapped)) {
+            label.classList.add('text-orange-400');
+        } else {
+            label.classList.add('text-slate-300');
+        }
+    }
+    
+    // Clear from memory
+    delete startupMemory[id];
+    localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
+    runAutoMath();
+}
+
+let currentHeaderSlot = null;
+let isCompilerSwept = false;
+let isMirrorPulled = false;
+
+function openCategoryModal(e, slotId) {
+    e.preventDefault();
+    e.stopPropagation();
+    currentHeaderSlot = slotId;
+    
+    const listContainer = document.getElementById('modal-local-list');
+    let html = '';
+
+    const categories = {
+        'pressure': 'Pressure Test',
+        'pressure_log': 'Stabilization Log',
+        'vacuum': 'Vacuum',
+        'refrigerant': 'Refrigerant',
+        'airside': 'Air Side'
+    };
+
+    // Universal Math Section
+    html += `<details class="mb-2 bg-slate-800 rounded border border-slate-600" open>
+                <summary class="bg-slate-700 p-2 text-[10px] text-white font-bold uppercase cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">▼ Universal Math</summary>
+                <div class="p-2 flex flex-col gap-1">
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-2 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('⏱️ System Stopwatch')">⏱️ System Stopwatch</button>
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-2 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('📉 Rate of Change')">📉 Rate of Change</button>
+                </div>
+             </details>`;
+
+    // Replica Accordions for Actual Database Fields
+    for (const [catKey, catName] of Object.entries(categories)) {
+        // Auto-expand the accordion if it matches the slot we tapped
+        let isOpen = '';
+        if (slotId.includes('pres') && catKey === 'pressure') isOpen = 'open';
+        else if (slotId.includes('stab') && catKey === 'pressure_log') isOpen = 'open';
+        else if (slotId.includes('vac') && catKey === 'vacuum') isOpen = 'open';
+        else if (slotId.includes('ref') && catKey === 'refrigerant') isOpen = 'open';
+        else if (slotId.includes('air') && catKey === 'airside') isOpen = 'open';
+
+        html += `<details class="mb-2 bg-slate-800 rounded border border-slate-600" ${isOpen}>
+                    <summary class="bg-slate-700 p-2 text-[10px] text-white font-bold uppercase cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">▼ ${catName}</summary>
+                    <div class="p-2 flex flex-col gap-1">`;
+
+        startupFieldMap.filter(item => item.category === catKey).forEach(item => {
+            html += `<button class="bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-bold py-2 px-2 rounded text-left border border-slate-600 transition-colors whitespace-normal leading-tight" onclick="selectCategoryItem('${item.label}')">${item.label}</button>`;
+        });
+
+        html += `   </div>
+                 </details>`;
+    }
+
+    listContainer.innerHTML = html;
+
+    const modal = document.getElementById('category-ribbon-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeCategoryModal(e) {
+    if(e) e.stopPropagation();
+    const modal = document.getElementById('category-ribbon-modal');
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+    currentHeaderSlot = null;
+}
+
+function selectCategoryItem(varName) {
+    if(currentHeaderSlot) {
+        const lbl = document.getElementById(currentHeaderSlot + '-lbl');
+        if(lbl) {
+            lbl.innerText = varName;
+        } else {
+            const pureLbl = document.getElementById(currentHeaderSlot);
+            if(pureLbl) pureLbl.innerText = varName;
+        }
+    }
+    closeCategoryModal();
+}
+
+function loadUniversalPage(pageName) {
+    alert("Switching Universal List context to " + pageName + " variables... (Integration pending)");
+}
+
+function markPopulated(id) {
+    const input = document.getElementById('recorded-' + id);
+    if (input) saveStartupData(id, input.value);
+    updateTelemetryHeaders();
+}
+
+function toggleCompilerSweep() {
+    isCompilerSwept = !isCompilerSwept;
+    const btn = document.getElementById('btn-compiler');
+    const icon = document.getElementById('icon-compiler');
+    const labels = document.querySelectorAll('.field-label');
+    
+    if(isCompilerSwept) {
+        btn.classList.add('bg-blue-600');
+        btn.classList.remove('bg-slate-700');
+        icon.classList.replace('text-blue-500', 'text-white');
+        
+        labels.forEach(label => {
+            const id = label.id.replace('label-', '');
+            const input = document.getElementById('recorded-' + id);
+            if(input && input.value.trim() !== '') {
+                label.classList.remove('border-slate-700', 'text-slate-300');
+                label.classList.add('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
+            }
+        });
+    } else {
+        btn.classList.add('bg-slate-700');
+        btn.classList.remove('bg-blue-600');
+        icon.classList.replace('text-white', 'text-blue-500');
+        
+        labels.forEach(label => {
+            label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
+            label.classList.add('border-slate-700', 'text-slate-300');
+        });
+    }
+}
+
+function toggleMirrorPull() {
+    if (typeof showToast === 'function') {
+        showToast("Mirror integration pending");
+    } else {
+        alert("Mirror integration pending");
+    }
+}
+
+function initStartup() {
+    console.log("Startup workspace initialized.");
+    
+    // Clear accordion container bodies first
+    document.getElementById('startup-cat-pressure').innerHTML = '';
+    document.getElementById('startup-cat-pressure_log').innerHTML = '';
+    document.getElementById('startup-cat-vacuum').innerHTML = '';
+    document.getElementById('startup-cat-refrigerant').innerHTML = '';
+    document.getElementById('startup-cat-airside').innerHTML = '';
+
+    // Loop through fields and render
+    startupFieldMap.forEach(item => {
+        const label = item.label;
+        const id = item.id;
+        const val = startupMemory[id] || '';
+        
+        const containerId = getContainerId(item);
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        // ORPHAN CHECK: If item is not mapped in master, apply orange alert
+        let labelClasses = "font-bold uppercase tracking-widest field-label cursor-pointer transition-colors border-l-2 pl-1 ";
+        if (item.mapped === false || !item.mapped) {
+            labelClasses += "border-orange-500 text-orange-400";
+        } else {
+            labelClasses += "border-slate-700 text-slate-300";
+        }
+        
+        const rowHtml = `
+        <div id="row-${id}" class="matrix-row box-border border-b border-slate-700 bg-slate-900 group transition-colors hover:bg-slate-800/50">
+            <div class="col-label flex items-center px-2 border-r border-slate-700">
+                <span class="${labelClasses}" id="label-${id}" onclick="handleSmartTap('${id}')">${item.label}</span>
+            </div>
+            <div class="col-recorded flex items-center justify-center border-r border-slate-700 px-1 relative">
+                <input type="number" inputmode="decimal" id="recorded-${id}" value="${val}" oninput="saveStartupData('${id}', this.value)" class="w-full bg-transparent text-center text-white font-bold focus:outline-none focus:bg-slate-800/80 rounded transition-colors" style="font-size: var(--font-recorded-val);" placeholder="---" onchange="markPopulated('${id}')">
+            </div>
+            <div class="col-telemetry justify-around">
+                <div class="flex flex-col items-center justify-center flex-1 cursor-pointer bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded py-0.5 transition-colors relative" onclick="dumpLiveToRecorded('${id}')" id="live-cell-${id}" title="Tap to Record Live">
+                    <span class="hidden text-[8px] absolute top-1 right-1" id="bt-icon-${id}">📡</span>
+                    <span class="text-white font-mono leading-none" id="live-${id}" style="font-size: var(--font-bottom-val);">--</span>
+                </div>
+                <div class="flex flex-col items-center justify-center flex-1 opacity-70">
+                    <span class="text-slate-400 font-mono leading-none" id="min-${id}" style="font-size: var(--font-bottom-val);">--</span>
+                </div>
+                <div class="flex flex-col items-center justify-center flex-1 opacity-70">
+                    <span class="text-slate-400 font-mono leading-none" id="max-${id}" style="font-size: var(--font-bottom-val);">--</span>
+                </div>
+            </div>
+            <div class="col-btn ml-1">
+                <button onclick="clearStartupRow('${id}')" class="bg-slate-700 hover:bg-slate-600 border-l border-slate-600 text-slate-400 hover:text-white flex items-center justify-center w-full h-full transition-colors text-xs rounded">⟲</button>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', rowHtml);
+    });
+
+    // Bind click handlers to the Edit Fields Hub tabs dynamically
+    const toggleButtons = document.querySelectorAll('#edit-fields-modal .flex.bg-slate-900 button');
+    const tabs = ['add', 'remove', 'change', 'restore'];
+    toggleButtons.forEach((btn, idx) => {
+        btn.onclick = () => switchEditFieldsTab(tabs[idx], btn);
+    });
+
+    renderEditFieldsCanvas();
+
+}
+
+window.addEventListener('DOMContentLoaded', () => { 
+    renderBottomNav();
+    initStartup(); 
+});
+
+let activeBtTarget = null;
+let snapshotVault = JSON.parse(localStorage.getItem('hvac_startup_snaps_v1')) || [];
+
+function setBluetoothTarget(id) {
+    if (activeBtTarget) {
+        const oldIcon = document.getElementById('bt-icon-' + activeBtTarget);
+        const oldCell = document.getElementById('live-cell-' + activeBtTarget);
+        if (oldIcon) oldIcon.classList.add('hidden');
+        if (oldCell) oldCell.classList.remove('border-yellow-500', 'bg-yellow-900/20');
+    }
+    activeBtTarget = id;
+    const newIcon = document.getElementById('bt-icon-' + id);
+    const newCell = document.getElementById('live-cell-' + id);
+    if (newIcon) {
+        newIcon.classList.remove('hidden');
+        newIcon.innerText = '📡 🔋85%';
+    }
+    if (newCell) newCell.classList.add('border-yellow-500', 'bg-yellow-900/20');
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function takeSnapshot(categoryId, e) {
+    e.stopPropagation();
+    const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+    const snapData = { time: timestamp, section: categoryId, data: {} };
+    
+    const container = document.getElementById(categoryId);
+    if(container) {
+        const inputs = container.querySelectorAll('input[id^="recorded-"]');
+        inputs.forEach(input => {
+            const id = input.id.replace('recorded-', '');
+            if (input.value.trim() !== '') snapData.data[id] = input.value;
+        });
+    }
+    
+    snapshotVault.push(snapData);
+    localStorage.setItem('hvac_startup_snaps_v1', JSON.stringify(snapshotVault));
+    
+    const originalText = e.target.innerHTML;
+    e.target.innerHTML = "✅ Saved";
+    e.target.classList.replace('bg-slate-800', 'bg-green-700');
+    setTimeout(() => {
+        e.target.innerHTML = originalText;
+        e.target.classList.replace('bg-green-700', 'bg-slate-800');
+    }, 1500);
+}
+
+function viewSnapshots() {
+    renderSnapshotVault();
+    const modal = document.getElementById('snapshot-vault-modal');
+    if(modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+
+function renderSnapshotVault() {
+    const list = document.getElementById('snapshot-vault-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (typeof snapshotVault === 'undefined' || snapshotVault.length === 0) {
+        list.innerHTML = '<div class="text-slate-500 text-center mt-10 text-xs uppercase tracking-widest font-bold">No snapshots saved yet.</div>';
+        return;
+    }
+
+    snapshotVault.forEach((snap, idx) => {
+        let gridHtml = '';
+        let detailsHtml = '';
+        const keys = Object.keys(snap.data);
+        
+        // Top 4 Metrics for quick glance
+        for(let i=0; i<Math.min(4, keys.length); i++) {
+            gridHtml += `<div class="flex justify-between items-end"><span class="text-[8px] text-slate-500 font-bold uppercase truncate pr-1">${keys[i]}</span><span class="text-[11px] text-white font-mono">${snap.data[keys[i]]}</span></div>`;
+        }
+        
+        // All Metrics for Deep-Dive Accordion
+        keys.forEach(k => {
+            detailsHtml += `<div class="flex justify-between border-b border-slate-800/50 pb-1 mb-1"><span class="uppercase tracking-wider text-[8px] text-slate-500 font-bold">${k}</span><span class="font-mono text-white">${snap.data[k]}</span></div>`;
+        });
+
+        list.innerHTML += `
+        <div class="w-full bg-slate-900 border border-slate-600 rounded-lg overflow-hidden flex flex-col shadow-sm transition-colors">
+            <div class="flex w-full">
+                <div class="flex-1 p-3 flex flex-col justify-center cursor-pointer hover:bg-slate-800 transition-colors" onclick="toggleSnapshotDetails(this)">
+                    <div class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-2 border-b border-slate-700 pb-1">📸 ${snap.section} — ${snap.time}</div>
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-2">${gridHtml}</div>
+                </div>
+                <div class="w-16 bg-slate-800 border-l border-slate-600 flex flex-col items-center justify-center shrink-0 cursor-pointer vault-stamp-btn" onclick="toggleBlueStampVault(this)">
+                    <div class="w-8 h-8 rounded-full border-2 border-slate-500 flex items-center justify-center transition-colors stamp-toggle"></div>
+                    <span class="text-[7px] text-slate-400 font-bold uppercase mt-1">Select</span>
+                </div>
+            </div>
+            <div class="hidden flex-col bg-slate-950 p-3 border-t border-slate-700 text-[10px] text-slate-300 gap-1 snapshot-details">
+                ${detailsHtml}
+            </div>
+        </div>`;
+    });
+    
+    // Update the counter target dynamically
+    const counter = document.getElementById('vault-selection-counter');
+    if(counter) counter.innerText = '0 Selected';
+}
+
+function closeVaultModal(e) {
+if(e) e.preventDefault();
+const modal = document.getElementById('snapshot-vault-modal');
+if(modal) {
+modal.classList.add('hidden');
+modal.classList.remove('flex');
+}
+}
+
+function toggleSnapshotDetails(el) {
+    // Use strict class matching to guarantee we hit the root card
+    const card = el.closest('.bg-slate-900');
+    if (!card) return;
+
+    const details = card.querySelector('.snapshot-details');
+    if (details) {
+        details.classList.toggle('hidden');
+        details.classList.toggle('flex');
+    }
+}
+
+function toggleBlueStampVault(btn) {
+btn.classList.toggle('bg-slate-800');
+btn.classList.toggle('border-slate-600');
+btn.classList.toggle('bg-blue-600');
+btn.classList.toggle('border-blue-500');
+
+const circle = btn.querySelector('.stamp-toggle');
+const text = btn.querySelector('span');
+
+if (btn.classList.contains('bg-blue-600')) {
+circle.classList.remove('border-slate-500');
+circle.classList.add('border-white', 'bg-white', 'text-blue-600');
+circle.innerHTML = '✓';
+text.innerText = 'Queued';
+text.classList.replace('text-slate-400', 'text-white');
+} else {
+circle.classList.remove('border-white', 'bg-white', 'text-blue-600');
+circle.classList.add('border-slate-500');
+circle.innerHTML = '';
+text.innerText = 'Select';
+text.classList.replace('text-white', 'text-slate-400');
+}
+
+// Live selection counter update
+const selectedCount = document.querySelectorAll('#snapshot-vault-list .vault-stamp-btn.bg-blue-600').length;
+const counterSpan = document.getElementById('vault-selection-counter');
+if (counterSpan) {
+    counterSpan.innerText = `${selectedCount} Selected`;
+}
+}
+
+function updateTelemetryHeaders() {
+    const headerSlots = document.querySelectorAll('[id$="-lbl"]');
+    headerSlots.forEach(lblSpan => {
+        const labelText = lblSpan.innerText;
+        // Ignore unmapped slots
+        if (labelText.includes('Slot') || labelText.includes('Stopwatch') || labelText.includes('Live Pres') || labelText.includes('∆ PSI/min')) return;
+        
+        const valSpan = document.getElementById(lblSpan.id.replace('-lbl', '-val'));
+        if (!valSpan) return;
+
+        const mappedItem = startupFieldMap.find(item => item.label === labelText);
+        if (mappedItem) {
+            const inputEl = document.getElementById('recorded-' + mappedItem.id);
+            valSpan.innerText = (inputEl && inputEl.value !== '') ? inputEl.value : '--';
+        }
+    });
+}
+
+function dumpLiveToRecorded(id) {
+    setBluetoothTarget(id);
+    const liveSpan = document.getElementById('live-' + id);
+    const recInput = document.getElementById('recorded-' + id);
+    if (liveSpan && recInput) {
+        const liveText = liveSpan.innerText.trim();
+        if (liveText !== '--' && liveText !== '') {
+            const numVal = parseFloat(liveText);
+            if (!isNaN(numVal)) {
+                recInput.value = liveText;
+                saveStartupData(id, liveText);
+            }
+        }
+    }
+}
+
+function toggleCalibration() {
+    const drawer = document.getElementById('calibration-drawer');
+    if(drawer) {
+        drawer.classList.toggle('hidden');
+        drawer.classList.toggle('flex');
+    }
+}
+</script>
+</body>
+
+</html>
