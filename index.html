@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.00.2</title>
+    <title>HVAC Splash v2.00.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.2</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.3</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1921,7 +1921,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.2</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.3</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2323,7 +2323,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.00.2";
+        const APP_VERSION = "v2.00.3";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, pmi: { label: "PMI", enabled: false }, readings: { label: "READINGS", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
@@ -4510,11 +4510,11 @@
             html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
                         <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">PUSH TO ALL DESTINATIONS</div>
                         <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px; border-top:1px solid #444; padding-top:8px; width:100%; box-sizing:border-box; min-width:0;">
-                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Specs</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"></label>
-                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Diagnostics</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"></label>
-                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">PMI (COMING SOON)</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" disabled></label>
-                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Readings (COMING SOON)</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" disabled></label>
-                            <label style="display:flex; align-items:center; width:100%; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Notes (COMING SOON)</span><input style="flex-shrink:0; margin-left:10px;" type="checkbox" disabled></label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">SPECS</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"></div></label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">DIAGNOSTICS</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"></div></label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">PMI (COMING SOON)</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" disabled></div></label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">READINGS (COMING SOON)</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" disabled></div></label>
+                            <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; color:#666;"><span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">NOTES (COMING SOON)</span><div style="flex:0 0 auto; margin-left:12px;"><input type="checkbox" disabled></div></label>
                         </div>
                     </div>`;
                     
@@ -5113,12 +5113,21 @@
             if (typeof renderDraftBlock === 'function') renderDraftBlock();
         }
 
+        function getStandaloneSpecsStorageKey() {
+            const activeJob = localStorage.getItem('hvacActiveJob');
+            if (activeJob) {
+                return `hvacSpecsData_${activeJob}`;
+            }
+            return 'hvacSpecsData_no_job';
+        }
+
         function executeEquipmentPush(stashId) {
             let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
             let stash = stashes[stashId];
-            let res = { imported: 0, matched: 0, skipped: 0, missing: 0 };
+            let res = { imported: 0, matched: 0, skipped: 0, missing: 0, standaloneImported: 0, standaloneMatched: 0, standaloneSkipped: 0 };
             if (!stash) return res;
 
+            // 1. Splash Internal State Write
             function applyField(sourceVal, destObj, destKey, stagePrefix) {
                 if (!sourceVal) {
                     res.missing++;
@@ -5155,6 +5164,55 @@
             localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
             if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
             saveLocalJobArchiveSnapshot();
+
+            // 2. Standalone Specs Write
+            let specsKey = getStandaloneSpecsStorageKey();
+            let specsData = { values: {}, selectedFields: {} };
+            try {
+                let rawSpecs = localStorage.getItem(specsKey);
+                if (rawSpecs) {
+                    let parsed = JSON.parse(rawSpecs);
+                    if (parsed && typeof parsed === 'object') {
+                        if (parsed.values && parsed.selectedFields) {
+                            specsData = parsed;
+                        } else {
+                            specsData.values = parsed; // migrate old flat object
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            function applyStandaloneField(sourceVal, destKey) {
+                if (!sourceVal) return;
+                let currentVal = specsData.values[destKey];
+                if (!currentVal) {
+                    specsData.values[destKey] = sourceVal;
+                    specsData.selectedFields[destKey] = true;
+                    res.standaloneImported++;
+                } else if (currentVal === sourceVal) {
+                    specsData.selectedFields[destKey] = true;
+                    res.standaloneMatched++;
+                } else {
+                    res.standaloneSkipped++;
+                }
+            }
+
+            if (stash.customer) {
+                applyStandaloneField(stash.customer.name, 'Customer Name');
+                applyStandaloneField(stash.customer.address, 'Address');
+                applyStandaloneField(stash.customer.phone, 'Phone');
+                applyStandaloneField(stash.customer.email, 'Email');
+            }
+            if (stash.equipment) {
+                applyStandaloneField(stash.equipment.outdoorModel, 'Outdoor Model');
+                applyStandaloneField(stash.equipment.outdoorSerial, 'Outdoor Serial');
+                applyStandaloneField(stash.equipment.indoorModel, 'Indoor Model');
+                applyStandaloneField(stash.equipment.indoorSerial, 'Indoor Serial');
+                applyStandaloneField(stash.equipment.thermostatModel, 'Thermostat Model');
+            }
+
+            localStorage.setItem(specsKey, JSON.stringify(specsData));
+
             return res;
         }
 
@@ -5170,10 +5228,11 @@
                 return;
             }
             let res = executeEquipmentPush(session.quickStashId);
+            let msg = `QUICK STASH PULL\n\nSplash Internal:\nImported: ${res.imported}\nMatched: ${res.matched}\nConflicts skipped: ${res.skipped}\n\nStandalone Specs:\nImported: ${res.standaloneImported}\nMatched: ${res.standaloneMatched}\nConflicts skipped: ${res.standaloneSkipped}`;
             if (typeof showToast === 'function') {
-                showToast(`QUICK STASH PULL: Imported ${res.imported}, Matched ${res.matched}, Skipped ${res.skipped}`);
+                showToast(msg);
             } else {
-                alert(`QUICK STASH PULL\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}`);
+                alert(msg);
             }
         }
 
@@ -5378,10 +5437,11 @@
         function confirmEquipmentPush(stashId) {
             document.getElementById('genericPushModal').remove();
             let res = executeEquipmentPush(stashId);
+            let msg = `SPECS PUSH COMPLETE\n\nSplash Internal:\nImported: ${res.imported}\nMatched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}\n\nStandalone Specs:\nImported: ${res.standaloneImported}\nMatched: ${res.standaloneMatched}\nConflicts skipped: ${res.standaloneSkipped}`;
             if (typeof showToast === 'function') {
-                showToast(`SPECS PUSH COMPLETE\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}`);
+                showToast(msg);
             } else {
-                alert(`SPECS PUSH COMPLETE\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}`);
+                alert(msg);
             }
         }
 
@@ -5396,7 +5456,7 @@
 
             if (pushEq) {
                 let res = executeEquipmentPush(stashId);
-                msg += `SPECS:\nImported: ${res.imported}, Matched: ${res.matched}, Skipped: ${res.skipped}, Missing: ${res.missing}\n\n`;
+                msg += `SPECS (Internal):\nImported: ${res.imported}, Matched: ${res.matched}, Skipped: ${res.skipped}, Missing: ${res.missing}\nSPECS (Standalone):\nImported: ${res.standaloneImported}, Matched: ${res.standaloneMatched}, Skipped: ${res.standaloneSkipped}\n\n`;
             }
             if (pushDiag) {
                 activeQuickStashId = stashId;
@@ -9081,7 +9141,7 @@
         <div style="padding:15px; flex:1; overflow-y:auto; background:var(--bg-dark);" id="qsDiagHandoffBody">
             <!-- Populated dynamically -->
         </div>
-        <div style="padding:15px; background:var(--card-bg); border-top:1px solid #333; display:flex;">
+        <div id="qsDiagHandoffFooter" style="padding:15px; background:var(--card-bg); border-top:1px solid #333; display:flex;">
             <button onclick="executeDiagnosticsHandoff()" style="flex:1; padding:15px; border-radius:8px; background:var(--electric-blue); color:black; border:none; font-weight:900; font-size:14px; cursor:pointer;">OPEN DIAGNOSTICS ➔</button>
         </div>
     </div>
@@ -9316,7 +9376,7 @@
             window._tempDiagHandoff = handoff;
 
             document.getElementById('qsDiagHandoffModal').style.display = 'flex';
-            initQsPopup('qsDiagHandoffModal', 'qsDiagHandoffHeader', ['#qsDiagHandoffBody']);
+            initQsPopup('qsDiagHandoffModal', 'qsDiagHandoffHeader', ['#qsDiagHandoffBody', '#qsDiagHandoffFooter']);
         }
 
         function executeDiagnosticsHandoff(navigate = true) {
