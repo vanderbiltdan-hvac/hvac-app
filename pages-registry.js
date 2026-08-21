@@ -2,7 +2,7 @@
 // Registry Version: v1.0
 // Canonical source of page availability for deployed app navigation.
 
-window.PLATTS_PAGES_REGISTRY = [
+window.PLATTS_PAGES_REGISTRY = [ 
     { name: "Splash", file: "index.html", state: "ACTIVE" },
     { name: "Notes", file: "notes.html", state: "ACTIVE" },
     { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
