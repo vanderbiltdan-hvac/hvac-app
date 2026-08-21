@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v1.60.5</title>
+    <title>HVAC Splash v2.00.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.60.5</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.1</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1533,11 +1533,11 @@
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
 
             <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                <button onclick="pullEquipmentFromQuickStash()" class="btn-utility" style="border-color:var(--amber-orange); color:var(--amber-orange); font-size:9px;">📥 PULL STASH</button>
                 <button onclick="wipeSpecsData()" class="btn-utility danger" style="font-size:9px; padding:6px 10px;">☢️ WIPE SPECS</button>
                 <button onclick="applyMirrorToHub('specs')" class="btn-utility"
                     style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:9px;">⚡ MIRROR
                     SYNC</button>
+                <button onclick="document.getElementById('sysSpecsMirrorModal').style.display='flex';" class="btn-utility" style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:9px;">◨ MIRROR SYNC</button>
                 <button onclick="openJobPortal()" class="btn-utility"
                     style="background:#222; border:1px solid #c5a059; color:#c5a059; padding:6px 10px; border-radius:12px; display:flex; align-items:center; gap:4px;">
                     <span style="font-size:14px;">📂</span><span style="font-size:9px; font-weight:900;">PORTAL</span>
@@ -1921,7 +1921,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.60.5</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.1</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2323,8 +2323,18 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.60.5";
+        const APP_VERSION = "v2.00.1";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
+        const QS_PUSH_DESTINATIONS = { equipment: { label: "EQUIPMENT", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, pmi: { label: "PMI", enabled: false }, readings: { label: "READINGS", enabled: false }, notes: { label: "NOTES", enabled: false } };
+
+        function getQuickStashDestination() {
+            if (window.location.protocol === 'file:') {
+                return 'Splash.html#quickstash';
+            } else {
+                return 'index.html#quickstash';
+            }
+        }
+
         var hvacQsAttachMode = false;
         var hvacQsAttachContext = null;
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
@@ -4138,6 +4148,9 @@
             collapseCopyOptions: false,
             collapseScanSettings: true,
             
+            pushAllEquipment: true,
+            pushAllDiagnostics: true,
+            
             widthMode: 'Standard', 
             fixedWidth: 800,
             outerPadding: 15,
@@ -4431,6 +4444,8 @@
                 qsSettings.showHopper = c('qsSetShowHopper');
                 qsSettings.showExtra = c('qsSetShowExtra');
                 qsSettings.showRawScans = c('qsSetShowRawScans');
+                qsSettings.pushAllEquipment = c('qsSetPushEq');
+                qsSettings.pushAllDiagnostics = c('qsSetPushDiag');
                 localStorage.setItem('qsSettingsV1_26', JSON.stringify(qsSettings));
             } else {
                 let sSet = qsSectionSettings[activeTunerSection];
@@ -4489,6 +4504,17 @@
                             <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowHopper" ${qsSettings.showHopper?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Hopper</label>
                             <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowExtra" ${qsSettings.showExtra?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Extra</label>
                             <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowRawScans" ${qsSettings.showRawScans?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Raw Scans</label>
+                        </div>
+                    </div>`;
+            // PUSH TO ALL DESTINATIONS SECTION
+            html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
+                        <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">PUSH TO ALL DESTINATIONS</div>
+                        <div style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px solid #444; padding-top:8px; flex-direction:column; gap:8px;">
+                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px;"><input type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Equipment</label>
+                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px;"><input type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Diagnostics</label>
+                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px; color:#666;"><input type="checkbox" disabled> PMI (COMING SOON)</label>
+                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px; color:#666;"><input type="checkbox" disabled> Readings (COMING SOON)</label>
+                            <label style="display:flex; align-items:center; gap:5px; font-weight:bold; font-size:12px; color:#666;"><input type="checkbox" disabled> Notes (COMING SOON)</label>
                         </div>
                     </div>`;
                     
@@ -5087,6 +5113,51 @@
             if (typeof renderDraftBlock === 'function') renderDraftBlock();
         }
 
+        function executeEquipmentPush(stashId) {
+            let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+            let stash = stashes[stashId];
+            let res = { imported: 0, matched: 0, skipped: 0, missing: 0 };
+            if (!stash) return res;
+
+            function applyField(sourceVal, destObj, destKey, stagePrefix) {
+                if (!sourceVal) {
+                    res.missing++;
+                    return;
+                }
+                let currentVal = destObj[destKey];
+                if (!currentVal || currentVal === "--") {
+                    destObj[destKey] = sourceVal;
+                    res.imported++;
+                    let stageKey = stagePrefix + "_" + destKey;
+                    if (!stagedSpecs.includes(stageKey)) stagedSpecs.push(stageKey);
+                } else if (currentVal === sourceVal) {
+                    res.matched++;
+                } else {
+                    res.skipped++;
+                }
+            }
+
+            if (stash.customer) {
+                applyField(stash.customer.name, systemSpecs.customer, 'NAME', 'customer');
+                applyField(stash.customer.address, systemSpecs.customer, 'ADDR', 'customer');
+                applyField(stash.customer.phone, systemSpecs.customer, 'PHONE', 'customer');
+                applyField(stash.customer.email, systemSpecs.customer, 'EMAIL', 'customer');
+            }
+            if (stash.equipment) {
+                applyField(stash.equipment.outdoorModel, systemSpecs.outdoor, 'MDL', 'outdoor');
+                applyField(stash.equipment.outdoorSerial, systemSpecs.outdoor, 'SER', 'outdoor');
+                applyField(stash.equipment.indoorModel, systemSpecs.indoor, 'MDL', 'indoor');
+                applyField(stash.equipment.indoorSerial, systemSpecs.indoor, 'SER', 'indoor');
+                applyField(stash.equipment.thermostatModel, systemSpecs.thermostat, 'MDL', 'thermostat');
+            }
+
+            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+            localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
+            if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+            saveLocalJobArchiveSnapshot();
+            return res;
+        }
+
         function pullEquipmentFromQuickStash() {
             let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
             if (!rawSession) {
@@ -5098,60 +5169,206 @@
                 if(typeof showToast === 'function') showToast("Session has no Quick Stash ID.");
                 return;
             }
+            let res = executeEquipmentPush(session.quickStashId);
+            if (typeof showToast === 'function') {
+                showToast(`QUICK STASH PULL: Imported ${res.imported}, Matched ${res.matched}, Skipped ${res.skipped}`);
+            } else {
+                alert(`QUICK STASH PULL\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}`);
+            }
+        }
+
+        function openQsPushPreview(dests) {
+            if (!Array.isArray(dests)) dests = [dests];
+            let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
+            if (!rawSession) { alert("No Local Job Session found."); return; }
+            let session = JSON.parse(rawSession);
+            if (!session.quickStashId) { alert("Session has no Quick Stash ID."); return; }
             
             let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
             let stash = stashes[session.quickStashId];
-            if (!stash) {
-                if(typeof showToast === 'function') showToast("Matching Quick Stash not found.");
+            if (!stash) { alert("Matching Quick Stash not found."); return; }
+
+            if (dests.length === 1 && dests[0] === 'diagnostics') {
+                activeQuickStashId = session.quickStashId;
+                openDiagnosticsHandoffModal();
                 return;
             }
 
-            let imported = 0;
-            let matched = 0;
-            let skipped = 0;
-
-            function applyField(sourceVal, destObj, destKey, stagePrefix) {
-                if (!sourceVal) return;
-                let currentVal = destObj[destKey];
-                if (!currentVal || currentVal === "--") {
-                    destObj[destKey] = sourceVal;
-                    imported++;
-                    let stageKey = stagePrefix + "_" + destKey;
-                    if (!stagedSpecs.includes(stageKey)) stagedSpecs.push(stageKey);
-                } else if (currentVal === sourceVal) {
-                    matched++;
-                } else {
-                    skipped++;
-                }
-            }
-
-            if (stash.customer) {
-                applyField(stash.customer.name, systemSpecs.customer, 'NAME', 'customer');
-                applyField(stash.customer.address, systemSpecs.customer, 'ADDR', 'customer');
-                applyField(stash.customer.phone, systemSpecs.customer, 'PHONE', 'customer');
-                applyField(stash.customer.email, systemSpecs.customer, 'EMAIL', 'customer');
-            }
-
-            if (stash.equipment) {
-                applyField(stash.equipment.outdoorModel, systemSpecs.outdoor, 'MDL', 'outdoor');
-                applyField(stash.equipment.outdoorSerial, systemSpecs.outdoor, 'SER', 'outdoor');
-                applyField(stash.equipment.indoorModel, systemSpecs.indoor, 'MDL', 'indoor');
-                applyField(stash.equipment.indoorSerial, systemSpecs.indoor, 'SER', 'indoor');
-                applyField(stash.equipment.thermostatModel, systemSpecs.thermostat, 'MDL', 'thermostat');
-            }
-
-            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
-            localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
-
-            if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+            let html = `<div style="display:flex; flex-direction:column; gap:15px; padding-bottom:60px;">`;
             
-            saveLocalJobArchiveSnapshot();
+            if (dests.includes('equipment') || dests.includes('all')) {
+                let eqStats = { ready: 0, matched: 0, conflict: 0, missing: 0 };
+                let eqRows = [];
+                
+                function checkEq(sourceVal, destObj, destKey, label) {
+                    let status = '';
+                    let color = '';
+                    if (!sourceVal) {
+                        status = 'MISSING'; color = '#888'; eqStats.missing++;
+                    } else {
+                        let currentVal = destObj[destKey];
+                        if (!currentVal || currentVal === "--") {
+                            status = 'READY'; color = 'var(--emerald-green)'; eqStats.ready++;
+                        } else if (currentVal === sourceVal) {
+                            status = 'MATCHED'; color = 'var(--electric-blue)'; eqStats.matched++;
+                        } else {
+                            status = 'CONFLICT'; color = 'var(--amber-orange)'; eqStats.conflict++;
+                        }
+                    }
+                    eqRows.push(`
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                            <span style="color:#aaa;">${label}</span>
+                            <span style="color:${color}; font-weight:bold;">${status}</span>
+                        </div>
+                        ${sourceVal ? `<div style="font-size:10px; color:#ccc; margin-bottom:8px; padding-left:10px; border-left:2px solid #444; word-break:break-all;">${sourceVal}</div>` : ''}
+                    `);
+                }
 
-            if (typeof showToast === 'function') {
-                showToast(`QUICK STASH PULL: Imported ${imported}, Matched ${matched}, Skipped ${skipped}`);
-            } else {
-                alert(`QUICK STASH PULL\nImported: ${imported}\nAlready matched: ${matched}\nConflicts skipped: ${skipped}`);
+                if (stash.customer) {
+                    checkEq(stash.customer.name, systemSpecs.customer, 'NAME', 'Customer Name');
+                    checkEq(stash.customer.address, systemSpecs.customer, 'ADDR', 'Address');
+                    checkEq(stash.customer.phone, systemSpecs.customer, 'PHONE', 'Phone');
+                    checkEq(stash.customer.email, systemSpecs.customer, 'EMAIL', 'Email');
+                }
+                if (stash.equipment) {
+                    checkEq(stash.equipment.outdoorModel, systemSpecs.outdoor, 'MDL', 'Outdoor Model');
+                    checkEq(stash.equipment.outdoorSerial, systemSpecs.outdoor, 'SER', 'Outdoor Serial');
+                    checkEq(stash.equipment.indoorModel, systemSpecs.indoor, 'MDL', 'Indoor Model');
+                    checkEq(stash.equipment.indoorSerial, systemSpecs.indoor, 'SER', 'Indoor Serial');
+                    checkEq(stash.equipment.thermostatModel, systemSpecs.thermostat, 'MDL', 'Thermostat Model');
+                }
+
+                html += `
+                    <div style="background:#222; border:1px solid #444; padding:10px; border-radius:8px;">
+                        <div style="color:var(--emerald-green); font-weight:900; margin-bottom:10px; font-size:13px;">EQUIPMENT</div>
+                        <div style="display:flex; gap:10px; margin-bottom:10px; font-size:10px; color:#aaa; font-weight:bold;">
+                            <span style="color:var(--emerald-green)">Ready: ${eqStats.ready}</span>
+                            <span style="color:var(--electric-blue)">Matched: ${eqStats.matched}</span>
+                            <span style="color:var(--amber-orange)">Conflicts: ${eqStats.conflict}</span>
+                            <span>Missing: ${eqStats.missing}</span>
+                        </div>
+                        <div style="border-top:1px solid #444; padding-top:10px;">
+                            ${eqRows.join('')}
+                        </div>
+                    </div>
+                `;
             }
+
+            if (dests.includes('all')) {
+                const targets = [
+                    { key: 'hermTargetMfd', aliases: ['Capacitor Herm Rating', 'Herm Target MFD', 'Herm MFD', 'hermTargetMfd', 'target_mfd', 'hermMfd'], isHerm: true },
+                    { key: 'fanTargetMfd', aliases: ['Capacitor Fan Rating', 'Fan Target MFD', 'Fan MFD', 'fanTargetMfd', 'target_fan_mfd', 'fanMfd'], isFan: true },
+                    { key: 'compressorRlaRating', aliases: ['RLA', 'Compressor RLA', 'Comp RLA', 'Rated Load Amps', 'compressorRlaRating', 'cRlaRating'] },
+                    { key: 'compressorLraRating', aliases: ['LRA', 'Compressor LRA', 'Locked Rotor Amps', 'compressorLraRating', 'cLraRating'] },
+                    { key: 'fanFlaRating', aliases: ['FLA', 'Fan FLA', 'Fan Motor FLA', 'ODF FLA', 'fanFlaRating', 'odfFlaRating', 'fan amps', 'fanAmps'] },
+                    { key: 'targetSubcool', aliases: ['Target SC', 'Target Subcool', 'Subcool Target', 'targetSubcool', 'target sc'] }
+                ];
+                let diagStats = { ready: 0, conflict: 0, missing: 0 };
+                let diagRows = [];
+                targets.forEach(t => {
+                    let res = resolveHandoffTarget(stash, t.key, t.aliases, t.isHerm, t.isFan);
+                    let color = '';
+                    if (res.status === 'resolved') { diagStats.ready++; color = 'var(--emerald-green)'; }
+                    else if (res.status === 'conflict') { diagStats.conflict++; color = 'var(--amber-orange)'; }
+                    else { diagStats.missing++; color = '#888'; }
+                    diagRows.push(`
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                            <span style="color:#aaa;">${t.key}</span>
+                            <span style="color:${color}; font-weight:bold;">${res.status.toUpperCase()}</span>
+                        </div>
+                        ${res.value ? `<div style="font-size:10px; color:#ccc; margin-bottom:8px; padding-left:10px; border-left:2px solid #444;">${res.value}</div>` : ''}
+                    `);
+                });
+
+                html += `
+                    <div style="background:#222; border:1px solid #444; padding:10px; border-radius:8px;">
+                        <div style="color:var(--crimson-red); font-weight:900; margin-bottom:10px; font-size:13px;">DIAGNOSTICS</div>
+                        <div style="display:flex; gap:10px; margin-bottom:10px; font-size:10px; color:#aaa; font-weight:bold;">
+                            <span style="color:var(--emerald-green)">Ready: ${diagStats.ready}</span>
+                            <span style="color:var(--amber-orange)">Conflicts: ${diagStats.conflict}</span>
+                            <span>Missing: ${diagStats.missing}</span>
+                        </div>
+                        <div style="border-top:1px solid #444; padding-top:10px;">
+                            ${diagRows.join('')}
+                        </div>
+                    </div>
+                `;
+
+                ['PMI', 'READINGS', 'NOTES'].forEach(name => {
+                    html += `
+                        <div style="background:#222; border:1px solid #444; padding:10px; border-radius:8px; opacity:0.6;">
+                            <div style="color:#888; font-weight:900; font-size:13px;">${name}</div>
+                            <div style="color:#666; font-size:10px; font-weight:bold; margin-top:5px;">NOT INCLUDED</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div>`;
+
+            let actionBtn = '';
+            if (dests.includes('all')) {
+                actionBtn = `<button onclick="executePushAll('${session.quickStashId}')" style="background:var(--electric-blue); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH ALL</button>`;
+            } else if (dests.includes('equipment')) {
+                actionBtn = `<button onclick="confirmEquipmentPush('${session.quickStashId}')" style="background:var(--emerald-green); color:#000; border:none; padding:10px 15px; border-radius:8px; font-weight:900; flex:1;">PUSH TO EQUIPMENT</button>`;
+            }
+
+            let modalHtml = `
+                <div id="genericPushModal" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; display:flex; flex-direction:column;">
+                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; background:#111; border-bottom:1px solid #333; flex-shrink:0;">
+                        <h2 style="color:#fff; font-size:16px; font-weight:900; margin:0;">PUSH PREVIEW</h2>
+                        <button onclick="document.getElementById('genericPushModal').remove()" style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
+                    </div>
+                    <div style="flex:1; overflow-y:auto; padding:15px; background:var(--bg-dark);">
+                        ${html}
+                    </div>
+                    <div style="padding:15px; background:#111; border-top:1px solid #333; display:flex; gap:10px; flex-shrink:0;">
+                        <button onclick="document.getElementById('genericPushModal').remove()" class="btn btn-outline" style="flex:1;">CANCEL</button>
+                        ${actionBtn}
+                    </div>
+                </div>
+            `;
+            
+            let existing = document.getElementById('genericPushModal');
+            if (existing) existing.remove();
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function openEquipmentHandoffPreview() {
+            openQsPushPreview(['equipment']);
+        }
+
+        function confirmEquipmentPush(stashId) {
+            document.getElementById('genericPushModal').remove();
+            let res = executeEquipmentPush(stashId);
+            if (typeof showToast === 'function') {
+                showToast(`EQUIPMENT PUSH COMPLETE\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}`);
+            } else {
+                alert(`EQUIPMENT PUSH COMPLETE\nImported: ${res.imported}\nAlready matched: ${res.matched}\nConflicts skipped: ${res.skipped}\nMissing: ${res.missing}`);
+            }
+        }
+
+        function executePushAll(stashId) {
+            document.getElementById('genericPushModal').remove();
+            
+            let qsSet = qsSettings || {};
+            let pushEq = qsSet.pushAllEquipment !== false;
+            let pushDiag = qsSet.pushAllDiagnostics !== false;
+
+            let msg = "PUSH TO ALL COMPLETE\n\n";
+
+            if (pushEq) {
+                let res = executeEquipmentPush(stashId);
+                msg += `EQUIPMENT:\nImported: ${res.imported}, Matched: ${res.matched}, Skipped: ${res.skipped}, Missing: ${res.missing}\n\n`;
+            }
+            if (pushDiag) {
+                activeQuickStashId = stashId;
+                executeDiagnosticsHandoff(false);
+                msg += `DIAGNOSTICS: Saved to Session.\n`;
+            }
+
+            if (typeof showToast === 'function') showToast("Push To All Complete (Check alerts for details)");
+            alert(msg);
         }
 
         function createNewQuickStash(initialName = null) {
@@ -5482,6 +5699,21 @@
                 <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
                     <button onclick="qsSelectGlobal(true, event)" style="background:rgba(0,229,255,0.1); border:1px solid var(--electric-blue); color:var(--electric-blue); font-size:10px; padding:4px 10px; border-radius:4px; font-weight:900; cursor:pointer;">SELECT ALL</button>
                     <button onclick="qsSelectGlobal(false, event)" style="background:rgba(255,255,255,0.05); border:1px solid #555; color:#aaa; font-size:10px; padding:4px 10px; border-radius:4px; font-weight:900; cursor:pointer;">CLEAR ALL</button>
+                </div>
+            `;
+            html += `
+                <div style="background:#222; border:1px solid #444; border-radius:12px; padding:15px; margin-bottom:15px;">
+                    <div style="font-size:12px; font-weight:900; color:#888; margin-bottom:10px; letter-spacing:1px;">PUSH TO</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <button onclick="openEquipmentHandoffPreview()" style="background:var(--emerald-green); color:#000; border:none; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:pointer;">EQUIPMENT</button>
+                        <button onclick="openQsPushPreview('diagnostics')" style="background:var(--crimson-red); color:#fff; border:none; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:pointer;">DIAGNOSTICS</button>
+                        <button disabled style="background:#333; color:#666; border:1px solid #444; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:not-allowed;">PMI <span style="font-size:9px; font-weight:normal;">(COMING SOON)</span></button>
+                        <button disabled style="background:#333; color:#666; border:1px solid #444; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:not-allowed;">READINGS <span style="font-size:9px; font-weight:normal;">(COMING SOON)</span></button>
+                        <button disabled style="background:#333; color:#666; border:1px solid #444; padding:8px 12px; border-radius:8px; font-size:11px; font-weight:900; cursor:not-allowed;">NOTES <span style="font-size:9px; font-weight:normal;">(COMING SOON)</span></button>
+                    </div>
+                    <div style="margin-top:10px; border-top:1px solid #333; padding-top:10px; display:flex; justify-content:flex-end;">
+                        <button onclick="openQsPushPreview('all')" style="background:#444; color:#fff; border:1px solid #666; padding:8px 16px; border-radius:8px; font-size:11px; font-weight:900; cursor:pointer; display:flex; align-items:center; gap:6px;"><span>⚡</span> PUSH TO ALL</button>
+                    </div>
                 </div>
             `;
             html += buildHeader('CUSTOMER', 'var(--electric-blue)', 'Customer');
@@ -8725,6 +8957,10 @@
             overlays.forEach(o => o.style.display = 'none');
 
             showSection('v23-home');
+            
+            if (window.location.hash === '#quickstash') {
+                setTimeout(() => openQuickStash(), 100);
+            }
 
             try {
                 await initIndexedDB();
@@ -9045,7 +9281,7 @@
             initQsPopup('qsDiagHandoffModal', 'qsDiagHandoffHeader', ['#qsDiagHandoffBody']);
         }
 
-        function executeDiagnosticsHandoff() {
+        function executeDiagnosticsHandoff(navigate = true) {
             let activeId = localStorage.getItem('hvacActiveQuickStashId');
             if (!activeId) return;
             let rawStashes = localStorage.getItem('hvacQuickStashesV1');
@@ -9084,7 +9320,9 @@
             });
 
             localStorage.setItem('hvacDiagnosticsHandoffV1', JSON.stringify(handoff));
-            window.location.href = 'diagnostics.html';
+            if (navigate) {
+                window.location.href = 'diagnostics.html';
+            }
         }
 
         function initQsPopup(modalId, headerId, bodyIds) {
