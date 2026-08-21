@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMI Ledger v2.00.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pages-registry.js"></script>
+    <style>
+:root {
+  --pmi-row-height: 30px;
+  --pmi-font-size-label: 10px;
+  --pmi-font-size-content: 10px;
+  --pmi-label-width: 30%;
+  --data-pill-width: 80px;
+  --data-pill-height: 40px;
+  --action-pill-width: 40px;
+  --pill-radius: 8px;
+}
+
+.action-pill {
+  width: var(--action-pill-width);
+  height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+.data-pill {
+  min-width: var(--data-pill-width);
+  min-height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+.pmi-row {
+  min-height: var(--pmi-row-height);
+  flex-basis: 100%;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  line-height: 1;
+}
+
+        .pmi-label {
+            width: var(--pmi-label-width);
+            font-size: var(--pmi-font-size-label);
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .content-cell {
+            font-size: var(--pmi-font-size-content);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen text-white" style="overscroll-behavior-y: contain;">
+
+<!-- STATUS BAR LAUNCHER -->
+<div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
+  <div style="width:40px;"></div><!-- Spacer for center alignment -->
+  <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+  <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v2.00.2</div>
+</div>
+
+<!-- TOP RIBBON DRAWER (ACCORDION) -->
+<div id="top-ribbon-drawer" class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-3 px-4 py-3 hidden origin-top transition-all duration-300 z-40 sticky top-8 shadow-md">
+  <button onclick="createNewJob()" class="action-pill bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center text-xl transition-colors border border-blue-400 shadow-sm" title="New Job">➕</button>
+  <button onclick="openDrive()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Drive">📁</button>
+  <button onclick="openAlbum()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Album">📷</button>
+  <button onclick="openManuals()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Manuals">📖</button>
+  <button onclick="toggleMic()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Mic">🎙️</button>
+  <button onclick="toggleCalibrationDock()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Settings">⚙️</button>
+  <button onclick="clearAllPMIData()" class="action-pill bg-red-900/80 hover:bg-red-700 text-white flex items-center justify-center text-xl transition-colors border border-red-500 shadow-sm" title="Clear Slate">🗑️</button>
+</div>
+
+<div id="pmi-ledger-container" class="h-[calc(100vh-120px)] w-full px-2 py-2 overflow-y-auto flex flex-col gap-1">
+        <!-- DYNAMIC ROWS INJECTED HERE -->
+        <div id="ledger-dynamic-rows" class="flex flex-col gap-1 w-full"></div>
+
+<button onclick="addInspectionPoint()"
+class="mt-4 w-full min-h-[40px] shrink-0 py-2 bg-slate-800 border border-dashed border-slate-600 hover:border-blue-500 hover:bg-slate-700 text-slate-400 hover:text-white font-bold rounded transition-colors text-xs tracking-widest uppercase flex items-center justify-center">
+[ + Add Inspection Point ]
+</button>
+    </div>
+
+<!-- Settings Modal (FORMERLY CALIBRATION DOCK) -->
+<div id="pmi-calibration-dock"
+  class="fixed bottom-20 left-4 right-4 z-50 bg-slate-800/95 backdrop-blur-md border border-slate-600 hidden flex flex-col p-4 transition-all shadow-2xl rounded-xl">
+  
+  <div class="flex justify-between items-center border-b border-slate-600 pb-2 mb-2">
+    <h3 class="text-white text-[10px] font-bold uppercase tracking-widest">Global Settings</h3>
+    <button onclick="toggleCalibrationDock()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+  </div>
+  
+  <div class="text-slate-500 text-xs italic text-center py-4">
+    App settings and integrations coming soon.
+  </div>
+</div>
+
+<!-- BOTTOM APP NAVIGATION PANEL -->
+<div id="bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 fixed bottom-0 left-0 z-50 flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
+  <!-- Expanded Grid (Hidden by default) -->
+  <div id="bottom-nav-grid" class="hidden absolute bottom-full left-0 w-full p-2 bg-slate-900/95 backdrop-blur-md border-t border-slate-700 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] z-50">
+    <!-- Dynamic Grid -->
+    <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+  </div>
+
+  <!-- ROW: Launcher / Collapse Control -->
+  <div class="flex w-full h-12 bg-slate-800 shrink-0">
+    <button onclick="toggleFullScreen()" class="w-[35%] h-full flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest hover:bg-slate-700 transition-colors active:bg-slate-600 border-r border-slate-700">
+      <span class="mr-2 text-base">⛶</span> FULLSCREEN
+    </button>
+    <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-[65%] h-full flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest hover:bg-slate-700 transition-colors active:bg-slate-600">
+      <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+    </button>
+  </div>
+</div>
+<!-- CONTENT LOCKER MODAL (HIDDEN) -->
+<div id="pmi-content-modal"
+  class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+        <div
+            class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+            <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+                <h3 id="modal-category-title" class="text-white font-bold tracking-widest text-xs uppercase">Category
+                    Hub</h3>
+                <button onclick="closeContentLocker()"
+                    class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            <div id="modal-content-area" class="p-4 flex-1 overflow-y-auto flex flex-col gap-4 w-full"></div>
+        </div>
+    </div>
+
+    <script>
+        const prefabData = {
+            "Summary": ["System operating normally", "Multiple issues found", "Requires follow-up visit"],
+            "Filter": ["Clean", "Dirty", "Changed", "No replacement filter available", "Customer would like new filter delivered"],
+            "Evaporator Coil": ["Clean", "Minor buildup", "Dirty", "Major buildup", "Clogged", "Compacted", "Recommended cleaning with no rinse coil spray", "Recommended pull and clean", "Customer opting to leave as is", "Performed pull and clean", "Performed no rinse coil clean"],
+            "Blower Visual": ["Clean", "Minor buildup", "Dirty", "Filthy", "Major buildup", "Recommend cleaning", "Customer opting to leave as is"],
+            "Blower Mechanical": ["Spinning freely", "Not spinning", "Locked up"],
+            "Drain & Pan": ["Cleared drain and pan", "Added algae tabs", "Flushed line with water until flowing clear", "Clogged", "Excessive debris"],
+            "Heater": ["Verified heat operational", "Heat not functioning"],
+            "Float Switch": [],
+            "IAQ": []
+        };
+
+        const sentenceBlocks = {
+            "Float Switch": {
+                Verbs: ["Verified", "Inspected", "Tested"],
+                Targets: ["Primary", "Secondary", "Auxiliary Pan", "Float Switch", "Float Switches"],
+                Status: ["operational", "not operational", "bypassed"],
+                Connectors: ["and", ","]
+            },
+            "IAQ": {
+                Verbs: ["Verified", "Inspected", "Replaced"],
+                Targets: ["REME HALO", "UV Light", "Air Scrubber", "bulb"],
+                Status: ["operational", "not operational", "replaced", "recommend bulb replacement"],
+                Connectors: ["and", ","]
+            }
+        };
+        let activeSentence = [];
+
+        const pmiRegistry = {};
+        let currentActiveCategory = null;
+
+        const ledgerRows = [
+            "Call Summary",
+            "Filter",
+            "Evaporator Coil",
+            "Blower Visual",
+            "Blower Mechanical",
+            "Drain Pan",
+            "Drain",
+            "Heater",
+            "Float Switch",
+            "IAQ",
+            "Condenser",
+            "Tech Notes"
+        ];
+
+function initLedger() {
+    const wrapper = document.getElementById('ledger-dynamic-rows');
+    if (!wrapper) return;
+    let html = '';
+    
+    // Core hardcoded rows for visual comparison
+    const coreRows = ['Summary', 'Filter Location', 'Filter Size', 'Filter Condition', 'Evaporator Coil', 'Blower Visual', 'Blower Mechanical', 'Drain', 'Drain Pan', 'Heater', 'Float Switch', 'IAQ', 'Condenser', 'Tech Notes'];
+
+    ledgerRows.forEach((category, index) => {
+        const isCustom = !coreRows.includes(category);
+        const borderStyle = isCustom ? 'border-2 border-dashed border-yellow-500' : 'border border-slate-700';
+        const deleteHtml = isCustom ? `<button onclick="deleteCustomRow('${category}')" class="bg-red-900/60 hover:bg-red-700 border-l border-slate-600 text-slate-300 hover:text-white flex items-center justify-center w-8 transition-colors text-xs" title="Delete Custom Row">✕</button>` : '';
+
+        html += `
+        <div class="pmi-row flex items-stretch w-full box-border bg-slate-800 ${borderStyle} rounded overflow-hidden transition-all duration-200" draggable="true" data-index="${index}" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)" ondragend="handleDragEnd(event)">
+            <div class="flex items-center justify-center px-3 text-slate-500 cursor-grab hover:text-white active:cursor-grabbing bg-slate-900/50 border-r border-slate-700 select-none">⋮⋮</div>
+            <div class="pmi-label field-label font-bold border-r border-slate-700 cursor-pointer transition-colors" onclick="toggleBlueStamp('${category}', this)">${category}</div>
+            <div data-category="${category}" class="content-cell flex-1 bg-slate-700 flex items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors text-xl" onclick="openContentLocker('${category}')"></div>
+            ${deleteHtml}
+            <button onclick="clearCategory('${category}')" class="bg-slate-700 hover:bg-slate-600 border-l border-slate-600 text-slate-400 hover:text-white flex items-center justify-center w-8 transition-colors text-xs" title="Clear Row">↺</button>
+        </div>`;
+    });
+    wrapper.innerHTML = html;
+}
+
+// NATIVE DRAG AND DROP ENGINE
+let draggedIndex = null;
+
+function handleDragStart(e) {
+    draggedIndex = parseInt(e.currentTarget.getAttribute('data-index'));
+    e.currentTarget.style.opacity = '0.4';
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+}
+
+function handleDragEnter(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('border-blue-500');
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('border-blue-500');
+}
+
+function handleDrop(e) {
+    e.stopPropagation();
+    const targetIndex = parseInt(e.currentTarget.getAttribute('data-index'));
+    if (draggedIndex !== null && draggedIndex !== targetIndex) {
+        const item = ledgerRows.splice(draggedIndex, 1);
+        ledgerRows.splice(targetIndex, 0, item);
+        savePMIData();
+        initLedger();
+        loadPMIData();
+    }
+    return false;
+}
+
+function handleDragEnd(e) {
+    e.currentTarget.style.opacity = '1';
+    document.querySelectorAll('.pmi-row').forEach(row => row.classList.remove('border-blue-500'));
+}
+
+// OMNIPRESENT DRAWER ACTIONS
+function createNewJob() {
+    const name = prompt("Enter new Job Name/ID:");
+    if(name && name.trim() !== '') document.getElementById('active-job-ticket').innerText = name.trim();
+}
+function openDrive() { console.log("Google Drive bridge triggered"); }
+function openAlbum() { console.log("Photo Album bridge triggered"); }
+function openManuals() { console.log("Manuals Database bridge triggered"); }
+
+        function addInspectionPoint() {
+            const newCategory = prompt("Enter new inspection point name (e.g., 'Condenser'):");
+            if (newCategory && newCategory.trim() !== "") {
+                const cleanName = newCategory.trim();
+                
+                // Prevent duplicates
+                if (!ledgerRows.includes(cleanName)) {
+                    // Push to dynamic array
+                    ledgerRows.push(cleanName);
+                    
+                    // Initialize in registry if it doesn't exist
+                    if (!pmiRegistry[cleanName]) {
+                        pmiRegistry[cleanName] = { stamped: false, comments: [] };
+                    }
+                    
+                    // Save state and redraw screen
+                    savePMIData();
+                    initLedger();
+                    
+                    // Re-apply blue stamps to redrawn ledger
+                    loadPMIData(); 
+                    
+                    // Scroll to bottom
+                    const container = document.getElementById('pmi-ledger-container');
+                    container.scrollTop = container.scrollHeight;
+                } else {
+                    alert("Inspection point already exists.");
+                }
+            }
+        }
+
+        function addPlaceholderPill() {
+            const name = prompt("Enter placeholder pill name (e.g., 'Static Press'):");
+            if (!name || name.trim() === "") return;
+            
+            const ribbon = document.getElementById('top-ribbon-drawer');
+            const generatorBtn = ribbon.querySelector('[title="Add Placeholder"]');
+            
+            const newPill = document.createElement('div');
+            newPill.className = "data-pill bg-slate-800/50 text-slate-400 flex flex-col items-center justify-center border border-slate-500 border-dashed shadow-sm shrink-0";
+            newPill.innerHTML = `<span class="text-[8px] font-bold tracking-widest uppercase">${name.trim()}</span><span class="font-mono text-sm">---</span>`;
+            
+            ribbon.insertBefore(newPill, generatorBtn);
+        }
+
+        function toggleTopRibbon() {
+            const ribbon = document.getElementById('top-ribbon-drawer');
+            ribbon.classList.toggle('hidden');
+        }
+
+function resetLayoutDefaults() {
+  document.documentElement.style.setProperty('--action-pill-width', '40px');
+  document.getElementById('slider-action-pill').value = 40;
+  document.getElementById('val-action-pill').innerText = '40px';
+
+  document.documentElement.style.setProperty('--data-pill-width', '80px');
+  document.getElementById('slider-data-width').value = 80;
+  document.getElementById('val-data-width').innerText = '80px';
+}
+
+const FALLBACK_PAGES_REGISTRY = [
+    { name: "Splash", file: "index.html", state: "ACTIVE" },
+    { name: "Quick Stash", file: location.protocol === 'file:' ? 'Splash.html#quickstash' : 'index.html#quickstash', state: "ACTIVE" },
+    { name: "Notes", file: "notes.html", state: "ACTIVE" },
+    { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
+    { name: "Specs", file: "specs.html", state: "ACTIVE" },
+    { name: "PMI", file: "pmi.html", state: "ACTIVE" },
+    { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
+    { name: "Startup", file: "startup.html", state: "ACTIVE" },
+    { name: "Compiler", file: "compiler.html", state: "PLANNED" },
+    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Reports", file: "reports.html", state: "PLANNED" },
+    { name: "Data Block", file: "datablock.html", state: "PLANNED" }
+];
+
+function getPagesRegistry() {
+    if (
+        Array.isArray(window.PLATTS_PAGES_REGISTRY) &&
+        window.PLATTS_PAGES_REGISTRY.length > 0
+    ) {
+        return window.PLATTS_PAGES_REGISTRY;
+    }
+    return FALLBACK_PAGES_REGISTRY;
+}
+
+function renderBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid-inner');
+    if (!grid) return;
+    
+    let currentPath = window.location.pathname.split('/').pop().toLowerCase();
+    if (!currentPath) {
+        currentPath = "pmi.html";
+    }
+    
+    let html = "";
+    const registry = getPagesRegistry();
+    registry.forEach(p => {
+        let isCurrent = (p.file.toLowerCase() === currentPath || p.file.toLowerCase().includes('pmi.html'));
+        
+        if (isCurrent) {
+            html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-blue-900 border-2 border-blue-400 rounded text-white font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                ${p.name}<br><span class="text-[10px] font-bold text-blue-200 mt-1 tracking-widest">CURRENT</span>
+            </a>`;
+        } else if (p.state === "ACTIVE") {
+            html += `<a href="${p.file}" class="flex flex-col items-center justify-center h-16 bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-100 font-bold text-[13px] shadow-sm text-center leading-tight transition-transform active:scale-95">
+                ${p.name}
+            </a>`;
+        } else {
+            html += `<div class="flex flex-col items-center justify-center h-16 bg-slate-900 border border-dashed border-slate-700 rounded text-slate-500 font-bold text-[13px] shadow-none text-center leading-tight opacity-70">
+                ${p.name}<br><span class="text-[9px] font-normal text-slate-600 mt-1 uppercase tracking-wider">PLANNED</span>
+            </div>`;
+        }
+    });
+    grid.innerHTML = html;
+}
+
+function toggleBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid');
+    const icon = document.getElementById('bottom-nav-icon');
+    if (grid.classList.contains('hidden')) {
+        grid.classList.remove('hidden');
+        icon.textContent = '▲';
+    } else {
+        grid.classList.add('hidden');
+        icon.textContent = '☰';
+    }
+}
+
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            localStorage.setItem('hvacFullscreenPreferred', 'true');
+        }).catch(err => {
+            console.log(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+            localStorage.setItem('hvacFullscreenPreferred', 'false');
+        }
+    }
+}
+
+        function savePMIData() {
+            localStorage.setItem('pmi_data_v1', JSON.stringify(pmiRegistry));
+            localStorage.setItem('pmi_ledger_rows_v1', JSON.stringify(ledgerRows));
+        }
+
+        function loadPMIData() {
+            const savedRows = localStorage.getItem('pmi_ledger_rows_v1');
+            if (savedRows) {
+                try {
+                    const parsedRows = JSON.parse(savedRows);
+                    ledgerRows.length = 0;
+                    parsedRows.forEach(r => ledgerRows.push(r));
+                    initLedger();
+                } catch(e) { console.error('Failed to load ledger rows', e); }
+            }
+
+            const saved = localStorage.getItem('pmi_data_v1');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    Object.assign(pmiRegistry, data);
+
+                    Object.keys(pmiRegistry).forEach(category => {
+                        const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+                        if (cell) {
+                            const label = cell.previousElementSibling;
+                            if (pmiRegistry[category].stamped) {
+                                label.classList.add('bg-blue-600', 'text-white');
+                            }
+                            renderCell(category);
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to load PMI data', e);
+                }
+            }
+        }
+
+        function clearAllPMIData() {
+            if (confirm("Are you sure you want to clear the entire ledger?")) {
+                Object.keys(pmiRegistry).forEach(key => delete pmiRegistry[key]);
+                savePMIData();
+
+                document.querySelectorAll('.pmi-label').forEach(el => el.classList.remove('bg-blue-600', 'text-white'));
+                document.querySelectorAll('.content-cell').forEach(el => {
+                    el.innerText = '';
+                    el.classList.remove('text-blue-300', 'text-xs', 'p-2');
+                });
+            }
+        }
+
+        function clearCategory(category) {
+            if (pmiRegistry[category]) {
+                pmiRegistry[category].stamped = false;
+                pmiRegistry[category].comments = [];
+                savePMIData();
+
+                const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+                if (cell) {
+                    const label = cell.previousElementSibling;
+                    label.classList.remove('bg-blue-600', 'text-white');
+                    renderCell(category);
+                }
+            }
+        }
+
+function deleteCustomRow(category) {
+    if (confirm(`Are you sure you want to permanently delete the custom row: "${category}"?`)) {
+        // Remove from the visual array
+        const index = ledgerRows.indexOf(category);
+        if (index > -1) {
+            ledgerRows.splice(index, 1);
+        }
+        
+        // Erase all underlying data from the registry
+        if (pmiRegistry[category]) {
+            delete pmiRegistry[category];
+        }
+        
+        // Save state and visually refresh the ledger
+        savePMIData();
+        initLedger();
+        loadPMIData();
+    }
+}
+
+        function toggleBlueStamp(category, element) {
+            if (!pmiRegistry[category]) {
+                pmiRegistry[category] = { stamped: false, comments: [] };
+            }
+            pmiRegistry[category].stamped = !pmiRegistry[category].stamped;
+
+            if (pmiRegistry[category].stamped) {
+                element.classList.add('bg-blue-600', 'text-white');
+            } else {
+                element.classList.remove('bg-blue-600', 'text-white');
+            }
+            savePMIData();
+        }
+
+        function openContentLocker(category) {
+            currentActiveCategory = category;
+            if (!pmiRegistry[category]) {
+                pmiRegistry[category] = { stamped: false, comments: [] };
+            }
+
+            document.getElementById('modal-category-title').innerText = category + ' Hub';
+
+            const contentArea = document.getElementById('modal-content-area');
+            contentArea.innerHTML = '';
+
+            // 1. CURRENT COMMENTS (TOP ZONE)
+            const existingTitle = document.createElement('div');
+            existingTitle.className = "text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2";
+            existingTitle.innerText = "Current Comments";
+            contentArea.appendChild(existingTitle);
+
+            const prefabs = prefabData[category] || [];
+            if (prefabs.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = "text-slate-500 text-xs italic mb-4";
+                emptyMsg.innerText = "No comments added yet.";
+                contentArea.appendChild(emptyMsg);
+            } else {
+                prefabs.forEach(text => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "flex gap-2 w-full mb-2";
+
+                    const isSelected = pmiRegistry[category].comments.includes(text);
+                    const btn = document.createElement('button');
+                    // Strip hover classes to prevent mobile ghosting
+                    if (isSelected) {
+                        btn.className = "flex-1 text-left p-3 rounded text-white text-sm transition-colors border border-blue-500 bg-blue-900";
+                    } else {
+                        btn.className = "flex-1 text-left p-3 rounded text-white text-sm transition-colors border border-slate-600 bg-slate-700";
+                    }
+                    btn.innerText = text;
+                    btn.onclick = () => toggleComment(category, text, btn);
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = "bg-slate-600 hover:bg-slate-500 text-white p-3 rounded transition-colors text-xs w-10";
+                    editBtn.innerText = "✎";
+                    editBtn.onclick = function () { editComment(category, text); };
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = "bg-red-900/60 hover:bg-red-800 text-white p-3 rounded transition-colors text-xs w-10";
+                    delBtn.innerText = "×";
+                    delBtn.onclick = function () { deleteComment(category, text); };
+
+                    wrapper.appendChild(btn);
+                    wrapper.appendChild(editBtn);
+                    wrapper.appendChild(delBtn);
+                    contentArea.appendChild(wrapper);
+                });
+            }
+
+            // 2. CUSTOM NOTE ENTRY (MIDDLE ZONE)
+            const customNoteDiv = document.createElement('div');
+            customNoteDiv.className = "flex gap-2 w-full mt-2 mb-4 border-b border-slate-700 pb-4";
+            customNoteDiv.innerHTML = `
+        <input type="text" id="custom-note-input" placeholder="Type custom note..." class="flex-1 bg-slate-800 border border-slate-600 text-white text-[10px] p-2 rounded focus:outline-none focus:border-blue-500">
+        <button onclick="addCustomComment()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Add</button>
+    `;
+            contentArea.appendChild(customNoteDiv);
+
+            // 3. SENTENCE BUILDER (BOTTOM COLLAPSIBLE ZONE)
+            if (typeof sentenceBlocks !== 'undefined' && sentenceBlocks[category]) {
+                activeSentence = [];
+
+                const details = document.createElement('details');
+                details.className = "w-full bg-slate-800 border border-slate-600 rounded p-3 mb-2";
+
+                const summary = document.createElement('summary');
+                summary.className = "text-[10px] text-slate-300 font-bold uppercase tracking-widest cursor-pointer outline-none select-none";
+                summary.innerText = "Lego Block Sentence Builder";
+                details.appendChild(summary);
+
+                const builderContainer = document.createElement('div');
+                builderContainer.className = "mt-3 flex flex-col gap-2";
+
+                const previewContainer = document.createElement('div');
+                previewContainer.className = "bg-slate-900 border border-blue-500 rounded p-3 flex justify-between items-center";
+
+                const previewText = document.createElement('div');
+                previewText.id = "sentence-preview";
+                previewText.className = "text-blue-300 font-bold text-sm italic flex-1";
+                previewText.innerText = "___";
+
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = "flex gap-2 ml-2";
+
+                const undoBtn = document.createElement('button');
+                undoBtn.className = "bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded text-xs transition-colors";
+                undoBtn.innerText = "Undo";
+                undoBtn.onclick = () => undoWord();
+
+                const clearBtn = document.createElement('button');
+                clearBtn.className = "bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded text-xs transition-colors";
+                clearBtn.innerText = "Clear";
+                clearBtn.onclick = () => clearSentence();
+
+                const commitBtn = document.createElement('button');
+                commitBtn.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded text-xs transition-colors";
+                commitBtn.innerText = "Commit";
+                commitBtn.onclick = () => commitSentence(category);
+
+                controlsDiv.appendChild(undoBtn);
+                controlsDiv.appendChild(clearBtn);
+                controlsDiv.appendChild(commitBtn);
+                previewContainer.appendChild(previewText);
+                previewContainer.appendChild(controlsDiv);
+                builderContainer.appendChild(previewContainer);
+
+                Object.keys(sentenceBlocks[category]).forEach(groupKey => {
+                    const blockTitle = document.createElement('div');
+                    blockTitle.className = "text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 mb-1";
+                    blockTitle.innerText = groupKey;
+                    builderContainer.appendChild(blockTitle);
+
+                    const blockGrid = document.createElement('div');
+                    blockGrid.className = "flex flex-wrap gap-2";
+
+                    sentenceBlocks[category][groupKey].forEach(word => {
+                        const wordBtn = document.createElement('button');
+                        wordBtn.className = "bg-slate-700 hover:bg-slate-600 border border-slate-600 px-3 py-2 rounded text-white text-xs transition-colors";
+                        wordBtn.innerText = word;
+                        wordBtn.onclick = () => pushWord(word);
+                        blockGrid.appendChild(wordBtn);
+                    });
+                    builderContainer.appendChild(blockGrid);
+                });
+
+                details.appendChild(builderContainer);
+                contentArea.appendChild(details);
+            }
+
+            document.getElementById('pmi-content-modal').classList.remove('hidden');
+            document.getElementById('pmi-content-modal').classList.add('flex');
+        }
+
+function toggleComment(category, text, btnElement) {
+    const index = pmiRegistry[category].comments.indexOf(text);
+    if (index > -1) {
+        // Deselect
+        pmiRegistry[category].comments.splice(index, 1);
+        btnElement.classList.remove('border-blue-500', 'bg-blue-900');
+        btnElement.classList.add('bg-slate-700', 'border-slate-600');
+    } else {
+        // Select
+        pmiRegistry[category].comments.push(text);
+        btnElement.classList.remove('bg-slate-700', 'border-slate-600');
+        btnElement.classList.add('border-blue-500', 'bg-blue-900');
+    }
+    savePMIData();
+    renderCell(category);
+}
+
+        function renderCell(category) {
+            const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+            if (cell && pmiRegistry[category]) {
+                if (pmiRegistry[category].comments.length > 0) {
+                    cell.innerText = pmiRegistry[category].comments.join(' ');
+                    cell.classList.add('text-blue-300', 'text-xs', 'p-2');
+                } else {
+                    cell.innerText = '';
+                    cell.classList.remove('text-blue-300', 'text-xs', 'p-2');
+                }
+            }
+        }
+
+        function closeContentLocker() {
+            document.getElementById('pmi-content-modal').classList.add('hidden');
+            document.getElementById('pmi-content-modal').classList.remove('flex');
+            currentActiveCategory = null;
+        }
+
+        function pushWord(word) {
+            activeSentence.push(word);
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = activeSentence.length ? activeSentence.join(' ') + " " : "___";
+        }
+
+        function undoWord() {
+            activeSentence.pop();
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = activeSentence.length ? activeSentence.join(' ') + " " : "___";
+        }
+
+        function clearSentence() {
+            activeSentence = [];
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = "___";
+        }
+
+        function commitSentence(category) {
+            const sentence = activeSentence.join(' ').trim();
+            if (sentence !== "") {
+                // Save permanently to Hub's memory so it survives 'Undo'
+                if (!prefabData[category]) prefabData[category] = [];
+                if (!prefabData[category].includes(sentence)) {
+                    prefabData[category].push(sentence);
+                }
+                // Push to active ledger row
+                if (!pmiRegistry[category].comments.includes(sentence)) {
+                    pmiRegistry[category].comments.push(sentence);
+                }
+                activeSentence = [];
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function editComment(category, oldText) {
+            const newText = prompt("Edit comment:", oldText);
+            if (newText !== null && newText.trim() !== "") {
+                const cleanNewText = newText.trim();
+
+                const pIndex = prefabData[category].indexOf(oldText);
+                if (pIndex > -1) {
+                    prefabData[category][pIndex] = cleanNewText;
+                }
+
+                if (pmiRegistry[category] && pmiRegistry[category].comments) {
+                    const cIndex = pmiRegistry[category].comments.indexOf(oldText);
+                    if (cIndex > -1) {
+                        pmiRegistry[category].comments[cIndex] = cleanNewText;
+                    }
+                }
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function deleteComment(category, text) {
+            if (confirm(`Delete comment: "${text}"?`)) {
+                const pIndex = prefabData[category].indexOf(text);
+                if (pIndex > -1) {
+                    prefabData[category].splice(pIndex, 1);
+                }
+
+                if (pmiRegistry[category] && pmiRegistry[category].comments) {
+                    const cIndex = pmiRegistry[category].comments.indexOf(text);
+                    if (cIndex > -1) {
+                        pmiRegistry[category].comments.splice(cIndex, 1);
+                    }
+                }
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function addCustomComment() {
+            const input = document.getElementById('custom-note-input');
+            const note = input.value.trim();
+            if (note && currentActiveCategory) {
+                if (!prefabData[currentActiveCategory]) {
+                    prefabData[currentActiveCategory] = [];
+                }
+                if (!prefabData[currentActiveCategory].includes(note)) {
+                    prefabData[currentActiveCategory].push(note);
+                }
+
+                if (!pmiRegistry[currentActiveCategory].comments.includes(note)) {
+                    pmiRegistry[currentActiveCategory].comments.push(note);
+                }
+
+                input.value = '';
+                savePMIData();
+                openContentLocker(currentActiveCategory);
+                renderCell(currentActiveCategory);
+            }
+        }
+
+function toggleCalibrationDock() {
+  const dock = document.getElementById('pmi-calibration-dock');
+  dock.classList.toggle('hidden');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  initLedger();
+  loadPMIData();
+  renderBottomNav();
+});
+</script>
+</body>
+
+</html>
