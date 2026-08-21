@@ -9,7 +9,7 @@ window.PLATTS_PAGES_REGISTRY = [
     { name: "Specs", file: "specs.html", state: "ACTIVE" },
     { name: "PMI", file: "pmi.html", state: "PLANNED" },
     { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
-    { name: "Startup", file: "startup.html", state: "PLANNED" },
+    { name: "Startup", file: "startup.html", state: "ACTIVE" },
     { name: "Compiler", file: "compiler.html", state: "PLANNED" },
     { name: "Templates", file: "templates.html", state: "PLANNED" },
     { name: "Reports", file: "reports.html", state: "PLANNED" },
