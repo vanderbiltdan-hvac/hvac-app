@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v1.60.0</title>
+    <title>HVAC Splash v1.60.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.60.0</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v1.60.5</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1533,6 +1533,7 @@
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
 
             <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+                <button onclick="pullEquipmentFromQuickStash()" class="btn-utility" style="border-color:var(--amber-orange); color:var(--amber-orange); font-size:9px;">📥 PULL STASH</button>
                 <button onclick="wipeSpecsData()" class="btn-utility danger" style="font-size:9px; padding:6px 10px;">☢️ WIPE SPECS</button>
                 <button onclick="applyMirrorToHub('specs')" class="btn-utility"
                     style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:9px;">⚡ MIRROR
@@ -1920,7 +1921,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.60.0</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v1.60.5</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -2322,7 +2323,8 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v1.60.0";
+        const APP_VERSION = "v1.60.5";
+        const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         var hvacQsAttachMode = false;
         var hvacQsAttachContext = null;
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
@@ -4966,6 +4968,192 @@
             renderActiveQuickStash();
         }
 
+        function buildLocalJobArchiveSnapshot() {
+            try {
+                let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
+                if (!rawSession) return null;
+                let session = JSON.parse(rawSession);
+                if (!session || !session.quickStashId) return null;
+
+                let clonedStash = null;
+                let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+                let targetStash = stashes[session.quickStashId];
+                if (targetStash) {
+                    clonedStash = JSON.parse(JSON.stringify(targetStash));
+                }
+
+                let equipmentState = null;
+                try {
+                    let sys = localStorage.getItem('hvacSystemV21_0');
+                    let sysObj = sys ? JSON.parse(sys) : null;
+                    let staged = localStorage.getItem('hvacStagedSpecsV28');
+                    let stagedObj = staged ? JSON.parse(staged) : null;
+                    equipmentState = {
+                        data: sysObj,
+                        stagedFields: stagedObj
+                    };
+                } catch(e) { console.error("Error archiving equipment", e); }
+
+                let refState = null;
+                try { refState = JSON.parse(localStorage.getItem('hvacRefDataV20')); } catch(e) {}
+
+                let pmiState = null;
+                try { pmiState = JSON.parse(localStorage.getItem('hvacTechNotesV20')); } catch(e) {}
+
+                let diagState = null;
+                try { diagState = JSON.parse(localStorage.getItem('hvacStagingBufferV20')); } catch(e) {}
+
+                return {
+                    schemaVersion: LOCAL_JOB_ARCHIVE_SCHEMA_VERSION,
+                    session: {
+                        sessionId: session.sessionId,
+                        createdAt: session.createdAt,
+                        updatedAt: session.updatedAt || Date.now(),
+                        state: session.state,
+                        quickStashId: session.quickStashId,
+                        jobLink: session.jobLink || null
+                    },
+                    quickStash: clonedStash,
+                    pages: {
+                        equipment: equipmentState,
+                        refrigerant: refState,
+                        pmi: pmiState,
+                        splashDiagnostics: diagState
+                    },
+                    reserved: {
+                        diagnostics: null,
+                        readings: [],
+                        notes: null,
+                        report: null,
+                        photos: []
+                    }
+                };
+            } catch(e) {
+                console.error("buildLocalJobArchiveSnapshot error", e);
+                return null;
+            }
+        }
+
+        function saveLocalJobArchiveSnapshot() {
+            let archive = buildLocalJobArchiveSnapshot();
+            if (!archive) return null;
+            
+            let now = Date.now();
+            archive.session.updatedAt = now;
+            
+            try {
+                let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
+                if (rawSession) {
+                    let session = JSON.parse(rawSession);
+                    session.updatedAt = now;
+                    localStorage.setItem('hvacLocalJobSessionV1', JSON.stringify(session));
+                }
+            } catch(e) { console.error("Error updating session timestamp", e); }
+            
+            localStorage.setItem('hvacLocalJobArchiveV1', JSON.stringify(archive));
+            return archive;
+        }
+
+        function resetEquipmentForNewLocalSession() {
+            systemSpecs = {
+                activeTab: 'customer',
+                customer: { TYPE: 'Residential', NAME: '--', ADDR: '--', PHONE: '--', EMAIL: '--' },
+                outdoor: { TYPE: 'Condenser', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', RLA: '--', LRA: '--', FLA: '--', VOLT: '--', SUB: '--', REF: '--', METER: '--', TON: '--' },
+                indoor: {
+                    TYPE: 'Furnace', BRAND: '--', MDL: '--', SER: '--', YEAR: '--', KBTU: '--', KW: '--', BLOWER: '--', INDUCER: '--', VOLT: '--', FILTER: '--', TON: '--', GAS_V: '--', METER: '--',
+                    C_BRAND: '--', C_MDL: '--', C_SER: '--', C_YEAR: '--', C_TON: '--', C_METER: '--', C_TRAY: '--', C_AIR_DIR: '--'
+                },
+                thermostat: { TYPE: 'Smart', BRAND: '--', MDL: '--' }
+            };
+            stagedSpecs = [];
+            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+            localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
+            if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+        }
+
+        function resetSplashWorkingDataForNewLocalSession() {
+            refData = {};
+            techNotes = [];
+            buffer = {};
+            
+            localStorage.removeItem('hvacRefDataV20');
+            localStorage.removeItem('hvacTechNotesV20');
+            localStorage.removeItem('hvacStagingBufferV20');
+            
+            if (typeof renderRefrigRows === 'function') renderRefrigRows();
+            if (typeof renderPMIGrid === 'function') renderPMIGrid();
+            if (typeof syncLogToUI === 'function') syncLogToUI();
+            if (typeof renderCompiler === 'function') renderCompiler();
+            if (typeof renderDraftBlock === 'function') renderDraftBlock();
+        }
+
+        function pullEquipmentFromQuickStash() {
+            let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
+            if (!rawSession) {
+                if(typeof showToast === 'function') showToast("No Local Job Session found.");
+                return;
+            }
+            let session = JSON.parse(rawSession);
+            if (!session.quickStashId) {
+                if(typeof showToast === 'function') showToast("Session has no Quick Stash ID.");
+                return;
+            }
+            
+            let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
+            let stash = stashes[session.quickStashId];
+            if (!stash) {
+                if(typeof showToast === 'function') showToast("Matching Quick Stash not found.");
+                return;
+            }
+
+            let imported = 0;
+            let matched = 0;
+            let skipped = 0;
+
+            function applyField(sourceVal, destObj, destKey, stagePrefix) {
+                if (!sourceVal) return;
+                let currentVal = destObj[destKey];
+                if (!currentVal || currentVal === "--") {
+                    destObj[destKey] = sourceVal;
+                    imported++;
+                    let stageKey = stagePrefix + "_" + destKey;
+                    if (!stagedSpecs.includes(stageKey)) stagedSpecs.push(stageKey);
+                } else if (currentVal === sourceVal) {
+                    matched++;
+                } else {
+                    skipped++;
+                }
+            }
+
+            if (stash.customer) {
+                applyField(stash.customer.name, systemSpecs.customer, 'NAME', 'customer');
+                applyField(stash.customer.address, systemSpecs.customer, 'ADDR', 'customer');
+                applyField(stash.customer.phone, systemSpecs.customer, 'PHONE', 'customer');
+                applyField(stash.customer.email, systemSpecs.customer, 'EMAIL', 'customer');
+            }
+
+            if (stash.equipment) {
+                applyField(stash.equipment.outdoorModel, systemSpecs.outdoor, 'MDL', 'outdoor');
+                applyField(stash.equipment.outdoorSerial, systemSpecs.outdoor, 'SER', 'outdoor');
+                applyField(stash.equipment.indoorModel, systemSpecs.indoor, 'MDL', 'indoor');
+                applyField(stash.equipment.indoorSerial, systemSpecs.indoor, 'SER', 'indoor');
+                applyField(stash.equipment.thermostatModel, systemSpecs.thermostat, 'MDL', 'thermostat');
+            }
+
+            localStorage.setItem('hvacSystemV21_0', JSON.stringify(systemSpecs));
+            localStorage.setItem('hvacStagedSpecsV28', JSON.stringify(stagedSpecs));
+
+            if (typeof renderSystemSpecs === 'function') renderSystemSpecs();
+            
+            saveLocalJobArchiveSnapshot();
+
+            if (typeof showToast === 'function') {
+                showToast(`QUICK STASH PULL: Imported ${imported}, Matched ${matched}, Skipped ${skipped}`);
+            } else {
+                alert(`QUICK STASH PULL\nImported: ${imported}\nAlready matched: ${matched}\nConflicts skipped: ${skipped}`);
+            }
+        }
+
         function createNewQuickStash(initialName = null) {
             let today = new Date();
             let yyyy = today.getFullYear();
@@ -4994,9 +5182,38 @@
             localStorage.setItem('hvacActiveQuickStashId', id);
             qsActiveDest = id;
             localStorage.setItem('qsActiveDest', qsActiveDest);
+
+            const sessionId = 'session_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+            const localSession = {
+                sessionId: sessionId,
+                createdAt: Date.now(),
+                quickStashId: id,
+                jobLink: null,
+                state: "UNHOOKED"
+            };
+            localStorage.setItem('hvacLocalJobSessionV1', JSON.stringify(localSession));
+
+            currentJob = "";
+            currentJobTab = "";
+            isJobMode = false;
+            localStorage.removeItem('hvacActiveJob');
+            localStorage.removeItem('hvacCurrentJobTabV20');
+            localStorage.removeItem('hvacActiveFolderId');
+
+            if (typeof updateUniversalJobHeaders === 'function') updateUniversalJobHeaders();
+            if (typeof updateJobBadge === 'function') updateJobBadge();
+
+            resetEquipmentForNewLocalSession();
+            resetSplashWorkingDataForNewLocalSession();
+
+            localStorage.removeItem('hvacDiagnosticsHandoffV1');
+            localStorage.removeItem('hvacDiagnosticsSessionStashId');
+            localStorage.removeItem('hvac_app_v4');
+
             updateActiveStashLabel();
             updateDestDropdown();
             renderActiveQuickStash();
+            saveLocalJobArchiveSnapshot();
             return id;
         }
 
@@ -5630,6 +5847,22 @@
                 });
 
                 localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
+
+                let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
+                if (rawSession) {
+                    try {
+                        let sessionObj = JSON.parse(rawSession);
+                        if (sessionObj.quickStashId === activeQuickStashId) {
+                            sessionObj.jobLink = {
+                                sheetName: currentJobTab,
+                                folderId: folderId
+                            };
+                            sessionObj.state = "LINKED";
+                            localStorage.setItem('hvacLocalJobSessionV1', JSON.stringify(sessionObj));
+                            saveLocalJobArchiveSnapshot();
+                        }
+                    } catch(e) { console.error("Error updating local job session:", e); }
+                }
 
                 updateUniversalJobHeaders();
                 if (typeof updateJobBadge === 'function') updateJobBadge();
