@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Compiler v2.04.1</title>
+    <title>Report Compiler v2.05.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -75,7 +75,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.04.1</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.05.0</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -119,11 +119,17 @@
   <!-- MASTER CANVAS: PAGE-SPECIFIC ACCORDIONS -->
   <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
     <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
-      <span>SPECS</span>
-      <span id="badge-specs" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active ]</span>
+      <div class="flex items-center gap-2">
+          <span>SPECS</span>
+      </div>
+      <span id="badge-specs" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active · 0 Populated · 15 Total ]</span>
     </summary>
+    <div class="flex gap-2 p-2 border-b border-slate-700 bg-slate-750">
+        <button onclick="setCompilerSpecsActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
+        <button onclick="setCompilerSpecsActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
+    </div>
     <div id="compiler-specs-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">No items...</div>
     </div>
   </details>
 
@@ -175,7 +181,7 @@
       <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
     </summary>
     <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.04.1</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.05.0</div>
     </div>
   </details>
 </div>
@@ -311,6 +317,8 @@ function initCompiler() {
 
     // --- SPECS ---
     const specsSaved = localStorage.getItem(getCompilerSpecsStorageKey());
+    let specsPopulated = 0;
+    const specsTotal = 15;
     if (specsSaved) {
         try {
             const parsed = JSON.parse(specsSaved);
@@ -322,27 +330,32 @@ function initCompiler() {
                     "FLA ODF", "Refrigerant"
                 ];
                 
-                const allSelectedKeys = Object.keys(parsed.selectedFields).filter(k => parsed.selectedFields[k] === true);
-                const extraKeys = allSelectedKeys.filter(k => !orderedKeys.includes(k));
-                const finalKeysToRender = [...orderedKeys.filter(k => allSelectedKeys.includes(k)), ...extraKeys];
-                
-                finalKeysToRender.forEach(key => {
-                    specsActive++;
-                    let displayValue = parsed.values[key];
-                    if (displayValue === undefined || displayValue === null || displayValue === '') {
-                        displayValue = 'SELECTED';
-                    }
+                orderedKeys.forEach(key => {
+                    let rawVal = parsed.values[key];
+                    let isPopulated = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '');
+                    let isActive = (parsed.selectedFields[key] === true && isPopulated); // Must be populated to be active
                     
-                    const safeKey = key.replace(/[^a-zA-Z0-9]/g, '');
-                    specsCanvas.innerHTML += `<div id="comp-spec-card-${safeKey}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${displayValue}</span><button onclick="softRejectItem('specs', '${key}')" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+                    if (isPopulated) {
+                        specsPopulated++;
+                        if (isActive) specsActive++;
+                        
+                        const displayValue = rawVal;
+                        const safeKey = key.replace(/[^a-zA-Z0-9]/g, '');
+                        
+                        if (isActive) {
+                            specsCanvas.innerHTML += `<div id="comp-spec-card-${safeKey}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerSpecsActive('${key}', false)" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+                        } else {
+                            specsCanvas.innerHTML += `<div id="comp-spec-card-${safeKey}" class="flex justify-between items-center bg-slate-800/60 opacity-70 p-2 rounded border border-slate-700 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-400 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerSpecsActive('${key}', true)" class="text-blue-400 hover:text-blue-300 text-lg font-bold leading-none transition-colors ml-2 shrink-0" title="Add Stamp">+</button></div></div>`;
+                        }
+                    }
                 });
             }
         } catch(e) {
             console.warn("Compiler: Failed to parse Specs storage.", e);
         }
     }
-    if (specsActive === 0) specsCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>';
-    document.getElementById('badge-specs').innerText = `[ ${specsActive} Active ]`;
+    if (specsPopulated === 0) specsCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
+    document.getElementById('badge-specs').innerText = `[ ${specsActive} Active · ${specsPopulated} Populated · ${specsTotal} Total ]`;
 
     // --- STARTUP ---
     if (startupCanvas) {
@@ -450,7 +463,7 @@ function fastPassToReport() {
     if (input.value.trim() === '') return;
     // Future: Push raw string directly into the active report payload array
     console.log("Ad-Hoc Fast Pass Added:", input.value);
-    alert("Fast Pass is NOT YET WIRED in v2.04.1");
+    alert("Fast Pass is NOT YET WIRED in v2.05.0");
     input.value = '';
 }
 
@@ -470,6 +483,49 @@ const diagFieldMap = [
     { id: 'report-summary', lbl: 'Capacitor Results' },
     { id: 'report-motor', lbl: 'Motor Load Results' }
 ];
+
+function setCompilerSpecsActiveBulk(selectPopulated) {
+    const storageKey = getCompilerSpecsStorageKey();
+    const specsSaved = localStorage.getItem(storageKey);
+    if (!specsSaved) return;
+    try {
+        const parsed = JSON.parse(specsSaved);
+        if (!parsed.selectedFields) parsed.selectedFields = {};
+        if (parsed.values) {
+            const orderedKeys = [
+                "Date", "Customer Name", "Address", "Phone", "Email",
+                "Indoor Model", "Indoor Serial", "Indoor Tonnage", "Filter Size",
+                "Metering Device", "Outdoor Model", "Outdoor Serial", "RLA",
+                "FLA ODF", "Refrigerant"
+            ];
+            orderedKeys.forEach(key => {
+                let rawVal = parsed.values[key];
+                let isPopulated = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '');
+                if (selectPopulated) {
+                    if (isPopulated) parsed.selectedFields[key] = true;
+                } else {
+                    parsed.selectedFields[key] = false;
+                }
+            });
+            localStorage.setItem(storageKey, JSON.stringify(parsed));
+            initCompiler();
+        }
+    } catch(e) {}
+}
+
+function setCompilerSpecsActive(key, selected) {
+    const storageKey = getCompilerSpecsStorageKey();
+    const specsSaved = localStorage.getItem(storageKey);
+    if (specsSaved) {
+        try {
+            const parsed = JSON.parse(specsSaved);
+            if (!parsed.selectedFields) parsed.selectedFields = {};
+            parsed.selectedFields[key] = selected;
+            localStorage.setItem(storageKey, JSON.stringify(parsed));
+            initCompiler();
+        } catch(e) {}
+    }
+}
 
 function setCompilerStartupActiveBulk(selectPopulated) {
     const startupCompilerSaved = localStorage.getItem('hvac_startup_compiler_v1');
@@ -553,22 +609,7 @@ function setCompilerDiagActive(id, lbl, selected) {
 function softRejectItem(source, key) {
     // Un-Stamp Registry Flag without deleting Source Data
     if (source === 'specs') {
-        const specsSaved = localStorage.getItem(getCompilerSpecsStorageKey());
-        if (specsSaved) {
-            try {
-                const parsed = JSON.parse(specsSaved);
-                if (parsed && parsed.selectedFields && typeof parsed.selectedFields[key] !== 'undefined') {
-                    parsed.selectedFields[key] = false;
-                    localStorage.setItem(getCompilerSpecsStorageKey(), JSON.stringify(parsed));
-                }
-            } catch(e) {}
-        }
-        const safeKey = key.replace(/[^a-zA-Z0-9]/g, '');
-        const card = document.getElementById(`comp-spec-card-${safeKey}`);
-        if (card) {
-            card.classList.add('opacity-40');
-            setTimeout(initCompiler, 200);
-        }
+        setCompilerSpecsActive(key, false);
     } else if (source === 'startup') {
         setCompilerStartupActive(key, false);
     } else if (source === 'pmi') {
@@ -622,7 +663,7 @@ function resetLayoutDefaults() {
   document.getElementById('val-data-width').innerText = '80px';
 }
 
-const COMPILER_VERSION = "v2.04.1";
+const COMPILER_VERSION = "v2.05.0";
 
 function getSplashDestination() {
     return window.location.protocol === 'file:' ? 'Splash.html' : 'index.html';
