@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.00.8</title>
+    <title>HVAC Splash v2.00.9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1315,7 +1315,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.8</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.9</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
@@ -1921,7 +1921,7 @@
                 <div style="width:var(--qs-hdr-active-wd);">
                     <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.8</span>
+                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.9</span>
                         <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
                     <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
@@ -1937,7 +1937,7 @@
                 <button onclick="closeQuickStash()" style="background:none; border:none; font-size:var(--qs-hdr-close-fs); width:var(--qs-hdr-close-wd); padding:0; cursor:pointer; color:var(--crimson-red);">✖</button>
             </div>
 
-            <div id="quickStashContent" style="flex:1; overflow-y:auto; overflow-x:hidden; padding:15px; display:flex; flex-direction:column; gap:15px; box-sizing:border-box;">
+            <div id="quickStashContent" style="flex:1; overflow-y:auto; overflow-x:hidden; padding:15px; display:flex; flex-direction:column; gap:15px; box-sizing:border-box; padding-bottom:calc(64px + env(safe-area-inset-bottom,0px));">
 
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -2012,7 +2012,7 @@
             </div>
         </div>
         <!-- QUICK STASH NAVIGATION PANEL -->
-        <div id="qs-bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex flex-col pb-[env(safe-area-inset-bottom,0px)]" style="flex-shrink:0;">
+        <div id="qs-bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 flex flex-col" style="position:fixed; left:0; right:0; bottom:0; z-index:10005; padding-bottom:env(safe-area-inset-bottom,0px);">
           <div id="qs-bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
             <div id="qs-bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
           </div>
@@ -2332,7 +2332,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.00.8";
+        const APP_VERSION = "v2.00.9";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, startup: { label: "STARTUP", enabled: true }, pmi: { label: "PMI", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
@@ -2398,6 +2398,9 @@
                 if (isQs && p.name === "Splash") {
                     hrefTarget = "javascript:void(0);";
                     clickAction = ` onclick="closeQuickStash(); return false;"`;
+                } else if (!isQs && (currentPath === "splash.html" || currentPath === "index.html" || !currentPath) && p.name === "Quick Stash") {
+                    hrefTarget = "javascript:void(0);";
+                    clickAction = ` onclick="openQuickStash(); return false;"`;
                 }
 
                 if (isCurrent) {
