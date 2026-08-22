@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Compiler v2.01.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pages-registry.js"></script>
+    <style>
+:root {
+  --pmi-row-height: 30px;
+  --pmi-font-size-label: 10px;
+  --pmi-font-size-content: 10px;
+  --pmi-label-width: 30%;
+  --data-pill-width: 80px;
+  --data-pill-height: 40px;
+  --action-pill-width: 40px;
+  --pill-radius: 8px;
+}
+
+.action-pill {
+  width: var(--action-pill-width);
+  height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+.data-pill {
+  min-width: var(--data-pill-width);
+  min-height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+        .pmi-row {
+            min-height: var(--pmi-row-height);
+            display: flex;
+            align-items: stretch;
+            flex-wrap: nowrap;
+            line-height: 1;
+        }
+
+        .pmi-label {
+            width: var(--pmi-label-width);
+            font-size: var(--pmi-font-size-label);
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .content-cell {
+            font-size: var(--pmi-font-size-content);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen text-white" style="overscroll-behavior-y: contain;">
+
+<!-- STATUS BAR LAUNCHER -->
+<div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.01.0</div>
+</div>
+
+<!-- TOP RIBBON DRAWER (ACCORDION) -->
+<div id="top-ribbon-drawer" class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-2 px-4 py-3 hidden origin-top transition-all duration-300 z-40 sticky top-8 shadow-md">
+    <button onclick="createNewJob()" class="flex-shrink-0 min-w-[70px] h-14 bg-blue-600 hover:bg-blue-500 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-blue-400 shadow-sm" title="New Job">
+        <span class="text-lg leading-none mb-1">➕</span><span class="text-[8px] font-bold uppercase tracking-wider">New Job</span>
+    </button>
+    <button onclick="mirrorSync()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mirror Sync">
+        <span class="text-lg leading-none mb-1">📥</span><span class="text-[8px] font-bold uppercase tracking-wider">Mirror</span>
+    </button>
+    <button onclick="openDrive()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Drive">
+        <span class="text-lg leading-none mb-1">📁</span><span class="text-[8px] font-bold uppercase tracking-wider">Drive</span>
+    </button>
+    <button onclick="openAlbum()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Album">
+        <span class="text-lg leading-none mb-1">📷</span><span class="text-[8px] font-bold uppercase tracking-wider">Album</span>
+    </button>
+    <button onclick="openManuals()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Manuals">
+        <span class="text-lg leading-none mb-1">📖</span><span class="text-[8px] font-bold uppercase tracking-wider">Manuals</span>
+    </button>
+    <button onclick="toggleEditFieldsModal()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Edit Fields">
+        <span class="text-lg leading-none mb-1">🛠️</span><span class="text-[8px] font-bold uppercase tracking-wider">Fields</span>
+    </button>
+    <button onclick="toggleMic()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mic">
+        <span class="text-lg leading-none mb-1">🎙️</span><span class="text-[8px] font-bold uppercase tracking-wider">Mic</span>
+    </button>
+    <button onclick="toggleCalibrationDock()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Settings">
+        <span class="text-lg leading-none mb-1">⚙️</span><span class="text-[8px] font-bold uppercase tracking-wider">Settings</span>
+    </button>
+    <button onclick="clearAllPMIData()" class="flex-shrink-0 min-w-[70px] h-14 bg-red-900/80 hover:bg-red-700 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-red-500 shadow-sm" title="Clear Slate">
+        <span class="text-lg leading-none mb-1">🗑️</span><span class="text-[8px] font-bold uppercase tracking-wider">Clear</span>
+    </button>
+</div>
+
+<div id="compiler-workspace" class="flex-1 w-full px-2 pt-2 pb-24 overflow-y-auto flex flex-col gap-3">
+  <!-- AD-HOC FAST PASS -->
+  <div class="flex gap-2 w-full border-b border-slate-700 pb-3">
+    <input type="text" id="fast-pass-input" placeholder="Type custom field note..." class="flex-1 bg-slate-800 border border-slate-600 text-white text-[10px] p-2 rounded focus:outline-none focus:border-blue-500">
+    <button onclick="fastPassToReport()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Fast Pass</button>
+  </div>
+
+  <!-- MASTER CANVAS: PAGE-SPECIFIC ACCORDIONS -->
+  <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
+      <span>SPECS</span>
+      <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
+    </summary>
+    <div class="p-2 flex flex-col gap-2 min-h-[40px]">
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.01.0</div>
+    </div>
+  </details>
+
+  <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
+      <span>PMI</span>
+      <span id="badge-pmi" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 / 0 ]</span>
+    </summary>
+    <div id="compiler-pmi-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
+       <div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>
+    </div>
+  </details>
+
+  <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
+      <span>DIAGNOSTICS</span>
+      <span id="badge-cap" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 / 0 ]</span>
+    </summary>
+    <div id="compiler-cap-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
+       <div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>
+    </div>
+  </details>
+
+  <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
+      <span>STARTUP</span>
+      <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
+    </summary>
+    <div class="p-2 flex flex-col gap-2 min-h-[40px]">
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.01.0</div>
+    </div>
+  </details>
+
+  <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
+    <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
+      <span>NOTES</span>
+      <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
+    </summary>
+    <div class="p-2 flex flex-col gap-2 min-h-[40px]">
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.01.0</div>
+    </div>
+  </details>
+</div>
+
+<!-- Settings Modal (FORMERLY CALIBRATION DOCK) -->
+<div id="pmi-calibration-dock"
+  class="fixed bottom-20 left-4 right-4 z-50 bg-slate-800/95 backdrop-blur-md border border-slate-600 hidden flex flex-col p-4 transition-all shadow-2xl rounded-xl">
+  
+  <div class="flex justify-between items-center border-b border-slate-600 pb-2 mb-2">
+    <h3 class="text-white text-[10px] font-bold uppercase tracking-widest">Global Settings</h3>
+    <button onclick="toggleCalibrationDock()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+  </div>
+  
+  <div class="text-slate-500 text-xs italic text-center py-4">
+    App settings and integrations coming soon.
+  </div>
+</div>
+
+<!-- BOTTOM APP NAVIGATION PANEL -->
+<div id="bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 flex flex-col" style="position:fixed; left:0; right:0; bottom:0; z-index:40; padding-bottom:env(safe-area-inset-bottom,0px);">
+    <div id="bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+        <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+    </div>
+    <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-16 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
+        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+    </button>
+</div>
+
+<!-- CONTENT LOCKER MODAL (HIDDEN) -->
+<div id="pmi-content-modal"
+  class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+        <div
+            class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+            <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+                <h3 id="modal-category-title" class="text-white font-bold tracking-widest text-xs uppercase">Category
+                    Hub</h3>
+                <button onclick="closeContentLocker()"
+                    class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            <div id="modal-content-area" class="p-4 flex-1 overflow-y-auto flex flex-col gap-4 w-full"></div>
+        </div>
+    </div>
+
+    <script>
+        const prefabData = {
+            "Summary": ["System operating normally", "Multiple issues found", "Requires follow-up visit"],
+            "Filter": ["Clean", "Dirty", "Changed", "No replacement filter available", "Customer would like new filter delivered"],
+            "Evaporator Coil": ["Clean", "Minor buildup", "Dirty", "Major buildup", "Clogged", "Compacted", "Recommended cleaning with no rinse coil spray", "Recommended pull and clean", "Customer opting to leave as is", "Performed pull and clean", "Performed no rinse coil clean"],
+            "Blower Visual": ["Clean", "Minor buildup", "Dirty", "Filthy", "Major buildup", "Recommend cleaning", "Customer opting to leave as is"],
+            "Blower Mechanical": ["Spinning freely", "Not spinning", "Locked up"],
+            "Drain & Pan": ["Cleared drain and pan", "Added algae tabs", "Flushed line with water until flowing clear", "Clogged", "Excessive debris"],
+            "Heater": ["Verified heat operational", "Heat not functioning"],
+            "Float Switch": [],
+            "IAQ": []
+        };
+
+        const sentenceBlocks = {
+            "Float Switch": {
+                Verbs: ["Verified", "Inspected", "Tested"],
+                Targets: ["Primary", "Secondary", "Auxiliary Pan", "Float Switch", "Float Switches"],
+                Status: ["operational", "not operational", "bypassed"],
+                Connectors: ["and", ","]
+            },
+            "IAQ": {
+                Verbs: ["Verified", "Inspected", "Replaced"],
+                Targets: ["REME HALO", "UV Light", "Air Scrubber", "bulb"],
+                Status: ["operational", "not operational", "replaced", "recommend bulb replacement"],
+                Connectors: ["and", ","]
+            }
+        };
+        let activeSentence = [];
+
+        const pmiRegistry = {};
+        let currentActiveCategory = null;
+
+function initCompiler() {
+    let pmiActive = 0, capActive = 0;
+    const pmiCanvas = document.getElementById('compiler-pmi-canvas');
+    const capCanvas = document.getElementById('compiler-cap-canvas');
+    pmiCanvas.innerHTML = '';
+    capCanvas.innerHTML = '';
+
+    // Sweep PMI Registry & Extract Comments
+    const pmiSaved = localStorage.getItem('pmi_data_v1');
+    if (pmiSaved) {
+        const pmiData = JSON.parse(pmiSaved);
+        Object.keys(pmiData).forEach(key => {
+            if (pmiData[key].stamped) {
+                pmiActive++;
+                let valStr = 'SELECTED';
+                if (pmiData[key].comments && pmiData[key].comments.length > 0) {
+                    valStr = pmiData[key].comments.join(' ');
+                }
+                pmiCanvas.innerHTML += `<div id="comp-card-${key}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${valStr}</span><button onclick="softRejectItem('pmi', '${key}')" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+            }
+        });
+    }
+    if (pmiActive === 0) pmiCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>';
+    document.getElementById('badge-pmi').innerText = `[ ${pmiActive} Active ]`;
+
+    // Sweep Diagnostic Registry & Extract Measurements
+    const diagSaved = localStorage.getItem('hvac_app_v4');
+    if (diagSaved) {
+        const diagData = JSON.parse(diagSaved);
+        const reg = diagData.compilerRegistry || {};
+        const liveState = diagData.liveAppState || {};
+        Object.keys(reg).forEach(key => {
+            if (reg[key].stamped) {
+                capActive++;
+                
+                // 1. Extract clean label if available, fallback to key
+                let displayLabel = reg[key].label || key;
+                let valStr = 'SELECTED';
+                
+                // 2. Extract clean formatted sentence if available
+                if (reg[key].displayValue) {
+                    valStr = reg[key].displayValue;
+                } 
+                // 3. Fallback to raw liveAppState numbers
+                else if (liveState[key] !== undefined && liveState[key] !== null) {
+                    valStr = liveState[key];
+                }
+                
+                capCanvas.innerHTML += `<div id="comp-card-${key}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal">${valStr}</span><button onclick="softRejectItem('diag', '${key}')" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+            }
+        });
+    }
+    if (capActive === 0) capCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>';
+    document.getElementById('badge-cap').innerText = `[ ${capActive} Active ]`;
+}
+
+function fastPassToReport() {
+    const input = document.getElementById('fast-pass-input');
+    if (input.value.trim() === '') return;
+    // Future: Push raw string directly into the active report payload array
+    console.log("Ad-Hoc Fast Pass Added:", input.value);
+    alert("Fast Pass is NOT YET WIRED in v2.01.0");
+    input.value = '';
+}
+
+function softRejectItem(source, key) {
+    // Un-Stamp Registry Flag without deleting Source Data
+    if (source === 'pmi') {
+        const pmiSaved = localStorage.getItem('pmi_data_v1');
+        if (pmiSaved) {
+            const data = JSON.parse(pmiSaved);
+            if (data[key]) {
+                data[key].stamped = false;
+                localStorage.setItem('pmi_data_v1', JSON.stringify(data));
+            }
+        }
+    } else if (source === 'diag') {
+        const diagSaved = localStorage.getItem('hvac_app_v4');
+        if (diagSaved) {
+            const data = JSON.parse(diagSaved);
+            if (data.compilerRegistry && data.compilerRegistry[key]) {
+                data.compilerRegistry[key].stamped = false;
+                localStorage.setItem('hvac_app_v4', JSON.stringify(data));
+            }
+        }
+    }
+    
+    // Visually un-stamp the item and redraw to keep UI clutter-free
+    const card = document.getElementById(`comp-card-${key}`);
+    if (card) {
+        card.classList.add('opacity-40');
+        setTimeout(initCompiler, 200); // Fluid redraw
+    }
+}
+
+        function addPlaceholderPill() {
+            const name = prompt("Enter placeholder pill name (e.g., 'Static Press'):");
+            if (!name || name.trim() === "") return;
+            
+            const ribbon = document.getElementById('top-ribbon-drawer');
+            const generatorBtn = ribbon.querySelector('[title="Add Placeholder"]');
+            
+            const newPill = document.createElement('div');
+            newPill.className = "data-pill bg-slate-800/50 text-slate-400 flex flex-col items-center justify-center border border-slate-500 border-dashed shadow-sm shrink-0";
+            newPill.innerHTML = `<span class="text-[8px] font-bold tracking-widest uppercase">${name.trim()}</span><span class="font-mono text-sm">---</span>`;
+            
+            ribbon.insertBefore(newPill, generatorBtn);
+        }
+
+        function toggleTopRibbon() {
+            const ribbon = document.getElementById('top-ribbon-drawer');
+            ribbon.classList.toggle('hidden');
+        }
+
+function resetLayoutDefaults() {
+  document.documentElement.style.setProperty('--action-pill-width', '40px');
+  document.getElementById('slider-action-pill').value = 40;
+  document.getElementById('val-action-pill').innerText = '40px';
+
+  document.documentElement.style.setProperty('--data-pill-width', '80px');
+  document.getElementById('slider-data-width').value = 80;
+  document.getElementById('val-data-width').innerText = '80px';
+}
+
+const COMPILER_VERSION = "v2.01.0";
+
+function getSplashDestination() {
+    return window.location.protocol === 'file:' ? 'Splash.html' : 'index.html';
+}
+
+function getQuickStashDestination() {
+    return window.location.protocol === 'file:' ? 'Splash.html#quickstash' : 'index.html#quickstash';
+}
+
+const FALLBACK_PAGES_REGISTRY = [
+    { name: "Splash", file: getSplashDestination(), state: "ACTIVE" },
+    { name: "Quick Stash", file: getQuickStashDestination(), state: "ACTIVE" },
+    { name: "Notes", file: "notes.html", state: "ACTIVE" },
+    { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
+    { name: "Specs", file: "specs.html", state: "ACTIVE" },
+    { name: "PMI", file: "pmi.html", state: "ACTIVE" },
+    { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
+    { name: "Startup", file: "startup.html", state: "ACTIVE" },
+    { name: "Compiler", file: "compiler.html", state: "PLANNED" },
+    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Reports", file: "reports.html", state: "PLANNED" },
+    { name: "Data Block", file: "datablock.html", state: "PLANNED" }
+];
+
+function getPagesRegistry() {
+    if (window.PLATTS_PAGES_REGISTRY && Array.isArray(window.PLATTS_PAGES_REGISTRY)) {
+        return window.PLATTS_PAGES_REGISTRY;
+    }
+    return FALLBACK_PAGES_REGISTRY;
+}
+
+function renderBottomNav() {
+    const gridInner = document.getElementById('bottom-nav-grid-inner');
+    if (!gridInner) return;
+    
+    gridInner.innerHTML = '';
+    const reg = getPagesRegistry();
+    const currentPath = window.location.pathname.toLowerCase();
+    
+    reg.forEach(page => {
+        const btn = document.createElement('button');
+        
+        let isCurrent = false;
+        if (page.name === 'Compiler') {
+            if (currentPath.endsWith('compiler.html')) {
+                isCurrent = true;
+            }
+        }
+        
+        if (isCurrent) {
+            btn.className = "h-14 flex flex-col items-center justify-center bg-slate-700 border-2 border-blue-500 rounded text-white font-bold text-[10px] shadow-sm uppercase tracking-wider";
+            btn.innerHTML = `<span>${page.name}</span><span class="text-[8px] text-blue-300 mt-1">CURRENT</span>`;
+        } else if (page.state === "ACTIVE") {
+            btn.className = "h-14 flex flex-col items-center justify-center bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-300 font-bold text-[10px] transition-colors shadow-sm uppercase tracking-wider";
+            btn.innerText = page.name;
+            btn.onclick = () => {
+                let dest = page.file;
+                if (page.name === 'Splash') dest = getSplashDestination();
+                window.location.href = dest;
+            };
+        } else {
+            btn.className = "h-14 flex flex-col items-center justify-center bg-slate-900 border border-slate-800 rounded text-slate-600 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed";
+            btn.innerHTML = `<span>${page.name}</span><span class="text-[8px] text-slate-700 mt-1">PLANNED</span>`;
+        }
+        
+        gridInner.appendChild(btn);
+    });
+}
+
+function toggleBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid');
+    const icon = document.getElementById('bottom-nav-icon');
+    const launcher = document.getElementById('bottom-nav-launcher');
+    const topRibbon = document.getElementById('top-ribbon-drawer');
+    
+    if (grid.classList.contains('hidden')) {
+        grid.classList.remove('hidden');
+        icon.innerText = '▼';
+        launcher.classList.add('bg-slate-700');
+        launcher.classList.remove('bg-slate-800');
+        if (topRibbon) topRibbon.classList.add('hidden');
+    } else {
+        grid.classList.add('hidden');
+        icon.innerText = '☰';
+        launcher.classList.add('bg-slate-800');
+        launcher.classList.remove('bg-slate-700');
+    }
+}
+
+        function savePMIData() {
+            localStorage.setItem('pmi_data_v1', JSON.stringify(pmiRegistry));
+        }
+
+        function loadPMIData() {
+            const saved = localStorage.getItem('pmi_data_v1');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    Object.assign(pmiRegistry, data);
+
+                    Object.keys(pmiRegistry).forEach(category => {
+                        const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+                        if (cell) {
+                            const label = cell.previousElementSibling;
+                            if (pmiRegistry[category].stamped) {
+                                label.classList.add('bg-blue-600', 'text-white');
+                            }
+                            renderCell(category);
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to load PMI data', e);
+                }
+            }
+        }
+
+        function clearAllPMIData() {
+            if (confirm("Are you sure you want to clear the entire ledger?")) {
+                Object.keys(pmiRegistry).forEach(key => delete pmiRegistry[key]);
+                savePMIData();
+
+                document.querySelectorAll('.pmi-label').forEach(el => el.classList.remove('bg-blue-600', 'text-white'));
+                document.querySelectorAll('.content-cell').forEach(el => {
+                    el.innerText = '';
+                    el.classList.remove('text-blue-300', 'text-xs', 'p-2');
+                });
+            }
+        }
+
+        function clearCategory(category) {
+            if (pmiRegistry[category]) {
+                pmiRegistry[category].stamped = false;
+                pmiRegistry[category].comments = [];
+                savePMIData();
+
+                const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+                if (cell) {
+                    const label = cell.previousElementSibling;
+                    label.classList.remove('bg-blue-600', 'text-white');
+                    renderCell(category);
+                }
+            }
+        }
+
+        function toggleBlueStamp(category, element) {
+            if (!pmiRegistry[category]) {
+                pmiRegistry[category] = { stamped: false, comments: [] };
+            }
+            pmiRegistry[category].stamped = !pmiRegistry[category].stamped;
+
+            if (pmiRegistry[category].stamped) {
+                element.classList.add('bg-blue-600', 'text-white');
+            } else {
+                element.classList.remove('bg-blue-600', 'text-white');
+            }
+            savePMIData();
+        }
+
+        function openContentLocker(category) {
+            currentActiveCategory = category;
+            if (!pmiRegistry[category]) {
+                pmiRegistry[category] = { stamped: false, comments: [] };
+            }
+
+            document.getElementById('modal-category-title').innerText = category + ' Hub';
+
+            const contentArea = document.getElementById('modal-content-area');
+            contentArea.innerHTML = '';
+
+            // 1. CURRENT COMMENTS (TOP ZONE)
+            const existingTitle = document.createElement('div');
+            existingTitle.className = "text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2";
+            existingTitle.innerText = "Current Comments";
+            contentArea.appendChild(existingTitle);
+
+            const prefabs = prefabData[category] || [];
+            if (prefabs.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = "text-slate-500 text-xs italic mb-4";
+                emptyMsg.innerText = "No comments added yet.";
+                contentArea.appendChild(emptyMsg);
+            } else {
+                prefabs.forEach(text => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "flex gap-2 w-full mb-2";
+
+                    const btn = document.createElement('button');
+                    btn.className = "flex-1 text-left bg-slate-700 hover:bg-slate-600 border border-slate-600 p-3 rounded text-white text-sm transition-colors";
+                    if (pmiRegistry[category].comments.includes(text)) {
+                        btn.classList.add('border-blue-500', 'bg-blue-900');
+                    }
+                    btn.innerText = text;
+                    btn.onclick = function () { toggleComment(category, text, btn); };
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = "bg-slate-600 hover:bg-slate-500 text-white p-3 rounded transition-colors text-xs w-10";
+                    editBtn.innerText = "✎";
+                    editBtn.onclick = function () { editComment(category, text); };
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = "bg-red-900/60 hover:bg-red-800 text-white p-3 rounded transition-colors text-xs w-10";
+                    delBtn.innerText = "×";
+                    delBtn.onclick = function () { deleteComment(category, text); };
+
+                    wrapper.appendChild(btn);
+                    wrapper.appendChild(editBtn);
+                    wrapper.appendChild(delBtn);
+                    contentArea.appendChild(wrapper);
+                });
+            }
+
+            // 2. CUSTOM NOTE ENTRY (MIDDLE ZONE)
+            const customNoteDiv = document.createElement('div');
+            customNoteDiv.className = "flex gap-2 w-full mt-2 mb-4 border-b border-slate-700 pb-4";
+            customNoteDiv.innerHTML = `
+        <input type="text" id="custom-note-input" placeholder="Type custom note..." class="flex-1 bg-slate-800 border border-slate-600 text-white text-[10px] p-2 rounded focus:outline-none focus:border-blue-500">
+        <button onclick="addCustomComment()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Add</button>
+    `;
+            contentArea.appendChild(customNoteDiv);
+
+            // 3. SENTENCE BUILDER (BOTTOM COLLAPSIBLE ZONE)
+            if (typeof sentenceBlocks !== 'undefined' && sentenceBlocks[category]) {
+                activeSentence = [];
+
+                const details = document.createElement('details');
+                details.className = "w-full bg-slate-800 border border-slate-600 rounded p-3 mb-2";
+
+                const summary = document.createElement('summary');
+                summary.className = "text-[10px] text-slate-300 font-bold uppercase tracking-widest cursor-pointer outline-none select-none";
+                summary.innerText = "Lego Block Sentence Builder";
+                details.appendChild(summary);
+
+                const builderContainer = document.createElement('div');
+                builderContainer.className = "mt-3 flex flex-col gap-2";
+
+                const previewContainer = document.createElement('div');
+                previewContainer.className = "bg-slate-900 border border-blue-500 rounded p-3 flex justify-between items-center";
+
+                const previewText = document.createElement('div');
+                previewText.id = "sentence-preview";
+                previewText.className = "text-blue-300 font-bold text-sm italic flex-1";
+                previewText.innerText = "___";
+
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = "flex gap-2 ml-2";
+
+                const undoBtn = document.createElement('button');
+                undoBtn.className = "bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded text-xs transition-colors";
+                undoBtn.innerText = "Undo";
+                undoBtn.onclick = () => undoWord();
+
+                const clearBtn = document.createElement('button');
+                clearBtn.className = "bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded text-xs transition-colors";
+                clearBtn.innerText = "Clear";
+                clearBtn.onclick = () => clearSentence();
+
+                const commitBtn = document.createElement('button');
+                commitBtn.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded text-xs transition-colors";
+                commitBtn.innerText = "Commit";
+                commitBtn.onclick = () => commitSentence(category);
+
+                controlsDiv.appendChild(undoBtn);
+                controlsDiv.appendChild(clearBtn);
+                controlsDiv.appendChild(commitBtn);
+                previewContainer.appendChild(previewText);
+                previewContainer.appendChild(controlsDiv);
+                builderContainer.appendChild(previewContainer);
+
+                Object.keys(sentenceBlocks[category]).forEach(groupKey => {
+                    const blockTitle = document.createElement('div');
+                    blockTitle.className = "text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 mb-1";
+                    blockTitle.innerText = groupKey;
+                    builderContainer.appendChild(blockTitle);
+
+                    const blockGrid = document.createElement('div');
+                    blockGrid.className = "flex flex-wrap gap-2";
+
+                    sentenceBlocks[category][groupKey].forEach(word => {
+                        const wordBtn = document.createElement('button');
+                        wordBtn.className = "bg-slate-700 hover:bg-slate-600 border border-slate-600 px-3 py-2 rounded text-white text-xs transition-colors";
+                        wordBtn.innerText = word;
+                        wordBtn.onclick = () => pushWord(word);
+                        blockGrid.appendChild(wordBtn);
+                    });
+                    builderContainer.appendChild(blockGrid);
+                });
+
+                details.appendChild(builderContainer);
+                contentArea.appendChild(details);
+            }
+
+            document.getElementById('pmi-content-modal').classList.remove('hidden');
+            document.getElementById('pmi-content-modal').classList.add('flex');
+        }
+
+        function toggleComment(category, text, btnElement) {
+            const index = pmiRegistry[category].comments.indexOf(text);
+            if (index > -1) {
+                pmiRegistry[category].comments.splice(index, 1);
+                btnElement.classList.remove('border-blue-500', 'bg-blue-900');
+            } else {
+                pmiRegistry[category].comments.push(text);
+                btnElement.classList.add('border-blue-500', 'bg-blue-900');
+            }
+            savePMIData();
+            renderCell(category);
+        }
+
+        function renderCell(category) {
+            const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+            if (cell && pmiRegistry[category]) {
+                if (pmiRegistry[category].comments.length > 0) {
+                    cell.innerText = pmiRegistry[category].comments.join(' ');
+                    cell.classList.add('text-blue-300', 'text-xs', 'p-2');
+                } else {
+                    cell.innerText = '';
+                    cell.classList.remove('text-blue-300', 'text-xs', 'p-2');
+                }
+            }
+        }
+
+        function closeContentLocker() {
+            document.getElementById('pmi-content-modal').classList.add('hidden');
+            document.getElementById('pmi-content-modal').classList.remove('flex');
+            currentActiveCategory = null;
+        }
+
+        function pushWord(word) {
+            activeSentence.push(word);
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = activeSentence.length ? activeSentence.join(' ') + " " : "___";
+        }
+
+        function undoWord() {
+            activeSentence.pop();
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = activeSentence.length ? activeSentence.join(' ') + " " : "___";
+        }
+
+        function clearSentence() {
+            activeSentence = [];
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = "___";
+        }
+
+        function commitSentence(category) {
+            const sentence = activeSentence.join(' ').trim();
+            if (sentence !== "") {
+                // Save permanently to Hub's memory so it survives 'Undo'
+                if (!prefabData[category]) prefabData[category] = [];
+                if (!prefabData[category].includes(sentence)) {
+                    prefabData[category].push(sentence);
+                }
+                // Push to active ledger row
+                if (!pmiRegistry[category].comments.includes(sentence)) {
+                    pmiRegistry[category].comments.push(sentence);
+                }
+                activeSentence = [];
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function editComment(category, oldText) {
+            const newText = prompt("Edit comment:", oldText);
+            if (newText !== null && newText.trim() !== "") {
+                const cleanNewText = newText.trim();
+
+                const pIndex = prefabData[category].indexOf(oldText);
+                if (pIndex > -1) {
+                    prefabData[category][pIndex] = cleanNewText;
+                }
+
+                if (pmiRegistry[category] && pmiRegistry[category].comments) {
+                    const cIndex = pmiRegistry[category].comments.indexOf(oldText);
+                    if (cIndex > -1) {
+                        pmiRegistry[category].comments[cIndex] = cleanNewText;
+                    }
+                }
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function deleteComment(category, text) {
+            if (confirm(`Delete comment: "${text}"?`)) {
+                const pIndex = prefabData[category].indexOf(text);
+                if (pIndex > -1) {
+                    prefabData[category].splice(pIndex, 1);
+                }
+
+                if (pmiRegistry[category] && pmiRegistry[category].comments) {
+                    const cIndex = pmiRegistry[category].comments.indexOf(text);
+                    if (cIndex > -1) {
+                        pmiRegistry[category].comments.splice(cIndex, 1);
+                    }
+                }
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function addCustomComment() {
+            const input = document.getElementById('custom-note-input');
+            const note = input.value.trim();
+            if (note && currentActiveCategory) {
+                if (!prefabData[currentActiveCategory]) {
+                    prefabData[currentActiveCategory] = [];
+                }
+                if (!prefabData[currentActiveCategory].includes(note)) {
+                    prefabData[currentActiveCategory].push(note);
+                }
+
+                if (!pmiRegistry[currentActiveCategory].comments.includes(note)) {
+                    pmiRegistry[currentActiveCategory].comments.push(note);
+                }
+
+                input.value = '';
+                savePMIData();
+                openContentLocker(currentActiveCategory);
+                renderCell(currentActiveCategory);
+            }
+        }
+
+function toggleCalibrationDock() {
+  const dock = document.getElementById('pmi-calibration-dock');
+  dock.classList.toggle('hidden');
+}
+
+function createNewJob() {
+    const name = prompt("Enter new Job Name/ID:");
+    if(name && name.trim() !== '') {
+        document.getElementById('active-job-ticket').innerText = name.trim();
+    }
+}
+function mirrorSync() { console.log("Mirror Sync triggered"); }
+function openDrive() { console.log("Drive bridge triggered"); }
+function openAlbum() { console.log("Album bridge triggered"); }
+function openManuals() { console.log("Manuals bridge triggered"); }
+function toggleEditFieldsModal() {
+    const modal = document.getElementById('edit-fields-modal');
+    if (modal) {
+        modal.classList.toggle('hidden');
+        modal.classList.toggle('flex');
+    }
+}
+function toggleMic() { console.log("Mic toggled"); }
+function toggleCalibration() {
+    const drawer = document.getElementById('calibration-drawer');
+    if (drawer) {
+        drawer.classList.toggle('hidden');
+        drawer.classList.toggle('flex');
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  renderBottomNav();
+  initCompiler();
+  loadPMIData();
+});
+</script>
+</body>
+
+</html>
