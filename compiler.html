@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Compiler v2.01.0</title>
+    <title>Report Compiler v2.02.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -75,7 +75,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.01.0</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.02.0</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -120,10 +120,10 @@
   <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
     <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
       <span>SPECS</span>
-      <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
+      <span id="badge-specs" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active ]</span>
     </summary>
-    <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.01.0</div>
+    <div id="compiler-specs-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
+       <div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>
     </div>
   </details>
 
@@ -153,7 +153,7 @@
       <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
     </summary>
     <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.01.0</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.02.0</div>
     </div>
   </details>
 
@@ -163,7 +163,7 @@
       <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
     </summary>
     <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.01.0</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.02.0</div>
     </div>
   </details>
 </div>
@@ -239,12 +239,55 @@
         const pmiRegistry = {};
         let currentActiveCategory = null;
 
+function getCompilerSpecsStorageKey() {
+    const activeJob = window.PLATTS_MIRROR_DATA ? window.PLATTS_MIRROR_DATA.getActiveJob() : localStorage.getItem('hvacActiveJob');
+    return activeJob ? `hvacSpecsData_${activeJob}` : 'hvacSpecsData_no_job';
+}
+
 function initCompiler() {
-    let pmiActive = 0, capActive = 0;
+    let specsActive = 0, pmiActive = 0, capActive = 0;
+    const specsCanvas = document.getElementById('compiler-specs-canvas');
     const pmiCanvas = document.getElementById('compiler-pmi-canvas');
     const capCanvas = document.getElementById('compiler-cap-canvas');
+    specsCanvas.innerHTML = '';
     pmiCanvas.innerHTML = '';
     capCanvas.innerHTML = '';
+
+    // --- SPECS ---
+    const specsSaved = localStorage.getItem(getCompilerSpecsStorageKey());
+    if (specsSaved) {
+        try {
+            const parsed = JSON.parse(specsSaved);
+            if (parsed && parsed.values && parsed.selectedFields) {
+                const orderedKeys = [
+                    "Date", "Customer Name", "Address", "Phone", "Email",
+                    "Indoor Model", "Indoor Serial", "Indoor Tonnage", "Filter Size",
+                    "Metering Device", "Outdoor Model", "Outdoor Serial", "RLA",
+                    "FLA ODF", "Refrigerant"
+                ];
+                
+                const allSelectedKeys = Object.keys(parsed.selectedFields).filter(k => parsed.selectedFields[k] === true);
+                const extraKeys = allSelectedKeys.filter(k => !orderedKeys.includes(k));
+                const finalKeysToRender = [...orderedKeys.filter(k => allSelectedKeys.includes(k)), ...extraKeys];
+                
+                finalKeysToRender.forEach(key => {
+                    specsActive++;
+                    let displayValue = parsed.values[key];
+                    if (displayValue === undefined || displayValue === null || displayValue === '') {
+                        displayValue = 'SELECTED';
+                    }
+                    
+                    const safeKey = key.replace(/[^a-zA-Z0-9]/g, '');
+                    specsCanvas.innerHTML += `<div id="comp-spec-card-${safeKey}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${displayValue}</span><button onclick="softRejectItem('specs', '${key}')" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+                });
+            }
+        } catch(e) {
+            console.warn("Compiler: Failed to parse Specs storage.", e);
+        }
+    }
+    if (specsActive === 0) specsCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>';
+    document.getElementById('badge-specs').innerText = `[ ${specsActive} Active ]`;
+
 
     // Sweep PMI Registry & Extract Comments
     const pmiSaved = localStorage.getItem('pmi_data_v1');
@@ -300,13 +343,30 @@ function fastPassToReport() {
     if (input.value.trim() === '') return;
     // Future: Push raw string directly into the active report payload array
     console.log("Ad-Hoc Fast Pass Added:", input.value);
-    alert("Fast Pass is NOT YET WIRED in v2.01.0");
+    alert("Fast Pass is NOT YET WIRED in v2.02.0");
     input.value = '';
 }
 
 function softRejectItem(source, key) {
     // Un-Stamp Registry Flag without deleting Source Data
-    if (source === 'pmi') {
+    if (source === 'specs') {
+        const specsSaved = localStorage.getItem(getCompilerSpecsStorageKey());
+        if (specsSaved) {
+            try {
+                const parsed = JSON.parse(specsSaved);
+                if (parsed && parsed.selectedFields && typeof parsed.selectedFields[key] !== 'undefined') {
+                    parsed.selectedFields[key] = false;
+                    localStorage.setItem(getCompilerSpecsStorageKey(), JSON.stringify(parsed));
+                }
+            } catch(e) {}
+        }
+        const safeKey = key.replace(/[^a-zA-Z0-9]/g, '');
+        const card = document.getElementById(`comp-spec-card-${safeKey}`);
+        if (card) {
+            card.classList.add('opacity-40');
+            setTimeout(initCompiler, 200);
+        }
+    } else if (source === 'pmi') {
         const pmiSaved = localStorage.getItem('pmi_data_v1');
         if (pmiSaved) {
             const data = JSON.parse(pmiSaved);
@@ -363,7 +423,7 @@ function resetLayoutDefaults() {
   document.getElementById('val-data-width').innerText = '80px';
 }
 
-const COMPILER_VERSION = "v2.01.0";
+const COMPILER_VERSION = "v2.02.0";
 
 function getSplashDestination() {
     return window.location.protocol === 'file:' ? 'Splash.html' : 'index.html';
