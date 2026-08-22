@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Compiler v2.03.0</title>
+    <title>Report Compiler v2.04.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -75,7 +75,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.03.0</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.04.1</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -139,21 +139,33 @@
 
   <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
     <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
-      <span>DIAGNOSTICS</span>
-      <span id="badge-cap" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 / 0 ]</span>
+      <div class="flex items-center gap-2">
+          <span>DIAGNOSTICS</span>
+      </div>
+      <span id="badge-cap" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active · 0 Populated · 14 Total ]</span>
     </summary>
+    <div class="flex gap-2 p-2 border-b border-slate-700 bg-slate-750">
+        <button onclick="setCompilerDiagActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
+        <button onclick="setCompilerDiagActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
+    </div>
     <div id="compiler-cap-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">No items...</div>
     </div>
   </details>
 
   <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
     <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
-      <span>STARTUP</span>
-      <span id="badge-startup" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active ]</span>
+      <div class="flex items-center gap-2">
+          <span>STARTUP</span>
+      </div>
+      <span id="badge-startup" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active · 0 Populated · 39 Total ]</span>
     </summary>
+    <div class="flex gap-2 p-2 border-b border-slate-700 bg-slate-750">
+        <button onclick="setCompilerStartupActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
+        <button onclick="setCompilerStartupActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
+    </div>
     <div id="compiler-startup-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">No items...</div>
     </div>
   </details>
 
@@ -163,7 +175,7 @@
       <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
     </summary>
     <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.03.0</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.04.1</div>
     </div>
   </details>
 </div>
@@ -337,30 +349,41 @@ function initCompiler() {
         const startupSaved = localStorage.getItem('hvac_startup_v1');
         const startupCompilerSaved = localStorage.getItem('hvac_startup_compiler_v1');
         
-        if (startupSaved && startupCompilerSaved) {
+        let startupPopulated = 0;
+        let startupTotal = startupFieldMap.length;
+        
+        if (startupSaved) {
             try {
                 const startupData = JSON.parse(startupSaved);
-                const startupCompilerState = JSON.parse(startupCompilerSaved);
+                const startupCompilerState = startupCompilerSaved ? JSON.parse(startupCompilerSaved) : { selectedFields: {} };
+                if (!startupCompilerState.selectedFields) startupCompilerState.selectedFields = {};
                 if (startupCompilerState.selectedFields) {
                     startupFieldMap.forEach(field => {
-                        if (startupCompilerState.selectedFields[field.id] === true) {
-                            startupActive++;
-                            const displayLabel = field.label;
-                            let displayValue = startupData[field.id];
-                            if (displayValue === undefined || displayValue === null || displayValue === '') {
-                                displayValue = 'SELECTED';
-                            }
+                        let rawVal = startupData[field.id];
+                        let isPopulated = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '');
+                        let isActive = (startupCompilerState.selectedFields[field.id] === true && isPopulated); // Must be populated to be active
+                        
+                        if (isPopulated) {
+                            startupPopulated++;
+                            if (isActive) startupActive++;
                             
+                            const displayLabel = field.label;
+                            const displayValue = rawVal;
                             const safeKey = field.id.replace(/[^a-zA-Z0-9]/g, '');
-                            startupCanvas.innerHTML += `<div id="comp-startup-card-${safeKey}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${displayValue}</span><button onclick="softRejectItem('startup', '${field.id}')" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+                            
+                            if (isActive) {
+                                startupCanvas.innerHTML += `<div id="comp-startup-card-${safeKey}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerStartupActive('${field.id}', false)" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+                            } else {
+                                startupCanvas.innerHTML += `<div id="comp-startup-card-${safeKey}" class="flex justify-between items-center bg-slate-800/60 opacity-70 p-2 rounded border border-slate-700 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-400 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerStartupActive('${field.id}', true)" class="text-blue-400 hover:text-blue-300 text-lg font-bold leading-none transition-colors ml-2 shrink-0" title="Add Stamp">+</button></div></div>`;
+                            }
                         }
                     });
                 }
             } catch(e) {}
         }
         
-        if (startupActive === 0) startupCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>';
-        document.getElementById('badge-startup').innerText = `[ ${startupActive} Active ]`;
+        if (startupPopulated === 0) startupCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
+        document.getElementById('badge-startup').innerText = `[ ${startupActive} Active · ${startupPopulated} Populated · ${startupTotal} Total ]`;
     }
 
 
@@ -383,34 +406,43 @@ function initCompiler() {
     document.getElementById('badge-pmi').innerText = `[ ${pmiActive} Active ]`;
 
     // Sweep Diagnostic Registry & Extract Measurements
+    let capPopulated = 0;
+    const diagTotal = diagFieldMap.length;
     const diagSaved = localStorage.getItem('hvac_app_v4');
     if (diagSaved) {
-        const diagData = JSON.parse(diagSaved);
-        const reg = diagData.compilerRegistry || {};
-        const liveState = diagData.liveAppState || {};
-        Object.keys(reg).forEach(key => {
-            if (reg[key].stamped) {
-                capActive++;
+        try {
+            const diagData = JSON.parse(diagSaved);
+            const reg = diagData.compilerRegistry || {};
+            const liveState = diagData.liveAppState || {};
+            
+            diagFieldMap.forEach(field => {
+                let displayLabel = field.lbl;
+                let valStr = '';
                 
-                // 1. Extract clean label if available, fallback to key
-                let displayLabel = reg[key].label || key;
-                let valStr = 'SELECTED';
-                
-                // 2. Extract clean formatted sentence if available
-                if (reg[key].displayValue) {
-                    valStr = reg[key].displayValue;
-                } 
-                // 3. Fallback to raw liveAppState numbers
-                else if (liveState[key] !== undefined && liveState[key] !== null) {
-                    valStr = liveState[key];
+                if (reg[field.id] && reg[field.id].displayValue) {
+                    valStr = reg[field.id].displayValue;
+                } else if (liveState[field.id] !== undefined && liveState[field.id] !== null) {
+                    valStr = String(liveState[field.id]);
                 }
                 
-                capCanvas.innerHTML += `<div id="comp-card-${key}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal">${valStr}</span><button onclick="softRejectItem('diag', '${key}')" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
-            }
-        });
+                let isPopulated = (valStr.trim() !== '');
+                let isActive = (reg[field.id] && reg[field.id].stamped === true && isPopulated); // Must be populated to be active
+                
+                if (isPopulated) {
+                    capPopulated++;
+                    if (isActive) capActive++;
+                    
+                    if (isActive) {
+                        capCanvas.innerHTML += `<div id="comp-card-${field.id}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal">${valStr}</span><button onclick="setCompilerDiagActive('${field.id}', '${displayLabel}', false)" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+                    } else {
+                        capCanvas.innerHTML += `<div id="comp-card-${field.id}" class="flex justify-between items-center bg-slate-800/60 opacity-70 p-2 rounded border border-slate-700 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-400 font-bold text-right leading-tight whitespace-normal">${valStr}</span><button onclick="setCompilerDiagActive('${field.id}', '${displayLabel}', true)" class="text-blue-400 hover:text-blue-300 text-lg font-bold leading-none transition-colors ml-2 shrink-0" title="Add Stamp">+</button></div></div>`;
+                    }
+                }
+            });
+        } catch (e) {}
     }
-    if (capActive === 0) capCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>';
-    document.getElementById('badge-cap').innerText = `[ ${capActive} Active ]`;
+    if (capPopulated === 0) capCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
+    document.getElementById('badge-cap').innerText = `[ ${capActive} Active · ${capPopulated} Populated · ${diagTotal} Total ]`;
 }
 
 function fastPassToReport() {
@@ -418,9 +450,105 @@ function fastPassToReport() {
     if (input.value.trim() === '') return;
     // Future: Push raw string directly into the active report payload array
     console.log("Ad-Hoc Fast Pass Added:", input.value);
-    alert("Fast Pass is NOT YET WIRED in v2.03.0");
+    alert("Fast Pass is NOT YET WIRED in v2.04.1");
     input.value = '';
 }
+
+const diagFieldMap = [
+    { id: 'diag_herm_v', lbl: 'Herm Volts' },
+    { id: 'diag_herm_a', lbl: 'Herm Amps' },
+    { id: 'combo-herm', lbl: 'Herm Results' },
+    { id: 'diag_fan_v', lbl: 'Fan Volts' },
+    { id: 'diag_fan_a', lbl: 'Fan Amps' },
+    { id: 'combo-fan', lbl: 'Fan Results' },
+    { id: 'diag_comp_rla', lbl: 'RLA (Measured)' },
+    { id: 'diag_comp_rla_2', lbl: 'RLA 2 (Measured)' },
+    { id: 'diag_odf_fla', lbl: 'FLA ODF (Measured)' },
+    { id: 'diag_odf_fla_2', lbl: 'FLA ODF2 (Measured)' },
+    { id: 'diag_herm_bench', lbl: 'Herm µF' },
+    { id: 'diag_fan_bench', lbl: 'Fan µF' },
+    { id: 'report-summary', lbl: 'Capacitor Results' },
+    { id: 'report-motor', lbl: 'Motor Load Results' }
+];
+
+function setCompilerStartupActiveBulk(selectPopulated) {
+    const startupCompilerSaved = localStorage.getItem('hvac_startup_compiler_v1');
+    const startupSaved = localStorage.getItem('hvac_startup_v1');
+    if (!startupSaved) return;
+    try {
+        const state = startupCompilerSaved ? JSON.parse(startupCompilerSaved) : { selectedFields: {} };
+        const data = JSON.parse(startupSaved);
+        if (!state.selectedFields) state.selectedFields = {};
+        
+        startupFieldMap.forEach(field => {
+            let isPopulated = (data[field.id] !== undefined && data[field.id] !== null && String(data[field.id]).trim() !== '');
+            if (selectPopulated) {
+                if (isPopulated) state.selectedFields[field.id] = true;
+            } else {
+                state.selectedFields[field.id] = false;
+            }
+        });
+        localStorage.setItem('hvac_startup_compiler_v1', JSON.stringify(state));
+        initCompiler();
+    } catch(e) {}
+}
+
+function setCompilerStartupActive(id, selected) {
+    const startupCompilerSaved = localStorage.getItem('hvac_startup_compiler_v1');
+    try {
+        const state = startupCompilerSaved ? JSON.parse(startupCompilerSaved) : { selectedFields: {} };
+        if (!state.selectedFields) state.selectedFields = {};
+        state.selectedFields[id] = selected;
+        localStorage.setItem('hvac_startup_compiler_v1', JSON.stringify(state));
+        initCompiler();
+    } catch(e) {}
+}
+
+function setCompilerDiagActiveBulk(selectPopulated) {
+    const diagSaved = localStorage.getItem('hvac_app_v4');
+    if (!diagSaved) return;
+    try {
+        const data = JSON.parse(diagSaved);
+        if (!data.compilerRegistry) data.compilerRegistry = {};
+        if (!data.liveAppState) data.liveAppState = {};
+        
+        diagFieldMap.forEach(field => {
+            let valStr = '';
+            if (data.compilerRegistry[field.id] && data.compilerRegistry[field.id].displayValue) {
+                valStr = data.compilerRegistry[field.id].displayValue;
+            } else if (data.liveAppState[field.id] !== undefined && data.liveAppState[field.id] !== null) {
+                valStr = String(data.liveAppState[field.id]);
+            }
+            let isPopulated = (valStr.trim() !== '');
+            
+            if (selectPopulated) {
+                if (isPopulated) {
+                    if (!data.compilerRegistry[field.id]) data.compilerRegistry[field.id] = { label: field.lbl };
+                    data.compilerRegistry[field.id].stamped = true;
+                }
+            } else {
+                if (data.compilerRegistry[field.id]) data.compilerRegistry[field.id].stamped = false;
+            }
+        });
+        localStorage.setItem('hvac_app_v4', JSON.stringify(data));
+        initCompiler();
+    } catch(e) {}
+}
+
+function setCompilerDiagActive(id, lbl, selected) {
+    const diagSaved = localStorage.getItem('hvac_app_v4');
+    if (diagSaved) {
+        try {
+            const data = JSON.parse(diagSaved);
+            if (!data.compilerRegistry) data.compilerRegistry = {};
+            if (!data.compilerRegistry[id]) data.compilerRegistry[id] = { label: lbl };
+            data.compilerRegistry[id].stamped = selected;
+            localStorage.setItem('hvac_app_v4', JSON.stringify(data));
+            initCompiler();
+        } catch(e) {}
+    }
+}
+
 
 function softRejectItem(source, key) {
     // Un-Stamp Registry Flag without deleting Source Data
@@ -442,22 +570,7 @@ function softRejectItem(source, key) {
             setTimeout(initCompiler, 200);
         }
     } else if (source === 'startup') {
-        const startupCompilerSaved = localStorage.getItem('hvac_startup_compiler_v1');
-        if (startupCompilerSaved) {
-            try {
-                const parsed = JSON.parse(startupCompilerSaved);
-                if (parsed && parsed.selectedFields && typeof parsed.selectedFields[key] !== 'undefined') {
-                    parsed.selectedFields[key] = false;
-                    localStorage.setItem('hvac_startup_compiler_v1', JSON.stringify(parsed));
-                }
-            } catch(e) {}
-        }
-        const safeKey = key.replace(/[^a-zA-Z0-9]/g, '');
-        const card = document.getElementById(`comp-startup-card-${safeKey}`);
-        if (card) {
-            card.classList.add('opacity-40');
-            setTimeout(initCompiler, 200);
-        }
+        setCompilerStartupActive(key, false);
     } else if (source === 'pmi') {
         const pmiSaved = localStorage.getItem('pmi_data_v1');
         if (pmiSaved) {
@@ -468,14 +581,8 @@ function softRejectItem(source, key) {
             }
         }
     } else if (source === 'diag') {
-        const diagSaved = localStorage.getItem('hvac_app_v4');
-        if (diagSaved) {
-            const data = JSON.parse(diagSaved);
-            if (data.compilerRegistry && data.compilerRegistry[key]) {
-                data.compilerRegistry[key].stamped = false;
-                localStorage.setItem('hvac_app_v4', JSON.stringify(data));
-            }
-        }
+        const displayLabel = key; // Fallback to key if un-stamped directly
+        setCompilerDiagActive(key, displayLabel, false);
     }
     
     // Visually un-stamp the item and redraw to keep UI clutter-free
@@ -515,7 +622,7 @@ function resetLayoutDefaults() {
   document.getElementById('val-data-width').innerText = '80px';
 }
 
-const COMPILER_VERSION = "v2.03.0";
+const COMPILER_VERSION = "v2.04.1";
 
 function getSplashDestination() {
     return window.location.protocol === 'file:' ? 'Splash.html' : 'index.html';
