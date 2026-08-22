@@ -12,7 +12,7 @@ window.PLATTS_PAGES_REGISTRY = [
     { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
     { name: "Startup", file: "startup.html", state: "ACTIVE" },
     { name: "Compiler", file: "compiler.html", state: "ACTIVE" },
-    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Templates", file: "templates.html", state: "ACTIVE" },
     { name: "Reports", file: "reports.html", state: "PLANNED" },
     { name: "Data Block", file: "datablock.html", state: "PLANNED" }
 ];
