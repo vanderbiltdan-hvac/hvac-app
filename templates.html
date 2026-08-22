@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Sequencer v2.00.2</title>
+    <title>Template Sequencer v2.00.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -75,7 +75,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.00.2</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.00.3</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -238,7 +238,7 @@
 let masterSequence = [];
 let draggedIndex = null;
 
-const TEMPLATE_VERSION = "v2.00.2";
+const TEMPLATE_VERSION = "v2.00.3";
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function loadCompilerPayload() {
@@ -432,7 +432,7 @@ function initTemplateManager() {
             <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden mt-2 group" open data-index="${index}" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)">
                 <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none transition-colors group-hover:bg-slate-600" draggable="true" data-index="${index}" ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
                     <div class="flex items-center gap-2">
-                        <span class="text-slate-400 cursor-grab hover:text-white px-2">⋮⋮</span>
+                        <span class="text-slate-400 cursor-grab hover:text-white px-2" style="touch-action: none;" onpointerdown="initTouchDrag(event, ${index})">⋮⋮</span>
                         <span>${item.label}</span>
                     </div>
                     <span class="text-slate-400 text-xs">▼</span>
@@ -462,7 +462,7 @@ function initTemplateManager() {
 
             layoutHtml += `
             <div class="template-item-row flex items-stretch w-full box-border ${orphanClass} rounded overflow-hidden transition-all duration-200" data-label="${item.label}" data-key="${item.key || key}" draggable="true" data-index="${index}" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)" ondragend="handleDragEnd(event)">
-                <div class="flex items-center justify-center px-3 text-slate-500 cursor-grab hover:text-white active:cursor-grabbing bg-slate-900/50 border-r border-slate-700 select-none">⋮⋮</div>
+                <div class="flex items-center justify-center px-3 text-slate-500 cursor-grab hover:text-white active:cursor-grabbing bg-slate-900/50 border-r border-slate-700 select-none" style="touch-action: none;" onpointerdown="initTouchDrag(event, ${index})">⋮⋮</div>
                 <div class="flex-1 flex justify-between items-center p-2 overflow-hidden gap-2">
                     <div class="flex items-center w-1/2 overflow-hidden pr-2">
                         ${badge}
@@ -507,6 +507,68 @@ function handleDrop(e) {
 function handleDragEnd(e) {
     e.currentTarget.style.opacity = '1';
     document.querySelectorAll('[draggable="true"]').forEach(row => row.classList.remove('border-blue-500'));
+}
+
+// TOUCH/MOBILE REORDER ENGINE
+let touchDragIndex = null;
+let touchDragElement = null;
+let touchStartY = 0;
+let touchCurrentY = 0;
+
+function initTouchDrag(e, index) {
+    if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+
+    touchDragIndex = index;
+    touchDragElement = e.target.closest('details.group, .template-item-row');
+    if (!touchDragElement) return;
+
+    touchStartY = e.clientY;
+    touchDragElement.style.opacity = '0.5';
+    touchDragElement.style.position = 'relative';
+    touchDragElement.style.zIndex = '1000';
+    
+    document.addEventListener('pointermove', handleTouchMove, { passive: false });
+    document.addEventListener('pointerup', handleTouchEnd);
+    document.addEventListener('pointercancel', handleTouchEnd);
+}
+
+function handleTouchMove(e) {
+    if (!touchDragElement) return;
+    e.preventDefault();
+    touchCurrentY = e.clientY - touchStartY;
+    touchDragElement.style.transform = `translateY(${touchCurrentY}px)`;
+}
+
+function handleTouchEnd(e) {
+    if (!touchDragElement) return;
+
+    document.removeEventListener('pointermove', handleTouchMove);
+    document.removeEventListener('pointerup', handleTouchEnd);
+    document.removeEventListener('pointercancel', handleTouchEnd);
+
+    touchDragElement.style.opacity = '1';
+    touchDragElement.style.transform = 'none';
+    touchDragElement.style.position = '';
+    touchDragElement.style.zIndex = '';
+
+    const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
+    const targetEl = dropTarget ? dropTarget.closest('details.group, .template-item-row') : null;
+    
+    if (targetEl && targetEl.hasAttribute('data-index')) {
+        const targetIndex = parseInt(targetEl.getAttribute('data-index'));
+        if (touchDragIndex !== null && touchDragIndex !== targetIndex) {
+            const movedItem = masterSequence.splice(touchDragIndex, 1)[0];
+            masterSequence.splice(targetIndex, 0, movedItem);
+            localStorage.setItem('template_sequence_v1', JSON.stringify(masterSequence));
+            initTemplateManager();
+        }
+    }
+    
+    touchDragElement = null;
+    touchDragIndex = null;
 }
 
 
@@ -1181,6 +1243,10 @@ function switchLens(lensName) {
 function applyLensFilter() {
     const rows = document.querySelectorAll('.template-item-row');
     const details = document.querySelectorAll('details.group');
+    const list = document.getElementById('template-sort-list');
+
+    let emptyMsg = document.getElementById('lens-empty-message');
+    if (emptyMsg) emptyMsg.remove();
 
     if (activeLens === 'Vault Dump') {
         rows.forEach(r => r.style.display = 'flex');
@@ -1190,6 +1256,18 @@ function applyLensFilter() {
 
     const savedRules = JSON.parse(localStorage.getItem('template_rules_v1') || '{}');
     const allowedFields = savedRules[activeLens] || [];
+
+    if (allowedFields.length === 0) {
+        rows.forEach(r => r.style.display = 'none');
+        details.forEach(d => d.style.display = 'none');
+        
+        emptyMsg = document.createElement('div');
+        emptyMsg.id = 'lens-empty-message';
+        emptyMsg.className = "text-orange-400 font-bold text-[10px] uppercase tracking-widest text-center py-10 px-4 border border-orange-900/50 bg-orange-900/20 rounded mt-4 mx-2";
+        emptyMsg.innerText = `NO FIELDS SELECTED FOR ${activeLens.toUpperCase()} — USE FIELDS TO CONFIGURE THIS TEMPLATE`;
+        list.appendChild(emptyMsg);
+        return;
+    }
 
     rows.forEach(r => {
         const label = r.getAttribute('data-label');
