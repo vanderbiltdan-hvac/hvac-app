@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Sequencer v2.00.4</title>
+    <title>Template Sequencer v2.00.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -75,7 +75,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.00.4</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.00.5</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -112,7 +112,7 @@
     <div class="flex flex-col gap-1 w-full">
         <div class="flex justify-between items-center">
             <span class="text-[10px] text-white font-bold uppercase tracking-widest">Master Report Sequence</span>
-            <span class="text-[9px] text-slate-400 italic">Drag handles to set priority</span>
+            <span class="text-[9px] text-slate-400 italic">Use arrows to set priority</span>
         </div>
         <div id="template-payload-status" class="w-full text-[10px] font-mono text-slate-500 tracking-wider uppercase mt-1">COMPILER PAYLOAD NOT FOUND</div>
     </div>
@@ -238,7 +238,7 @@
 let masterSequence = [];
 let draggedIndex = null;
 
-const TEMPLATE_VERSION = "v2.00.4";
+const TEMPLATE_VERSION = "v2.00.5";
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function loadCompilerPayload() {
@@ -512,10 +512,30 @@ function handleDragEnd(e) {
 
 function moveSequenceItem(index, direction) {
     if (index < 0 || index >= masterSequence.length) return;
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= masterSequence.length) return;
     
-    if (masterSequence[targetIndex].startsWith('__HDR_')) return;
+    let targetIndex = -1;
+    
+    if (direction === -1) {
+        for (let i = index - 1; i >= 0; i--) {
+            if (masterSequence[i].startsWith('__HDR_')) return;
+            const targetRow = document.querySelector(`.template-item-row[data-index="${i}"]`);
+            if (targetRow && targetRow.style.display !== 'none') {
+                targetIndex = i;
+                break;
+            }
+        }
+    } else if (direction === 1) {
+        for (let i = index + 1; i < masterSequence.length; i++) {
+            if (masterSequence[i].startsWith('__HDR_')) return;
+            const targetRow = document.querySelector(`.template-item-row[data-index="${i}"]`);
+            if (targetRow && targetRow.style.display !== 'none') {
+                targetIndex = i;
+                break;
+            }
+        }
+    }
+    
+    if (targetIndex === -1) return;
     
     const movedItem = masterSequence.splice(index, 1)[0];
     masterSequence.splice(targetIndex, 0, movedItem);
