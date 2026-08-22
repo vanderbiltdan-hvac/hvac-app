@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Sequencer v2.00.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pages-registry.js"></script>
+    <style>
+:root {
+  --pmi-row-height: 30px;
+  --pmi-font-size-label: 10px;
+  --pmi-font-size-content: 10px;
+  --pmi-label-width: 30%;
+  --data-pill-width: 80px;
+  --data-pill-height: 40px;
+  --action-pill-width: 40px;
+  --pill-radius: 8px;
+}
+
+.action-pill {
+  width: var(--action-pill-width);
+  height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+.data-pill {
+  min-width: var(--data-pill-width);
+  min-height: var(--data-pill-height);
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+}
+
+        .pmi-row {
+            min-height: var(--pmi-row-height);
+            display: flex;
+            align-items: stretch;
+            flex-wrap: nowrap;
+            line-height: 1;
+        }
+
+        .pmi-label {
+            width: var(--pmi-label-width);
+            font-size: var(--pmi-font-size-label);
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .content-cell {
+            font-size: var(--pmi-font-size-content);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen text-white" style="overscroll-behavior-y: contain;">
+
+<!-- STATUS BAR LAUNCHER -->
+<div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.00.2</div>
+</div>
+
+<!-- TOP RIBBON DRAWER (ACCORDION) -->
+<div id="top-ribbon-drawer" class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-2 px-4 py-3 hidden origin-top transition-all duration-300 z-40 sticky top-8 shadow-md">
+    <button onclick="createNewJob()" class="flex-shrink-0 min-w-[70px] h-14 bg-blue-600 hover:bg-blue-500 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-blue-400 shadow-sm" title="New Job">
+        <span class="text-lg leading-none mb-1">➕</span><span class="text-[8px] font-bold uppercase tracking-wider">New Job</span>
+    </button>
+    <button onclick="mirrorSync()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mirror Sync">
+        <span class="text-lg leading-none mb-1">📥</span><span class="text-[8px] font-bold uppercase tracking-wider">Mirror</span>
+    </button>
+    <button onclick="openDrive()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Drive">
+        <span class="text-lg leading-none mb-1">📁</span><span class="text-[8px] font-bold uppercase tracking-wider">Drive</span>
+    </button>
+    <button onclick="openAlbum()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Album">
+        <span class="text-lg leading-none mb-1">📷</span><span class="text-[8px] font-bold uppercase tracking-wider">Album</span>
+    </button>
+    <button onclick="openManuals()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Manuals">
+        <span class="text-lg leading-none mb-1">📖</span><span class="text-[8px] font-bold uppercase tracking-wider">Manuals</span>
+    </button>
+    <button onclick="toggleEditFieldsModal()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Edit Fields">
+        <span class="text-lg leading-none mb-1">🛠️</span><span class="text-[8px] font-bold uppercase tracking-wider">Fields</span>
+    </button>
+    <button onclick="toggleMic()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mic">
+        <span class="text-lg leading-none mb-1">🎙️</span><span class="text-[8px] font-bold uppercase tracking-wider">Mic</span>
+    </button>
+    <button onclick="toggleCalibrationDock()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Settings">
+        <span class="text-lg leading-none mb-1">⚙️</span><span class="text-[8px] font-bold uppercase tracking-wider">Settings</span>
+    </button>
+
+</div>
+
+<div id="compiler-workspace" class="flex-1 w-full px-2 py-2 overflow-y-auto flex flex-col gap-3">
+<div class="flex items-center justify-between w-full border-b border-slate-700 pb-2 px-1">
+    <div class="flex flex-col gap-1 w-full">
+        <div class="flex justify-between items-center">
+            <span class="text-[10px] text-white font-bold uppercase tracking-widest">Master Report Sequence</span>
+            <span class="text-[9px] text-slate-400 italic">Drag handles to set priority</span>
+        </div>
+        <div id="template-payload-status" class="w-full text-[10px] font-mono text-slate-500 tracking-wider uppercase mt-1">COMPILER PAYLOAD NOT FOUND</div>
+    </div>
+</div>
+<div id="template-sort-list" class="flex flex-col gap-1 w-full pb-24">
+    <!-- Draggable items will generate here -->
+</div>
+</div>
+
+<!-- Settings Modal (FORMERLY CALIBRATION DOCK) -->
+<div id="pmi-calibration-dock"
+  class="fixed bottom-20 left-4 right-4 z-50 bg-slate-800/95 backdrop-blur-md border border-slate-600 hidden flex flex-col p-4 transition-all shadow-2xl rounded-xl">
+  
+  <div class="flex justify-between items-center border-b border-slate-600 pb-2 mb-2">
+    <h3 class="text-white text-[10px] font-bold uppercase tracking-widest">Global Settings</h3>
+    <button onclick="toggleCalibrationDock()" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+  </div>
+  
+  <div class="text-slate-500 text-xs italic text-center py-4">
+    App settings and integrations coming soon.
+  </div>
+  <button onclick="resetTemplateSequence()" class="w-full mt-4 bg-red-900/80 hover:bg-red-700 text-white font-bold py-3 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm border border-red-500">↻ Reset Canvas Layout</button>
+</div>
+
+<!-- BOTTOM APP NAVIGATION PANEL -->
+<div id="bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 flex flex-col" style="position:fixed; left:0; right:0; bottom:0; z-index:40; padding-bottom:env(safe-area-inset-bottom,0px);">
+    <div id="bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+        <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+    </div>
+    <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-16 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
+        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+    </button>
+</div>
+
+<!-- CONTENT LOCKER MODAL (HIDDEN) -->
+<div id="pmi-content-modal"
+  class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+        <div
+            class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+            <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center">
+                <h3 id="modal-category-title" class="text-white font-bold tracking-widest text-xs uppercase">Category
+                    Hub</h3>
+                <button onclick="closeContentLocker()"
+                    class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            <div id="modal-content-area" class="p-4 flex-1 overflow-y-auto flex flex-col gap-4 w-full"></div>
+        </div>
+    </div>
+
+<!-- EDIT FIELDS MODAL (HIDDEN) -->
+<div id="edit-fields-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-start pt-10 px-4 pb-4">
+    <div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center shrink-0">
+            <h3 class="text-white font-bold tracking-widest text-xs uppercase">Template Lens Builder</h3>
+            <button onclick="toggleEditFieldsModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+        
+        <!-- Template & Report Selectors -->
+        <div class="flex flex-col gap-2 bg-slate-900 p-3 border-b border-slate-700 shrink-0">
+            <div class="flex gap-2 w-full">
+                <select id="report-target-select" class="w-1/3 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors">
+                    <option value="1">Report 1</option>
+                    <option value="2">Report 2</option>
+                    <option value="3">Report 3</option>
+                </select>
+                <select id="template-name-select" onchange="handleTemplateDropdownChange(this)" class="flex-1 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors">
+                    <option value="PMI">PMI</option>
+                    <option value="No Cool">No Cool</option>
+                    <option value="Water Leak">Water Leak</option>
+                    <option value="Change Out">Change Out</option>
+                    <option value="Proposal">Proposal</option>
+                    <option value="Miscellaneous">Miscellaneous</option>
+                    <option value="custom">+ Create Custom</option>
+                </select>
+                <input type="text" id="custom-template-name" class="flex-1 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors hidden" placeholder="Enter Custom Name">
+            </div>
+        </div>
+
+        <!-- Master View All Accordion Canvas -->
+        <div id="template-builder-canvas" class="p-3 flex-1 overflow-y-auto flex flex-col gap-2">
+            <!-- Accordions generate here -->
+        </div>
+
+        <!-- Save Button -->
+        <div class="p-3 bg-slate-900 border-t border-slate-700 shrink-0">
+            <button onclick="saveTemplateLens()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Save & Apply Lens</button>
+        </div>
+    </div>
+</div>
+
+    <script>
+        const prefabData = {
+            "Summary": ["System operating normally", "Multiple issues found", "Requires follow-up visit"],
+            "Filter": ["Clean", "Dirty", "Changed", "No replacement filter available", "Customer would like new filter delivered"],
+            "Evaporator Coil": ["Clean", "Minor buildup", "Dirty", "Major buildup", "Clogged", "Compacted", "Recommended cleaning with no rinse coil spray", "Recommended pull and clean", "Customer opting to leave as is", "Performed pull and clean", "Performed no rinse coil clean"],
+            "Blower Visual": ["Clean", "Minor buildup", "Dirty", "Filthy", "Major buildup", "Recommend cleaning", "Customer opting to leave as is"],
+            "Blower Mechanical": ["Spinning freely", "Not spinning", "Locked up"],
+            "Drain & Pan": ["Cleared drain and pan", "Added algae tabs", "Flushed line with water until flowing clear", "Clogged", "Excessive debris"],
+            "Heater": ["Verified heat operational", "Heat not functioning"],
+            "Float Switch": [],
+            "IAQ": []
+        };
+
+        const sentenceBlocks = {
+            "Float Switch": {
+                Verbs: ["Verified", "Inspected", "Tested"],
+                Targets: ["Primary", "Secondary", "Auxiliary Pan", "Float Switch", "Float Switches"],
+                Status: ["operational", "not operational", "bypassed"],
+                Connectors: ["and", ","]
+            },
+            "IAQ": {
+                Verbs: ["Verified", "Inspected", "Replaced"],
+                Targets: ["REME HALO", "UV Light", "Air Scrubber", "bulb"],
+                Status: ["operational", "not operational", "replaced", "recommend bulb replacement"],
+                Connectors: ["and", ","]
+            }
+        };
+        let activeSentence = [];
+
+        const pmiRegistry = {};
+        let currentActiveCategory = null;
+
+let masterSequence = [];
+let draggedIndex = null;
+
+const TEMPLATE_VERSION = "v2.00.2";
+const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
+
+function loadCompilerPayload() {
+    const raw = localStorage.getItem(COMPILER_PAYLOAD_KEY);
+    if (!raw) return null;
+    try {
+        return JSON.parse(raw);
+    } catch(e) {
+        console.warn("Templates: Compiler payload malformed or unreadable.", e);
+        return null;
+    }
+}
+
+function updatePayloadStatus(payload) {
+    const el = document.getElementById('template-payload-status');
+    const ticket = document.getElementById('active-job-ticket');
+    if (!el) return;
+    
+    if (!payload) {
+        el.innerText = "COMPILER PAYLOAD NOT FOUND";
+        return;
+    }
+    if (payload.schema !== "1.0") {
+        el.innerText = `COMPILER PAYLOAD SCHEMA ${payload.schema || '?'} — EXPECTED 1.0`;
+    } else {
+        el.innerText = `COMPILER · ${payload.summary?.active || 0} ACTIVE · PAYLOAD v${payload.schema}`;
+    }
+
+    if (payload.job && payload.job.activeJob && payload.job.activeJob.trim() !== '') {
+        if (ticket) ticket.innerText = payload.job.activeJob.trim();
+    }
+}
+
+function resolveLegacyTemplateKey(key, payloadActiveItems) {
+    if (!key.startsWith('W')) return null;
+    let match = masterFieldMap.find(m => {
+        let parts = m.split('|');
+        let cell = parts[1] ? parts[1].trim() : "";
+        return cell === key;
+    });
+    if (!match) return null;
+    let parts = match.split('|');
+    let label = parts[0] ? parts[0].trim() : "";
+    let page = parts[2] ? parts[2].trim() : "";
+    
+    let sourceKey = "";
+    if (page === 'Specs') sourceKey = 'specs';
+    else if (page === 'PMI') sourceKey = 'pmi';
+    else if (page === 'Diag') sourceKey = 'diagnostics';
+    else if (page === 'Startup') sourceKey = 'startup';
+    
+    if (!sourceKey) return null;
+    
+    let activeMatches = payloadActiveItems.filter(i => i.source === sourceKey && i.label === label);
+    if (activeMatches.length === 1) {
+        return activeMatches[0].key;
+    }
+    return null;
+}
+
+function initTemplateManager() {
+    const payload = loadCompilerPayload();
+    updatePayloadStatus(payload);
+
+    const rawItems = {};
+    rawItems['__HDR_SPECS__'] = { label: 'Specs', isHeader: true, group: 'specs' };
+    rawItems['__HDR_PMI__'] = { label: 'PMI', isHeader: true, group: 'pmi' };
+    rawItems['__HDR_DIAG__'] = { label: 'Diagnostics', isHeader: true, group: 'diagnostics' };
+    rawItems['__HDR_STARTUP__'] = { label: 'Startup', isHeader: true, group: 'startup' };
+    rawItems['__HDR_UNIVERSAL__'] = { label: 'Universal', isHeader: true, group: 'univ' };
+
+    const payloadActiveItems = []; 
+
+    if (payload && payload.sources) {
+        ['specs', 'pmi', 'diagnostics', 'startup'].forEach(sourceKey => {
+            const sourceGroup = payload.sources[sourceKey];
+            if (sourceGroup && sourceGroup.items) {
+                sourceGroup.items.forEach(item => {
+                    if (item.active === true) {
+                        const stableKey = `compiler:${sourceKey}:${item.id}`;
+                        rawItems[stableKey] = {
+                            key: stableKey,
+                            label: item.label,
+                            value: item.value !== "" ? item.value : "SELECTED",
+                            type: sourceKey === 'diagnostics' ? 'DIAG' : sourceKey.toUpperCase(),
+                            source: sourceKey,
+                            sourceId: item.id,
+                            active: true
+                        };
+                        payloadActiveItems.push(rawItems[stableKey]);
+                    }
+                });
+            }
+        });
+    }
+
+    const univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
+    Object.keys(univSaved).forEach(key => { rawItems[key] = univSaved[key]; });
+
+    const savedSeq = localStorage.getItem('template_sequence_v1');
+    if (savedSeq) {
+        let parsedSeq = [...new Set(JSON.parse(savedSeq).flat())];
+        
+        masterSequence = parsedSeq.map(key => {
+            if (key.startsWith('__HDR_') || key.startsWith('univ_') || key.startsWith('compiler:')) {
+                return key;
+            }
+            
+            let resolvedKey = resolveLegacyTemplateKey(key, payloadActiveItems);
+            if (resolvedKey) return resolvedKey;
+            
+            let match = payloadActiveItems.find(i => i.sourceId === key);
+            if (!match) {
+                const labelMatches = payloadActiveItems.filter(i => i.label === key);
+                if (labelMatches.length === 1) match = labelMatches[0];
+            }
+            
+            if (match) {
+                return match.key;
+            } else {
+                console.warn(`Templates: unresolved legacy sequence key preserved: ${key}`);
+                return key;
+            }
+        });
+        
+        masterSequence = [...new Set(masterSequence)];
+        
+        const missingByHeader = {};
+        payloadActiveItems.forEach(item => {
+            if (!masterSequence.includes(item.key)) {
+                const hdrKey = `__HDR_${item.type === 'DIAG' ? 'DIAG__' : (item.type === 'STARTUP' ? 'STARTUP__' : (item.type === 'SPECS' ? 'SPECS__' : 'PMI__'))}`;
+                if (!missingByHeader[hdrKey]) missingByHeader[hdrKey] = [];
+                missingByHeader[hdrKey].push(item.key);
+            }
+        });
+        
+        Object.keys(missingByHeader).forEach(hdrKey => {
+            const itemsToInsert = missingByHeader[hdrKey];
+            let hdrIndex = masterSequence.indexOf(hdrKey);
+            if (hdrIndex === -1) {
+                masterSequence.push(hdrKey);
+                masterSequence.push(...itemsToInsert);
+            } else {
+                let insertAt = masterSequence.length;
+                for (let i = hdrIndex + 1; i < masterSequence.length; i++) {
+                    if (masterSequence[i].startsWith('__HDR_')) {
+                        insertAt = i;
+                        break;
+                    }
+                }
+                masterSequence.splice(insertAt, 0, ...itemsToInsert);
+            }
+        });
+    } else {
+        masterSequence = [];
+        ['specs', 'pmi', 'diagnostics', 'startup'].forEach(sourceKey => {
+            const items = payloadActiveItems.filter(i => i.source === sourceKey);
+            if (items.length > 0) {
+                masterSequence.push(`__HDR_${sourceKey === 'diagnostics' ? 'DIAG__' : (sourceKey === 'startup' ? 'STARTUP__' : (sourceKey === 'specs' ? 'SPECS__' : 'PMI__'))}`);
+                items.forEach(i => masterSequence.push(i.key));
+            }
+        });
+    }
+    
+    localStorage.setItem('template_sequence_v1', JSON.stringify(masterSequence));
+
+    const list = document.getElementById('template-sort-list');
+    let inDetails = false;
+    let layoutHtml = '';
+
+    const activeHeaderMap = {
+        '__HDR_SPECS__': payloadActiveItems.some(i => i.source === 'specs'),
+        '__HDR_PMI__': payloadActiveItems.some(i => i.source === 'pmi'),
+        '__HDR_DIAG__': payloadActiveItems.some(i => i.source === 'diagnostics'),
+        '__HDR_STARTUP__': payloadActiveItems.some(i => i.source === 'startup'),
+        '__HDR_UNIVERSAL__': Object.keys(univSaved).length > 0
+    };
+
+    let renderedCount = 0;
+
+    masterSequence.forEach((key, index) => {
+        const item = rawItems[key];
+        
+        if (key.startsWith('compiler:') && !item) return;
+        if (!key.startsWith('__HDR_') && !key.startsWith('univ_') && !key.startsWith('compiler:') && !item) return;
+
+        if (item && item.isHeader) {
+            if (!activeHeaderMap[key]) return; 
+            if (inDetails) layoutHtml += `</div></details>`;
+            layoutHtml += `
+            <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden mt-2 group" open data-index="${index}" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)">
+                <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none transition-colors group-hover:bg-slate-600" draggable="true" data-index="${index}" ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-400 cursor-grab hover:text-white px-2">⋮⋮</span>
+                        <span>${item.label}</span>
+                    </div>
+                    <span class="text-slate-400 text-xs">▼</span>
+                </summary>
+                <div class="p-2 flex flex-col gap-1 min-h-[20px]">`;
+            inDetails = true;
+        } else if (item) {
+            renderedCount++;
+            if (!inDetails) {
+                layoutHtml += `<div class="p-2 flex flex-col gap-1 w-full min-h-[20px]">`;
+                inDetails = true;
+            }
+            let badge = '';
+            if (item.type === 'DIAG') badge = `<span class="bg-blue-900/50 text-blue-300 px-1 py-0.5 rounded mr-2 border border-blue-700 text-[8px] shrink-0">DIAG</span>`;
+            else if (item.type === 'PMI') badge = `<span class="bg-emerald-900/50 text-emerald-300 px-1 py-0.5 rounded mr-2 border border-emerald-700 text-[8px] shrink-0">PMI</span>`;
+            else if (item.type === 'STARTUP') badge = `<span class="bg-orange-900/50 text-orange-300 px-1 py-0.5 rounded mr-2 border border-orange-700 text-[8px] shrink-0">STRT</span>`;
+            else if (item.type === 'SPECS') badge = `<span class="bg-cyan-900/50 text-cyan-300 px-1 py-0.5 rounded mr-2 border border-cyan-700 text-[8px] shrink-0">SPEC</span>`;
+            else badge = `<span class="bg-purple-900/50 text-purple-300 px-1 py-0.5 rounded mr-2 border border-purple-700 text-[8px] shrink-0">UNIV</span>`;
+
+            const isMapped = masterFieldMap.some(m => {
+                let [rawLabel] = m.split('|');
+                let lbl = rawLabel ? rawLabel.trim() : "";
+                return lbl === item.label || lbl === item.sourceId;
+            });
+            const orphanClass = isMapped ? 'border-slate-600 bg-slate-800' : 'border-orange-500 bg-orange-900/30';
+            const orphanTextClass = isMapped ? 'text-white' : 'text-orange-300';
+
+            layoutHtml += `
+            <div class="template-item-row flex items-stretch w-full box-border ${orphanClass} rounded overflow-hidden transition-all duration-200" data-label="${item.label}" data-key="${item.key || key}" draggable="true" data-index="${index}" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)" ondragend="handleDragEnd(event)">
+                <div class="flex items-center justify-center px-3 text-slate-500 cursor-grab hover:text-white active:cursor-grabbing bg-slate-900/50 border-r border-slate-700 select-none">⋮⋮</div>
+                <div class="flex-1 flex justify-between items-center p-2 overflow-hidden gap-2">
+                    <div class="flex items-center w-1/2 overflow-hidden pr-2">
+                        ${badge}
+                        <span class="text-[10px] font-bold ${orphanTextClass} uppercase tracking-wider truncate" title="${item.label}">${item.label}</span>
+                    </div>
+                    <span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal flex-1">${item.value}</span>
+                </div>
+            </div>`;
+        }
+    });
+    if (inDetails) layoutHtml += `</div></details>`;
+    
+    if (renderedCount === 0) {
+        list.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-6">No active payload data for sequencing...</div>';
+    } else {
+        list.innerHTML = layoutHtml;
+    }
+    
+    if (typeof applyLensFilter === 'function') applyLensFilter();
+}
+
+// NATIVE HTML5 DRAG & DROP ENGINE
+function handleDragStart(e) {
+    draggedIndex = parseInt(e.currentTarget.getAttribute('data-index'));
+    e.currentTarget.style.opacity = '0.4';
+    e.dataTransfer.effectAllowed = 'move';
+}
+function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
+function handleDragEnter(e) { e.preventDefault(); e.currentTarget.classList.add('border-blue-500'); }
+function handleDragLeave(e) { e.currentTarget.classList.remove('border-blue-500'); }
+function handleDrop(e) {
+    e.stopPropagation();
+    const targetIndex = parseInt(e.currentTarget.getAttribute('data-index'));
+    if (draggedIndex !== null && draggedIndex !== targetIndex) {
+        const movedItem = masterSequence.splice(draggedIndex, 1)[0];
+        masterSequence.splice(targetIndex, 0, movedItem);
+        localStorage.setItem('template_sequence_v1', JSON.stringify(masterSequence));
+        initTemplateManager();
+    }
+    return false;
+}
+function handleDragEnd(e) {
+    e.currentTarget.style.opacity = '1';
+    document.querySelectorAll('[draggable="true"]').forEach(row => row.classList.remove('border-blue-500'));
+}
+
+
+function fastPassToReport() {
+    const input = document.getElementById('fast-pass-input');
+    if (input.value.trim() === '') return;
+    // Future: Push raw string directly into the active report payload array
+    console.log("Ad-Hoc Fast Pass Added:", input.value);
+    input.value = '';
+}
+
+// softRejectItem removed
+
+        function addPlaceholderPill() {
+            const name = prompt("Enter placeholder pill name (e.g., 'Static Press'):");
+            if (!name || name.trim() === "") return;
+            
+            const ribbon = document.getElementById('top-ribbon-drawer');
+            const generatorBtn = ribbon.querySelector('[title="Add Placeholder"]');
+            
+            const newPill = document.createElement('div');
+            newPill.className = "data-pill bg-slate-800/50 text-slate-400 flex flex-col items-center justify-center border border-slate-500 border-dashed shadow-sm shrink-0";
+            newPill.innerHTML = `<span class="text-[8px] font-bold tracking-widest uppercase">${name.trim()}</span><span class="font-mono text-sm">---</span>`;
+            
+            ribbon.insertBefore(newPill, generatorBtn);
+        }
+
+        function toggleTopRibbon() {
+            const ribbon = document.getElementById('top-ribbon-drawer');
+            ribbon.classList.toggle('hidden');
+        }
+
+function resetLayoutDefaults() {
+  document.documentElement.style.setProperty('--action-pill-width', '40px');
+  document.getElementById('slider-action-pill').value = 40;
+  document.getElementById('val-action-pill').innerText = '40px';
+
+  document.documentElement.style.setProperty('--data-pill-width', '80px');
+  document.getElementById('slider-data-width').value = 80;
+  document.getElementById('val-data-width').innerText = '80px';
+}
+
+
+
+        function savePMIData() {
+            localStorage.setItem('pmi_data_v1', JSON.stringify(pmiRegistry));
+        }
+
+        function loadPMIData() {
+            const saved = localStorage.getItem('pmi_data_v1');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    Object.assign(pmiRegistry, data);
+
+                    Object.keys(pmiRegistry).forEach(category => {
+                        const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+                        if (cell) {
+                            const label = cell.previousElementSibling;
+                            if (pmiRegistry[category].stamped) {
+                                label.classList.add('bg-blue-600', 'text-white');
+                            }
+                            renderCell(category);
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to load PMI data', e);
+                }
+            }
+        }
+
+        function clearAllPMIData() {
+            if (confirm("Are you sure you want to clear the entire ledger?")) {
+                Object.keys(pmiRegistry).forEach(key => delete pmiRegistry[key]);
+                savePMIData();
+
+                document.querySelectorAll('.pmi-label').forEach(el => el.classList.remove('bg-blue-600', 'text-white'));
+                document.querySelectorAll('.content-cell').forEach(el => {
+                    el.innerText = '';
+                    el.classList.remove('text-blue-300', 'text-xs', 'p-2');
+                });
+            }
+        }
+
+        function clearCategory(category) {
+            if (pmiRegistry[category]) {
+                pmiRegistry[category].stamped = false;
+                pmiRegistry[category].comments = [];
+                savePMIData();
+
+                const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+                if (cell) {
+                    const label = cell.previousElementSibling;
+                    label.classList.remove('bg-blue-600', 'text-white');
+                    renderCell(category);
+                }
+            }
+        }
+
+        function toggleBlueStamp(category, element) {
+            if (!pmiRegistry[category]) {
+                pmiRegistry[category] = { stamped: false, comments: [] };
+            }
+            pmiRegistry[category].stamped = !pmiRegistry[category].stamped;
+
+            if (pmiRegistry[category].stamped) {
+                element.classList.add('bg-blue-600', 'text-white');
+            } else {
+                element.classList.remove('bg-blue-600', 'text-white');
+            }
+            savePMIData();
+        }
+
+        function openContentLocker(category) {
+            currentActiveCategory = category;
+            if (!pmiRegistry[category]) {
+                pmiRegistry[category] = { stamped: false, comments: [] };
+            }
+
+            document.getElementById('modal-category-title').innerText = category + ' Hub';
+
+            const contentArea = document.getElementById('modal-content-area');
+            contentArea.innerHTML = '';
+
+            // 1. CURRENT COMMENTS (TOP ZONE)
+            const existingTitle = document.createElement('div');
+            existingTitle.className = "text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2";
+            existingTitle.innerText = "Current Comments";
+            contentArea.appendChild(existingTitle);
+
+            const prefabs = prefabData[category] || [];
+            if (prefabs.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = "text-slate-500 text-xs italic mb-4";
+                emptyMsg.innerText = "No comments added yet.";
+                contentArea.appendChild(emptyMsg);
+            } else {
+                prefabs.forEach(text => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "flex gap-2 w-full mb-2";
+
+                    const btn = document.createElement('button');
+                    btn.className = "flex-1 text-left bg-slate-700 hover:bg-slate-600 border border-slate-600 p-3 rounded text-white text-sm transition-colors";
+                    if (pmiRegistry[category].comments.includes(text)) {
+                        btn.classList.add('border-blue-500', 'bg-blue-900');
+                    }
+                    btn.innerText = text;
+                    btn.onclick = function () { toggleComment(category, text, btn); };
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = "bg-slate-600 hover:bg-slate-500 text-white p-3 rounded transition-colors text-xs w-10";
+                    editBtn.innerText = "✎";
+                    editBtn.onclick = function () { editComment(category, text); };
+
+                    const delBtn = document.createElement('button');
+                    delBtn.className = "bg-red-900/60 hover:bg-red-800 text-white p-3 rounded transition-colors text-xs w-10";
+                    delBtn.innerText = "×";
+                    delBtn.onclick = function () { deleteComment(category, text); };
+
+                    wrapper.appendChild(btn);
+                    wrapper.appendChild(editBtn);
+                    wrapper.appendChild(delBtn);
+                    contentArea.appendChild(wrapper);
+                });
+            }
+
+            // 2. CUSTOM NOTE ENTRY (MIDDLE ZONE)
+            const customNoteDiv = document.createElement('div');
+            customNoteDiv.className = "flex gap-2 w-full mt-2 mb-4 border-b border-slate-700 pb-4";
+            customNoteDiv.innerHTML = `
+        <input type="text" id="custom-note-input" placeholder="Type custom note..." class="flex-1 bg-slate-800 border border-slate-600 text-white text-[10px] p-2 rounded focus:outline-none focus:border-blue-500">
+        <button onclick="addCustomComment()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Add</button>
+    `;
+            contentArea.appendChild(customNoteDiv);
+
+            // 3. SENTENCE BUILDER (BOTTOM COLLAPSIBLE ZONE)
+            if (typeof sentenceBlocks !== 'undefined' && sentenceBlocks[category]) {
+                activeSentence = [];
+
+                const details = document.createElement('details');
+                details.className = "w-full bg-slate-800 border border-slate-600 rounded p-3 mb-2";
+
+                const summary = document.createElement('summary');
+                summary.className = "text-[10px] text-slate-300 font-bold uppercase tracking-widest cursor-pointer outline-none select-none";
+                summary.innerText = "Lego Block Sentence Builder";
+                details.appendChild(summary);
+
+                const builderContainer = document.createElement('div');
+                builderContainer.className = "mt-3 flex flex-col gap-2";
+
+                const previewContainer = document.createElement('div');
+                previewContainer.className = "bg-slate-900 border border-blue-500 rounded p-3 flex justify-between items-center";
+
+                const previewText = document.createElement('div');
+                previewText.id = "sentence-preview";
+                previewText.className = "text-blue-300 font-bold text-sm italic flex-1";
+                previewText.innerText = "___";
+
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = "flex gap-2 ml-2";
+
+                const undoBtn = document.createElement('button');
+                undoBtn.className = "bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded text-xs transition-colors";
+                undoBtn.innerText = "Undo";
+                undoBtn.onclick = () => undoWord();
+
+                const clearBtn = document.createElement('button');
+                clearBtn.className = "bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded text-xs transition-colors";
+                clearBtn.innerText = "Clear";
+                clearBtn.onclick = () => clearSentence();
+
+                const commitBtn = document.createElement('button');
+                commitBtn.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1 rounded text-xs transition-colors";
+                commitBtn.innerText = "Commit";
+                commitBtn.onclick = () => commitSentence(category);
+
+                controlsDiv.appendChild(undoBtn);
+                controlsDiv.appendChild(clearBtn);
+                controlsDiv.appendChild(commitBtn);
+                previewContainer.appendChild(previewText);
+                previewContainer.appendChild(controlsDiv);
+                builderContainer.appendChild(previewContainer);
+
+                Object.keys(sentenceBlocks[category]).forEach(groupKey => {
+                    const blockTitle = document.createElement('div');
+                    blockTitle.className = "text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 mb-1";
+                    blockTitle.innerText = groupKey;
+                    builderContainer.appendChild(blockTitle);
+
+                    const blockGrid = document.createElement('div');
+                    blockGrid.className = "flex flex-wrap gap-2";
+
+                    sentenceBlocks[category][groupKey].forEach(word => {
+                        const wordBtn = document.createElement('button');
+                        wordBtn.className = "bg-slate-700 hover:bg-slate-600 border border-slate-600 px-3 py-2 rounded text-white text-xs transition-colors";
+                        wordBtn.innerText = word;
+                        wordBtn.onclick = () => pushWord(word);
+                        blockGrid.appendChild(wordBtn);
+                    });
+                    builderContainer.appendChild(blockGrid);
+                });
+
+                details.appendChild(builderContainer);
+                contentArea.appendChild(details);
+            }
+
+            document.getElementById('pmi-content-modal').classList.remove('hidden');
+            document.getElementById('pmi-content-modal').classList.add('flex');
+        }
+
+        function toggleComment(category, text, btnElement) {
+            const index = pmiRegistry[category].comments.indexOf(text);
+            if (index > -1) {
+                pmiRegistry[category].comments.splice(index, 1);
+                btnElement.classList.remove('border-blue-500', 'bg-blue-900');
+            } else {
+                pmiRegistry[category].comments.push(text);
+                btnElement.classList.add('border-blue-500', 'bg-blue-900');
+            }
+            savePMIData();
+            renderCell(category);
+        }
+
+        function renderCell(category) {
+            const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
+            if (cell && pmiRegistry[category]) {
+                if (pmiRegistry[category].comments.length > 0) {
+                    cell.innerText = pmiRegistry[category].comments.join(' ');
+                    cell.classList.add('text-blue-300', 'text-xs', 'p-2');
+                } else {
+                    cell.innerText = '';
+                    cell.classList.remove('text-blue-300', 'text-xs', 'p-2');
+                }
+            }
+        }
+
+        function closeContentLocker() {
+            document.getElementById('pmi-content-modal').classList.add('hidden');
+            document.getElementById('pmi-content-modal').classList.remove('flex');
+            currentActiveCategory = null;
+        }
+
+        function pushWord(word) {
+            activeSentence.push(word);
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = activeSentence.length ? activeSentence.join(' ') + " " : "___";
+        }
+
+        function undoWord() {
+            activeSentence.pop();
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = activeSentence.length ? activeSentence.join(' ') + " " : "___";
+        }
+
+        function clearSentence() {
+            activeSentence = [];
+            const preview = document.getElementById('sentence-preview');
+            if (preview) preview.innerText = "___";
+        }
+
+        function commitSentence(category) {
+            const sentence = activeSentence.join(' ').trim();
+            if (sentence !== "") {
+                // Save permanently to Hub's memory so it survives 'Undo'
+                if (!prefabData[category]) prefabData[category] = [];
+                if (!prefabData[category].includes(sentence)) {
+                    prefabData[category].push(sentence);
+                }
+                // Push to active ledger row
+                if (!pmiRegistry[category].comments.includes(sentence)) {
+                    pmiRegistry[category].comments.push(sentence);
+                }
+                activeSentence = [];
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function editComment(category, oldText) {
+            const newText = prompt("Edit comment:", oldText);
+            if (newText !== null && newText.trim() !== "") {
+                const cleanNewText = newText.trim();
+
+                const pIndex = prefabData[category].indexOf(oldText);
+                if (pIndex > -1) {
+                    prefabData[category][pIndex] = cleanNewText;
+                }
+
+                if (pmiRegistry[category] && pmiRegistry[category].comments) {
+                    const cIndex = pmiRegistry[category].comments.indexOf(oldText);
+                    if (cIndex > -1) {
+                        pmiRegistry[category].comments[cIndex] = cleanNewText;
+                    }
+                }
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function deleteComment(category, text) {
+            if (confirm(`Delete comment: "${text}"?`)) {
+                const pIndex = prefabData[category].indexOf(text);
+                if (pIndex > -1) {
+                    prefabData[category].splice(pIndex, 1);
+                }
+
+                if (pmiRegistry[category] && pmiRegistry[category].comments) {
+                    const cIndex = pmiRegistry[category].comments.indexOf(text);
+                    if (cIndex > -1) {
+                        pmiRegistry[category].comments.splice(cIndex, 1);
+                    }
+                }
+                savePMIData();
+                openContentLocker(category);
+                renderCell(category);
+            }
+        }
+
+        function addCustomComment() {
+            const input = document.getElementById('custom-note-input');
+            const note = input.value.trim();
+            if (note && currentActiveCategory) {
+                if (!prefabData[currentActiveCategory]) {
+                    prefabData[currentActiveCategory] = [];
+                }
+                if (!prefabData[currentActiveCategory].includes(note)) {
+                    prefabData[currentActiveCategory].push(note);
+                }
+
+                if (!pmiRegistry[currentActiveCategory].comments.includes(note)) {
+                    pmiRegistry[currentActiveCategory].comments.push(note);
+                }
+
+                input.value = '';
+                savePMIData();
+                openContentLocker(currentActiveCategory);
+                renderCell(currentActiveCategory);
+            }
+        }
+
+function toggleCalibrationDock() {
+  const dock = document.getElementById('pmi-calibration-dock');
+  dock.classList.toggle('hidden');
+}
+
+function resetTemplateSequence() {
+    if (confirm("Are you sure you want to reset your canvas layout? This will snap all fields back to their default page headers.")) {
+        localStorage.removeItem('template_sequence_v1');
+        location.reload();
+    }
+}
+
+function createNewJob() {
+    const name = prompt("Enter new Job Name/ID:");
+    if(name && name.trim() !== '') {
+        document.getElementById('active-job-ticket').innerText = name.trim();
+    }
+}
+function mirrorSync() { console.log("Mirror Sync triggered"); }
+function openDrive() { console.log("Drive bridge triggered"); }
+function openAlbum() { console.log("Album bridge triggered"); }
+function openManuals() { console.log("Manuals bridge triggered"); }
+function toggleEditFieldsModal() {
+    const modal = document.getElementById('edit-fields-modal');
+    if (modal) {
+        modal.classList.toggle('hidden');
+        modal.classList.toggle('flex');
+    }
+}
+function toggleMic() { console.log("Mic toggled"); }
+function toggleCalibration() {
+    const drawer = document.getElementById('calibration-drawer');
+    if (drawer) {
+        drawer.classList.toggle('hidden');
+        drawer.classList.toggle('flex');
+    }
+}
+
+const masterFieldMap = [
+    "Date | W12 | Specs",
+    "Customer Name | W13 | Specs",
+    "Address | W14 | Specs",
+    "Phone | W15 | Specs",
+    "email | W16 | Specs",
+    "Reason for Call | W17 | Specs",
+    "System # (Service Area) | W18 | Specs",
+    "System Type | W19 | Specs",
+    "Outdoor Model | W21 | Specs",
+    "Outdoor Serial | W22 | Specs",
+    "Indoor Model | W23 | Specs",
+    "Indoor Serial | W24 | Specs",
+    "Furnace Model | W25 | Specs",
+    "Furnace Serial | W26 | Specs",
+    "Refrigerant | W33 | Specs",
+    "Metering Device | W34 | Specs",
+    "Outdoor Tonnage | W35 | Specs",
+    "Indoor Tonnage | W36 | Specs",
+    "Furnace BTU | W37 | Specs",
+    "Heat Strips kW | W39 | Specs",
+    "Thermostat | W40 | Specs",
+    "Filter Size | W41 | Specs",
+    "Capacitor MFD | W42 | Specs",
+    "RLA | W43 | Specs",
+    "RLA 2 | W44 | Specs",
+    "FLA ODF | W45 | Specs",
+    "FLA ODF2 | W46 | Specs",
+    "FLA IDF | W47 | Specs",
+    "Target Subcool | W49 | Specs",
+    "Belts | W50 | Specs",
+    "System Description | W52 | Specs",
+    "Call Summary | W55 | PMI",
+    "Filter | W57 | PMI",
+    "Evaporator Coil | W59 | PMI",
+    "Blower Visual | W65 | PMI",
+    "Blower Mechanical | W68 | PMI",
+    "Drain Pan | W71 | PMI",
+    "Drain | W72 | PMI",
+    "Heater | W77 | PMI",
+    "Float Switch | W78 | PMI",
+    "IAQ | W80 | PMI",
+    "Condenser | W81 | PMI",
+    "Tech Notes | W83 | PMI",
+    "Capacitor Tolerance | W86 | Diag",
+    "Herm MFD Rating | W87 | Diag",
+    "Herm Volts | W88 | Diag",
+    "Herm Amps | W89 | Diag",
+    "Herm Results | W90 | Diag",
+    "Fan MFD Rating | W91 | Diag",
+    "Fan Volts | W92 | Diag",
+    "Fan Amps | W93 | Diag",
+    "Fan Results | W94 | Diag",
+    "Capacitor Results | W95 | Diag",
+    "Capacitor Replaced | W96 | Diag",
+    "RLA (Measured) | W99 | Diag",
+    "RLA 2 (Measured) | W100 | Diag",
+    "FLA ODF (Measured) | W101 | Diag",
+    "FLA ODF2 (Measured) | W102 | Diag",
+    "FLA IDF (Measured) | W103 | Diag",
+    "Motor Load Results | W105 | Diag",
+    "ODAT | W108 | Startup",
+    "Suction Pressure | W109 | Startup",
+    "Liquid Pressure | W110 | Startup",
+    "Suction Line Temp | W111 | Startup",
+    "Vapor Saturation | W112 | Startup",
+    "Indoor Suction Line Temp | W113 | Startup",
+    "Indoor SH | W114 | Startup",
+    "SH | W115 | Startup",
+    "Target SH | W116 | Startup",
+    "Liquid Line Temp | W117 | Startup",
+    "Liquid Saturation | W118 | Startup",
+    "Indoor Liquid Line Temp | W119 | Startup",
+    "Indoor SC | W120 | Startup",
+    "SC | W121 | Startup",
+    "Return Temp | W123 | Startup",
+    "Return Wet Bulb | W124 | Startup",
+    "Return Humidity | W125 | Startup",
+    "Return Dew Point | W126 | Startup",
+    "Supply Temp | W127 | Startup",
+    "∆T | W128 | Startup",
+    "Supply Wet Bulb | W130 | Startup",
+    "Supply Relative Humidity | W131 | Startup",
+    "Supply Dew Point | W133 | Startup",
+    "Return Enthalpy | W134 | Startup",
+    "Supply Enthalpy | W135 | Startup",
+    "Compression Ratio | W160 | Startup",
+    "Approach | W161 | Startup",
+    "CTOA | W162 | Startup",
+    "Evap TD | W163 | Startup",
+    "Pressures | W167 | Startup",
+    "Saturation Temps | W168 | Startup",
+    "SH / SC | W169 | Startup",
+    "Nitrogen Start | W170 | Startup",
+    "Nitrogen Finish | W171 | Startup",
+    "∆ Nitrogen | W172 | Startup",
+    "Nitrogen Duration | W173 | Startup",
+    "∆ N per minute | W174 | Startup",
+    "Micron Low | W176 | Startup",
+    "Micron Decay | W177 | Startup",
+    "(417) 576-0324 | W212 | ",
+    "TOP | W217 | "
+];
+
+const activeTemplateSelection = new Set();
+
+function renderTemplateBuilder() {
+    const canvas = document.getElementById('template-builder-canvas');
+    if (!canvas) return;
+
+    const groupedData = {};
+    masterFieldMap.forEach(item => {
+        // Use array destructuring to safely separate the 3 parts without bracket indices
+        let [rawLabel, rawCell, rawPage] = item.split('|');
+
+        let label = rawLabel ? rawLabel.trim() : "Unknown";
+        let page = rawPage ? rawPage.trim() : "Unassigned Fields";
+
+        if (!groupedData[page]) groupedData[page] = [];
+        groupedData[page].push(label);
+    });
+
+    let html = '';
+    for (const [page, fields] of Object.entries(groupedData)) {
+        html += `
+        <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden shrink-0" open>
+            <summary class="bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer select-none outline-none">
+                [ ${page} ]
+            </summary>
+            <div class="p-2 flex flex-col gap-1">`;
+
+        fields.forEach(label => {
+            const isStamped = activeTemplateSelection.has(label) ? 'bg-blue-600 text-white shadow-sm border-blue-500' : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500';
+            html += `<div class="pmi-label field-label w-full text-[10px] font-bold border rounded cursor-pointer transition-colors py-2 px-3 select-none ${isStamped}" onclick="toggleTemplateStamp('${label}', this)">${label}</div>`;
+        });
+
+        html += `</div></details>`;
+    }
+    canvas.innerHTML = html;
+}
+
+function toggleTemplateStamp(label, element) {
+    if (activeTemplateSelection.has(label)) {
+        activeTemplateSelection.delete(label);
+        element.className = "pmi-label field-label w-full text-[10px] font-bold border rounded cursor-pointer transition-colors py-2 px-3 select-none bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500";
+    } else {
+        activeTemplateSelection.add(label);
+        element.className = "pmi-label field-label w-full text-[10px] font-bold border rounded cursor-pointer transition-colors py-2 px-3 select-none bg-blue-600 text-white shadow-sm border-blue-500";
+    }
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+let activeLens = 'Vault Dump';
+
+function handleTemplateDropdownChange(selectEl) {
+    const customInput = document.getElementById('custom-template-name');
+    if (selectEl.value === 'custom') {
+        selectEl.classList.add('hidden');
+        customInput.classList.remove('hidden');
+        customInput.focus();
+        activeTemplateSelection.clear();
+    } else {
+        selectEl.classList.remove('hidden');
+        customInput.classList.add('hidden');
+        loadTemplateRuleset(selectEl.value);
+    }
+    renderTemplateBuilder();
+}
+
+function loadTemplateRuleset(lensName) {
+    activeTemplateSelection.clear();
+    const savedRules = JSON.parse(localStorage.getItem('template_rules_v1') || '{}');
+    if (savedRules[lensName]) {
+        savedRules[lensName].forEach(lbl => activeTemplateSelection.add(lbl));
+    }
+}
+
+function saveTemplateLens() {
+    const selectEl = document.getElementById('template-name-select');
+    const customInput = document.getElementById('custom-template-name');
+    let lensName = selectEl.value;
+    let isCustom = false;
+
+    if (lensName === 'custom') {
+        lensName = customInput.value.trim();
+        if (!lensName) { alert("Please enter a custom template name."); return; }
+        isCustom = true;
+    }
+
+    const savedRules = JSON.parse(localStorage.getItem('template_rules_v1') || '{}');
+    savedRules[lensName] = Array.from(activeTemplateSelection);
+    localStorage.setItem('template_rules_v1', JSON.stringify(savedRules));
+
+    if (isCustom) {
+        const customNames = JSON.parse(localStorage.getItem('template_custom_names_v1') || '[]');
+        if (!customNames.includes(lensName)) {
+            customNames.push(lensName);
+            localStorage.setItem('template_custom_names_v1', JSON.stringify(customNames));
+        }
+    }
+
+    selectEl.classList.remove('hidden');
+    customInput.classList.add('hidden');
+    customInput.value = '';
+    selectEl.value = isCustom ? 'PMI' : lensName;
+
+    activeLens = lensName;
+    renderLensRow();
+    applyLensFilter();
+    toggleEditFieldsModal();
+}
+
+function renderLensRow() {
+    let row = document.getElementById('template-lens-row');
+    if (!row) {
+        const listContainer = document.getElementById('template-sort-list');
+        row = document.createElement('div');
+        row.id = 'template-lens-row';
+        row.className = 'flex overflow-x-auto no-scrollbar gap-2 w-full pb-3 border-b border-slate-700 mb-2 shrink-0 px-2';
+        listContainer.parentElement.insertBefore(row, listContainer);
+    }
+
+    const hardcoded = ['Vault Dump', 'PMI', 'No Cool', 'Water Leak', 'Change Out', 'Proposal', 'Miscellaneous'];
+    const customNames = JSON.parse(localStorage.getItem('template_custom_names_v1') || '[]');
+    const allLenses = [...hardcoded, ...customNames];
+
+    let html = '';
+    allLenses.forEach(lens => {
+        const isCustom = customNames.includes(lens);
+        const isActive = (lens === activeLens);
+        let baseClasses = "flex-shrink-0 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-colors cursor-pointer select-none outline-none ";
+
+        if (isActive) {
+            baseClasses += "bg-blue-600 text-white shadow-md border border-blue-400";
+        } else {
+            baseClasses += "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 ";
+            if (isCustom) baseClasses += "border-2 border-dashed border-yellow-500";
+            else baseClasses += "border border-slate-600";
+        }
+        html += `<button onclick="switchLens('${lens}')" class="${baseClasses}">${lens}</button>`;
+    });
+    row.innerHTML = html;
+}
+
+function switchLens(lensName) {
+    activeLens = lensName;
+    renderLensRow();
+    applyLensFilter();
+    if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function applyLensFilter() {
+    const rows = document.querySelectorAll('.template-item-row');
+    const details = document.querySelectorAll('details.group');
+
+    if (activeLens === 'Vault Dump') {
+        rows.forEach(r => r.style.display = 'flex');
+        details.forEach(d => d.style.display = 'block');
+        return;
+    }
+
+    const savedRules = JSON.parse(localStorage.getItem('template_rules_v1') || '{}');
+    const allowedFields = savedRules[activeLens] || [];
+
+    rows.forEach(r => {
+        const label = r.getAttribute('data-label');
+        const key = r.getAttribute('data-key');
+        if (allowedFields.includes(label) || allowedFields.includes(key)) {
+            r.style.display = 'flex';
+        } else {
+            r.style.display = 'none';
+        }
+    });
+
+    details.forEach(d => {
+        const visibleRows = d.querySelectorAll('.template-item-row[style="display: flex;"]');
+        d.style.display = visibleRows.length > 0 ? 'block' : 'none';
+    });
+}
+
+function injectUniversal(label) {
+    const key = 'univ_' + label.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+    if (!masterSequence.includes('__HDR_UNIVERSAL__')) masterSequence.push('__HDR_UNIVERSAL__');
+    
+    if (!masterSequence.includes(key)) {
+        masterSequence.push(key);
+        let univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
+        univSaved[key] = { label: label, value: 'Manual Entry', type: 'UNIV' };
+        localStorage.setItem('template_univ_v1', JSON.stringify(univSaved));
+        localStorage.setItem('template_sequence_v1', JSON.stringify(masterSequence));
+        initTemplateManager();
+        toggleEditFieldsModal();
+    }
+}
+
+function getSplashDestination() {
+    return window.location.protocol === 'file:' ? 'Splash.html' : 'index.html';
+}
+
+function getQuickStashDestination() {
+    return window.location.protocol === 'file:' ? 'Splash.html#quickstash' : 'index.html#quickstash';
+}
+
+const FALLBACK_PAGES_REGISTRY = [
+    { name: "Splash", file: getSplashDestination(), state: "ACTIVE" },
+    { name: "Quick Stash", file: getQuickStashDestination(), state: "ACTIVE" },
+    { name: "Notes", file: "notes.html", state: "ACTIVE" },
+    { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
+    { name: "Specs", file: "specs.html", state: "ACTIVE" },
+    { name: "PMI", file: "pmi.html", state: "ACTIVE" },
+    { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
+    { name: "Startup", file: "startup.html", state: "ACTIVE" },
+    { name: "Compiler", file: "compiler.html", state: "ACTIVE" },
+    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Reports", file: "reports.html", state: "PLANNED" },
+    { name: "Data Block", file: "datablock.html", state: "PLANNED" }
+];
+
+function getPagesRegistry() {
+    if (window.PLATTS_PAGES_REGISTRY && Array.isArray(window.PLATTS_PAGES_REGISTRY)) {
+        return window.PLATTS_PAGES_REGISTRY;
+    }
+    return FALLBACK_PAGES_REGISTRY;
+}
+
+function renderBottomNav() {
+    const gridInner = document.getElementById('bottom-nav-grid-inner');
+    if (!gridInner) return;
+    
+    gridInner.innerHTML = '';
+    const reg = getPagesRegistry();
+    const currentPath = window.location.pathname.toLowerCase();
+    
+    reg.forEach(page => {
+        const btn = document.createElement('button');
+        
+        let isCurrent = false;
+        if (page.name === 'Templates') {
+            if (currentPath.endsWith('templates.html')) {
+                isCurrent = true;
+            }
+        }
+        
+        if (isCurrent) {
+            btn.className = "h-14 flex flex-col items-center justify-center bg-slate-700 border-2 border-blue-500 rounded text-white font-bold text-[10px] shadow-sm uppercase tracking-wider";
+            btn.innerHTML = `<span>${page.name}</span><span class="text-[8px] text-blue-300 mt-1">CURRENT</span>`;
+        } else if (page.state === "ACTIVE") {
+            btn.className = "h-14 flex flex-col items-center justify-center bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-300 font-bold text-[10px] transition-colors shadow-sm uppercase tracking-wider";
+            btn.innerText = page.name;
+            btn.onclick = () => {
+                let dest = page.file;
+                if (page.name === 'Splash') dest = getSplashDestination();
+                if (page.name === 'Quick Stash') dest = getQuickStashDestination();
+                window.location.href = dest;
+            };
+        } else {
+            btn.className = "h-14 flex flex-col items-center justify-center bg-slate-900 border border-slate-800 rounded text-slate-600 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed";
+            btn.innerHTML = `<span>${page.name}</span><span class="text-[8px] text-slate-700 mt-1">PLANNED</span>`;
+        }
+        
+        gridInner.appendChild(btn);
+    });
+}
+
+function toggleBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid');
+    const icon = document.getElementById('bottom-nav-icon');
+    const launcher = document.getElementById('bottom-nav-launcher');
+    const topRibbon = document.getElementById('top-ribbon-drawer');
+    
+    if (grid.classList.contains('hidden')) {
+        grid.classList.remove('hidden');
+        icon.innerText = '▼';
+        launcher.classList.add('bg-slate-700');
+        launcher.classList.remove('bg-slate-800');
+        if (topRibbon) topRibbon.classList.add('hidden');
+    } else {
+        grid.classList.add('hidden');
+        icon.innerText = '☰';
+        launcher.classList.add('bg-slate-800');
+        launcher.classList.remove('bg-slate-700');
+    }
+}
+
+// Modify the bootloader to render the modal builder instead
+window.addEventListener('DOMContentLoaded', () => {
+    initTemplateManager();
+    loadTemplateRuleset(document.getElementById('template-name-select').value);
+    renderTemplateBuilder();
+    renderLensRow();
+    renderBottomNav();
+});
+
+window.addEventListener('pageshow', (e) => {
+    initTemplateManager();
+});
+</script>
+</body>
+
+</html>
