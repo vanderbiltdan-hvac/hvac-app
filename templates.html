@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Sequencer v2.02.2</title>
+    <title>Template Sequencer v2.03.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -78,7 +78,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.02.2</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.03.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -169,7 +169,7 @@
 <div id="edit-fields-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-start pt-10 px-4 pb-4">
     <div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center shrink-0">
-            <h3 class="text-white font-bold tracking-widest text-xs uppercase">Template Lens Builder</h3>
+            <span class="text-[8px] font-bold tracking-widest text-blue-300 ml-3 uppercase">v2.03.2</span><h3 class="text-white font-bold tracking-widest text-xs uppercase ml-2">Template Lens Builder</h3>
             <button onclick="toggleEditFieldsModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
         </div>
         
@@ -273,7 +273,7 @@
         let currentActiveCategory = null;
 
 let currentProfile = null;
-const TEMPLATE_VERSION = "v2.02.2";
+const TEMPLATE_VERSION = 'v2.03.2';
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function toggleFullScreen() {
@@ -314,8 +314,23 @@ function saveCurrentProfile() {
     if (!currentProfile) return;
     const profileId = getActiveTemplateProfileId();
     const profiles = JSON.parse(localStorage.getItem('template_profiles_v2') || '{}');
-    profiles[profileId] = currentProfile;
+    
+    const clone = JSON.parse(JSON.stringify(currentProfile));
+    Object.keys(clone.sections).forEach(sec => {
+        clone.sections[sec] = clone.sections[sec].filter(f => f.oneTime !== true);
+    });
+    
+    profiles[profileId] = clone;
     localStorage.setItem('template_profiles_v2', JSON.stringify(profiles));
+    
+    const job = localStorage.getItem('hvacActiveJob') || 'UNKNOWN';
+    const overrideKey = `template_job_overrides_v1::${job}::${profileId}`;
+    let overrides = {};
+    Object.keys(currentProfile.sections).forEach(sec => {
+        const ovs = currentProfile.sections[sec].filter(f => f.oneTime === true);
+        if (ovs.length > 0) overrides[sec] = ovs;
+    });
+    localStorage.setItem(overrideKey, JSON.stringify(overrides));
 }
 
 function loadCompilerPayload() {
@@ -346,7 +361,7 @@ function migrateLegacyProfile(lensName, reportIdStr) {
     
     if (reportIdStr === 'report1') {
         const legacySeqStr = localStorage.getItem('template_sequence_v1');
-        if (legacySeqStr) {
+        if (legacySeqStr && (lensName === 'PMI' || baseFields.length > 0)) {
             const legacySeq = JSON.parse(legacySeqStr);
             let currentDest = "extras";
             legacySeq.forEach(key => {
@@ -410,8 +425,23 @@ function loadCurrentProfile() {
         if (!currentProfile.sectionOrder) currentProfile.sectionOrder = ["specs", "pmi", "diagnostics", "startup", "extras"];
     } else {
         currentProfile = migrateLegacyProfile(lensName, reportIdStr);
-        saveCurrentProfile();
+        const toSave = JSON.parse(JSON.stringify(currentProfile));
+        profiles[profileId] = toSave;
+        localStorage.setItem('template_profiles_v2', JSON.stringify(profiles));
     }
+    
+    const job = localStorage.getItem('hvacActiveJob') || 'UNKNOWN';
+    const overrideKey = `template_job_overrides_v1::${job}::${profileId}`;
+    let overrides = JSON.parse(localStorage.getItem(overrideKey) || '{}');
+    
+    Object.keys(overrides).forEach(secKey => {
+        if (!currentProfile.sections[secKey]) currentProfile.sections[secKey] = [];
+        overrides[secKey].forEach(ov => {
+            if (!currentProfile.sections[secKey].find(f => f.stableKey === ov.stableKey)) {
+                currentProfile.sections[secKey].push(ov);
+            }
+        });
+    });
     
     updateReportSelectorUI();
     renderMainCanvas();
@@ -446,7 +476,7 @@ function renderMainCanvas() {
             </summary>
             <div class="p-2 flex flex-col gap-1 min-h-[20px]">`;
             
-        fields.forEach(field => {
+        fields.forEach((field, fIdx) => {
             renderedCount++;
             let val = '---';
             if (payload && payload.sources && payload.sources[field.source]) {
@@ -474,6 +504,10 @@ function renderMainCanvas() {
                         <span class="text-[10px] font-bold text-white uppercase tracking-wider truncate" title="${field.label}">${field.label}</span>
                     </div>
                     <span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal flex-1">${val}</span>
+                    <div class="flex items-center gap-1 shrink-0 ml-2">
+                        <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, -1); event.stopPropagation();" class="text-slate-400 hover:text-white px-2 py-1">▲</button>
+                        <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, 1); event.stopPropagation();" class="text-slate-400 hover:text-white px-2 py-1">▼</button>
+                    </div>
                 </div>
             </div>`;
         });
@@ -1044,9 +1078,64 @@ const masterFieldMap = [
 
 const activeTemplateSelection = new Set();
 
+function isNativeField(secKey, label) {
+    if (secKey === 'extras') return false;
+    const sourceMapName = secKey === 'diagnostics' ? 'Diag' : (secKey === 'specs' ? 'Specs' : (secKey === 'pmi' ? 'PMI' : 'Startup'));
+    return masterFieldMap.some(itemStr => {
+        const parts = itemStr.split('|');
+        const l = parts[0] ? parts[0].trim() : '';
+        const p = parts[2] ? parts[2].trim() : '';
+        return l === label && p === sourceMapName;
+    });
+}
+
+function findMappedFieldByIdentity(source, sourceId, stableKey, label) {
+    if (!currentProfile || !currentProfile.sections) return null;
+    for (const [sec, fields] of Object.entries(currentProfile.sections)) {
+        const idx = fields.findIndex(f => 
+            f.stableKey === stableKey || 
+            (f.sourceId === sourceId && f.source === source) ||
+            (f.source === source && f.label === label)
+        );
+        if (idx !== -1) {
+            return {
+                fieldObj: fields[idx],
+                destSection: sec,
+                fIdx: idx
+            };
+        }
+    }
+    return null;
+}
+
+function toggleNativeField(labelStr, source, sourceId, stableKey) {
+    const label = decodeURIComponent(labelStr);
+    
+    const mapInfo = findMappedFieldByIdentity(source, sourceId, stableKey, label);
+    
+    if (mapInfo) {
+        removeFieldFromBuilder(mapInfo.destSection, mapInfo.fIdx);
+    } else {
+        const secKey = source;
+        if (!currentProfile.sections[secKey]) currentProfile.sections[secKey] = [];
+        
+        currentProfile.sections[secKey].push({
+            label: label,
+            source: source,
+            sourceId: sourceId,
+            stableKey: stableKey
+        });
+        saveCurrentProfile();
+        renderTemplateBuilder();
+        renderMainCanvas();
+    }
+}
+
 function renderTemplateBuilder() {
     const canvas = document.getElementById('template-builder-canvas');
     if (!canvas || !currentProfile) return;
+
+    const payload = loadCompilerPayload();
 
     let html = '';
     currentProfile.sectionOrder.forEach(secKey => {
@@ -1061,21 +1150,135 @@ function renderTemplateBuilder() {
             </summary>
             <div class="p-2 flex flex-col gap-1 min-h-[30px]">`;
             
-        if (currentProfile.sections[secKey]) {
-            currentProfile.sections[secKey].forEach((field, fIdx) => {
-                html += `
-                <div class="flex items-center justify-between bg-slate-900 border border-slate-700 p-2 rounded w-full">
-                    <span class="text-[10px] font-bold text-white truncate w-1/2">${field.label}</span>
-                    <div class="flex items-center gap-1">
-                        <span class="text-[8px] text-slate-500 uppercase mx-1">${field.source}</span>
-                        <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, -1)" class="bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded">▲</button>
-                        <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, 1)" class="bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded">▼</button>
-                        <button onclick="openMoveFieldDialog('${secKey}', ${fIdx})" class="bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded">MOVE</button>
-                        <button onclick="removeFieldFromBuilder('${secKey}', ${fIdx})" class="bg-red-900/60 text-red-300 hover:text-red-100 px-2 py-1 rounded">×</button>
-                    </div>
-                </div>`;
+        let itemsToRender = [];
+        const sourceMapName = secKey === 'diagnostics' ? 'Diag' : (secKey === 'specs' ? 'Specs' : (secKey === 'pmi' ? 'PMI' : 'Startup'));
+        
+        if (secKey !== 'extras') {
+            masterFieldMap.forEach(itemStr => {
+                const parts = itemStr.split('|');
+                const label = parts[0] ? parts[0].trim() : '';
+                const page = parts[2] ? parts[2].trim() : '';
+                if (page === sourceMapName) {
+                    itemsToRender.push({
+                        label: label,
+                        source: secKey,
+                        sourceId: label,
+                        stableKey: `compiler:${secKey}:${label}`,
+                        isNative: true
+                    });
+                }
             });
         }
+        
+        if (currentProfile.sections[secKey]) {
+            currentProfile.sections[secKey].forEach((field, fIdx) => {
+                const existing = itemsToRender.find(i => 
+                    i.stableKey === field.stableKey || 
+                    (i.sourceId === field.sourceId && i.source === field.source) ||
+                    (i.source === field.source && i.label === field.label)
+                );
+                if (existing) {
+                    existing.mapped = true;
+                    existing.fIdx = fIdx;
+                    existing.fieldObj = field;
+                    existing.mappedDest = secKey;
+                } else {
+                    itemsToRender.push({
+                        label: field.label,
+                        source: field.source,
+                        sourceId: field.sourceId,
+                        stableKey: field.stableKey,
+                        isNative: false,
+                        mapped: true,
+                        fIdx: fIdx,
+                        fieldObj: field,
+                        mappedDest: secKey
+                    });
+                }
+            });
+        }
+        
+        itemsToRender.forEach(item => {
+            if (!item.mapped) {
+                const mapInfo = findMappedFieldByIdentity(item.source, item.sourceId, item.stableKey, item.label);
+                if (mapInfo) {
+                    item.mapped = true;
+                    item.mappedDest = mapInfo.destSection;
+                    item.fIdx = mapInfo.fIdx;
+                    item.fieldObj = mapInfo.fieldObj;
+                }
+            }
+        });
+        
+        let orderedItems = [];
+        if (currentProfile.sections[secKey]) {
+            currentProfile.sections[secKey].forEach((field, fIdx) => {
+                const item = itemsToRender.find(i => i.mapped && i.mappedDest === secKey && i.fIdx === fIdx);
+                if (item) orderedItems.push(item);
+            });
+        }
+        itemsToRender.forEach(item => {
+            if (item.isNative && (!item.mapped || item.mappedDest !== secKey)) {
+                orderedItems.push(item);
+            }
+        });
+
+        orderedItems.forEach(item => {
+            let currVal = '';
+            if (payload && payload.sources && payload.sources[item.source]) {
+                const match = payload.sources[item.source].items.find(i => i.label === item.label || i.id === item.sourceId);
+                if (match) currVal = match.value || '';
+            } else if (item.source === 'extras') {
+                const univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
+                if (univSaved[item.sourceId]) currVal = univSaved[item.sourceId].value || '';
+            }
+
+            const valBadge = (currVal !== '') ? `<span class="text-[9px] text-emerald-400 font-mono ml-2 truncate max-w-[80px]">${currVal}</span>` : '';
+
+            if (item.mapped) {
+                if (item.mappedDest === secKey) {
+                    html += `
+                    <div class="flex items-center justify-between ${item.isNative ? 'bg-blue-900 border-blue-500 cursor-pointer' : 'bg-slate-900 border-slate-700'} border p-2 rounded w-full" ${item.isNative ? `onclick="toggleNativeField('${encodeURIComponent(item.label)}', '${item.source}', '${item.sourceId.replace(/'/g, "\\'")}', '${item.stableKey}')"` : ''}>
+                        <div class="flex items-center w-1/2 overflow-hidden pr-2">
+                            <span class="text-[10px] font-bold text-white truncate shrink-0" title="${item.label}">${item.label}</span>
+                            ${valBadge}
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            ${item.isNative ? `<span class="bg-blue-600 text-white px-2 py-[2px] rounded text-[8px] font-bold tracking-widest mr-2">ON</span>` : ''}
+                            <span class="text-[8px] text-slate-500 uppercase mx-1">${item.source}</span>
+                            <button onclick="moveFieldInBuilder('${secKey}', ${item.fIdx}, -1); event.stopPropagation();" class="bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded">▲</button>
+                            <button onclick="moveFieldInBuilder('${secKey}', ${item.fIdx}, 1); event.stopPropagation();" class="bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded">▼</button>
+                            <button onclick="openMoveFieldDialog('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded">MOVE</button>
+                            <button onclick="removeFieldFromBuilder('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-red-900/60 text-red-300 hover:text-red-100 px-2 py-1 rounded">×</button>
+                        </div>
+                    </div>`;
+                } else {
+                    let displayDest = item.mappedDest.toUpperCase();
+                    if (item.mappedDest === 'extras') displayDest = 'EXTRAS';
+                    html += `
+                    <div class="flex items-center justify-between bg-blue-900/40 border-blue-500/50 cursor-pointer border p-2 rounded w-full" onclick="toggleNativeField('${encodeURIComponent(item.label)}', '${item.source}', '${item.sourceId.replace(/'/g, "\\'")}', '${item.stableKey}')">
+                        <div class="flex items-center w-1/2 overflow-hidden pr-2 opacity-80">
+                            <span class="text-[10px] font-bold text-blue-200 truncate shrink-0" title="${item.label}">${item.label}</span>
+                            ${valBadge}
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <span class="text-[8px] text-blue-300 uppercase font-bold tracking-widest px-2">MAPPED &rarr; ${displayDest}</span>
+                        </div>
+                    </div>`;
+                }
+            } else {
+                html += `
+                <div class="flex items-center justify-between bg-slate-800 border border-slate-600 p-2 rounded w-full cursor-pointer hover:bg-slate-700" onclick="toggleNativeField('${encodeURIComponent(item.label)}', '${item.source}', '${item.sourceId.replace(/'/g, "\\'")}', '${item.stableKey}')">
+                    <div class="flex items-center w-1/2 overflow-hidden pr-2 opacity-60">
+                        <span class="text-[10px] font-bold text-slate-300 truncate shrink-0" title="${item.label}">${item.label}</span>
+                        ${valBadge}
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold px-2">+ ADD</span>
+                    </div>
+                </div>`;
+            }
+        });
         
         html += `</div></details>`;
     });
@@ -1262,22 +1465,43 @@ function renderImporterList() {
                         sourceId = match.id || label;
                     }
                 }
-                items.push({ id: sourceId, label: label, value: currVal });
+                items.push({ id: sourceId, label: label, value: currVal, source: sourceKey });
             }
         });
         
         if (payload && payload.sources && payload.sources[sourceKey]) {
             payload.sources[sourceKey].items.forEach(match => {
                 if (!items.find(i => i.label === match.label || i.id === match.id)) {
-                    items.push({ id: match.id || match.label, label: match.label, value: match.value || '' });
+                    items.push({ id: match.id || match.label, label: match.label, value: match.value || '', source: sourceKey });
                 }
             });
         }
     } else {
         const univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
         Object.keys(univSaved).forEach(k => {
-            items.push({ id: k, label: univSaved[k].label, value: univSaved[k].value || 'Manual Entry' });
+            items.push({ id: k, label: univSaved[k].label, value: univSaved[k].value || 'Manual Entry', source: 'extras' });
         });
+        
+        if (payload && payload.sources) {
+            ['specs', 'pmi', 'diagnostics', 'startup'].forEach(src => {
+                if (payload.sources[src] && payload.sources[src].items) {
+                    payload.sources[src].items.forEach(match => {
+                        const isNative = isNativeField(src, match.label);
+                        if (!isNative) {
+                            const exists = items.find(i => (i.id === match.id || i.label === match.label) && i.source === src);
+                            if (!exists) {
+                                items.push({
+                                    id: match.id || match.label,
+                                    label: match.label,
+                                    value: match.value || '',
+                                    source: src
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+        }
     }
     
     if (items.length === 0) {
@@ -1287,43 +1511,50 @@ function renderImporterList() {
     
     let html = '';
     items.forEach(item => {
-        const stableKey = `compiler:${sourceKey}:${item.id}`;
+        const actualSourceKey = item.source || sourceKey;
+        const stableKey = `compiler:${actualSourceKey}:${item.id}`;
+        
+        const mapInfo = findMappedFieldByIdentity(actualSourceKey, item.id, stableKey, item.label);
         let alreadyMappedDest = null;
-        for (const [sec, fields] of Object.entries(currentProfile.sections)) {
-            const matchedField = fields.find(f => 
-                f.stableKey === stableKey || 
-                (f.sourceId === item.id && f.source === sourceKey) ||
-                (f.source === sourceKey && f.label === item.label)
-            );
-            if (matchedField) {
-                alreadyMappedDest = sec;
-                if (item.id && item.id.trim() !== '' && matchedField.sourceId !== item.id) {
-                    matchedField.sourceId = item.id;
-                    matchedField.stableKey = `compiler:${sourceKey}:${item.id}`;
-                    saveCurrentProfile();
-                }
-                break;
+        let matchedField = null;
+        
+        if (mapInfo) {
+            alreadyMappedDest = mapInfo.destSection;
+            matchedField = mapInfo.fieldObj;
+            if (item.id && item.id.trim() !== '' && matchedField.sourceId !== item.id) {
+                matchedField.sourceId = item.id;
+                matchedField.stableKey = `compiler:${actualSourceKey}:${item.id}`;
+                saveCurrentProfile();
             }
         }
+        
+        const isNativeToDest = (actualSourceKey === importerDest) && isNativeField(importerDest, item.label);
         
         let actionBtn = '';
         if (alreadyMappedDest) {
             if (alreadyMappedDest === importerDest) {
-                actionBtn = `<span class="text-[8px] text-emerald-400 border border-emerald-500/50 px-2 py-1 rounded">ADDED</span>`;
+                actionBtn = `<span class="text-[8px] text-emerald-400 border border-emerald-500/50 px-2 py-1 rounded font-bold tracking-widest shrink-0">ADDED</span>`;
             } else {
-                actionBtn = `<button onclick="moveExistingFieldToDest('${alreadyMappedDest}', '${importerDest}', '${item.id.replace(/'/g, "\\'")}', '${sourceKey}')" class="bg-slate-700 hover:bg-slate-600 text-blue-300 px-2 py-1 rounded text-[8px] tracking-widest border border-slate-500 transition-colors shadow">MOVE HERE</button>`;
+                actionBtn = `<button onclick="moveExistingFieldToDest('${alreadyMappedDest}', '${importerDest}', '${item.id.replace(/'/g, "\\'")}', '${actualSourceKey}')" class="bg-slate-700 hover:bg-slate-600 text-blue-300 px-2 py-1 rounded text-[8px] tracking-widest border border-slate-500 transition-colors shadow shrink-0">MOVE HERE</button>`;
             }
         } else {
-            actionBtn = `<button onclick="importFieldToDest('${item.label.replace(/'/g, "\\'")}', '${sourceKey}', '${item.id.replace(/'/g, "\\'")}', '${stableKey}')" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-[10px] tracking-widest font-bold transition-colors shadow">IMPORT</button>`;
+            if (isNativeToDest) {
+                actionBtn = `<span class="text-[7px] text-slate-400 border border-slate-600 px-2 py-1 rounded uppercase tracking-widest font-bold shrink-0">NATIVE / NORMAL TOGGLE</span>`;
+            } else {
+                actionBtn = `<div class="flex gap-1 shrink-0">
+                    <button onclick="importFieldToDest('${encodeURIComponent(item.label)}', '${actualSourceKey}', '${item.id.replace(/'/g, "\\'")}', '${stableKey}', false)" class="bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded text-[8px] tracking-widest font-bold transition-colors shadow">PERM</button>
+                    <button onclick="importFieldToDest('${encodeURIComponent(item.label)}', '${actualSourceKey}', '${item.id.replace(/'/g, "\\'")}', '${stableKey}', true)" class="bg-amber-600 hover:bg-amber-500 text-white px-2 py-1 rounded text-[8px] tracking-widest font-bold transition-colors shadow">1-TIME</button>
+                </div>`;
+            }
         }
         
         const hasVal = item.value !== undefined && item.value.trim() !== '' && item.value !== 'Manual Entry';
-        const valBadge = hasVal ? `<span class="bg-emerald-900/50 text-emerald-400 text-[8px] px-1 py-[2px] rounded ml-2 border border-emerald-700/50">VALUE</span>` : '';
+        const valBadge = hasVal ? `<span class="text-[9px] text-emerald-400 font-mono ml-2 truncate max-w-[100px]">${item.value}</span>` : '';
         
         html += `
         <div class="flex items-center justify-between bg-slate-900 border border-slate-700 p-2 rounded w-full mb-1">
-            <div class="flex items-center w-2/3 overflow-hidden">
-                <span class="text-[10px] font-bold text-white truncate max-w-[200px]" title="${item.label}">${item.label}</span>
+            <div class="flex items-center w-2/3 overflow-hidden pr-2">
+                <span class="text-[10px] font-bold text-white truncate shrink-0" title="${item.label}">${item.label}</span>
                 ${valBadge}
             </div>
             ${actionBtn}
@@ -1332,16 +1563,21 @@ function renderImporterList() {
     canvas.innerHTML = html;
 }
 
-function importFieldToDest(label, source, sourceId, stableKey) {
+function importFieldToDest(labelStr, source, sourceId, stableKey, isOneTime) {
+    const label = decodeURIComponent(labelStr);
     if (!currentProfile.sections[importerDest]) currentProfile.sections[importerDest] = [];
-    currentProfile.sections[importerDest].push({
+    
+    const obj = {
         label: label,
         source: source,
         sourceId: sourceId,
         stableKey: stableKey
-    });
+    };
+    if (isOneTime) obj.oneTime = true; else obj.persistent = true;
+    
+    currentProfile.sections[importerDest].push(obj);
     saveCurrentProfile();
-    renderImporterList();
+    closeImporter();
     renderTemplateBuilder();
     renderMainCanvas();
 }
@@ -1378,6 +1614,17 @@ function moveFieldInBuilder(secKey, fIdx, dir) {
 }
 
 function removeFieldFromBuilder(secKey, fIdx) {
+    const field = currentProfile.sections[secKey][fIdx];
+    if (field.oneTime) {
+        const job = localStorage.getItem('hvacActiveJob') || 'UNKNOWN';
+        const profileId = getActiveTemplateProfileId();
+        const overrideKey = `template_job_overrides_v1::${job}::${profileId}`;
+        let overrides = JSON.parse(localStorage.getItem(overrideKey) || '{}');
+        if (overrides[secKey]) {
+            overrides[secKey] = overrides[secKey].filter(f => f.stableKey !== field.stableKey);
+            localStorage.setItem(overrideKey, JSON.stringify(overrides));
+        }
+    }
     currentProfile.sections[secKey].splice(fIdx, 1);
     saveCurrentProfile();
     renderTemplateBuilder();
@@ -1579,3 +1826,8 @@ window.addEventListener('storage', (e) => {
 </body>
 
 </html>
+
+
+
+
+
