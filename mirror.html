@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mirror Radar v1.14.1</title>
+    <title>Mirror Radar v1.14.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -79,8 +79,9 @@
 <div class="sticky top-0 z-50 w-full flex flex-col shadow-md bg-slate-900">
 
 <!-- STATUS BAR LAUNCHER -->
-<div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
+<div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v1.14.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -88,7 +89,7 @@
   <button onclick="createNewJob()" class="flex-shrink-0 min-w-[70px] h-14 bg-blue-600 hover:bg-blue-500 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-blue-400 shadow-sm" title="New Job">
     <span class="text-lg leading-none mb-1">➕</span><span class="text-[8px] font-bold uppercase tracking-wider">New Job</span>
   </button>
-  <button onclick="mirrorSync()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Mirror Sync">
+  <button onclick="mirrorSync()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Refresh Mirror from Spreadsheet">
     <span class="text-lg leading-none mb-1">📥</span><span class="text-[8px] font-bold uppercase tracking-wider">Mirror</span>
   </button>
   <button onclick="openDrive()" class="flex-shrink-0 min-w-[70px] h-14 bg-slate-700 hover:bg-slate-600 text-white flex flex-col items-center justify-center rounded-lg transition-colors border border-slate-500 shadow-sm" title="Drive">
@@ -117,8 +118,8 @@
 <!-- Radar Master Controls -->
 <div class="flex justify-between items-center bg-slate-800 p-2 border-b border-slate-700">
         <div class="flex gap-2">
-            <button onclick="syncAllToCompiler()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">🔄 Sync All</button>
-            <button onclick="unsyncAllFromCompiler()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm border border-slate-600">🚫 Unsync All</button>
+            <button onclick="syncAllToCompiler()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">🔄 Stage All</button>
+            <button onclick="unsyncAllFromCompiler()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm border border-slate-600">🚫 Unstage All</button>
         </div>
     <div class="flex bg-slate-900 rounded overflow-hidden border border-slate-600">
         <button id="view-all-btn" onclick="toggleRadarView('all')" class="bg-blue-600 text-white font-bold px-3 py-2 text-[9px] uppercase transition-colors">View All</button>
@@ -185,7 +186,7 @@
 </div>
 
 <script>
-// LIVE MIRROR BRIDGE (v1.14.1)
+// LIVE MIRROR BRIDGE (v1.14.2)
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
 let currentJob = localStorage.getItem('hvacActiveJob') || null;
 let mirrorState = {};
@@ -465,7 +466,7 @@ function syncAllToCompiler() {
     if (navigator.vibrate) navigator.vibrate([1]);
 
     // Give the technician a clean summary of what was routed
-    alert(`Bulk Sync Complete! ${stampCount} records were successfully blue-stamped for Compiler Staging.`);
+    alert(`Stage All Complete! ${stampCount} records were successfully staged for Compiler.`);
 }
 
 function unsyncAllFromCompiler() {
@@ -486,7 +487,7 @@ function unsyncAllFromCompiler() {
     saveUIState(state);
 
     if (navigator.vibrate) navigator.vibrate([1]);
-    alert(`Bulk Unsync Complete! ${unsyncCount} records were successfully removed from Compiler Staging without deleting data.`);
+    alert(`Unstage All Complete! ${unsyncCount} records were successfully removed from Compiler staging without deleting Mirror data.`);
 }
 function openDrive() { console.log("Google Drive bridge triggered"); }
 function openAlbum() { console.log("Photo Album bridge triggered"); }
