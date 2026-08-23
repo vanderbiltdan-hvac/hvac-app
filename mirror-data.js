@@ -1,5 +1,5 @@
 // Platts Proposal Shared Mirror Data Engine
-// Registry Version: v1.1.1
+// Registry Version: v1.2.0
 // Canonical source of shared Mirror data state for deployed app.
 
 window.PLATTS_MIRROR_DATA = {
@@ -11,8 +11,138 @@ window.PLATTS_MIRROR_DATA = {
     folderId: null,
     lastUpdated: null,
 
+    baselineSchema: [
+        "Date", "Customer Name", "Address", "Phone", "email", 
+        "Reason for Call", "System #", "System Type",
+        "Outdoor Model", "Outdoor Serial", "Indoor Model", 
+        "Indoor Serial", "Furnace Model", "Furnace Serial", 
+        "Refrigerant", "Metering Device", "Outdoor Tonnage", 
+        "Indoor Tonnage", "Furnace BTU", "Heat Strips kW", 
+        "Thermostat", "Filter Size", "Capacitor MFD", 
+        "RLA", "RLA 2", "FLA ODF", "FLA ODF2", "FLA IDF", 
+        "Target Subcool", "Belts", "System Description",
+        "Access Code", "Customer Site Note"
+    ],
+
     getActiveJob: function() {
         return localStorage.getItem('hvacActiveJob') || null;
+    },
+
+    getActiveSchema: function() {
+        if (Array.isArray(this.schema) && this.schema.length > 0) {
+            return this.schema;
+        }
+        return this.baselineSchema;
+    },
+
+    _normalizeLabel: function(label) {
+        if (!label) return "";
+        return label.trim().replace(/\s+/g, ' ').toLowerCase();
+    },
+    
+    _normalizeSafePunctuation: function(label) {
+        if (!label) return "";
+        let s = label.replace(/[-_]/g, ' ');
+        return this._normalizeLabel(s);
+    },
+
+    resolveFieldKey: function(label) {
+        const resolution = this.resolveField(label);
+        return resolution.canonicalLabel;
+    },
+
+    resolveField: function(label) {
+        if (!label) return { requestedLabel: label, canonicalLabel: null, value: "", source: "none", resolved: false };
+        
+        const schema = this.getActiveSchema();
+        const source = (schema === this.schema) ? "live" : "baseline";
+        
+        // 1. EXACT
+        if (schema.includes(label)) {
+            return { requestedLabel: label, canonicalLabel: label, value: this._getRawValue(label), source, resolved: true };
+        }
+
+        // 2. CASE-INSENSITIVE EXACT
+        let lowerLabel = label.toLowerCase();
+        let matches = schema.filter(k => k.toLowerCase() === lowerLabel);
+        if (matches.length === 1) {
+            return { requestedLabel: label, canonicalLabel: matches[0], value: this._getRawValue(matches[0]), source, resolved: true };
+        }
+
+        // 3. WHITESPACE-NORMALIZED EXACT
+        let normLabel = this._normalizeLabel(label);
+        matches = schema.filter(k => this._normalizeLabel(k) === normLabel);
+        if (matches.length === 1) {
+            return { requestedLabel: label, canonicalLabel: matches[0], value: this._getRawValue(matches[0]), source, resolved: true };
+        }
+        
+        // 4. SAFE PUNCTUATION NORMALIZATION
+        let safeLabel = this._normalizeSafePunctuation(label);
+        matches = schema.filter(k => this._normalizeSafePunctuation(k) === safeLabel);
+        if (matches.length === 1) {
+            return { requestedLabel: label, canonicalLabel: matches[0], value: this._getRawValue(matches[0]), source, resolved: true };
+        }
+
+        return { requestedLabel: label, canonicalLabel: null, value: "", source: "none", resolved: false };
+    },
+
+    _getRawValue: function(canonicalLabel) {
+        if (this.fields.hasOwnProperty(canonicalLabel)) {
+            const val = this.fields[canonicalLabel];
+            return (val !== undefined && val !== null) ? val : "";
+        }
+        return "";
+    },
+
+    getCanonicalLabel: function(label) {
+        return this.resolveFieldKey(label);
+    },
+
+    getField: function(label) {
+        const key = this.resolveFieldKey(label);
+        if (!key) return null;
+        if (this.fields.hasOwnProperty(key)) {
+            const val = this.fields[key];
+            return (val !== undefined && val !== null) ? val : "";
+        }
+        return "";
+    },
+    
+    compareSchemaToBaseline: function() {
+        const live = Array.isArray(this.schema) ? this.schema : [];
+        const baseline = this.baselineSchema;
+        
+        let report = {
+            liveOnly: [],
+            baselineOnly: [],
+            caseOrFormattingDifferences: []
+        };
+        
+        if (live.length === 0) return report;
+        
+        let liveMap = live.map(k => ({ orig: k, norm: this._normalizeSafePunctuation(k) }));
+        let baseMap = baseline.map(k => ({ orig: k, norm: this._normalizeSafePunctuation(k) }));
+        
+        for (let l of liveMap) {
+            let matches = baseMap.filter(b => b.norm === l.norm);
+            if (matches.length === 0) {
+                report.liveOnly.push(l.orig);
+            } else {
+                let exactMatch = matches.find(b => b.orig === l.orig);
+                if (!exactMatch) {
+                    report.caseOrFormattingDifferences.push({ live: l.orig, baseline: matches[0].orig });
+                }
+            }
+        }
+        
+        for (let b of baseMap) {
+            let matches = liveMap.filter(l => l.norm === b.norm);
+            if (matches.length === 0) {
+                report.baselineOnly.push(b.orig);
+            }
+        }
+        
+        return report;
     },
 
     refresh: async function() {
@@ -25,7 +155,8 @@ window.PLATTS_MIRROR_DATA = {
                 pmi: [],
                 conflict: "",
                 folderId: null,
-                lastUpdated: null
+                lastUpdated: null,
+                schemaDrift: { liveOnly: [], baselineOnly: [], caseOrFormattingDifferences: [] }
             };
         }
 
@@ -55,6 +186,8 @@ window.PLATTS_MIRROR_DATA = {
             if (this.folderId) {
                 localStorage.setItem('hvacActiveFolderId', this.folderId);
             }
+            
+            const drift = this.compareSchemaToBaseline();
 
             const normalizedState = {
                 currentJob: this.currentJob,
@@ -63,7 +196,8 @@ window.PLATTS_MIRROR_DATA = {
                 pmi: this.pmi,
                 conflict: this.conflict,
                 folderId: this.folderId,
-                lastUpdated: this.lastUpdated
+                lastUpdated: this.lastUpdated,
+                schemaDrift: drift
             };
 
             window.dispatchEvent(
@@ -76,79 +210,5 @@ window.PLATTS_MIRROR_DATA = {
         } else {
             throw new Error(json.data?.error || "Invalid response structure");
         }
-    },
-
-    resolveFieldKey: function(label) {
-        if (!label) return null;
-        
-        // 1. exact key match
-        if (this.fields.hasOwnProperty(label)) {
-            return label;
-        }
-
-        const keys = Object.keys(this.fields);
-
-        // 2. case-insensitive exact match
-        const lowerLabel = label.toLowerCase();
-        let match = keys.find(k => k.toLowerCase() === lowerLabel);
-        if (match) return match;
-
-        // 3. normalized match
-        const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const normLabel = normalize(label);
-        match = keys.find(k => normalize(k) === normLabel);
-        if (match) return match;
-
-        // 4. known aliases
-        const aliases = {
-            "Customer Name": ["Customer Name", "customer name"],
-            "Address": ["Address", "Service Address"],
-            "Phone": ["Phone", "Phone Number"],
-            "Email": ["Email", "email", "Email Address"],
-            "Indoor Model": ["Indoor Model", "Air Handler Model", "Furnace Model"],
-            "Indoor Serial": ["Indoor Serial"],
-            "Indoor Tonnage": ["Indoor Tonnage"],
-            "Filter Size": ["Filter Size"],
-            "Metering Device": ["Metering Device"],
-            "Outdoor Model": ["Outdoor Model", "Condenser Model"],
-            "Outdoor Serial": ["Outdoor Serial"],
-            "Outdoor Tonnage": ["Outdoor Tonnage"],
-            "RLA": ["RLA", "Compressor RLA"],
-            "FLA ODF": ["FLA ODF", "Fan Motor FLA"],
-            "Refrigerant": ["Refrigerant", "Refrigerant Type"],
-            "Date": ["Date"]
-        };
-
-        let targetCanonical = null;
-        for (const [canon, aliasList] of Object.entries(aliases)) {
-            if (aliasList.some(a => a.toLowerCase() === lowerLabel || normalize(a) === normLabel)) {
-                targetCanonical = canon;
-                break;
-            }
-        }
-
-        if (targetCanonical) {
-            const aliasList = aliases[targetCanonical] || [targetCanonical];
-            for (const alias of aliasList) {
-                if (this.fields.hasOwnProperty(alias)) {
-                    return alias;
-                }
-                
-                match = keys.find(k => k.toLowerCase() === alias.toLowerCase());
-                if (match) return match;
-                
-                match = keys.find(k => normalize(k) === normalize(alias));
-                if (match) return match;
-            }
-        }
-
-        return null;
-    },
-
-    getField: function(label) {
-        const key = this.resolveFieldKey(label);
-        if (!key) return null;
-        const val = this.fields[key];
-        return (val !== undefined && val !== null) ? val : "";
     }
 };
