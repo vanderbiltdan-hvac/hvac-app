@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Startup Tracker v1.32.0</title>
+    <title>Startup Tracker v1.32.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -106,7 +106,7 @@
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div style="width:40px;"></div><!-- Spacer for center alignment -->
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[11px] font-bold">v1.32.0</div>
+    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[11px] font-bold">v1.32.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -554,7 +554,7 @@
 </div>
 
 <script>
-const STARTUP_VERSION = "v1.32.0";
+const STARTUP_VERSION = "v1.32.2";
 
 // PAGE REGISTRY & NAVIGATION
 function getSplashDestination() {
@@ -833,11 +833,16 @@ function handleSmartTap(id) {
     const f = startupFieldMap.find(item => item.id === id);
     if (!f || !f.mapped || !window.PLATTS_MIRROR_DATA) return;
     
-    const mirrorVal = getStartupMirrorValue(f.label);
+    const { hasConflict, mirrorVal, currentVal, validationVal, validationMatch } = getStartupConflictState(id);
     if (mirrorVal === null) return;
     
     const can = PLATTS_MIRROR_DATA.getCanonicalLabel(f.label);
     const isCurrentlyAccepted = startupMirrorAcceptedValues[id] !== undefined;
+
+    if (hasConflict) {
+        openStartupConflictChooser(id, f.label, mirrorVal, currentVal, validationMatch, validationVal);
+        return;
+    }
 
     isReconcilingMirror = true;
     try {
@@ -896,15 +901,48 @@ function formatDisplayValue(id, val) {
     return val;
 }
 
-function renderStartupRow(id) {
+function getCalculatedValidationValue(id) {
+    if (!STARTUP_DERIVED_DEPENDENCIES[id]) return null;
+    
+    const getVal = (match) => {
+        const f = startupFieldMap.find(x => x.label.toLowerCase() === match.toLowerCase());
+        if (!f) return NaN;
+        const depId = f.id;
+        if (!startupMemory[depId] || startupMemory[depId] === '--') return NaN;
+        return parseFloat(startupMemory[depId]);
+    };
+
+    let result = NaN;
+    let prec = 1;
+
+    if (id === 'W128') { // ∆T
+        result = Math.abs(getVal('return temp') - getVal('supply temp'));
+    } else if (id === 'W115') { // SH
+        result = getVal('suction line temp') - getVal('vapor saturation');
+    } else if (id === 'W121') { // SC
+        result = getVal('liquid saturation') - getVal('liquid line temp');
+    } else if (id === 'W163') { // Evap TD
+        result = getVal('return temp') - getVal('vapor saturation');
+    } else if (id === 'W160') { // Compression Ratio
+        let sucPress = getVal('suction pressure');
+        let liqPress = getVal('liquid pressure');
+        if (!isNaN(sucPress) && !isNaN(liqPress) && (sucPress + 14.7) > 0) {
+            result = (liqPress + 14.7) / (sucPress + 14.7);
+            prec = 2;
+        }
+    } else if (id === 'W161') { // Approach
+        result = getVal('liquid line temp') - getVal('odat');
+    } else if (id === 'W162') { // CTOA
+        result = getVal('liquid saturation') - getVal('odat');
+    }
+
+    if (isNaN(result)) return null;
+    return result.toFixed(prec);
+}
+
+function getStartupConflictState(id) {
     const f = startupFieldMap.find(item => item.id === id);
-    if(!f) return;
-    const labelEl = document.getElementById('label-' + id);
-    const inputEl = document.getElementById('recorded-' + id);
-    const rowEl = document.getElementById('row-' + id);
-    const mirrorSpan = document.getElementById('mirror-conflict-' + id);
-    const sepSpan = document.getElementById('conflict-separator-' + id);
-    if(!labelEl || !inputEl || !rowEl) return;
+    if(!f) return { hasConflict: false };
 
     let mirrorVal = null;
     if (f.mapped && window.PLATTS_MIRROR_DATA) {
@@ -913,14 +951,63 @@ function renderStartupRow(id) {
 
     const hasLocal = startupMemory[id] !== undefined && startupMemory[id] !== null && startupMemory[id] !== '';
     const isAccepted = startupMirrorAcceptedValues[id] !== undefined;
-    const prov = startupValueProvenance[id];
 
     let hasConflict = false;
+    let currentVal = hasLocal ? startupMemory[id] : null;
+
     if (mirrorVal !== null && hasLocal && !isAccepted) {
-        if (!valuesEquivalent(mirrorVal, startupMemory[id])) {
+        if (!valuesEquivalent(mirrorVal, currentVal)) {
             hasConflict = true;
         }
     }
+
+    let validationVal = null;
+    let validationMatch = 'none';
+
+    if (hasConflict) {
+        validationVal = getCalculatedValidationValue(id);
+        if (validationVal !== null) {
+            const matchesMirror = valuesEquivalent(validationVal, mirrorVal);
+            const matchesCurrent = valuesEquivalent(validationVal, currentVal);
+
+            if (matchesMirror && !matchesCurrent) {
+                validationMatch = 'mirror';
+            } else if (matchesCurrent && !matchesMirror) {
+                validationMatch = 'current';
+            } else if (!matchesMirror && !matchesCurrent) {
+                validationMatch = 'neither';
+            } else {
+                validationMatch = 'none';
+            }
+        }
+    }
+
+    return {
+        hasConflict,
+        mirrorVal,
+        currentVal,
+        validationVal,
+        validationMatch
+    };
+}
+
+function renderStartupRow(id) {
+    const f = startupFieldMap.find(item => item.id === id);
+    if(!f) return;
+    const labelEl = document.getElementById('label-' + id);
+    const inputEl = document.getElementById('recorded-' + id);
+    const rowEl = document.getElementById('row-' + id);
+    const mirrorSpan = document.getElementById('mirror-conflict-' + id);
+    const sepSpan = document.getElementById('conflict-separator-' + id);
+    const mirrorCheck = document.getElementById('mirror-validation-' + id);
+    const currentCheck = document.getElementById('current-validation-' + id);
+    const thirdCalc = document.getElementById('third-validation-' + id);
+    if(!labelEl || !inputEl || !rowEl) return;
+
+    const { hasConflict, mirrorVal, currentVal, validationVal, validationMatch } = getStartupConflictState(id);
+    const hasLocal = currentVal !== null;
+    const isAccepted = startupMirrorAcceptedValues[id] !== undefined;
+    const prov = startupValueProvenance[id];
 
     // Base Reset
     labelEl.className = "font-bold uppercase tracking-widest field-label cursor-pointer transition-colors border-l-2 pl-1";
@@ -929,6 +1016,9 @@ function renderStartupRow(id) {
 
     if (mirrorSpan) mirrorSpan.classList.add('hidden');
     if (sepSpan) sepSpan.classList.add('hidden');
+    if (mirrorCheck) mirrorCheck.classList.add('hidden');
+    if (currentCheck) currentCheck.classList.add('hidden');
+    if (thirdCalc) thirdCalc.classList.add('hidden');
     inputEl.classList.remove('text-left', 'flex-1', 'min-w-[40px]');
     inputEl.classList.add('text-center', 'w-full');
 
@@ -940,14 +1030,14 @@ function renderStartupRow(id) {
     if (f.mapped === false || !f.mapped) {
         labelEl.classList.add('border-orange-500', 'text-orange-400');
         inputEl.classList.add('text-white');
-        inputEl.value = hasLocal ? startupMemory[id] : '';
+        inputEl.value = hasLocal ? currentVal : '';
         return;
     }
 
     if (hasConflict) {
         labelEl.classList.add('border-slate-700', 'text-slate-300');
         inputEl.classList.add('text-amber-400');
-        inputEl.value = startupMemory[id];
+        inputEl.value = currentVal;
         if (mirrorSpan && sepSpan) {
             mirrorSpan.innerText = formatDisplayValue(id, mirrorVal);
             mirrorSpan.classList.remove('hidden');
@@ -955,10 +1045,18 @@ function renderStartupRow(id) {
             inputEl.classList.remove('text-center', 'w-full');
             inputEl.classList.add('text-left', 'flex-1', 'min-w-[40px]');
         }
+        if (validationMatch === 'mirror' && mirrorCheck) {
+            mirrorCheck.classList.remove('hidden');
+        } else if (validationMatch === 'current' && currentCheck) {
+            currentCheck.classList.remove('hidden');
+        } else if (validationMatch === 'neither' && thirdCalc) {
+            thirdCalc.innerText = `Calc ${formatDisplayValue(id, validationVal)}`;
+            thirdCalc.classList.remove('hidden');
+        }
     } else if (isAccepted && hasLocal) {
         labelEl.classList.add('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
         inputEl.classList.add('text-blue-400');
-        inputEl.value = startupMemory[id];
+        inputEl.value = currentVal;
     } else if (hasLocal) {
         labelEl.classList.add('border-slate-700', 'text-slate-300');
         if (prov === 'calculated') {
@@ -966,7 +1064,7 @@ function renderStartupRow(id) {
         } else {
             inputEl.classList.add('text-white');
         }
-        inputEl.value = startupMemory[id];
+        inputEl.value = currentVal;
     } else if (mirrorVal !== null && !hasLocal) {
         labelEl.classList.add('border-slate-700', 'text-slate-300');
         inputEl.classList.add('text-slate-500'); // GRAY PREVIEW
@@ -1563,10 +1661,15 @@ function initStartup() {
             <div class="col-label flex items-center px-2 border-r border-slate-700">
                 <span class="${labelClasses}" id="label-${id}" onclick="handleSmartTap('${id}')">${item.label}</span>
             </div>
-            <div class="col-recorded flex items-center justify-center border-r border-slate-700 px-1 relative">
-                <span id="mirror-conflict-${id}" class="hidden text-blue-400 font-bold mr-1 shrink-0" style="font-size: var(--font-recorded-val);"></span>
-                <span id="conflict-separator-${id}" class="hidden text-slate-500 font-bold mr-1 shrink-0" style="font-size: var(--font-recorded-val);">/</span>
-                <input type="number" inputmode="decimal" id="recorded-${id}" value="${val}" oninput="saveStartupData('${id}', this.value)" class="w-full bg-transparent text-center text-white font-bold focus:outline-none focus:bg-slate-800/80 rounded transition-colors" style="font-size: var(--font-recorded-val);" placeholder="---" onchange="markPopulated('${id}')">
+            <div class="col-recorded flex flex-col items-center justify-center border-r border-slate-700 px-1 relative">
+                <div class="flex items-center justify-center w-full flex-1">
+                    <span id="mirror-conflict-${id}" class="hidden text-blue-400 font-bold shrink-0" style="font-size: var(--font-recorded-val);"></span>
+                    <span id="mirror-validation-${id}" class="hidden text-green-400 text-[11px] font-bold mx-0.5 shrink-0">✓</span>
+                    <span id="conflict-separator-${id}" class="hidden text-slate-500 font-bold mx-1 shrink-0" style="font-size: var(--font-recorded-val);">/</span>
+                    <input type="number" inputmode="decimal" id="recorded-${id}" value="${val}" oninput="saveStartupData('${id}', this.value)" class="w-full bg-transparent text-center text-white font-bold focus:outline-none focus:bg-slate-800/80 rounded transition-colors" style="font-size: var(--font-recorded-val);" placeholder="---" onchange="markPopulated('${id}')">
+                    <span id="current-validation-${id}" class="hidden text-green-400 text-[11px] font-bold ml-1 shrink-0">✓</span>
+                </div>
+                <div id="third-validation-${id}" class="hidden text-slate-400 text-[9px] w-full text-center pb-0.5"></div>
             </div>
             <div class="col-telemetry justify-around">
                 <div class="flex flex-col items-center justify-center flex-1 cursor-pointer bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded py-0.5 transition-colors relative" onclick="dumpLiveToRecorded('${id}')" id="live-cell-${id}" title="Tap to Record Live">
@@ -1817,6 +1920,109 @@ function toggleCalibration() {
     if(drawer) {
         drawer.classList.toggle('hidden');
         drawer.classList.toggle('flex');
+    }
+}
+</script>
+<!-- STARTUP CONFLICT CHOOSER MODAL -->
+<div id="startup-conflict-chooser" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden" onclick="closeStartupConflictChooser(event)">
+    <div class="bg-slate-900 border border-slate-600 rounded-lg shadow-xl w-11/12 max-w-sm p-4 text-white" onclick="event.stopPropagation()">
+        <h3 id="conflict-chooser-title" class="text-sm font-bold text-slate-300 uppercase tracking-widest border-b border-slate-700 pb-2 mb-3">Field Name</h3>
+        
+        <div class="space-y-4 mb-6">
+            <div class="flex justify-between items-center border border-slate-700 rounded p-3 bg-slate-800/50">
+                <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Mirror</span>
+                <div class="flex items-center">
+                    <span id="conflict-chooser-mirror-val" class="text-blue-400 font-bold text-lg"></span>
+                    <span id="conflict-chooser-mirror-check" class="hidden text-green-400 text-xs ml-2">✓</span>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center border border-slate-700 rounded p-3 bg-slate-800/50 relative">
+                <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Current</span>
+                <div class="flex flex-col items-end">
+                    <div class="flex items-center">
+                        <span id="conflict-chooser-current-val" class="text-amber-400 font-bold text-lg"></span>
+                        <span id="conflict-chooser-current-check" class="hidden text-green-400 text-xs ml-2">✓</span>
+                    </div>
+                    <div id="conflict-chooser-third-val" class="hidden text-slate-400 text-[10px] absolute -bottom-1 right-3 translate-y-full"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex flex-col space-y-2">
+            <button onclick="resolveStartupConflict('mirror')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition-colors uppercase tracking-widest text-xs">Use Mirror</button>
+            <button onclick="resolveStartupConflict('current')" class="w-full bg-amber-600/20 hover:bg-amber-600/40 text-amber-500 border border-amber-600/50 font-bold py-3 rounded transition-colors uppercase tracking-widest text-xs">Keep Current</button>
+            <button onclick="closeStartupConflictChooser()" class="w-full text-slate-400 hover:text-white font-bold py-3 uppercase tracking-widest text-xs transition-colors">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentConflictChooserId = null;
+
+function openStartupConflictChooser(id, label, mirrorVal, currentVal, validationMatch, validationVal) {
+    currentConflictChooserId = id;
+    document.getElementById('conflict-chooser-title').innerText = label;
+    document.getElementById('conflict-chooser-mirror-val').innerText = formatDisplayValue(id, mirrorVal);
+    document.getElementById('conflict-chooser-current-val').innerText = formatDisplayValue(id, currentVal);
+    
+    document.getElementById('conflict-chooser-mirror-check').classList.add('hidden');
+    document.getElementById('conflict-chooser-current-check').classList.add('hidden');
+    document.getElementById('conflict-chooser-third-val').classList.add('hidden');
+    
+    if (validationMatch === 'mirror') {
+        document.getElementById('conflict-chooser-mirror-check').classList.remove('hidden');
+    } else if (validationMatch === 'current') {
+        document.getElementById('conflict-chooser-current-check').classList.remove('hidden');
+    } else if (validationMatch === 'neither') {
+        document.getElementById('conflict-chooser-third-val').innerText = `Calc ${formatDisplayValue(id, validationVal)}`;
+        document.getElementById('conflict-chooser-third-val').classList.remove('hidden');
+    }
+    
+    document.getElementById('startup-conflict-chooser').classList.remove('hidden');
+}
+
+function closeStartupConflictChooser(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('startup-conflict-chooser').classList.add('hidden');
+    currentConflictChooserId = null;
+}
+
+function resolveStartupConflict(choice) {
+    const id = currentConflictChooserId;
+    if (!id) return;
+    closeStartupConflictChooser();
+    
+    const f = startupFieldMap.find(item => item.id === id);
+    if (!f || !f.mapped || !window.PLATTS_MIRROR_DATA) return;
+    const can = PLATTS_MIRROR_DATA.getCanonicalLabel(f.label);
+    
+    isReconcilingMirror = true;
+    try {
+        if (choice === 'mirror') {
+            const mirrorVal = getStartupMirrorValue(f.label);
+            if (mirrorVal !== null) {
+                startupMemory[id] = mirrorVal;
+                startupMirrorAcceptedValues[id] = mirrorVal;
+                startupValueProvenance[id] = 'mirror';
+                PLATTS_MIRROR_DATA.setAccepted(can, true);
+                saveCurrentJobState();
+                renderStartupRow(id);
+                protectedMirrorAcceptId = id;
+                runAutoMath();
+                protectedMirrorAcceptId = null;
+            }
+        } else if (choice === 'current') {
+            PLATTS_MIRROR_DATA.setAccepted(can, false);
+            if (startupMirrorAcceptedValues[id]) {
+                delete startupMirrorAcceptedValues[id];
+            }
+            saveCurrentJobState();
+            renderStartupRow(id);
+        }
+        updateTelemetryHeaders();
+    } finally {
+        isReconcilingMirror = false;
     }
 }
 </script>
