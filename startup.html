@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Startup Tracker v1.30.1</title>
+    <title>Startup Tracker v1.31.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
+    <script src="mirror-data.js"></script>
     <style>
 :root {
   --pmi-row-height: 30px;
@@ -105,7 +106,7 @@
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div style="width:40px;"></div><!-- Spacer for center alignment -->
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v1.30.1</div>
+    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v1.31.4</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -553,7 +554,7 @@
 </div>
 
 <script>
-const STARTUP_VERSION = "v1.30.1";
+const STARTUP_VERSION = "v1.31.4";
 
 // PAGE REGISTRY & NAVIGATION
 function getSplashDestination() {
@@ -625,10 +626,141 @@ function toggleBottomNav() {
     }
 }
 
+// JOB STATE & MIRROR INTEGRATION
+let currentJob = "";
+let startupMemory = {};
+let startupMirrorAcceptedValues = {};
+let startupValueProvenance = {};
+let snapshotVault = [];
+let isReconcilingMirror = false;
+let protectedMirrorAcceptId = null;
+let protectedLocalValueId = null;
+let locallyChangedSourceIds = new Set();
+
+function getSafeJob(name) {
+    if (!name) return "";
+    return name.trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+function loadMirrorCacheForStartup(currentJob, safeJob) {
+    if (!window.PLATTS_MIRROR_DATA) return;
+    try {
+        let cached = null;
+        const raw = localStorage.getItem('mirror_cache_v1::' + safeJob);
+        if (raw) {
+            cached = JSON.parse(raw);
+        } else {
+            const rawLegacy = localStorage.getItem('mirror_cache_v1::' + currentJob);
+            if (rawLegacy) cached = JSON.parse(rawLegacy);
+        }
+        
+        if (cached) {
+            if (cached.job && cached.job !== currentJob) {
+                console.warn('Startup cache identity mismatch. Expected:', currentJob, 'Got:', cached.job);
+                return false;
+            }
+            PLATTS_MIRROR_DATA.currentJob = currentJob;
+            PLATTS_MIRROR_DATA.fields = cached.mirrorState || {};
+            PLATTS_MIRROR_DATA.schema = cached.liveMirrorSchema || [];
+            PLATTS_MIRROR_DATA.pmi = cached.liveMirrorPMI || [];
+            PLATTS_MIRROR_DATA.conflict = cached.liveMirrorConflict || "";
+            if (cached.folderId) PLATTS_MIRROR_DATA.folderId = cached.folderId;
+            if (cached.lastUpdated) PLATTS_MIRROR_DATA.lastUpdated = cached.lastUpdated;
+        }
+    } catch(e) {}
+}
+
+function switchJob() {
+    const rawJob = localStorage.getItem('hvacActiveJob') || (window.PLATTS_MIRROR_DATA ? window.PLATTS_MIRROR_DATA.getActiveJob() : '');
+    const header = document.getElementById('active-job-ticket');
+    
+    if (rawJob) {
+        header.innerText = rawJob;
+        currentJob = rawJob;
+    } else {
+        header.innerText = '[ Awaiting New Call Info ]';
+        currentJob = "";
+        startupMemory = {};
+        startupMirrorAcceptedValues = {};
+        startupValueProvenance = {};
+        snapshotVault = [];
+        initStartup();
+        return;
+    }
+
+    const safeJob = getSafeJob(currentJob);
+    
+    // One-Time Legacy Startup Values Migration
+    if (!localStorage.getItem('hvac_startup_v1_migration_consumed') && localStorage.getItem('hvac_startup_v1')) {
+        if (!localStorage.getItem('hvac_startup_v2::' + safeJob)) {
+            const legacyData = localStorage.getItem('hvac_startup_v1');
+            localStorage.setItem('hvac_startup_v2::' + safeJob, legacyData);
+            localStorage.setItem('hvac_startup_v1_migration_consumed', 'true');
+        }
+    }
+    
+    // One-Time Legacy Snapshots Migration
+    if (!localStorage.getItem('hvac_startup_snaps_v1_migration_consumed') && localStorage.getItem('hvac_startup_snaps_v1')) {
+        if (!localStorage.getItem('hvac_startup_snaps_v2::' + safeJob)) {
+            const legacySnaps = localStorage.getItem('hvac_startup_snaps_v1');
+            localStorage.setItem('hvac_startup_snaps_v2::' + safeJob, legacySnaps);
+            localStorage.setItem('hvac_startup_snaps_v1_migration_consumed', 'true');
+        }
+    }
+
+    startupMemory = JSON.parse(localStorage.getItem('hvac_startup_v2::' + safeJob)) || {};
+    startupMirrorAcceptedValues = JSON.parse(localStorage.getItem('hvac_startup_mirror_v2::' + safeJob)) || {};
+    snapshotVault = JSON.parse(localStorage.getItem('hvac_startup_snaps_v2::' + safeJob)) || [];
+
+    const rawProvenance = localStorage.getItem('hvac_startup_provenance_v1::' + safeJob);
+    if (rawProvenance) {
+        startupValueProvenance = JSON.parse(rawProvenance);
+    } else {
+        startupValueProvenance = {};
+        for (const id in startupMemory) {
+            if (startupMirrorAcceptedValues[id] !== undefined) {
+                startupValueProvenance[id] = 'mirror';
+            } else {
+                startupValueProvenance[id] = 'local';
+            }
+        }
+    }
+
+    loadMirrorCacheForStartup(currentJob, safeJob);
+    initStartup();
+    runAutoMath();
+    reconcileStartupMirrorAcceptance();
+}
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'hvacActiveJob') {
+        switchJob();
+    }
+});
+
+function getStartupMirrorValue(fieldLabel) {
+    if (!window.PLATTS_MIRROR_DATA) return null;
+    const can = PLATTS_MIRROR_DATA.getCanonicalLabel(fieldLabel);
+    if (!can) return null;
+    const val = PLATTS_MIRROR_DATA.getField(can);
+    return (val !== null && val !== undefined && String(val).trim() !== '') ? String(val).trim() : null;
+}
+
+function saveCurrentJobState() {
+    if (!currentJob) return;
+    const safeJob = getSafeJob(currentJob);
+    localStorage.setItem('hvac_startup_v2::' + safeJob, JSON.stringify(startupMemory));
+    localStorage.setItem('hvac_startup_mirror_v2::' + safeJob, JSON.stringify(startupMirrorAcceptedValues));
+    localStorage.setItem('hvac_startup_provenance_v1::' + safeJob, JSON.stringify(startupValueProvenance));
+}
+
 // UNIVERSAL DRAWER FUNCTIONS
 function createNewJob() {
     const name = prompt("Enter new Job Name/ID:");
-    if(name && name.trim() !== '') document.getElementById('active-job-ticket').innerText = name.trim();
+    if(name && name.trim() !== '') {
+        localStorage.setItem('hvacActiveJob', name.trim());
+        switchJob();
+    }
 }
 function toggleEditFieldsModal() {
     const modal = document.getElementById('edit-fields-modal');
@@ -696,62 +828,197 @@ function triggerMechanicalLock(id) {
     if (navigator.vibrate) navigator.vibrate(50);
 }
 
-let startupCompilerState = JSON.parse(localStorage.getItem('hvac_startup_compiler_v1')) || { selectedFields: {} };
-
-function saveStartupCompilerState() {
-    localStorage.setItem('hvac_startup_compiler_v1', JSON.stringify(startupCompilerState));
-}
-
-function isStartupFieldSelected(id) {
-    if (!startupCompilerState.selectedFields) startupCompilerState.selectedFields = {};
-    return startupCompilerState.selectedFields[id] === true;
-}
-
-function setStartupFieldSelected(id, selected) {
-    if (!startupCompilerState.selectedFields) startupCompilerState.selectedFields = {};
-    startupCompilerState.selectedFields[id] = selected;
-    saveStartupCompilerState();
-}
-
-function applyStartupCompilerSelectionUI() {
-    if (!startupCompilerState.selectedFields) return;
-    Object.keys(startupCompilerState.selectedFields).forEach(id => {
-        const label = document.getElementById('label-' + id);
-        if (label) {
-            if (startupCompilerState.selectedFields[id] === true) {
-                label.classList.remove('border-slate-700', 'text-slate-300');
-                label.classList.add('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
-            } else {
-                label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
-                if (!label.classList.contains('border-orange-500')) {
-                    label.classList.add('border-slate-700', 'text-slate-300');
-                }
-            }
-        }
-    });
-}
-
 function handleSmartTap(id) {
-    const label = document.getElementById('label-' + id);
-    if (!label) return;
+    if (isReconcilingMirror) return;
+    const f = startupFieldMap.find(item => item.id === id);
+    if (!f || !f.mapped || !window.PLATTS_MIRROR_DATA) return;
     
-    if (label.classList.contains('bg-blue-600')) {
-        label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
-        if (!label.classList.contains('border-orange-500')) {
-            label.classList.add('border-slate-700', 'text-slate-300');
+    const mirrorVal = getStartupMirrorValue(f.label);
+    if (mirrorVal === null) return;
+    
+    const can = PLATTS_MIRROR_DATA.getCanonicalLabel(f.label);
+    const isCurrentlyAccepted = startupMirrorAcceptedValues[id] !== undefined;
+
+    isReconcilingMirror = true;
+    try {
+        if (isCurrentlyAccepted) {
+            // UNACCEPT
+            const isUnchanged = startupMemory[id] === startupMirrorAcceptedValues[id];
+            delete startupMirrorAcceptedValues[id];
+            if (isUnchanged) {
+                delete startupMemory[id];
+                delete startupValueProvenance[id];
+            } else if (startupValueProvenance[id] === 'mirror') {
+                delete startupValueProvenance[id];
+            }
+            PLATTS_MIRROR_DATA.setAccepted(can, false);
+            saveCurrentJobState();
+            renderStartupRow(id);
+        } else {
+            // ACCEPT
+            startupMemory[id] = mirrorVal;
+            startupMirrorAcceptedValues[id] = mirrorVal;
+            startupValueProvenance[id] = 'mirror';
+            PLATTS_MIRROR_DATA.setAccepted(can, true);
+            saveCurrentJobState();
+            renderStartupRow(id);
+            protectedMirrorAcceptId = id;
+            runAutoMath();
+            protectedMirrorAcceptId = null;
         }
-        setStartupFieldSelected(id, false);
-    } else {
-        label.classList.remove('border-slate-700', 'text-slate-300');
-        label.classList.add('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
-        setStartupFieldSelected(id, true);
+        updateTelemetryHeaders();
+    } finally {
+        isReconcilingMirror = false;
     }
 }
 
+function renderStartupRow(id) {
+    const f = startupFieldMap.find(item => item.id === id);
+    if(!f) return;
+    const labelEl = document.getElementById('label-' + id);
+    const inputEl = document.getElementById('recorded-' + id);
+    const rowEl = document.getElementById('row-' + id);
+    if(!labelEl || !inputEl || !rowEl) return;
+
+    let mirrorVal = null;
+    if (f.mapped && window.PLATTS_MIRROR_DATA) {
+        mirrorVal = getStartupMirrorValue(f.label);
+    }
+
+    const hasLocal = startupMemory[id] !== undefined && startupMemory[id] !== null && startupMemory[id] !== '';
+    const isAccepted = startupMirrorAcceptedValues[id] !== undefined;
+
+    // Base Reset
+    labelEl.className = "font-bold uppercase tracking-widest field-label cursor-pointer transition-colors border-l-2 pl-1";
+    inputEl.classList.remove('text-slate-400', 'text-white', 'text-blue-400', 'text-green-400');
+    rowEl.classList.remove('ring-1', 'ring-inset', 'ring-blue-500');
+
+    // Ring Outline
+    if (mirrorVal !== null) {
+        rowEl.classList.add('ring-1', 'ring-inset', 'ring-blue-500');
+    }
+
+    if (f.mapped === false || !f.mapped) {
+        labelEl.classList.add('border-orange-500', 'text-orange-400');
+        inputEl.classList.add('text-white');
+        inputEl.value = hasLocal ? startupMemory[id] : '';
+        return;
+    }
+
+    const prov = startupValueProvenance[id];
+
+    if (isAccepted && hasLocal) {
+        labelEl.classList.add('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
+        inputEl.classList.add('text-blue-400');
+        inputEl.value = startupMemory[id];
+    } else if (hasLocal) {
+        labelEl.classList.add('border-slate-700', 'text-slate-300');
+        if (prov === 'calculated') {
+            inputEl.classList.add('text-green-400');
+        } else {
+            inputEl.classList.add('text-white');
+        }
+        inputEl.value = startupMemory[id];
+    } else if (mirrorVal !== null && !hasLocal) {
+        labelEl.classList.add('border-slate-700', 'text-slate-300');
+        inputEl.classList.add('text-slate-500'); // GRAY PREVIEW
+        inputEl.value = mirrorVal; 
+    } else {
+        labelEl.classList.add('border-slate-700', 'text-slate-300');
+        inputEl.classList.add('text-white');
+        inputEl.value = '';
+    }
+}
+
+function reconcileStartupMirrorAcceptance() {
+    if (isReconcilingMirror) return;
+    if (!window.PLATTS_MIRROR_DATA) return;
+    
+    isReconcilingMirror = true;
+    try {
+        let changed = false;
+        startupFieldMap.forEach(f => {
+            if (!f.mapped) return;
+            const id = f.id;
+            const can = PLATTS_MIRROR_DATA.getCanonicalLabel(f.label);
+            const mirrorVal = getStartupMirrorValue(f.label);
+            const isSharedAccepted = PLATTS_MIRROR_DATA.isAccepted(can);
+            
+            const hasLocal = startupMemory[id] !== undefined && startupMemory[id] !== null && startupMemory[id] !== '';
+            const isPrevAccepted = startupMirrorAcceptedValues[id] !== undefined;
+            
+            if (isSharedAccepted && mirrorVal !== null) {
+                if (!hasLocal || isPrevAccepted) {
+                    // RULE A
+                    startupMemory[id] = mirrorVal;
+                    startupMirrorAcceptedValues[id] = mirrorVal;
+                    startupValueProvenance[id] = 'mirror';
+                    changed = true;
+                } else if (hasLocal && !isPrevAccepted) {
+                    // RULE B: Protect local override
+                    PLATTS_MIRROR_DATA.setAccepted(can, false);
+                }
+            } else {
+                // Not shared accepted
+                if (isPrevAccepted) {
+                    // RULE C
+                    const isUnchanged = startupMemory[id] === startupMirrorAcceptedValues[id];
+                    delete startupMirrorAcceptedValues[id];
+                    if (isUnchanged) {
+                        delete startupMemory[id];
+                        delete startupValueProvenance[id];
+                    } else if (startupValueProvenance[id] === 'mirror') {
+                        delete startupValueProvenance[id];
+                    }
+                    changed = true;
+                }
+            }
+        });
+        
+        if (changed) {
+            saveCurrentJobState();
+            runAutoMath();
+            updateTelemetryHeaders();
+        }
+        startupFieldMap.forEach(f => renderStartupRow(f.id));
+    } finally {
+        isReconcilingMirror = false;
+    }
+}
+
+window.addEventListener('platts-mirror-updated', (e) => {
+    if (!currentJob) return;
+    if (e.detail && e.detail.currentJob && e.detail.currentJob !== currentJob) return;
+    reconcileStartupMirrorAcceptance();
+});
+
+window.addEventListener('platts-mirror-acceptance-changed', (e) => {
+    if (!currentJob) return;
+    if (e.detail && e.detail.currentJob && e.detail.currentJob !== currentJob) return;
+    reconcileStartupMirrorAcceptance();
+});
+
 function saveStartupData(id, val) {
     startupMemory[id] = val;
-    localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
-    runAutoMath();
+    startupValueProvenance[id] = 'local';
+    if (startupMirrorAcceptedValues[id]) {
+        delete startupMirrorAcceptedValues[id];
+        const field = startupFieldMap.find(f => f.id === id);
+        if (field && field.mapped && window.PLATTS_MIRROR_DATA) {
+            const can = PLATTS_MIRROR_DATA.getCanonicalLabel(field.label);
+            PLATTS_MIRROR_DATA.setAccepted(can, false);
+        }
+    }
+    locallyChangedSourceIds.add(id);
+    protectedLocalValueId = id;
+    try {
+        saveCurrentJobState();
+        runAutoMath();
+    } finally {
+        protectedLocalValueId = null;
+        locallyChangedSourceIds.clear();
+    }
+    renderStartupRow(id);
     updateTelemetryHeaders();
 }
 
@@ -804,25 +1071,67 @@ function runAutoMath() {
         const f = startupFieldMap.find(x => x.label.toLowerCase() === match.toLowerCase());
         if (!f) return;
         const id = f.id;
+        
+        if (protectedMirrorAcceptId === id) return;
+        if (protectedLocalValueId === id) return;
+        
+        let sourceChangedLocally = false;
+        if (STARTUP_DERIVED_DEPENDENCIES[id]) {
+            sourceChangedLocally = STARTUP_DERIVED_DEPENDENCIES[id].some(depId => locallyChangedSourceIds.has(depId));
+        }
+        
+        if (startupValueProvenance[id] === 'local' && !sourceChangedLocally) {
+            return;
+        }
+        
         const input = document.getElementById('recorded-' + id);
         
         if (isNaN(val) || val === null || val === undefined) {
+            if (startupMirrorAcceptedValues[id] !== undefined && !sourceChangedLocally) {
+                return;
+            }
             if (startupMemory[id] !== undefined || (input && input.value !== '')) {
                 if (input) input.value = '';
                 delete startupMemory[id];
-                localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
+                delete startupValueProvenance[id];
+                if (startupMirrorAcceptedValues[id]) {
+                    delete startupMirrorAcceptedValues[id];
+                    if (f.mapped && window.PLATTS_MIRROR_DATA) {
+                        const can = PLATTS_MIRROR_DATA.getCanonicalLabel(f.label);
+                        const prevReconciling = isReconcilingMirror;
+                        isReconcilingMirror = true;
+                        try { PLATTS_MIRROR_DATA.setAccepted(can, false); }
+                        finally { isReconcilingMirror = prevReconciling; }
+                    }
+                }
+                saveCurrentJobState();
+                renderStartupRow(id);
             }
             return;
         }
         
         const strVal = val.toFixed(precision);
-        if (input && input.value !== strVal) {
-            input.value = strVal;
+        
+        if (startupMirrorAcceptedValues[id] !== undefined && !sourceChangedLocally) {
+            return;
+        }
+
+        if (startupMemory[id] !== strVal || (input && input.value !== strVal) || startupMirrorAcceptedValues[id] !== undefined || startupValueProvenance[id] !== 'calculated') {
+            if (input) input.value = strVal;
             startupMemory[id] = strVal;
-            localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
-        } else if (!input && startupMemory[id] !== strVal) {
-            startupMemory[id] = strVal;
-            localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
+            startupValueProvenance[id] = 'calculated';
+            if (startupMirrorAcceptedValues[id]) {
+                delete startupMirrorAcceptedValues[id];
+                if (f.mapped && window.PLATTS_MIRROR_DATA) {
+                    const can = PLATTS_MIRROR_DATA.getCanonicalLabel(f.label);
+                    const prevReconciling = isReconcilingMirror;
+                    isReconcilingMirror = true;
+                    try { PLATTS_MIRROR_DATA.setAccepted(can, false); }
+                    finally { isReconcilingMirror = prevReconciling; }
+                }
+            }
+            saveCurrentJobState();
+            renderStartupRow(id);
         }
     };
 
@@ -850,6 +1159,16 @@ setTimeout(() => {
     const pref = localStorage.getItem('startup_view_pref') || 'all';
     filterView(pref);
 }, 200);
+
+const STARTUP_DERIVED_DEPENDENCIES = {
+  'W128': ['W123', 'W127'],        // ∆T <- Return Temp, Supply Temp
+  'W115': ['W111', 'W112'],        // SH <- Suction Line Temp, Vapor Saturation
+  'W121': ['W118', 'W117'],        // SC <- Liquid Saturation, Liquid Line Temp
+  'W163': ['W123', 'W112'],        // Evap TD <- Return Temp, Vapor Saturation
+  'W160': ['W109', 'W110'],        // Compression Ratio <- Suction Pressure, Liquid Pressure
+  'W161': ['W117', 'W108'],        // Approach <- Liquid Line Temp, ODAT
+  'W162': ['W118', 'W108']         // CTOA <- Liquid Saturation, ODAT
+};
 
 const startupFieldMap = [
   { id: 'W108', label: 'ODAT', category: 'refrigerant', mapped: true },
@@ -909,7 +1228,7 @@ for (let i = 0; i < 21; i++) {
 
 const recycleBin = [];
 
-let startupMemory = JSON.parse(localStorage.getItem('hvac_startup_v1')) || {};
+
 
 let activeFieldsTab = "add";
 
@@ -1022,26 +1341,26 @@ function clearStartupRow(id) {
     const input = document.getElementById('recorded-' + id);
     if (input) input.value = '';
     
-    const label = document.getElementById('label-' + id);
-    if (label) {
-        label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
-        // Restore orange classes if orphan
-        const field = startupFieldMap.find(item => item.id === id);
-        if (field && (field.mapped === false || !field.mapped)) {
-            label.classList.add('text-orange-400');
-        } else {
-            label.classList.add('border-slate-700', 'text-slate-300');
-        }
-    }
-    
-    if (typeof setStartupFieldSelected === 'function') {
-        setStartupFieldSelected(id, false);
-    }
-    
-    // Clear from memory
     delete startupMemory[id];
-    localStorage.setItem('hvac_startup_v1', JSON.stringify(startupMemory));
-    runAutoMath();
+    delete startupMirrorAcceptedValues[id];
+    delete startupValueProvenance[id];
+    
+    const field = startupFieldMap.find(item => item.id === id);
+    if (field && field.mapped && window.PLATTS_MIRROR_DATA) {
+        const can = PLATTS_MIRROR_DATA.getCanonicalLabel(field.label);
+        PLATTS_MIRROR_DATA.setAccepted(can, false);
+    }
+    
+    locallyChangedSourceIds.add(id);
+    protectedLocalValueId = id;
+    try {
+        saveCurrentJobState();
+        runAutoMath();
+    } finally {
+        protectedLocalValueId = null;
+        locallyChangedSourceIds.clear();
+    }
+    renderStartupRow(id);
 }
 
 let currentHeaderSlot = null;
@@ -1134,49 +1453,32 @@ function markPopulated(id) {
 }
 
 function toggleCompilerSweep() {
-    isCompilerSwept = !isCompilerSwept;
-    const btn = document.getElementById('btn-compiler');
-    const icon = document.getElementById('icon-compiler');
-    const labels = document.querySelectorAll('.field-label');
-    
-    if(isCompilerSwept) {
-        btn.classList.add('bg-blue-600');
-        btn.classList.remove('bg-slate-700');
-        icon.classList.replace('text-blue-500', 'text-white');
-        
-        labels.forEach(label => {
-            const id = label.id.replace('label-', '');
-            const input = document.getElementById('recorded-' + id);
-            if(input && input.value.trim() !== '') {
-                label.classList.remove('border-slate-700', 'text-slate-300');
-                label.classList.add('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
-                setStartupFieldSelected(id, true);
-            }
-        });
+    if (typeof showToast === 'function') {
+        showToast("Startup data is automatically available to Compiler");
     } else {
-        btn.classList.add('bg-slate-700');
-        btn.classList.remove('bg-blue-600');
-        icon.classList.replace('text-white', 'text-blue-500');
-        
-        labels.forEach(label => {
-            const id = label.id.replace('label-', '');
-            const input = document.getElementById('recorded-' + id);
-            if(input && input.value.trim() !== '') {
-                label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
-                if (!label.classList.contains('border-orange-500')) {
-                    label.classList.add('border-slate-700', 'text-slate-300');
-                }
-                setStartupFieldSelected(id, false);
-            }
-        });
+        alert("Startup data is automatically available to Compiler");
     }
 }
 
 function toggleMirrorPull() {
-    if (typeof showToast === 'function') {
-        showToast("Mirror integration pending");
+    if (window.PLATTS_MIRROR_DATA) {
+        const btn = document.getElementById('btn-mirror');
+        if(btn) btn.classList.add('animate-pulse');
+        PLATTS_MIRROR_DATA.refresh().then(() => {
+            if(btn) btn.classList.remove('animate-pulse');
+            reconcileStartupMirrorAcceptance();
+            startupFieldMap.forEach(f => renderStartupRow(f.id));
+        }).catch(err => {
+            if(btn) btn.classList.remove('animate-pulse');
+            if (typeof showToast === 'function') {
+                showToast("Mirror refresh failed");
+            } else {
+                alert("Mirror refresh failed");
+            }
+        });
     } else {
-        alert("Mirror integration pending");
+        if (typeof showToast === 'function') showToast("Mirror integration pending");
+        else alert("Mirror integration pending");
     }
 }
 
@@ -1243,16 +1545,16 @@ function initStartup() {
     });
 
     renderEditFieldsCanvas();
-    applyStartupCompilerSelectionUI();
+    startupFieldMap.forEach(item => renderStartupRow(item.id));
 }
 
 window.addEventListener('DOMContentLoaded', () => { 
     renderBottomNav();
-    initStartup(); 
+    switchJob(); 
 });
 
 let activeBtTarget = null;
-let snapshotVault = JSON.parse(localStorage.getItem('hvac_startup_snaps_v1')) || [];
+
 
 function setBluetoothTarget(id) {
     if (activeBtTarget) {
@@ -1287,7 +1589,10 @@ function takeSnapshot(categoryId, e) {
     }
     
     snapshotVault.push(snapData);
-    localStorage.setItem('hvac_startup_snaps_v1', JSON.stringify(snapshotVault));
+    if (currentJob) {
+        const safeJob = getSafeJob(currentJob);
+        localStorage.setItem('hvac_startup_snaps_v2::' + safeJob, JSON.stringify(snapshotVault));
+    }
     
     const originalText = e.target.innerHTML;
     e.target.innerHTML = "✅ Saved";
@@ -1434,8 +1739,24 @@ function dumpLiveToRecorded(id) {
         if (liveText !== '--' && liveText !== '') {
             const numVal = parseFloat(liveText);
             if (!isNaN(numVal)) {
-                recInput.value = liveText;
-                saveStartupData(id, liveText);
+                startupMemory[id] = liveText;
+                startupValueProvenance[id] = 'local';
+                delete startupMirrorAcceptedValues[id];
+                const field = startupFieldMap.find(f => f.id === id);
+                if (field && field.mapped && window.PLATTS_MIRROR_DATA) {
+                    PLATTS_MIRROR_DATA.setAccepted(PLATTS_MIRROR_DATA.getCanonicalLabel(field.label), false);
+                }
+                locallyChangedSourceIds.add(id);
+                protectedLocalValueId = id;
+                try {
+                    saveCurrentJobState();
+                    runAutoMath();
+                } finally {
+                    protectedLocalValueId = null;
+                    locallyChangedSourceIds.clear();
+                }
+                updateTelemetryHeaders();
+                renderStartupRow(id);
             }
         }
     }
