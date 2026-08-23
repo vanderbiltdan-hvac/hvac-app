@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Specs & Intake v1.03.3.1</title>
+    <title>Specs & Intake v1.04.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -81,7 +81,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="absolute right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest">v1.03.3.1</div>
+    <div class="absolute right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest">v1.04.0</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -232,6 +232,77 @@ let specsData = {
     selectedFields: {}
 };
 
+let specsMirrorSnapshot = {};
+
+function getSafeJobKey(job) {
+    if (!job) return null;
+    let safe = job.trim();
+    safe = safe.replace(/[^a-zA-Z0-9]+/g, '_');
+    safe = safe.replace(/^_+|_+$/g, '');
+    return safe || null;
+}
+
+function loadCachedMirrorForSpecs() {
+    const activeJob = localStorage.getItem('hvacActiveJob');
+    if (!activeJob) return;
+    
+    const safeJob = getSafeJobKey(activeJob);
+    if (!safeJob) return;
+    
+    let raw = localStorage.getItem(`mirror_cache_v1::${safeJob}`);
+    if (!raw) {
+        raw = localStorage.getItem(`mirror_cache_v1::${activeJob}`);
+    }
+    
+    if (!raw) return;
+    
+    try {
+        const cached = JSON.parse(raw);
+        if (cached.job && cached.job !== activeJob) return;
+        if (cached.mirrorState) {
+            specsMirrorSnapshot = cached.mirrorState;
+        }
+    } catch (e) {
+        console.warn("Failed to load mirror cache in specs:", e);
+    }
+}
+
+function getSpecsMirrorValue(key) {
+    if (specsMirrorSnapshot && specsMirrorSnapshot[key] !== undefined) {
+        return specsMirrorSnapshot[key];
+    }
+    if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.getField === "function") {
+        return window.PLATTS_MIRROR_DATA.getField(key);
+    }
+    return null;
+}
+
+function normalizeSpecsMirrorValue(key, value) {
+    if (!value) return "";
+    let str = String(value).trim();
+    if (key === "Date") {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+            try {
+                const d = new Date(str);
+                if (!isNaN(d.getTime())) {
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, '0');
+                    const dd = String(d.getDate()).padStart(2, '0');
+                    return `${yyyy}-${mm}-${dd}`;
+                }
+            } catch (e) {}
+        }
+    }
+    return str;
+}
+
+function specsValueMatchesMirror(key, localValue, mirrorValue) {
+    const loc = normalizeSpecsMirrorValue(key, localValue);
+    const mir = normalizeSpecsMirrorValue(key, mirrorValue);
+    if (mir === "") return false;
+    return loc === mir;
+}
+
 function getSpecsStorageKey() {
     const activeJob = window.PLATTS_MIRROR_DATA ? window.PLATTS_MIRROR_DATA.getActiveJob() : localStorage.getItem('hvacActiveJob');
     return activeJob ? `hvacSpecsData_${activeJob}` : 'hvacSpecsData_no_job';
@@ -298,14 +369,10 @@ function applySelectedState() {
         
         if (specsData.selectedFields[key]) {
             label.classList.remove('text-slate-400');
-            label.classList.add('text-blue-400');
-            input.classList.remove('text-white');
-            input.classList.add('text-blue-400');
+            label.classList.add('text-blue-300', 'bg-blue-900/40', 'ring-1', 'ring-blue-500/50', 'rounded', 'px-1');
         } else {
-            label.classList.remove('text-blue-400');
+            label.classList.remove('text-blue-300', 'bg-blue-900/40', 'ring-1', 'ring-blue-500/50', 'rounded', 'px-1');
             label.classList.add('text-slate-400');
-            input.classList.remove('text-blue-400');
-            input.classList.add('text-white');
         }
     });
 }
@@ -314,29 +381,25 @@ function updateMirrorAvailability() {
     let unresolvedKeys = [];
     document.querySelectorAll('[data-mirror-row]').forEach(row => {
         const key = row.getAttribute('data-mirror-row');
-        let mirrorVal = window.PLATTS_MIRROR_DATA.getField(key);
+        let mirrorVal = getSpecsMirrorValue(key);
         const input = document.querySelector(`input[data-mirror-key="${key}"]`);
-
-        if (key === "Date" && mirrorVal) {
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(mirrorVal)) {
-                try {
-                    const d = new Date(mirrorVal);
-                    if (!isNaN(d.getTime())) {
-                        const yyyy = d.getFullYear();
-                        const mm = String(d.getMonth() + 1).padStart(2, '0');
-                        const dd = String(d.getDate()).padStart(2, '0');
-                        mirrorVal = `${yyyy}-${mm}-${dd}`;
-                    }
-                } catch (e) {}
-            }
-        }
 
         if (mirrorVal !== null && mirrorVal !== "") {
             row.classList.add('border-blue-500', 'border-l-4');
             row.setAttribute('data-mirror-available', mirrorVal);
+            
+            if (specsValueMatchesMirror(key, input.value, mirrorVal)) {
+                input.classList.remove('text-white');
+                input.classList.add('text-blue-400');
+            } else {
+                input.classList.remove('text-blue-400');
+                input.classList.add('text-white');
+            }
         } else {
             row.classList.remove('border-blue-500', 'border-l-4');
             row.removeAttribute('data-mirror-available');
+            input.classList.remove('text-blue-400');
+            input.classList.add('text-white');
             unresolvedKeys.push(key);
         }
     });
@@ -355,57 +418,25 @@ async function mirrorSync() {
             const ticket = document.getElementById('active-job-ticket');
             if (ticket) ticket.innerText = currentJob ? currentJob : "[ Awaiting New Call Info ]";
 
-            const currentKey = getSpecsStorageKey();
-            const raw = localStorage.getItem(currentKey);
-            let parsed = raw ? JSON.parse(raw) : null;
-            if (parsed) {
-                if (!parsed.values && !parsed.selectedFields) {
-                    specsData = { values: parsed, selectedFields: {} };
-                } else {
-                    specsData = parsed;
-                }
-            } else {
-                specsData = { values: {}, selectedFields: {} };
-            }
-
-            clearAllInputs();
-            loadSpecsData();
-
             const data = await window.PLATTS_MIRROR_DATA.refresh();
             if (!data.currentJob) {
                 alert("No active job selected.");
                 return;
             }
+            
+            specsMirrorSnapshot = data.fields || {};
 
-            // Bulk Pull + Bulk Stage
             let hasChanges = false;
             document.querySelectorAll('[data-mirror-row]').forEach(row => {
                 const key = row.getAttribute('data-mirror-row');
-                let mirrorVal = window.PLATTS_MIRROR_DATA.getField(key);
+                let mirrorVal = getSpecsMirrorValue(key);
                 const input = document.querySelector(`input[data-mirror-key="${key}"]`);
                 
-                if (key === "Date" && mirrorVal) {
-                    if (!/^\d{4}-\d{2}-\d{2}$/.test(mirrorVal)) {
-                        try {
-                            const d = new Date(mirrorVal);
-                            if (!isNaN(d.getTime())) {
-                                const yyyy = d.getFullYear();
-                                const mm = String(d.getMonth() + 1).padStart(2, '0');
-                                const dd = String(d.getDate()).padStart(2, '0');
-                                mirrorVal = `${yyyy}-${mm}-${dd}`;
-                            }
-                        } catch (e) {}
-                    }
-                }
-
                 if (mirrorVal !== null && mirrorVal !== "") {
                     if (input.value === "") {
-                        input.value = mirrorVal;
-                        specsData.values[key] = mirrorVal;
-                        specsData.selectedFields[key] = true;
-                        hasChanges = true;
-                    } else if (input.value === mirrorVal) {
-                        specsData.selectedFields[key] = true;
+                        const norm = normalizeSpecsMirrorValue(key, mirrorVal);
+                        input.value = norm;
+                        specsData.values[key] = norm;
                         hasChanges = true;
                     }
                 }
@@ -435,8 +466,9 @@ function toggleSpecStage(key, event) {
     if (!specsData.selectedFields[key]) {
         // Staging
         if (mirrorVal && input.value === "") {
-            input.value = mirrorVal;
-            specsData.values[key] = mirrorVal;
+            const norm = normalizeSpecsMirrorValue(key, mirrorVal);
+            input.value = norm;
+            specsData.values[key] = norm;
         }
         specsData.selectedFields[key] = true;
     } else {
@@ -445,7 +477,7 @@ function toggleSpecStage(key, event) {
     }
 
     saveSpecsData();
-    applySelectedState();
+    updateMirrorAvailability();
 }
 
 function handleManualInput(key) {
@@ -454,6 +486,9 @@ function handleManualInput(key) {
         if (!specsData.values) specsData.values = {};
         specsData.values[key] = input.value;
         saveSpecsData();
+        if (input.hasAttribute('data-mirror-key')) {
+            updateMirrorAvailability();
+        }
     }
 }
 // ----------------------------------------------------
@@ -557,12 +592,9 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSpecsData();
     renderBottomNav();
 
-    if (activeJob && window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.refresh === "function") {
-        window.PLATTS_MIRROR_DATA.refresh().then(() => {
-            updateMirrorAvailability();
-        }).catch(err => {
-            console.warn("Background Mirror auto-load failed:", err);
-        });
+    if (activeJob) {
+        loadCachedMirrorForSpecs();
+        updateMirrorAvailability();
     }
 });
 </script>
