@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Startup Tracker v1.31.4</title>
+    <title>Startup Tracker v1.32.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -105,8 +105,8 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div style="width:40px;"></div><!-- Spacer for center alignment -->
-    <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v1.31.4</div>
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[11px] font-bold">v1.32.0</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -549,12 +549,12 @@
     </div>
     <!-- Launcher / Collapse Control -->
     <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-12 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
-        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES · STARTUP
     </button>
 </div>
 
 <script>
-const STARTUP_VERSION = "v1.31.4";
+const STARTUP_VERSION = "v1.32.0";
 
 // PAGE REGISTRY & NAVIGATION
 function getSplashDestination() {
@@ -872,12 +872,38 @@ function handleSmartTap(id) {
     }
 }
 
+function valuesEquivalent(a, b) {
+    if (a === null || a === undefined || b === null || b === undefined) return false;
+    const numA = parseFloat(a);
+    const numB = parseFloat(b);
+    if (!isNaN(numA) && !isNaN(numB)) {
+        return Math.abs(numA - numB) < 0.0001;
+    }
+    return String(a).trim() === String(b).trim();
+}
+
+const STARTUP_DISPLAY_PRECISION = {
+    'W128': 1, 'W115': 1, 'W121': 1, 'W163': 1,
+    'W160': 2, 'W161': 1, 'W162': 1
+};
+
+function formatDisplayValue(id, val) {
+    if (val === null || val === undefined || val === '') return '';
+    const prec = STARTUP_DISPLAY_PRECISION[id];
+    if (prec !== undefined && !isNaN(parseFloat(val))) {
+        return parseFloat(val).toFixed(prec);
+    }
+    return val;
+}
+
 function renderStartupRow(id) {
     const f = startupFieldMap.find(item => item.id === id);
     if(!f) return;
     const labelEl = document.getElementById('label-' + id);
     const inputEl = document.getElementById('recorded-' + id);
     const rowEl = document.getElementById('row-' + id);
+    const mirrorSpan = document.getElementById('mirror-conflict-' + id);
+    const sepSpan = document.getElementById('conflict-separator-' + id);
     if(!labelEl || !inputEl || !rowEl) return;
 
     let mirrorVal = null;
@@ -887,11 +913,24 @@ function renderStartupRow(id) {
 
     const hasLocal = startupMemory[id] !== undefined && startupMemory[id] !== null && startupMemory[id] !== '';
     const isAccepted = startupMirrorAcceptedValues[id] !== undefined;
+    const prov = startupValueProvenance[id];
+
+    let hasConflict = false;
+    if (mirrorVal !== null && hasLocal && !isAccepted) {
+        if (!valuesEquivalent(mirrorVal, startupMemory[id])) {
+            hasConflict = true;
+        }
+    }
 
     // Base Reset
     labelEl.className = "font-bold uppercase tracking-widest field-label cursor-pointer transition-colors border-l-2 pl-1";
-    inputEl.classList.remove('text-slate-400', 'text-white', 'text-blue-400', 'text-green-400');
+    inputEl.classList.remove('text-slate-400', 'text-white', 'text-blue-400', 'text-green-400', 'text-amber-400', 'text-slate-500');
     rowEl.classList.remove('ring-1', 'ring-inset', 'ring-blue-500');
+
+    if (mirrorSpan) mirrorSpan.classList.add('hidden');
+    if (sepSpan) sepSpan.classList.add('hidden');
+    inputEl.classList.remove('text-left', 'flex-1', 'min-w-[40px]');
+    inputEl.classList.add('text-center', 'w-full');
 
     // Ring Outline
     if (mirrorVal !== null) {
@@ -905,9 +944,18 @@ function renderStartupRow(id) {
         return;
     }
 
-    const prov = startupValueProvenance[id];
-
-    if (isAccepted && hasLocal) {
+    if (hasConflict) {
+        labelEl.classList.add('border-slate-700', 'text-slate-300');
+        inputEl.classList.add('text-amber-400');
+        inputEl.value = startupMemory[id];
+        if (mirrorSpan && sepSpan) {
+            mirrorSpan.innerText = formatDisplayValue(id, mirrorVal);
+            mirrorSpan.classList.remove('hidden');
+            sepSpan.classList.remove('hidden');
+            inputEl.classList.remove('text-center', 'w-full');
+            inputEl.classList.add('text-left', 'flex-1', 'min-w-[40px]');
+        }
+    } else if (isAccepted && hasLocal) {
         labelEl.classList.add('bg-blue-600', 'text-white', 'shadow-sm', 'border-blue-500');
         inputEl.classList.add('text-blue-400');
         inputEl.value = startupMemory[id];
@@ -1516,6 +1564,8 @@ function initStartup() {
                 <span class="${labelClasses}" id="label-${id}" onclick="handleSmartTap('${id}')">${item.label}</span>
             </div>
             <div class="col-recorded flex items-center justify-center border-r border-slate-700 px-1 relative">
+                <span id="mirror-conflict-${id}" class="hidden text-blue-400 font-bold mr-1 shrink-0" style="font-size: var(--font-recorded-val);"></span>
+                <span id="conflict-separator-${id}" class="hidden text-slate-500 font-bold mr-1 shrink-0" style="font-size: var(--font-recorded-val);">/</span>
                 <input type="number" inputmode="decimal" id="recorded-${id}" value="${val}" oninput="saveStartupData('${id}', this.value)" class="w-full bg-transparent text-center text-white font-bold focus:outline-none focus:bg-slate-800/80 rounded transition-colors" style="font-size: var(--font-recorded-val);" placeholder="---" onchange="markPopulated('${id}')">
             </div>
             <div class="col-telemetry justify-around">
