@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Reports v1.00.1</title>
+    <title>Template Reports v1.00.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -19,7 +19,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.00.1</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.00.2</div>
 </div>
 
 <!-- Main Content Area -->
@@ -87,7 +87,7 @@
 
 <script>
 // Version and Keys
-const REPORTS_VERSION = 'v1.00.1';
+const REPORTS_VERSION = 'v1.00.2';
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 // State
@@ -224,11 +224,14 @@ function applyReportNames() {
     const reportSelect = document.getElementById('report-target-select');
     
     for (let i = 1; i <= 3; i++) {
-        const pId = `${templateName}::report${i}`;
-        const customName = customNamesMap[pId];
+        const customName =
+            customNamesMap[templateName] &&
+            customNamesMap[templateName][`report${i}`]
+                ? customNamesMap[templateName][`report${i}`]
+                : `Report ${i}`;
         const opt = reportSelect.querySelector(`option[value="${i}"]`);
         if (opt) {
-            opt.textContent = customName ? customName : `Report ${i}`;
+            opt.textContent = customName;
         }
     }
 }
@@ -580,10 +583,16 @@ window.addEventListener('DOMContentLoaded', () => {
             updateActiveJob();
             renderReport();
         }
+        if (e.key === 'template_report_names_v1') {
+            loadReportNamesMap();
+            applyReportNames();
+        }
     });
 });
 window.addEventListener('pageshow', () => {
     updateActiveJob();
+    loadReportNamesMap();
+    applyReportNames();
     renderReport();
 });
 </script>
