@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Specs & Intake v1.04.0</title>
+    <title>Specs & Intake v1.05.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -81,7 +81,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="absolute right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest">v1.04.0</div>
+    <div class="absolute right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest">v1.05.0</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -262,17 +262,23 @@ function loadCachedMirrorForSpecs() {
         if (cached.mirrorState) {
             specsMirrorSnapshot = cached.mirrorState;
         }
+        
+        if (window.PLATTS_MIRROR_DATA) {
+            window.PLATTS_MIRROR_DATA.currentJob = activeJob;
+            window.PLATTS_MIRROR_DATA.fields = cached.mirrorState || {};
+            window.PLATTS_MIRROR_DATA.schema = cached.liveMirrorSchema || [];
+        }
     } catch (e) {
         console.warn("Failed to load mirror cache in specs:", e);
     }
 }
 
 function getSpecsMirrorValue(key) {
-    if (specsMirrorSnapshot && specsMirrorSnapshot[key] !== undefined) {
-        return specsMirrorSnapshot[key];
-    }
     if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.getField === "function") {
         return window.PLATTS_MIRROR_DATA.getField(key);
+    }
+    if (specsMirrorSnapshot && specsMirrorSnapshot[key] !== undefined) {
+        return specsMirrorSnapshot[key];
     }
     return null;
 }
@@ -382,11 +388,19 @@ function updateMirrorAvailability() {
     document.querySelectorAll('[data-mirror-row]').forEach(row => {
         const key = row.getAttribute('data-mirror-row');
         let mirrorVal = getSpecsMirrorValue(key);
+        
+        let canonicalLabel = key;
+        if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.getCanonicalLabel === "function") {
+            const resolved = window.PLATTS_MIRROR_DATA.getCanonicalLabel(key);
+            if (resolved) canonicalLabel = resolved;
+        }
+
         const input = document.querySelector(`input[data-mirror-key="${key}"]`);
 
         if (mirrorVal !== null && mirrorVal !== "") {
             row.classList.add('border-blue-500', 'border-l-4');
             row.setAttribute('data-mirror-available', mirrorVal);
+            row.setAttribute('data-mirror-canonical', canonicalLabel);
             
             if (specsValueMatchesMirror(key, input.value, mirrorVal)) {
                 input.classList.remove('text-white');
@@ -398,6 +412,13 @@ function updateMirrorAvailability() {
         } else {
             row.classList.remove('border-blue-500', 'border-l-4');
             row.removeAttribute('data-mirror-available');
+            
+            if (mirrorVal === "") {
+                row.setAttribute('data-mirror-canonical', canonicalLabel);
+            } else {
+                row.removeAttribute('data-mirror-canonical');
+            }
+            
             input.classList.remove('text-blue-400');
             input.classList.add('text-white');
             unresolvedKeys.push(key);
@@ -445,6 +466,13 @@ async function mirrorSync() {
             if (hasChanges) saveSpecsData();
 
             updateMirrorAvailability();
+            
+            if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.compareSchemaToBaseline === "function") {
+                const drift = window.PLATTS_MIRROR_DATA.compareSchemaToBaseline();
+                if (drift.liveOnly.length > 0 || drift.baselineOnly.length > 0 || drift.caseOrFormattingDifferences.length > 0) {
+                    console.warn("SPECS / MIRROR SCHEMA DRIFT", drift);
+                }
+            }
         } catch (e) {
             console.error("Mirror pull failed via shared engine:", e);
             alert("Mirror pull failed: " + e.message);
@@ -595,6 +623,13 @@ window.addEventListener('DOMContentLoaded', () => {
     if (activeJob) {
         loadCachedMirrorForSpecs();
         updateMirrorAvailability();
+        
+        if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.compareSchemaToBaseline === "function") {
+            const drift = window.PLATTS_MIRROR_DATA.compareSchemaToBaseline();
+            if (drift.liveOnly.length > 0 || drift.baselineOnly.length > 0 || drift.caseOrFormattingDifferences.length > 0) {
+                console.warn("SPECS / MIRROR SCHEMA DRIFT", drift);
+            }
+        }
     }
 });
 </script>
