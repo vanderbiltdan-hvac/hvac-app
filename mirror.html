@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mirror Radar v1.15.2</title>
+    <title>Mirror Radar v1.16.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -80,8 +80,11 @@
 
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
-    <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v1.15.2</div>
+    <button onclick="toggleFullScreen(); event.stopPropagation();" class="text-slate-400 hover:text-white shrink-0 flex items-center justify-start min-w-[50px]" title="Full Screen" aria-label="Full Screen">
+        <span class="text-xl leading-none">⛶</span>
+    </button>
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.16.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -176,23 +179,21 @@
 
   <!-- Launcher / Collapse Control -->
   <div class="flex w-full h-12 bg-slate-800 shrink-0">
-    <button onclick="toggleFullScreen()" class="w-[35%] h-full flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest hover:bg-slate-700 transition-colors active:bg-slate-600 border-r border-slate-700">
-      <span class="mr-2 text-base">⛶</span> FULLSCREEN
-    </button>
-    <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-[65%] h-full flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest hover:bg-slate-700 transition-colors active:bg-slate-600">
-      <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+    <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-full flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest hover:bg-slate-700 transition-colors active:bg-slate-600">
+      <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES &middot; MIRROR
     </button>
   </div>
 </div>
 
 <script>
-// LIVE MIRROR BRIDGE (v1.15.2)
+// LIVE MIRROR BRIDGE (v1.16.2)
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
 let currentJob = localStorage.getItem('hvacActiveJob') || null;
 let mirrorState = {};
 let liveMirrorSchema = [];
 let liveMirrorPMI = [];
 let liveMirrorConflict = "";
+let liveMirrorInvoiceReport = "";
 let mirrorUsingFallback = true;
 
 function getSafeJobKey(job) {
@@ -208,6 +209,7 @@ function resetMirrorSourceState() {
     liveMirrorSchema = [];
     liveMirrorPMI = [];
     liveMirrorConflict = "";
+    liveMirrorInvoiceReport = "";
     mirrorUsingFallback = true;
     
     if (window.PLATTS_MIRROR_DATA) {
@@ -246,6 +248,7 @@ function saveMirrorCache() {
         liveMirrorSchema,
         liveMirrorPMI,
         liveMirrorConflict,
+        liveMirrorInvoiceReport,
         folderId: localStorage.getItem('hvacActiveFolderId') || null,
         cachedAt: Date.now()
     };
@@ -290,6 +293,7 @@ function loadMirrorCacheForCurrentJob() {
             liveMirrorSchema = cached.liveMirrorSchema || [];
             liveMirrorPMI = cached.liveMirrorPMI || [];
             liveMirrorConflict = cached.liveMirrorConflict || "";
+            liveMirrorInvoiceReport = cached.liveMirrorInvoiceReport || "";
             if (cached.folderId) {
                 localStorage.setItem('hvacActiveFolderId', cached.folderId);
             }
@@ -463,6 +467,7 @@ async function mirrorSync() {
             liveMirrorSchema = data.schema;
             liveMirrorPMI = data.pmi;
             liveMirrorConflict = data.conflict;
+            liveMirrorInvoiceReport = data.invoiceReport || "";
             mirrorUsingFallback = false;
             saveMirrorCache();
             initRadar();
@@ -486,6 +491,7 @@ async function mirrorSync() {
                 liveMirrorSchema = response.data.schema || [];
                 liveMirrorPMI = response.data.pmi || [];
                 liveMirrorConflict = response.data.conflict || "";
+                liveMirrorInvoiceReport = response.data.invoiceReport || "";
                 mirrorUsingFallback = false;
                 
                 if (response.data.folderId) {
@@ -658,6 +664,17 @@ function makeMirrorDomId(label, index) {
     return 'LIVE_' + label.replace(/[^a-zA-Z0-9]/g, '_') + '_' + index;
 }
 
+function formatMirrorDisplayValue(label, value) {
+    if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
+        return value;
+    }
+    if (label.toLowerCase() === 'compression ratio' || label.toLowerCase() === 'evap td') {
+        const num = Number(value);
+        if (!isNaN(num)) return num.toFixed(2);
+    }
+    return value;
+}
+
 function initRadar() {
   const workspace = document.getElementById('mirror-workspace');
   workspace.innerHTML = ''; 
@@ -698,19 +715,27 @@ function initRadar() {
   function renderAccordion(page, fields, isOrphan) {
     if (fields.length === 0) return;
 
+    let populatedCount = 0;
+    fields.forEach(item => {
+        if (item.val !== null && item.val !== undefined && String(item.val).trim() !== '') {
+            populatedCount++;
+        }
+    });
+
     const headerColor = isOrphan ? "bg-orange-900/80 border-orange-500 text-orange-200" : "bg-slate-700 border-slate-600 text-white";
     const icon = isOrphan ? "⚠️ " : "";
 
     let accordionHtml = `
       <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" ${isFirst ? 'open' : ''}>
         <summary class="${headerColor} p-3 text-[10px] font-bold uppercase tracking-widest cursor-pointer select-none">
-          ${icon}${page}
+          ${icon}${page} &middot; ${populatedCount}
         </summary>
         <div class="p-2 flex flex-col gap-1">
     `;
 
     fields.forEach(item => {
-      const hasData = item.val !== '';
+      const hasData = item.val !== null && item.val !== undefined && String(item.val).trim() !== '';
+      const displayVal = formatMirrorDisplayValue(item.label, item.val);
       
       // Calm the Orange Rows: both orphan and normal use standard slate-gray style
       let labelClasses = "w-[30%] text-[10px] font-bold border-r border-slate-700 cursor-pointer transition-all flex justify-between items-center px-3 relative select-none";
@@ -727,7 +752,7 @@ function initRadar() {
             <span class="z-10 pointer-events-none">${item.label}</span>
             <span id="lock-${item.id}" class="z-10 text-[8px] pointer-events-none hidden">🔒</span>
           </div>
-          <input type="text" id="input-${item.id}" class="flex-1 bg-slate-700 text-slate-300 font-mono text-[10px] px-3 focus:outline-none focus:bg-slate-600" value="${item.val}" placeholder="Awaiting ${item.id}..." readonly>
+          <input type="text" id="input-${item.id}" class="flex-1 bg-slate-700 text-slate-300 font-mono text-[10px] px-3 focus:outline-none focus:bg-slate-600" value="${displayVal}" placeholder="Awaiting ${item.id}..." readonly>
           <button onclick="clearRow('${item.id}')" class="w-8 bg-slate-700 hover:bg-slate-600 border-l border-slate-600 text-slate-400 hover:text-white flex items-center justify-center transition-colors text-xs">⟲</button>
         </div>`;
     });
@@ -737,9 +762,37 @@ function initRadar() {
     isFirst = false;
   }
 
-  // Render standard categories first (Specs, PMI, Diag, Startup)
+  // Render Invoice / Final Report first
+  const reportHasData = liveMirrorInvoiceReport && liveMirrorInvoiceReport.trim() !== "";
+  const reportStatus = reportHasData ? "AVAILABLE" : "";
+  const reportContent = reportHasData ? 
+    `<div class="text-slate-300 text-xs leading-relaxed whitespace-pre-wrap overflow-y-auto max-h-[300px] bg-slate-700/50 p-3 rounded border border-slate-600/50">${liveMirrorInvoiceReport}</div>` : 
+    `<div class="text-slate-400 text-xs italic text-center py-4">No report data available.</div>`;
+  const reportTitle = reportStatus ? `INVOICE / FINAL REPORT &middot; ${reportStatus}` : `INVOICE / FINAL REPORT`;
+
+  let invoiceHtml = `
+    <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden">
+      <summary class="bg-indigo-900/80 border-indigo-500 text-indigo-200 p-3 text-[10px] font-bold uppercase tracking-widest cursor-pointer select-none border-b border-transparent">
+        ${reportTitle}
+      </summary>
+      <div class="p-3 flex flex-col gap-1 bg-slate-800">
+        ${reportContent}
+      </div>
+    </details>
+  `;
+  workspace.innerHTML += invoiceHtml;
+
+  // Render standard categories next
+  const preferredOrder = ["Specs", "Diagnostics", "Diag", "PMI", "Startup"];
+  
+  preferredOrder.forEach(page => {
+      if (groupedData[page]) {
+          renderAccordion(page, groupedData[page], false);
+      }
+  });
+
   for (const [page, fields] of Object.entries(groupedData)) {
-    if (page !== "Unassigned Fields") {
+    if (page !== "Unassigned Fields" && !preferredOrder.includes(page)) {
       renderAccordion(page, fields, false);
     }
   }
@@ -749,6 +802,7 @@ function initRadar() {
   renderAccordion("Unassigned Fields", unassigned, true);
   
   applyMirrorUIState();
+  toggleRadarView('populated');
 }
 
 // 2-Tap Smart Label & Long-Press Lock Engine
@@ -876,14 +930,14 @@ function getSplashDestination() {
 
 const FALLBACK_PAGES_REGISTRY = [
     { name: "Splash", file: getSplashDestination(), state: "ACTIVE" },
-    { name: "Notes", file: "notes.html", state: "PLANNED" },
+    { name: "Notes", file: "notes.html", state: "ACTIVE" },
     { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
-    { name: "Specs", file: "specs.html", state: "PLANNED" },
-    { name: "PMI", file: "pmi.html", state: "PLANNED" },
+    { name: "Specs", file: "specs.html", state: "ACTIVE" },
+    { name: "PMI", file: "pmi.html", state: "ACTIVE" },
     { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
-    { name: "Startup", file: "startup.html", state: "PLANNED" },
-    { name: "Compiler", file: "compiler.html", state: "PLANNED" },
-    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Startup", file: "startup.html", state: "ACTIVE" },
+    { name: "Compiler", file: "compiler.html", state: "ACTIVE" },
+    { name: "Templates", file: "templates.html", state: "ACTIVE" },
     { name: "Reports", file: "reports.html", state: "PLANNED" },
     { name: "Data Block", file: "datablock.html", state: "PLANNED" }
 ];
