@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Compiler v2.06.1</title>
+    <title>Report Compiler v2.07.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -74,8 +74,11 @@
 
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
-    <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.06.1</div>
+    <button onclick="toggleFullScreen(); event.stopPropagation();" class="shrink-0 flex items-center justify-start min-w-[50px] text-slate-400 hover:text-white transition-colors" title="Full Screen" aria-label="Full Screen">
+        <span class="text-xl leading-none">⛶</span>
+    </button>
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.07.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -112,6 +115,7 @@
 <div id="compiler-workspace" class="flex-1 w-full px-2 pt-2 pb-24 overflow-y-auto flex flex-col gap-3">
   <!-- AD-HOC FAST PASS -->
   <div class="flex flex-col gap-1 w-full border-b border-slate-700 pb-3">
+    <div id="compiler-global-view-container" class="mb-2 w-full"></div>
     <div class="flex gap-2 w-full">
       <input type="text" id="fast-pass-input" placeholder="Type custom field note..." class="flex-1 bg-slate-800 border border-slate-600 text-white text-[10px] p-2 rounded focus:outline-none focus:border-blue-500">
       <button onclick="fastPassToReport()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Fast Pass</button>
@@ -127,10 +131,7 @@
       </div>
       <span id="badge-specs" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active · 0 Populated · 15 Total ]</span>
     </summary>
-    <div class="flex gap-2 p-2 border-b border-slate-700 bg-slate-750">
-        <button onclick="setCompilerSpecsActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
-        <button onclick="setCompilerSpecsActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
-    </div>
+    <div id="specs-controls" class="flex flex-col gap-2 p-2 border-b border-slate-700 bg-slate-750"></div>
     <div id="compiler-specs-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
        <div class="text-slate-500 text-xs italic text-center py-2">No items...</div>
     </div>
@@ -139,8 +140,9 @@
   <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden" open>
     <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none">
       <span>PMI</span>
-      <span id="badge-pmi" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 / 0 ]</span>
+      <span id="badge-pmi" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active · 0 Populated · 0 Total ]</span>
     </summary>
+    <div id="pmi-controls" class="flex flex-col gap-2 p-2 border-b border-slate-700 bg-slate-750"></div>
     <div id="compiler-pmi-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
        <div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>
     </div>
@@ -153,10 +155,7 @@
       </div>
       <span id="badge-cap" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active · 0 Populated · 14 Total ]</span>
     </summary>
-    <div class="flex gap-2 p-2 border-b border-slate-700 bg-slate-750">
-        <button onclick="setCompilerDiagActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
-        <button onclick="setCompilerDiagActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
-    </div>
+    <div id="cap-controls" class="flex flex-col gap-2 p-2 border-b border-slate-700 bg-slate-750"></div>
     <div id="compiler-cap-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
        <div class="text-slate-500 text-xs italic text-center py-2">No items...</div>
     </div>
@@ -169,10 +168,7 @@
       </div>
       <span id="badge-startup" class="bg-slate-900 px-2 py-1 rounded text-blue-300 font-mono">[ 0 Active · 0 Populated · 39 Total ]</span>
     </summary>
-    <div class="flex gap-2 p-2 border-b border-slate-700 bg-slate-750">
-        <button onclick="setCompilerStartupActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
-        <button onclick="setCompilerStartupActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
-    </div>
+    <div id="startup-controls" class="flex flex-col gap-2 p-2 border-b border-slate-700 bg-slate-750"></div>
     <div id="compiler-startup-canvas" class="p-2 flex flex-col gap-2 min-h-[40px]">
        <div class="text-slate-500 text-xs italic text-center py-2">No items...</div>
     </div>
@@ -184,7 +180,7 @@
       <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
     </summary>
     <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.06.1</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.07.2</div>
     </div>
   </details>
 </div>
@@ -209,7 +205,7 @@
         <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
     </div>
     <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-16 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
-        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES &middot; COMPILER
     </button>
 </div>
 
@@ -307,7 +303,178 @@ function getCompilerSpecsStorageKey() {
     return activeJob ? `hvacSpecsData_${activeJob}` : 'hvacSpecsData_no_job';
 }
 
+let compilerViewState = {
+  global: "populated",
+  sections: {
+    specs: "populated",
+    pmi: "populated",
+    diagnostics: "populated",
+    startup: "populated"
+  }
+};
+
+function getSafeJobKey(job) {
+    if (!job) return null;
+    let safe = job.trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    return safe || null;
+}
+
+function loadCompilerViewState() {
+    const job = localStorage.getItem('hvacActiveJob');
+    const safeJob = getSafeJobKey(job) || 'no_job';
+    const key = `compiler_view_state_v1::${safeJob}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+        try {
+            compilerViewState = JSON.parse(saved);
+        } catch(e) {}
+    } else {
+        compilerViewState = {
+          global: "populated",
+          sections: {
+            specs: "populated",
+            pmi: "populated",
+            diagnostics: "populated",
+            startup: "populated"
+          }
+        };
+    }
+}
+
+function saveCompilerViewState() {
+    const job = localStorage.getItem('hvacActiveJob');
+    const safeJob = getSafeJobKey(job) || 'no_job';
+    const key = `compiler_view_state_v1::${safeJob}`;
+    localStorage.setItem(key, JSON.stringify(compilerViewState));
+}
+
+function setGlobalView(mode) {
+    compilerViewState.global = mode;
+    compilerViewState.sections.specs = mode;
+    compilerViewState.sections.pmi = mode;
+    compilerViewState.sections.diagnostics = mode;
+    compilerViewState.sections.startup = mode;
+    saveCompilerViewState();
+    initCompiler();
+}
+
+function setSectionView(section, mode) {
+    compilerViewState.sections[section] = mode;
+    saveCompilerViewState();
+    initCompiler();
+}
+
+function renderViewControls(section, currentMode) {
+    const modes = ["active", "populated", "all"];
+    let html = `<div class="flex gap-1 w-full bg-slate-800 p-1 rounded border border-slate-700">`;
+    modes.forEach(mode => {
+        const isActive = currentMode === mode;
+        const bg = isActive ? "bg-blue-600" : "bg-slate-700 hover:bg-slate-600";
+        const text = isActive ? "text-white" : "text-slate-400";
+        html += `<button onclick="setSectionView('${section}', '${mode}')" class="flex-1 ${bg} ${text} font-bold text-[9px] py-1 rounded uppercase tracking-widest transition-colors">${mode}</button>`;
+    });
+    html += `</div>`;
+    return html;
+}
+
+function setCompilerPMIActive(key, selected) {
+    const pmiSaved = localStorage.getItem('pmi_data_v1');
+    if (!pmiSaved) return;
+    try {
+        const pmiData = JSON.parse(pmiSaved);
+        if (pmiData[key]) {
+            pmiData[key].stamped = selected;
+            localStorage.setItem('pmi_data_v1', JSON.stringify(pmiData));
+            initCompiler();
+        }
+    } catch(e) {}
+}
+
+function setCompilerPMIActiveBulk(selectPopulated) {
+    const pmiSaved = localStorage.getItem('pmi_data_v1');
+    if (!pmiSaved) return;
+    try {
+        const pmiData = JSON.parse(pmiSaved);
+        Object.keys(pmiData).forEach(key => {
+            const entry = pmiData[key];
+            const comments = Array.isArray(entry.comments) ? entry.comments : [];
+            const joinedComments = comments.join(' ').trim();
+            if (selectPopulated) {
+                if (joinedComments !== '') {
+                    entry.stamped = true;
+                }
+            } else {
+                entry.stamped = false;
+            }
+        });
+        localStorage.setItem('pmi_data_v1', JSON.stringify(pmiData));
+        initCompiler();
+    } catch(e) {}
+}
+
+function getCompilerPMIKeys(pmiData) {
+    const canonicalCategories = [
+        "Summary",
+        "Filter",
+        "Evaporator Coil",
+        "Blower Visual",
+        "Blower Mechanical",
+        "Drain & Pan",
+        "Heater",
+        "Float Switch",
+        "IAQ"
+    ];
+
+    const keys = Object.keys(pmiData || {});
+    canonicalCategories.forEach(cat => {
+        if (!keys.includes(cat)) keys.push(cat);
+    });
+    return keys;
+}
+
 function initCompiler() {
+    loadCompilerViewState();
+    
+    document.getElementById('compiler-global-view-container').innerHTML = `
+        <div class="flex gap-1 w-full bg-slate-800 p-1 rounded border border-slate-700">
+            <button onclick="setGlobalView('active')" class="flex-1 ${compilerViewState.global === 'active' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'} font-bold text-[10px] py-2 rounded uppercase tracking-widest transition-colors">ACTIVE</button>
+            <button onclick="setGlobalView('populated')" class="flex-1 ${compilerViewState.global === 'populated' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'} font-bold text-[10px] py-2 rounded uppercase tracking-widest transition-colors">POPULATED</button>
+            <button onclick="setGlobalView('all')" class="flex-1 ${compilerViewState.global === 'all' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'} font-bold text-[10px] py-2 rounded uppercase tracking-widest transition-colors">ALL</button>
+        </div>
+    `;
+
+    document.getElementById('specs-controls').innerHTML = `
+        ${renderViewControls('specs', compilerViewState.sections.specs)}
+        <div class="flex gap-2 w-full mt-2">
+            <button onclick="setCompilerSpecsActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
+            <button onclick="setCompilerSpecsActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
+        </div>
+    `;
+
+    document.getElementById('startup-controls').innerHTML = `
+        ${renderViewControls('startup', compilerViewState.sections.startup)}
+        <div class="flex gap-2 w-full mt-2">
+            <button onclick="setCompilerStartupActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
+            <button onclick="setCompilerStartupActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
+        </div>
+    `;
+
+    document.getElementById('pmi-controls').innerHTML = `
+        ${renderViewControls('pmi', compilerViewState.sections.pmi)}
+        <div class="flex gap-2 w-full mt-2">
+            <button onclick="setCompilerPMIActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
+            <button onclick="setCompilerPMIActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
+        </div>
+    `;
+
+    document.getElementById('cap-controls').innerHTML = `
+        ${renderViewControls('diagnostics', compilerViewState.sections.diagnostics)}
+        <div class="flex gap-2 w-full mt-2">
+            <button onclick="setCompilerDiagActiveBulk(true)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-blue-300 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Select Populated</button>
+            <button onclick="setCompilerDiagActiveBulk(false)" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-400 font-bold text-[10px] py-1 rounded uppercase tracking-widest transition-colors border border-slate-600">Clear</button>
+        </div>
+    `;
+
     let specsActive = 0, startupActive = 0, pmiActive = 0, capActive = 0;
     const specsCanvas = document.getElementById('compiler-specs-canvas');
     const startupCanvas = document.getElementById('compiler-startup-canvas');
@@ -336,16 +503,26 @@ function initCompiler() {
                 orderedKeys.forEach(key => {
                     let rawVal = parsed.values[key];
                     let isPopulated = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '');
-                    let isActive = (parsed.selectedFields[key] === true && isPopulated); // Must be populated to be active
+                    let isActive = (parsed.selectedFields[key] === true && isPopulated);
                     
                     if (isPopulated) {
                         specsPopulated++;
                         if (isActive) specsActive++;
-                        
-                        const displayValue = rawVal;
+                    }
+
+                    const currentView = compilerViewState.sections.specs;
+                    let shouldRender = false;
+                    if (currentView === 'active' && isPopulated && isActive) shouldRender = true;
+                    if (currentView === 'populated' && isPopulated) shouldRender = true;
+                    if (currentView === 'all') shouldRender = true;
+
+                    if (shouldRender) {
+                        const displayValue = isPopulated ? rawVal : '<span class="text-slate-600">-</span>';
                         const safeKey = key.replace(/[^a-zA-Z0-9]/g, '');
                         
-                        if (isActive) {
+                        if (!isPopulated) {
+                            specsCanvas.innerHTML += `<div id="comp-spec-card-${safeKey}" class="flex justify-between items-center bg-slate-800/40 p-2 rounded border border-slate-700/50 transition-opacity"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-500 font-bold truncate text-right">${displayValue}</span><div class="w-5 ml-2 shrink-0"></div></div></div>`;
+                        } else if (isActive) {
                             specsCanvas.innerHTML += `<div id="comp-spec-card-${safeKey}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerSpecsActive('${key}', false)" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
                         } else {
                             specsCanvas.innerHTML += `<div id="comp-spec-card-${safeKey}" class="flex justify-between items-center bg-slate-800/60 opacity-70 p-2 rounded border border-slate-700 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-400 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerSpecsActive('${key}', true)" class="text-blue-400 hover:text-blue-300 text-lg font-bold leading-none transition-colors ml-2 shrink-0" title="Add Stamp">+</button></div></div>`;
@@ -357,7 +534,7 @@ function initCompiler() {
             console.warn("Compiler: Failed to parse Specs storage.", e);
         }
     }
-    if (specsPopulated === 0) specsCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
+    if (specsCanvas.innerHTML.trim() === '') specsCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
     document.getElementById('badge-specs').innerText = `[ ${specsActive} Active · ${specsPopulated} Populated · ${specsTotal} Total ]`;
 
     // --- STARTUP ---
@@ -377,17 +554,27 @@ function initCompiler() {
                     startupFieldMap.forEach(field => {
                         let rawVal = startupData[field.id];
                         let isPopulated = (rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== '');
-                        let isActive = (startupCompilerState.selectedFields[field.id] === true && isPopulated); // Must be populated to be active
+                        let isActive = (startupCompilerState.selectedFields[field.id] === true && isPopulated);
                         
                         if (isPopulated) {
                             startupPopulated++;
                             if (isActive) startupActive++;
-                            
-                            const displayLabel = field.label;
-                            const displayValue = rawVal;
+                        }
+                        
+                        const currentView = compilerViewState.sections.startup;
+                        let shouldRender = false;
+                        if (currentView === 'active' && isPopulated && isActive) shouldRender = true;
+                        if (currentView === 'populated' && isPopulated) shouldRender = true;
+                        if (currentView === 'all') shouldRender = true;
+
+                        if (shouldRender) {
+                            const displayLabel = field.label || field.lbl || field.id;
+                            const displayValue = isPopulated ? rawVal : '<span class="text-slate-600">-</span>';
                             const safeKey = field.id.replace(/[^a-zA-Z0-9]/g, '');
                             
-                            if (isActive) {
+                            if (!isPopulated) {
+                                startupCanvas.innerHTML += `<div id="comp-startup-card-${safeKey}" class="flex justify-between items-center bg-slate-800/40 p-2 rounded border border-slate-700/50 transition-opacity"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-500 font-bold truncate text-right">${displayValue}</span><div class="w-5 ml-2 shrink-0"></div></div></div>`;
+                            } else if (isActive) {
                                 startupCanvas.innerHTML += `<div id="comp-startup-card-${safeKey}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerStartupActive('${field.id}', false)" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
                             } else {
                                 startupCanvas.innerHTML += `<div id="comp-startup-card-${safeKey}" class="flex justify-between items-center bg-slate-800/60 opacity-70 p-2 rounded border border-slate-700 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-400 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerStartupActive('${field.id}', true)" class="text-blue-400 hover:text-blue-300 text-lg font-bold leading-none transition-colors ml-2 shrink-0" title="Add Stamp">+</button></div></div>`;
@@ -398,30 +585,54 @@ function initCompiler() {
             } catch(e) {}
         }
         
-        if (startupPopulated === 0) startupCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
+        if (startupCanvas.innerHTML.trim() === '') startupCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
         document.getElementById('badge-startup').innerText = `[ ${startupActive} Active · ${startupPopulated} Populated · ${startupTotal} Total ]`;
     }
 
-
-    // Sweep PMI Registry & Extract Comments
+    // --- PMI ---
+    let pmiPopulated = 0;
     const pmiSaved = localStorage.getItem('pmi_data_v1');
-    if (pmiSaved) {
-        const pmiData = JSON.parse(pmiSaved);
-        Object.keys(pmiData).forEach(key => {
-            if (pmiData[key].stamped) {
-                pmiActive++;
-                let valStr = 'SELECTED';
-                if (pmiData[key].comments && pmiData[key].comments.length > 0) {
-                    valStr = pmiData[key].comments.join(' ');
-                }
-                pmiCanvas.innerHTML += `<div id="comp-card-${key}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${valStr}</span><button onclick="softRejectItem('pmi', '${key}')" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
-            }
-        });
-    }
-    if (pmiActive === 0) pmiCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No active items...</div>';
-    document.getElementById('badge-pmi').innerText = `[ ${pmiActive} Active ]`;
+    const pmiData = pmiSaved ? JSON.parse(pmiSaved) : {};
+    
+    const allKeys = getCompilerPMIKeys(pmiData);
+    const pmiTotal = allKeys.length;
+    
+    allKeys.forEach(key => {
+        const entry = pmiData[key] || { comments: [], stamped: false };
+        const comments = Array.isArray(entry.comments) ? entry.comments : [];
+        const joinedComments = comments.join(' ').trim();
+        const isPopulated = (joinedComments !== '');
+        const isActive = (entry.stamped === true);
 
-    // Sweep Diagnostic Registry & Extract Measurements
+        if (isPopulated) {
+            pmiPopulated++;
+            if (isActive) pmiActive++;
+        }
+
+        const currentView = compilerViewState.sections.pmi;
+        let shouldRender = false;
+        if (currentView === 'active' && isPopulated && isActive) shouldRender = true;
+        if (currentView === 'populated' && isPopulated) shouldRender = true;
+        if (currentView === 'all') shouldRender = true;
+
+        if (shouldRender) {
+            const displayValue = isPopulated ? joinedComments : '<span class="text-slate-600">-</span>';
+            const safeKey = key.replace(/[^a-zA-Z0-9]/g, '');
+
+            if (!isPopulated) {
+                pmiCanvas.innerHTML += `<div id="comp-card-${safeKey}" class="flex justify-between items-center bg-slate-800/40 p-2 rounded border border-slate-700/50 transition-opacity"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-500 font-bold truncate text-right">${displayValue}</span><div class="w-5 ml-2 shrink-0"></div></div></div>`;
+            } else if (isActive) {
+                pmiCanvas.innerHTML += `<div id="comp-card-${safeKey}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerPMIActive('${key}', false)" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+            } else {
+                pmiCanvas.innerHTML += `<div id="comp-card-${safeKey}" class="flex justify-between items-center bg-slate-800/60 opacity-70 p-2 rounded border border-slate-700 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${key}">${key}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-400 font-bold truncate text-right">${displayValue}</span><button onclick="setCompilerPMIActive('${key}', true)" class="text-blue-400 hover:text-blue-300 text-lg font-bold leading-none transition-colors ml-2 shrink-0" title="Add Stamp">+</button></div></div>`;
+            }
+        }
+    });
+
+    if (pmiCanvas.innerHTML.trim() === '') pmiCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
+    document.getElementById('badge-pmi').innerText = `[ ${pmiActive} Active · ${pmiPopulated} Populated · ${pmiTotal} Total ]`;
+
+    // --- DIAGNOSTICS ---
     let capPopulated = 0;
     const diagTotal = diagFieldMap.length;
     const diagSaved = localStorage.getItem('hvac_app_v4');
@@ -442,22 +653,34 @@ function initCompiler() {
                 }
                 
                 let isPopulated = (valStr.trim() !== '');
-                let isActive = (reg[field.id] && reg[field.id].stamped === true && isPopulated); // Must be populated to be active
+                let isActive = (reg[field.id] && reg[field.id].stamped === true && isPopulated);
                 
                 if (isPopulated) {
                     capPopulated++;
                     if (isActive) capActive++;
+                }
+
+                const currentView = compilerViewState.sections.diagnostics;
+                let shouldRender = false;
+                if (currentView === 'active' && isPopulated && isActive) shouldRender = true;
+                if (currentView === 'populated' && isPopulated) shouldRender = true;
+                if (currentView === 'all') shouldRender = true;
+
+                if (shouldRender) {
+                    const displayValue = isPopulated ? valStr : '<span class="text-slate-600">-</span>';
                     
-                    if (isActive) {
-                        capCanvas.innerHTML += `<div id="comp-card-${field.id}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal">${valStr}</span><button onclick="setCompilerDiagActive('${field.id}', '${displayLabel}', false)" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
+                    if (!isPopulated) {
+                        capCanvas.innerHTML += `<div id="comp-card-${field.id}" class="flex justify-between items-center bg-slate-800/40 p-2 rounded border border-slate-700/50 transition-opacity"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-500 font-bold text-right leading-tight whitespace-normal">${displayValue}</span><div class="w-5 ml-2 shrink-0"></div></div></div>`;
+                    } else if (isActive) {
+                        capCanvas.innerHTML += `<div id="comp-card-${field.id}" class="flex justify-between items-center bg-slate-700 p-2 rounded border border-slate-600 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal">${displayValue}</span><button onclick="setCompilerDiagActive('${field.id}', '${displayLabel}', false)" class="text-slate-400 hover:text-white text-lg leading-none transition-colors ml-2 shrink-0" title="Undo Stamp">⟲</button></div></div>`;
                     } else {
-                        capCanvas.innerHTML += `<div id="comp-card-${field.id}" class="flex justify-between items-center bg-slate-800/60 opacity-70 p-2 rounded border border-slate-700 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-400 font-bold text-right leading-tight whitespace-normal">${valStr}</span><button onclick="setCompilerDiagActive('${field.id}', '${displayLabel}', true)" class="text-blue-400 hover:text-blue-300 text-lg font-bold leading-none transition-colors ml-2 shrink-0" title="Add Stamp">+</button></div></div>`;
+                        capCanvas.innerHTML += `<div id="comp-card-${field.id}" class="flex justify-between items-center bg-slate-800/60 opacity-70 p-2 rounded border border-slate-700 transition-opacity"><span class="text-[10px] font-bold text-white uppercase tracking-wider w-1/3 truncate pr-2" title="${displayLabel}">${displayLabel}</span><div class="flex items-center gap-3 flex-1 justify-end overflow-hidden"><span class="text-[10px] text-slate-400 font-bold text-right leading-tight whitespace-normal">${displayValue}</span><button onclick="setCompilerDiagActive('${field.id}', '${displayLabel}', true)" class="text-blue-400 hover:text-blue-300 text-lg font-bold leading-none transition-colors ml-2 shrink-0" title="Add Stamp">+</button></div></div>`;
                     }
                 }
             });
         } catch (e) {}
     }
-    if (capPopulated === 0) capCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
+    if (capCanvas.innerHTML.trim() === '') capCanvas.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-2">No items...</div>';
     document.getElementById('badge-cap').innerText = `[ ${capActive} Active · ${capPopulated} Populated · ${diagTotal} Total ]`;
 
     saveCompilerPayload();
@@ -468,7 +691,7 @@ function fastPassToReport() {
     if (input.value.trim() === '') return;
     // Future: Push raw string directly into the active report payload array
     console.log("Ad-Hoc Fast Pass Added:", input.value);
-    alert("Fast Pass is NOT YET WIRED in v2.06.1");
+    alert("Fast Pass is NOT YET WIRED in v2.07.2");
     input.value = '';
 }
 
@@ -662,7 +885,7 @@ function resetLayoutDefaults() {
   document.getElementById('val-data-width').innerText = '80px';
 }
 
-const COMPILER_VERSION = "v2.06.1";
+const COMPILER_VERSION = "v2.07.2";
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function buildCompilerPayload() {
@@ -800,32 +1023,33 @@ function buildCompilerPayload() {
     // PMI
     try {
         const pmiSaved = localStorage.getItem('pmi_data_v1');
-        if (pmiSaved) {
-            const pmiData = JSON.parse(pmiSaved);
-            const pmiKeys = Object.keys(pmiData);
-            payload.sources.pmi.total = pmiKeys.length;
+        const pmiData = pmiSaved ? JSON.parse(pmiSaved) : {};
+        const pmiKeys = getCompilerPMIKeys(pmiData);
+        payload.sources.pmi.total = pmiKeys.length;
+        
+        pmiKeys.forEach(key => {
+            const entry = pmiData[key] || { comments: [], stamped: false };
+            const comments = Array.isArray(entry.comments) ? entry.comments : [];
+            const joinedComments = comments.join(' ').trim();
+            const hasComment = joinedComments !== '';
+            const isStamped = entry.stamped === true;
+            const isActive = hasComment && isStamped;
             
-            pmiKeys.forEach(key => {
-                const entry = pmiData[key];
-                const comments = Array.isArray(entry.comments) ? entry.comments : [];
-                const joinedComments = comments.join(' ').trim();
-                const hasComment = joinedComments !== '';
-                const isStamped = entry.stamped === true;
+            const existsInStorage = Object.prototype.hasOwnProperty.call(pmiData, key);
+            
+            if (existsInStorage && (hasComment || isStamped)) {
+                let valStr = joinedComments;
                 
-                if (hasComment || isStamped) {
-                    let valStr = joinedComments;
-                    
-                    payload.sources.pmi.items.push({
-                        id: key,
-                        label: key,
-                        value: valStr,
-                        active: isStamped
-                    });
-                }
-            });
-            payload.sources.pmi.populated = payload.sources.pmi.items.filter(item => item.value.trim() !== '').length;
-            payload.sources.pmi.active = payload.sources.pmi.items.filter(item => item.active === true).length;
-        }
+                payload.sources.pmi.items.push({
+                    id: key,
+                    label: key,
+                    value: valStr,
+                    active: isActive
+                });
+            }
+        });
+        payload.sources.pmi.populated = payload.sources.pmi.items.filter(item => item.value.trim() !== '').length;
+        payload.sources.pmi.active = payload.sources.pmi.items.filter(item => item.active === true).length;
     } catch(e) {
         console.warn("Compiler Payload Builder: Failed to parse PMI storage.", e);
     }
@@ -867,8 +1091,8 @@ const FALLBACK_PAGES_REGISTRY = [
     { name: "PMI", file: "pmi.html", state: "ACTIVE" },
     { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
     { name: "Startup", file: "startup.html", state: "ACTIVE" },
-    { name: "Compiler", file: "compiler.html", state: "PLANNED" },
-    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Compiler", file: "compiler.html", state: "ACTIVE" },
+    { name: "Templates", file: "templates.html", state: "ACTIVE" },
     { name: "Reports", file: "reports.html", state: "PLANNED" },
     { name: "Data Block", file: "datablock.html", state: "PLANNED" }
 ];
@@ -1307,10 +1531,41 @@ function toggleCalibration() {
     }
 }
 
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().then(() => {
+            localStorage.setItem('hvacFullscreenPreferred', 'true');
+        }).catch(err => {
+            console.warn("Fullscreen request failed:", err);
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+            localStorage.setItem('hvacFullscreenPreferred', 'false');
+        }
+    }
+}
+
+function updateActiveJobTicket() {
+    const job = localStorage.getItem('hvacActiveJob');
+    const el = document.getElementById('active-job-ticket');
+    if (el) {
+        el.innerText = job && job.trim() !== '' ? job.trim() : '[ Awaiting New Call Info ]';
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   renderBottomNav();
+  updateActiveJobTicket();
   initCompiler();
   loadPMIData();
+});
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'hvacActiveJob') {
+        updateActiveJobTicket();
+        initCompiler();
+    }
 });
 </script>
 </body>
