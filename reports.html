@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Reports v1.00.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pages-registry.js"></script>
+    <style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .text-decoration-none { text-decoration: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans antialiased overflow-x-hidden min-h-screen flex flex-col">
+
+<!-- Top App Status Bar -->
+<div class="bg-slate-900 border-b border-slate-700 p-2 flex justify-between items-center shrink-0">
+    <button onclick="toggleFullScreen()" class="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center">
+        <span class="text-xl leading-none">⛶</span>
+    </button>
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.00.1</div>
+</div>
+
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col overflow-y-auto pb-24">
+    
+    <!-- Selectors -->
+    <div class="flex flex-col gap-2 bg-slate-800 p-3 border-b border-slate-700 shrink-0">
+        <div class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Select Profile</div>
+        <div class="flex gap-2 w-full">
+            <select id="template-name-select" onchange="handleTemplateDropdownChange()" class="flex-1 bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors">
+                <option value="PMI">PMI</option>
+                <option value="No Cool">No Cool</option>
+                <option value="Water Leak">Water Leak</option>
+                <option value="Change Out">Change Out</option>
+                <option value="Proposal">Proposal</option>
+                <option value="Miscellaneous">Miscellaneous</option>
+            </select>
+            <select id="report-target-select" onchange="handleTemplateDropdownChange()" class="w-1/3 bg-slate-900 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors">
+                <option value="1">Report 1</option>
+                <option value="2">Report 2</option>
+                <option value="3">Report 3</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Final Report Canvas -->
+    <div class="p-4 flex-1 flex flex-col gap-4">
+        <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold border-b border-slate-700 pb-2">Final Report</div>
+        
+        <div id="report-canvas" class="flex flex-col gap-2">
+            <!-- Report lines go here -->
+        </div>
+
+        <button onclick="openAddLineModal()" class="w-full border-2 border-dashed border-slate-600 text-slate-400 hover:text-slate-200 hover:border-slate-500 p-3 rounded font-bold text-[10px] uppercase tracking-widest transition-colors mt-2">
+            + Add Line
+        </button>
+
+        <button id="copy-btn" onclick="copyReport()" class="w-full bg-blue-700 hover:bg-blue-600 text-white p-4 rounded font-bold text-[12px] uppercase tracking-widest transition-colors mt-4 shadow-lg flex items-center justify-center gap-2">
+            COPY REPORT
+        </button>
+    </div>
+</div>
+
+<!-- Bottom Navigation Accordion -->
+<div id="bottom-page-nav" class="fixed bottom-0 left-0 right-0 z-40 bg-slate-900 border-t border-slate-700 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+    <div id="bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+        <div id="bottom-nav-grid-inner" class="grid grid-cols-4 gap-1"></div>
+    </div>
+    <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-12 flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors">
+        PAGES &middot; REPORTS
+    </button>
+</div>
+
+<!-- Add/Edit Custom Line Modal -->
+<div id="custom-line-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+    <div class="bg-slate-800 w-full max-w-sm rounded-xl border border-slate-600 shadow-2xl p-4 flex flex-col gap-3">
+        <div class="text-white font-bold text-sm uppercase tracking-widest border-b border-slate-600 pb-2" id="custom-line-title">Add Report Line</div>
+        <textarea id="custom-line-input" rows="4" class="w-full bg-slate-900 text-slate-200 border border-slate-600 p-2 rounded text-sm focus:outline-none focus:border-blue-500" placeholder="Type normal text without bullet..."></textarea>
+        <div class="flex gap-2 mt-2">
+            <button onclick="closeCustomLineModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 p-3 rounded text-[10px] font-bold uppercase transition-colors">Cancel</button>
+            <button onclick="saveCustomLine()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white p-3 rounded text-[10px] font-bold uppercase transition-colors">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Version and Keys
+const REPORTS_VERSION = 'v1.00.1';
+const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
+
+// State
+let editingCustomId = null;
+let customNamesMap = {};
+
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+}
+
+// Registry Support
+const FALLBACK_PAGES_REGISTRY = [
+    { name: "Splash", file: location.protocol === 'file:' ? 'Splash.html' : 'index.html', state: "ACTIVE" },
+    { name: "Quick Stash", file: location.protocol === 'file:' ? 'Splash.html#quickstash' : 'index.html#quickstash', state: "ACTIVE" },
+    { name: "Notes", file: "notes.html", state: "ACTIVE" },
+    { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
+    { name: "Specs", file: "specs.html", state: "ACTIVE" },
+    { name: "PMI", file: "pmi.html", state: "ACTIVE" },
+    { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
+    { name: "Startup", file: "startup.html", state: "ACTIVE" },
+    { name: "Compiler", file: "compiler.html", state: "ACTIVE" },
+    { name: "Templates", file: "templates.html", state: "ACTIVE" },
+    { name: "Reports", file: "reports.html", state: "ACTIVE" },
+    { name: "Data Block", file: "datablock.html", state: "PLANNED" }
+];
+
+function getPagesRegistry() {
+    if (typeof window.PLATTS_PAGES_REGISTRY !== 'undefined') {
+        return window.PLATTS_PAGES_REGISTRY;
+    }
+    return FALLBACK_PAGES_REGISTRY;
+}
+
+function getSplashDestination() { return location.protocol === 'file:' ? 'Splash.html' : 'index.html'; }
+function getQuickStashDestination() { return location.protocol === 'file:' ? 'Splash.html#quickstash' : 'index.html#quickstash'; }
+
+function renderBottomNav() {
+    const grid = document.getElementById('bottom-nav-grid-inner');
+    if (!grid) return;
+    const pages = getPagesRegistry();
+    let html = '';
+    const currentPath = window.location.pathname.split('/').pop() || 'reports.html';
+    
+    pages.forEach(p => {
+        let isCurrent = false;
+        if (p.name === 'Quick Stash' && currentPath === getSplashDestination() && window.location.hash === '#quickstash') {
+            isCurrent = true;
+        } else if (p.name === 'Splash' && currentPath === getSplashDestination() && window.location.hash !== '#quickstash') {
+            isCurrent = true;
+        } else if (p.file === currentPath && currentPath !== getSplashDestination()) {
+            isCurrent = true;
+        }
+        
+        let stateStyles = '';
+        if (isCurrent) {
+            stateStyles = 'bg-blue-600/20 text-blue-400 border-blue-500/50';
+        } else if (p.state === 'ACTIVE') {
+            stateStyles = 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+        } else if (p.state === 'PLANNED') {
+            stateStyles = 'bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed';
+        }
+        
+        let displayState = isCurrent ? 'CURRENT' : p.state;
+        
+        if (p.state === 'PLANNED' && !isCurrent) {
+            html += `
+            <div class="flex flex-col items-center justify-center p-2 rounded border ${stateStyles} opacity-50">
+                <span class="text-[10px] font-bold uppercase tracking-wider mb-1 text-center leading-tight">${p.name}</span>
+                <span class="text-[7px] font-mono tracking-widest uppercase opacity-70">${displayState}</span>
+            </div>`;
+        } else {
+            html += `
+            <a href="${p.file}" class="flex flex-col items-center justify-center p-2 rounded border ${stateStyles} transition-colors text-decoration-none">
+                <span class="text-[10px] font-bold uppercase tracking-wider mb-1 text-center leading-tight">${p.name}</span>
+                <span class="text-[7px] font-mono tracking-widest uppercase opacity-70">${displayState}</span>
+            </a>`;
+        }
+    });
+    grid.innerHTML = html;
+}
+
+function toggleBottomNav() {
+    document.getElementById('bottom-nav-grid').classList.toggle('hidden');
+}
+
+function updateActiveJob() {
+    const job = localStorage.getItem('hvacActiveJob') || '';
+    const ticket = document.getElementById('active-job-ticket');
+    if (job.trim() !== '') {
+        ticket.textContent = job;
+        ticket.classList.remove('text-slate-400');
+        ticket.classList.add('text-green-400');
+    } else {
+        ticket.textContent = '[ Awaiting New Call Info ]';
+        ticket.classList.remove('text-green-400');
+        ticket.classList.add('text-slate-400');
+    }
+}
+
+function getActiveTemplateProfileId() {
+    let templateName = document.getElementById('template-name-select').value;
+    const reportIdStr = `report${document.getElementById('report-target-select').value}`;
+    return `${templateName}::${reportIdStr}`;
+}
+
+function populateCustomTemplateOptions() {
+    const customSaved = JSON.parse(localStorage.getItem('template_custom_names_v1') || '[]');
+    const select = document.getElementById('template-name-select');
+    
+    Array.from(select.options).forEach(opt => {
+        if (!['PMI','No Cool','Water Leak','Change Out','Proposal','Miscellaneous'].includes(opt.value)) {
+            opt.remove();
+        }
+    });
+    
+    customSaved.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+    });
+}
+
+function loadReportNamesMap() {
+    customNamesMap = JSON.parse(localStorage.getItem('template_report_names_v1') || '{}');
+}
+
+function applyReportNames() {
+    const templateName = document.getElementById('template-name-select').value;
+    const reportSelect = document.getElementById('report-target-select');
+    
+    for (let i = 1; i <= 3; i++) {
+        const pId = `${templateName}::report${i}`;
+        const customName = customNamesMap[pId];
+        const opt = reportSelect.querySelector(`option[value="${i}"]`);
+        if (opt) {
+            opt.textContent = customName ? customName : `Report ${i}`;
+        }
+    }
+}
+
+function restoreSelection() {
+    const savedTpl = localStorage.getItem('reports_active_template_v1');
+    const savedRep = localStorage.getItem('reports_active_report_v1');
+    
+    if (savedTpl) {
+        const tplOpt = document.querySelector(`#template-name-select option[value="${savedTpl}"]`);
+        if (tplOpt) document.getElementById('template-name-select').value = savedTpl;
+    }
+    if (savedRep) {
+        document.getElementById('report-target-select').value = savedRep;
+    }
+    applyReportNames();
+}
+
+function handleTemplateDropdownChange() {
+    const tpl = document.getElementById('template-name-select').value;
+    const rep = document.getElementById('report-target-select').value;
+    
+    localStorage.setItem('reports_active_template_v1', tpl);
+    localStorage.setItem('reports_active_report_v1', rep);
+    
+    applyReportNames();
+    renderReport();
+}
+
+function generateReportData() {
+    const job = localStorage.getItem('hvacActiveJob') || '';
+    if (!job) return null;
+    
+    const profileId = getActiveTemplateProfileId();
+    const profiles = JSON.parse(localStorage.getItem('template_profiles_v2') || '{}');
+    const currentProfile = profiles[profileId];
+    
+    if (!currentProfile || !currentProfile.sections) {
+        return { emptyProfile: true };
+    }
+    
+    const payload = JSON.parse(localStorage.getItem(COMPILER_PAYLOAD_KEY) || '{"sources":{}}');
+    const oneTimeOverrides = JSON.parse(localStorage.getItem(`template_job_overrides_v1::${job}::${profileId}`) || '{}');
+    const univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
+    
+    const generatedFields = [];
+    
+    (currentProfile.sectionOrder || []).forEach(secKey => {
+        let items = [...(currentProfile.sections[secKey] || [])];
+        if (oneTimeOverrides[secKey]) {
+            const existingKeys = items.map(i => i.stableKey);
+            oneTimeOverrides[secKey].forEach(ov => {
+                if (!existingKeys.includes(ov.stableKey)) {
+                    items.push(ov);
+                }
+            });
+        }
+        
+        items.forEach(item => {
+            let currVal = '';
+            
+            if (item.source === 'extras') {
+                if (univSaved[item.sourceId]) currVal = univSaved[item.sourceId].value || '';
+            } else if (payload && payload.sources && payload.sources[item.source] && payload.sources[item.source].items) {
+                let match = payload.sources[item.source].items.find(i => i.id === item.sourceId);
+                if (!match && item.stableKey) {
+                    match = payload.sources[item.source].items.find(i => `compiler:${item.source}:${i.id}` === item.stableKey);
+                }
+                if (!match) {
+                    match = payload.sources[item.source].items.find(i => i.label === item.label);
+                }
+                if (match) currVal = match.value || '';
+            }
+            
+            if (currVal && currVal.trim() !== '') {
+                const id = `field::${item.stableKey || (item.source + '::' + item.sourceId)}`;
+                generatedFields.push({
+                    type: 'generated',
+                    id: id,
+                    label: item.label,
+                    value: currVal,
+                    text: `${item.label}: ${currVal}`
+                });
+            }
+        });
+    });
+    
+    const overridesKey = `report_final_overrides_v1::${job}::${profileId}`;
+    const overridesData = JSON.parse(localStorage.getItem(overridesKey) || '{"order":[], "customLines":{}}');
+    
+    let finalOrder = overridesData.order || [];
+    let customLines = overridesData.customLines || {};
+    
+    const finalReport = [];
+    
+    finalOrder.forEach(id => {
+        if (id.startsWith('custom::')) {
+            if (customLines[id]) finalReport.push(customLines[id]);
+        } else {
+            const matchIndex = generatedFields.findIndex(f => f.id === id);
+            if (matchIndex !== -1) {
+                finalReport.push(generatedFields[matchIndex]);
+                generatedFields.splice(matchIndex, 1);
+            }
+        }
+    });
+    
+    generatedFields.forEach(f => {
+        finalReport.push(f);
+    });
+    
+    return { lines: finalReport };
+}
+
+function renderReport() {
+    const data = generateReportData();
+    const canvas = document.getElementById('report-canvas');
+    
+    if (!data) {
+        canvas.innerHTML = `<div class="text-slate-400 text-xs text-center p-4">No active job selected.</div>`;
+        return;
+    }
+    
+    if (data.emptyProfile) {
+        canvas.innerHTML = `<div class="text-slate-400 text-xs text-center p-4">No fields configured for this Template + Report.</div>`;
+        return;
+    }
+    
+    if (data.lines.length === 0) {
+        canvas.innerHTML = `<div class="text-slate-400 text-xs text-center p-4">No populated report lines for this job.</div>`;
+        return;
+    }
+    
+    let html = '';
+    data.lines.forEach((line, index) => {
+        const isFirst = index === 0;
+        const isLast = index === data.lines.length - 1;
+        
+        const upBtn = isFirst ? `<div class="w-8"></div>` : `<button onclick="moveRow(${index}, -1)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white transition-colors"><span class="text-lg">▲</span></button>`;
+        
+        const downBtn = isLast ? `<div class="w-8"></div>` : `<button onclick="moveRow(${index}, 1)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white transition-colors"><span class="text-lg">▼</span></button>`;
+        
+        let editBtn = '';
+        if (line.type === 'custom') {
+            editBtn = `<div class="flex gap-1 mt-1 justify-end">
+                <button onclick="editCustomLine('${line.id}')" class="text-[8px] font-bold uppercase tracking-widest bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded">Edit</button>
+                <button onclick="deleteCustomLine('${line.id}')" class="text-[8px] font-bold uppercase tracking-widest bg-red-900/60 text-red-300 hover:text-red-100 px-2 py-1 rounded">×</button>
+            </div>`;
+        }
+        
+        html += `
+        <div class="flex items-start justify-between bg-slate-800 border border-slate-700 p-2 rounded w-full">
+            <div class="shrink-0 mt-1">${upBtn}</div>
+            <div class="flex-1 px-3 py-1">
+                <div class="text-[13px] text-slate-200 leading-relaxed font-medium tracking-wide whitespace-pre-wrap"><span class="text-blue-400 mr-2">▶</span>${line.text}</div>
+                ${editBtn}
+            </div>
+            <div class="shrink-0 mt-1">${downBtn}</div>
+        </div>`;
+    });
+    
+    canvas.innerHTML = html;
+}
+
+function moveRow(index, direction) {
+    const data = generateReportData();
+    if (!data || !data.lines) return;
+    
+    const lines = data.lines;
+    if (index + direction < 0 || index + direction >= lines.length) return;
+    
+    const job = localStorage.getItem('hvacActiveJob') || '';
+    const profileId = getActiveTemplateProfileId();
+    const overridesKey = `report_final_overrides_v1::${job}::${profileId}`;
+    let overridesData = JSON.parse(localStorage.getItem(overridesKey) || '{"order":[], "customLines":{}}');
+    
+    let fullOrder = overridesData.order || [];
+    
+    lines.forEach(l => {
+        if (!fullOrder.includes(l.id)) {
+            fullOrder.push(l.id);
+        }
+    });
+    
+    const itemA_id = lines[index].id;
+    const itemB_id = lines[index + direction].id;
+    
+    const idxA = fullOrder.indexOf(itemA_id);
+    const idxB = fullOrder.indexOf(itemB_id);
+    
+    if (idxA !== -1 && idxB !== -1) {
+        fullOrder.splice(idxA, 1);
+        const newIdxB = fullOrder.indexOf(itemB_id);
+        
+        if (direction === 1) {
+            fullOrder.splice(newIdxB + 1, 0, itemA_id);
+        } else {
+            fullOrder.splice(newIdxB, 0, itemA_id);
+        }
+        
+        overridesData.order = fullOrder;
+        localStorage.setItem(overridesKey, JSON.stringify(overridesData));
+        renderReport();
+    }
+}
+
+function openAddLineModal() {
+    editingCustomId = null;
+    document.getElementById('custom-line-title').textContent = 'Add Report Line';
+    document.getElementById('custom-line-input').value = '';
+    document.getElementById('custom-line-modal').classList.remove('hidden');
+    document.getElementById('custom-line-modal').classList.add('flex');
+    document.getElementById('custom-line-input').focus();
+}
+
+function editCustomLine(id) {
+    const job = localStorage.getItem('hvacActiveJob') || '';
+    const profileId = getActiveTemplateProfileId();
+    const overridesKey = `report_final_overrides_v1::${job}::${profileId}`;
+    const overridesData = JSON.parse(localStorage.getItem(overridesKey) || '{"order":[], "customLines":{}}');
+    
+    if (overridesData.customLines && overridesData.customLines[id]) {
+        editingCustomId = id;
+        document.getElementById('custom-line-title').textContent = 'Edit Report Line';
+        document.getElementById('custom-line-input').value = overridesData.customLines[id].text;
+        document.getElementById('custom-line-modal').classList.remove('hidden');
+        document.getElementById('custom-line-modal').classList.add('flex');
+        document.getElementById('custom-line-input').focus();
+    }
+}
+
+function closeCustomLineModal() {
+    document.getElementById('custom-line-modal').classList.add('hidden');
+    document.getElementById('custom-line-modal').classList.remove('flex');
+}
+
+function saveCustomLine() {
+    const text = document.getElementById('custom-line-input').value.trim();
+    if (!text) return closeCustomLineModal();
+    
+    const job = localStorage.getItem('hvacActiveJob') || '';
+    const profileId = getActiveTemplateProfileId();
+    const overridesKey = `report_final_overrides_v1::${job}::${profileId}`;
+    
+    let overridesData = JSON.parse(localStorage.getItem(overridesKey) || '{"order":[], "customLines":{}}');
+    if (!overridesData.order) overridesData.order = [];
+    if (!overridesData.customLines) overridesData.customLines = {};
+    
+    if (editingCustomId) {
+        if (overridesData.customLines[editingCustomId]) {
+            overridesData.customLines[editingCustomId].text = text;
+        }
+    } else {
+        const id = `custom::${Date.now()}_${Math.floor(Math.random()*1000)}`;
+        overridesData.customLines[id] = {
+            type: 'custom',
+            id: id,
+            text: text,
+            createdAt: Date.now()
+        };
+        overridesData.order.push(id);
+    }
+    
+    localStorage.setItem(overridesKey, JSON.stringify(overridesData));
+    closeCustomLineModal();
+    renderReport();
+}
+
+function deleteCustomLine(id) {
+    const job = localStorage.getItem('hvacActiveJob') || '';
+    const profileId = getActiveTemplateProfileId();
+    const overridesKey = `report_final_overrides_v1::${job}::${profileId}`;
+    let overridesData = JSON.parse(localStorage.getItem(overridesKey) || '{"order":[], "customLines":{}}');
+    
+    if (overridesData.customLines && overridesData.customLines[id]) {
+        delete overridesData.customLines[id];
+    }
+    if (overridesData.order) {
+        overridesData.order = overridesData.order.filter(i => i !== id);
+    }
+    
+    localStorage.setItem(overridesKey, JSON.stringify(overridesData));
+    renderReport();
+}
+
+function copyReport() {
+    const data = generateReportData();
+    if (!data || !data.lines || data.lines.length === 0) return;
+    
+    let textToCopy = '';
+    data.lines.forEach(line => {
+        let text = line.text.trim();
+        if (text.startsWith('▶')) {
+            text = text.substring(1).trim();
+        }
+        if (text) {
+            textToCopy += `▶ ${text}\n`;
+        }
+    });
+    
+    textToCopy = textToCopy.trim();
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            showCopiedFeedback();
+        }).catch(err => {
+            console.error('Clipboard copy failed', err);
+            fallbackCopy(textToCopy);
+        });
+    } else {
+        fallbackCopy(textToCopy);
+    }
+}
+
+function fallbackCopy(text) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showCopiedFeedback();
+}
+
+function showCopiedFeedback() {
+    const btn = document.getElementById('copy-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'COPIED ✓';
+    btn.classList.replace('bg-blue-700', 'bg-emerald-600');
+    btn.classList.replace('hover:bg-blue-600', 'hover:bg-emerald-500');
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.replace('bg-emerald-600', 'bg-blue-700');
+        btn.classList.replace('hover:bg-emerald-500', 'hover:bg-blue-600');
+    }, 2000);
+}
+
+// Lifecycle
+window.addEventListener('DOMContentLoaded', () => {
+    updateActiveJob();
+    populateCustomTemplateOptions();
+    loadReportNamesMap();
+    restoreSelection();
+    renderBottomNav();
+    renderReport();
+    
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'hvacActiveJob' || e.key === COMPILER_PAYLOAD_KEY || e.key === 'template_profiles_v2') {
+            updateActiveJob();
+            renderReport();
+        }
+    });
+});
+window.addEventListener('pageshow', () => {
+    updateActiveJob();
+    renderReport();
+});
+</script>
+</body>
+</html>
