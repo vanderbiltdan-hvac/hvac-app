@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Specs & Intake v1.05.0</title>
+    <title>Specs & Intake v1.06.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -81,7 +81,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="absolute right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest">v1.05.0</div>
+    <div class="absolute right-4 text-[9px] text-slate-500 font-bold uppercase tracking-widest">v1.06.1</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -229,7 +229,8 @@ function toggleEditFieldsModal() {
 // ----------------------------------------------------
 let specsData = {
     values: {},
-    selectedFields: {}
+    selectedFields: {},
+    mirrorAcceptedValues: {}
 };
 
 let specsMirrorSnapshot = {};
@@ -342,18 +343,44 @@ function loadSpecsData() {
         if (!parsed.values && !parsed.selectedFields) {
             specsData = {
                 values: parsed,
-                selectedFields: {}
+                selectedFields: {},
+                mirrorAcceptedValues: {}
             };
             saveSpecsData();
         } else {
             specsData = parsed;
             if (!specsData.values) specsData.values = {};
-            if (!specsData.selectedFields) specsData.selectedFields = {};
+            if (!specsData.mirrorAcceptedValues) specsData.mirrorAcceptedValues = {};
+            
+            if (specsData.selectedFields && Object.keys(specsData.selectedFields).length > 0 && window.PLATTS_MIRROR_DATA) {
+                let migrated = false;
+                Object.keys(specsData.selectedFields).forEach(k => {
+                    if (specsData.selectedFields[k]) {
+                        const canonical = window.PLATTS_MIRROR_DATA.getCanonicalLabel(k) || k;
+                        window.PLATTS_MIRROR_DATA.setAccepted(canonical, true);
+                        
+                        let mirrorVal = getSpecsMirrorValue(k);
+                        if (mirrorVal !== null && mirrorVal !== "") {
+                            const norm = normalizeSpecsMirrorValue(k, mirrorVal);
+                            specsData.mirrorAcceptedValues[k] = norm;
+                            specsData.values[k] = norm;
+                        }
+                        migrated = true;
+                    }
+                });
+                if (migrated) {
+                    specsData.selectedFields = {};
+                    saveSpecsData();
+                }
+            } else if (!specsData.selectedFields) {
+                specsData.selectedFields = {};
+            }
         }
     } else {
         specsData = {
             values: {},
-            selectedFields: {}
+            selectedFields: {},
+            mirrorAcceptedValues: {}
         };
     }
     
@@ -363,28 +390,11 @@ function loadSpecsData() {
             i.value = specsData.values[fieldKey];
         }
     });
-
-    applySelectedState();
-}
-
-function applySelectedState() {
-    document.querySelectorAll('input[data-mirror-key]').forEach(input => {
-        const key = input.getAttribute('data-mirror-key');
-        const label = document.querySelector(`span[data-mirror-label="${key}"]`);
-        if (!label) return;
-        
-        if (specsData.selectedFields[key]) {
-            label.classList.remove('text-slate-400');
-            label.classList.add('text-blue-300', 'bg-blue-900/40', 'ring-1', 'ring-blue-500/50', 'rounded', 'px-1');
-        } else {
-            label.classList.remove('text-blue-300', 'bg-blue-900/40', 'ring-1', 'ring-blue-500/50', 'rounded', 'px-1');
-            label.classList.add('text-slate-400');
-        }
-    });
 }
 
 function updateMirrorAvailability() {
     let unresolvedKeys = [];
+    let hasChanges = false;
     document.querySelectorAll('[data-mirror-row]').forEach(row => {
         const key = row.getAttribute('data-mirror-row');
         let mirrorVal = getSpecsMirrorValue(key);
@@ -396,36 +406,71 @@ function updateMirrorAvailability() {
         }
 
         const input = document.querySelector(`input[data-mirror-key="${key}"]`);
+        const labelEl = document.querySelector(`span[data-mirror-label="${key}"]`);
+
+        const isAccepted = window.PLATTS_MIRROR_DATA ? window.PLATTS_MIRROR_DATA.isAccepted(canonicalLabel) : false;
+
+        row.classList.remove('border-blue-500', 'border-l-4', 'ring-1', 'ring-blue-500/50', 'rounded');
+        labelEl.classList.remove('text-blue-300', 'bg-blue-900/40', 'px-1', 'ring-1', 'ring-blue-500/50', 'rounded');
+        labelEl.classList.add('text-slate-400');
+        input.classList.remove('text-blue-400', 'text-white', 'text-slate-400');
 
         if (mirrorVal !== null && mirrorVal !== "") {
-            row.classList.add('border-blue-500', 'border-l-4');
+            row.classList.add('ring-1', 'ring-blue-500/50', 'rounded');
             row.setAttribute('data-mirror-available', mirrorVal);
             row.setAttribute('data-mirror-canonical', canonicalLabel);
             
-            if (specsValueMatchesMirror(key, input.value, mirrorVal)) {
-                input.classList.remove('text-white');
+            const localVal = specsData.values[key] !== undefined ? specsData.values[key] : "";
+            
+            if (isAccepted) {
+                labelEl.classList.remove('text-slate-400');
+                labelEl.classList.add('text-blue-300', 'bg-blue-900/40', 'px-1', 'rounded');
+                
+                const norm = normalizeSpecsMirrorValue(key, mirrorVal);
+                if (specsData.values[key] !== norm || specsData.mirrorAcceptedValues[key] !== norm) {
+                    specsData.values[key] = norm;
+                    specsData.mirrorAcceptedValues[key] = norm;
+                    hasChanges = true;
+                }
+                
+                input.value = norm;
                 input.classList.add('text-blue-400');
             } else {
-                input.classList.remove('text-blue-400');
-                input.classList.add('text-white');
+                if (specsData.mirrorAcceptedValues && specsData.mirrorAcceptedValues[key] !== undefined) {
+                    if (specsData.values[key] === specsData.mirrorAcceptedValues[key]) {
+                        delete specsData.values[key];
+                        delete specsData.mirrorAcceptedValues[key];
+                        hasChanges = true;
+                        input.value = normalizeSpecsMirrorValue(key, mirrorVal);
+                        input.classList.add('text-slate-400');
+                    } else {
+                        delete specsData.mirrorAcceptedValues[key];
+                        hasChanges = true;
+                        input.value = specsData.values[key] !== undefined ? specsData.values[key] : "";
+                        input.classList.add('text-white');
+                    }
+                } else {
+                    if (localVal === "") {
+                        input.value = normalizeSpecsMirrorValue(key, mirrorVal);
+                        input.classList.add('text-slate-400');
+                    } else {
+                        input.value = localVal;
+                        input.classList.add('text-white');
+                    }
+                }
             }
         } else {
-            row.classList.remove('border-blue-500', 'border-l-4');
             row.removeAttribute('data-mirror-available');
+            row.setAttribute('data-mirror-canonical', canonicalLabel);
             
-            if (mirrorVal === "") {
-                row.setAttribute('data-mirror-canonical', canonicalLabel);
-            } else {
-                row.removeAttribute('data-mirror-canonical');
-            }
-            
-            input.classList.remove('text-blue-400');
+            const localVal = specsData.values[key] !== undefined ? specsData.values[key] : "";
+            input.value = localVal;
             input.classList.add('text-white');
             unresolvedKeys.push(key);
         }
     });
 
-    applySelectedState();
+    if (hasChanges) saveSpecsData();
 
     if (unresolvedKeys.length > 0) {
         console.log("SPECS MIRROR UNRESOLVED:\n- " + unresolvedKeys.join("\n- "));
@@ -446,24 +491,6 @@ async function mirrorSync() {
             }
             
             specsMirrorSnapshot = data.fields || {};
-
-            let hasChanges = false;
-            document.querySelectorAll('[data-mirror-row]').forEach(row => {
-                const key = row.getAttribute('data-mirror-row');
-                let mirrorVal = getSpecsMirrorValue(key);
-                const input = document.querySelector(`input[data-mirror-key="${key}"]`);
-                
-                if (mirrorVal !== null && mirrorVal !== "") {
-                    if (input.value === "") {
-                        const norm = normalizeSpecsMirrorValue(key, mirrorVal);
-                        input.value = norm;
-                        specsData.values[key] = norm;
-                        hasChanges = true;
-                    }
-                }
-            });
-
-            if (hasChanges) saveSpecsData();
 
             updateMirrorAvailability();
             
@@ -489,19 +516,26 @@ function toggleSpecStage(key, event) {
     const input = document.querySelector(`input[data-mirror-key="${key}"]`);
     if (!row || !input) return;
     
+    let canonicalLabel = row.getAttribute('data-mirror-canonical') || key;
     const mirrorVal = row.getAttribute('data-mirror-available');
+    
+    if (!mirrorVal) return;
 
-    if (!specsData.selectedFields[key]) {
-        // Staging
-        if (mirrorVal && input.value === "") {
-            const norm = normalizeSpecsMirrorValue(key, mirrorVal);
-            input.value = norm;
-            specsData.values[key] = norm;
-        }
-        specsData.selectedFields[key] = true;
+    if (!window.PLATTS_MIRROR_DATA) return;
+    
+    const isCurrentlyAccepted = window.PLATTS_MIRROR_DATA.isAccepted(canonicalLabel);
+
+    if (!isCurrentlyAccepted) {
+        window.PLATTS_MIRROR_DATA.setAccepted(canonicalLabel, true);
+        const norm = normalizeSpecsMirrorValue(key, mirrorVal);
+        specsData.values[key] = norm;
+        specsData.mirrorAcceptedValues[key] = norm;
     } else {
-        // Unstaging
-        specsData.selectedFields[key] = false;
+        window.PLATTS_MIRROR_DATA.setAccepted(canonicalLabel, false);
+        if (specsData.values[key] === specsData.mirrorAcceptedValues[key]) {
+            delete specsData.values[key];
+        }
+        delete specsData.mirrorAcceptedValues[key];
     }
 
     saveSpecsData();
@@ -512,10 +546,32 @@ function handleManualInput(key) {
     const input = document.querySelector(`input[data-mirror-key="${key}"]`) || document.querySelector(`input[data-local-key="${key}"]`);
     if(input) {
         if (!specsData.values) specsData.values = {};
+        if (!specsData.mirrorAcceptedValues) specsData.mirrorAcceptedValues = {};
         specsData.values[key] = input.value;
+        if (specsData.mirrorAcceptedValues[key] !== undefined) {
+            delete specsData.mirrorAcceptedValues[key];
+        }
+        
+        let needsAcceptanceClear = false;
+        
+        if (input.hasAttribute('data-mirror-key') && window.PLATTS_MIRROR_DATA) {
+            const row = document.querySelector(`[data-mirror-row="${key}"]`);
+            if (row) {
+                let canonicalLabel = row.getAttribute('data-mirror-canonical') || key;
+                if (window.PLATTS_MIRROR_DATA.isAccepted(canonicalLabel)) {
+                    window.PLATTS_MIRROR_DATA.setAccepted(canonicalLabel, false);
+                    needsAcceptanceClear = true;
+                }
+            }
+        }
+        
         saveSpecsData();
-        if (input.hasAttribute('data-mirror-key')) {
+        
+        if (needsAcceptanceClear) {
             updateMirrorAvailability();
+        } else if (input.hasAttribute('data-mirror-key')) {
+            input.classList.remove('text-blue-400', 'text-slate-400');
+            input.classList.add('text-white');
         }
     }
 }
@@ -631,6 +687,10 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+});
+
+window.addEventListener('platts-mirror-acceptance-changed', (e) => {
+    updateMirrorAvailability();
 });
 </script>
 
