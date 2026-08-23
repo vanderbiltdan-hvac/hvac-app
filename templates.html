@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Sequencer v2.01.0</title>
+    <title>Template Sequencer v2.02.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -74,8 +74,11 @@
 
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
-    <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v2.01.0</div>
+    <button onclick="toggleFullScreen(); event.stopPropagation();" class="shrink-0 flex items-center justify-start min-w-[50px] text-slate-400 hover:text-white transition-colors" title="Full Screen" aria-label="Full Screen">
+        <span class="text-xl leading-none">⛶</span>
+    </button>
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.02.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -143,7 +146,7 @@
         <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
     </div>
     <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-16 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
-        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES · TEMPLATES
     </button>
 </div>
 
@@ -173,12 +176,12 @@
         <!-- Template & Report Selectors -->
         <div class="flex flex-col gap-2 bg-slate-900 p-3 border-b border-slate-700 shrink-0">
             <div class="flex gap-2 w-full">
-                <select id="report-target-select" class="w-1/3 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors">
+                <select id="report-target-select" onchange="handleTemplateDropdownChange()" class="w-1/3 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors">
                     <option value="1">Report 1</option>
                     <option value="2">Report 2</option>
                     <option value="3">Report 3</option>
                 </select>
-                <select id="template-name-select" onchange="handleTemplateDropdownChange(this)" class="flex-1 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors">
+                <select id="template-name-select" onchange="handleTemplateDropdownChange()" class="flex-1 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors">
                     <option value="PMI">PMI</option>
                     <option value="No Cool">No Cool</option>
                     <option value="Water Leak">Water Leak</option>
@@ -187,7 +190,10 @@
                     <option value="Miscellaneous">Miscellaneous</option>
                     <option value="custom">+ Create Custom</option>
                 </select>
-                <input type="text" id="custom-template-name" class="flex-1 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors hidden" placeholder="Enter Custom Name">
+                <input type="text" id="custom-template-name" class="flex-1 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500 transition-colors hidden" placeholder="Enter Custom Name" onblur="handleTemplateDropdownChange()">
+            </div>
+            <div class="flex gap-2 w-full mt-1">
+                <button onclick="renameReport()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-500 rounded p-2 font-bold text-[10px] uppercase tracking-wider transition-colors shadow">Rename Report</button>
             </div>
         </div>
 
@@ -198,8 +204,39 @@
 
         <!-- Save Button -->
         <div class="p-3 bg-slate-900 border-t border-slate-700 shrink-0">
-            <button onclick="saveTemplateLens()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Save & Apply Lens</button>
+            <button onclick="toggleEditFieldsModal()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Done</button>
         </div>
+    </div>
+</div>
+
+<!-- IMPORTER MODAL -->
+<div id="importer-modal" class="fixed inset-0 z-[60] bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-start pt-10 px-4 pb-4">
+    <div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+        <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center shrink-0">
+            <h3 class="text-white font-bold tracking-widest text-xs uppercase" id="importer-title">Import</h3>
+            <button onclick="closeImporter()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+        
+        <div class="flex gap-2 bg-slate-900 p-2 shrink-0">
+            <select id="importer-source-select" onchange="renderImporterList()" class="flex-1 bg-slate-800 text-white border border-slate-600 rounded p-2 font-bold text-[10px] uppercase tracking-wider focus:outline-none focus:border-blue-500">
+                <option value="specs">Specs</option>
+                <option value="pmi">PMI</option>
+                <option value="diagnostics">Diagnostics</option>
+                <option value="startup">Startup</option>
+                <option value="extras">Extras / Custom</option>
+            </select>
+        </div>
+        
+        <div id="importer-list-canvas" class="p-3 flex-1 overflow-y-auto flex flex-col gap-2"></div>
+    </div>
+</div>
+
+<!-- MOVE FIELD MODAL -->
+<div id="move-dest-modal" class="fixed inset-0 z-[70] bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+    <div class="bg-slate-800 w-full max-w-sm rounded-xl border border-slate-600 shadow-2xl p-4 flex flex-col gap-3">
+        <div class="text-white font-bold text-sm uppercase tracking-widest text-center border-b border-slate-600 pb-2">Move To Section</div>
+        <div id="move-dest-options" class="flex flex-col gap-2"></div>
+        <button onclick="closeMoveDestModal()" class="mt-2 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded text-xs transition-colors">CANCEL</button>
     </div>
 </div>
 
@@ -235,312 +272,252 @@
         const pmiRegistry = {};
         let currentActiveCategory = null;
 
-let masterSequence = [];
-let draggedIndex = null;
-
-const TEMPLATE_VERSION = "v2.01.0";
+let currentProfile = null;
+const TEMPLATE_VERSION = "v2.02.2";
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
+
+function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.warn(err));
+    } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+    }
+}
+
+function updateActiveJobTicket() {
+    const job = localStorage.getItem('hvacActiveJob');
+    const el = document.getElementById('active-job-ticket');
+    if (el) el.innerText = job && job.trim() !== '' ? job.trim() : '[ Awaiting New Call Info ]';
+}
+
+function getActiveTemplateProfileId() {
+    let lensName = document.getElementById('template-name-select').value;
+    if (lensName === 'custom') lensName = document.getElementById('custom-template-name').value.trim() || 'PMI';
+    const reportId = document.getElementById('report-target-select').value;
+    return `${lensName}::report${reportId}`;
+}
+
+function getReportDisplayName(lensName, reportIdStr) {
+    const names = JSON.parse(localStorage.getItem('template_report_names_v1') || '{}');
+    if (!names[lensName]) return `Report ${reportIdStr.replace('report', '')}`;
+    return names[lensName][reportIdStr] || `Report ${reportIdStr.replace('report', '')}`;
+}
+
+function setReportDisplayName(lensName, reportIdStr, newName) {
+    const names = JSON.parse(localStorage.getItem('template_report_names_v1') || '{}');
+    if (!names[lensName]) names[lensName] = {};
+    names[lensName][reportIdStr] = newName.trim();
+    localStorage.setItem('template_report_names_v1', JSON.stringify(names));
+}
+
+function saveCurrentProfile() {
+    if (!currentProfile) return;
+    const profileId = getActiveTemplateProfileId();
+    const profiles = JSON.parse(localStorage.getItem('template_profiles_v2') || '{}');
+    profiles[profileId] = currentProfile;
+    localStorage.setItem('template_profiles_v2', JSON.stringify(profiles));
+}
 
 function loadCompilerPayload() {
     const raw = localStorage.getItem(COMPILER_PAYLOAD_KEY);
     if (!raw) return null;
-    try {
-        return JSON.parse(raw);
-    } catch(e) {
-        console.warn("Templates: Compiler payload malformed or unreadable.", e);
-        return null;
-    }
+    try { return JSON.parse(raw); } catch(e) { return null; }
 }
 
 function updatePayloadStatus(payload) {
     const el = document.getElementById('template-payload-status');
-    const ticket = document.getElementById('active-job-ticket');
     if (!el) return;
-    
-    if (!payload) {
-        el.innerText = "COMPILER PAYLOAD NOT FOUND";
-        return;
-    }
-    if (payload.schema !== "1.0") {
-        el.innerText = `COMPILER PAYLOAD SCHEMA ${payload.schema || '?'} — EXPECTED 1.0`;
-    } else {
-        el.innerText = `COMPILER · ${payload.summary?.active || 0} ACTIVE · PAYLOAD v${payload.schema}`;
-    }
-
-    if (payload.job && payload.job.activeJob && payload.job.activeJob.trim() !== '') {
-        if (ticket) ticket.innerText = payload.job.activeJob.trim();
-    }
+    if (!payload) { el.innerText = "COMPILER PAYLOAD NOT FOUND"; return; }
+    el.innerText = `COMPILER · PAYLOAD v${payload.schema}`;
 }
 
-function resolveLegacyTemplateKey(key, payloadActiveItems) {
-    if (!key.startsWith('W')) return null;
-    let match = masterFieldMap.find(m => {
-        let parts = m.split('|');
-        let cell = parts[1] ? parts[1].trim() : "";
-        return cell === key;
-    });
-    if (!match) return null;
-    let parts = match.split('|');
-    let label = parts[0] ? parts[0].trim() : "";
-    let page = parts[2] ? parts[2].trim() : "";
+function migrateLegacyProfile(lensName, reportIdStr) {
+    let baseFields = [];
+    const savedRules = JSON.parse(localStorage.getItem('template_rules_v1') || '{}');
+    if (savedRules[lensName]) baseFields = savedRules[lensName];
     
-    let sourceKey = "";
-    if (page === 'Specs') sourceKey = 'specs';
-    else if (page === 'PMI') sourceKey = 'pmi';
-    else if (page === 'Diag') sourceKey = 'diagnostics';
-    else if (page === 'Startup') sourceKey = 'startup';
+    let newProfile = {
+        templateName: lensName,
+        reportId: reportIdStr,
+        reportName: getReportDisplayName(lensName, reportIdStr),
+        sectionOrder: ["specs", "pmi", "diagnostics", "startup", "extras"],
+        sections: { specs: [], pmi: [], diagnostics: [], startup: [], extras: [] }
+    };
     
-    if (!sourceKey) return null;
-    
-    let activeMatches = payloadActiveItems.filter(i => i.source === sourceKey && i.label === label);
-    if (activeMatches.length === 1) {
-        return activeMatches[0].key;
+    if (reportIdStr === 'report1') {
+        const legacySeqStr = localStorage.getItem('template_sequence_v1');
+        if (legacySeqStr) {
+            const legacySeq = JSON.parse(legacySeqStr);
+            let currentDest = "extras";
+            legacySeq.forEach(key => {
+                if (key === '__HDR_SPECS__') currentDest = 'specs';
+                else if (key === '__HDR_PMI__') currentDest = 'pmi';
+                else if (key === '__HDR_DIAG__') currentDest = 'diagnostics';
+                else if (key === '__HDR_STARTUP__') currentDest = 'startup';
+                else if (key === '__HDR_UNIVERSAL__') currentDest = 'extras';
+                else {
+                    let matchLabel = key;
+                    let source = 'extras';
+                    let sourceId = key;
+                    
+                    const m = masterFieldMap.find(mf => mf.split('|')[0].trim() === key || (mf.split('|')[1] && mf.split('|')[1].trim() === key));
+                    if (m) {
+                        matchLabel = m.split('|')[0].trim();
+                        let p = m.split('|')[2]?.trim() || '';
+                        if (p==='Specs') source = 'specs';
+                        if (p==='PMI') source = 'pmi';
+                        if (p==='Diag') source = 'diagnostics';
+                        if (p==='Startup') source = 'startup';
+                    } else if (key.startsWith('compiler:')) {
+                        let parts = key.split(':');
+                        source = parts[1];
+                        sourceId = parts[2];
+                        matchLabel = sourceId;
+                    }
+                    
+                    if (baseFields.length === 0 || baseFields.includes(matchLabel) || baseFields.includes(key)) {
+                        newProfile.sections[currentDest].push({
+                            label: matchLabel,
+                            source: source,
+                            sourceId: sourceId,
+                            stableKey: key
+                        });
+                    }
+                }
+            });
+        }
     }
-    return null;
+    return newProfile;
 }
 
 function initTemplateManager() {
+    updateActiveJobTicket();
     const payload = loadCompilerPayload();
     updatePayloadStatus(payload);
+    loadCurrentProfile();
+}
 
-    const rawItems = {};
-    rawItems['__HDR_SPECS__'] = { label: 'Specs', isHeader: true, group: 'specs' };
-    rawItems['__HDR_PMI__'] = { label: 'PMI', isHeader: true, group: 'pmi' };
-    rawItems['__HDR_DIAG__'] = { label: 'Diagnostics', isHeader: true, group: 'diagnostics' };
-    rawItems['__HDR_STARTUP__'] = { label: 'Startup', isHeader: true, group: 'startup' };
-    rawItems['__HDR_UNIVERSAL__'] = { label: 'Universal', isHeader: true, group: 'univ' };
-
-    const payloadActiveItems = []; 
-
-    if (payload && payload.sources) {
-        ['specs', 'pmi', 'diagnostics', 'startup'].forEach(sourceKey => {
-            const sourceGroup = payload.sources[sourceKey];
-            if (sourceGroup && sourceGroup.items) {
-                sourceGroup.items.forEach(item => {
-                    if (item.active === true) {
-                        const stableKey = `compiler:${sourceKey}:${item.id}`;
-                        rawItems[stableKey] = {
-                            key: stableKey,
-                            label: item.label,
-                            value: item.value !== "" ? item.value : "SELECTED",
-                            type: sourceKey === 'diagnostics' ? 'DIAG' : sourceKey.toUpperCase(),
-                            source: sourceKey,
-                            sourceId: item.id,
-                            active: true
-                        };
-                        payloadActiveItems.push(rawItems[stableKey]);
-                    }
-                });
-            }
-        });
-    }
-
-    const univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
-    Object.keys(univSaved).forEach(key => { rawItems[key] = univSaved[key]; });
-
-    const savedSeq = localStorage.getItem('template_sequence_v1');
-    if (savedSeq) {
-        let parsedSeq = [...new Set(JSON.parse(savedSeq).flat())];
-        
-        masterSequence = parsedSeq.map(key => {
-            if (key.startsWith('__HDR_') || key.startsWith('univ_') || key.startsWith('compiler:')) {
-                return key;
-            }
-            
-            let resolvedKey = resolveLegacyTemplateKey(key, payloadActiveItems);
-            if (resolvedKey) return resolvedKey;
-            
-            let match = payloadActiveItems.find(i => i.sourceId === key);
-            if (!match) {
-                const labelMatches = payloadActiveItems.filter(i => i.label === key);
-                if (labelMatches.length === 1) match = labelMatches[0];
-            }
-            
-            if (match) {
-                return match.key;
-            } else {
-                console.warn(`Templates: unresolved legacy sequence key preserved: ${key}`);
-                return key;
-            }
-        });
-        
-        masterSequence = [...new Set(masterSequence)];
-        
-        const missingByHeader = {};
-        payloadActiveItems.forEach(item => {
-            if (!masterSequence.includes(item.key)) {
-                const hdrKey = `__HDR_${item.type === 'DIAG' ? 'DIAG__' : (item.type === 'STARTUP' ? 'STARTUP__' : (item.type === 'SPECS' ? 'SPECS__' : 'PMI__'))}`;
-                if (!missingByHeader[hdrKey]) missingByHeader[hdrKey] = [];
-                missingByHeader[hdrKey].push(item.key);
-            }
-        });
-        
-        Object.keys(missingByHeader).forEach(hdrKey => {
-            const itemsToInsert = missingByHeader[hdrKey];
-            let hdrIndex = masterSequence.indexOf(hdrKey);
-            if (hdrIndex === -1) {
-                masterSequence.push(hdrKey);
-                masterSequence.push(...itemsToInsert);
-            } else {
-                let insertAt = masterSequence.length;
-                for (let i = hdrIndex + 1; i < masterSequence.length; i++) {
-                    if (masterSequence[i].startsWith('__HDR_')) {
-                        insertAt = i;
-                        break;
-                    }
-                }
-                masterSequence.splice(insertAt, 0, ...itemsToInsert);
-            }
-        });
+function loadCurrentProfile() {
+    const profileId = getActiveTemplateProfileId();
+    const profiles = JSON.parse(localStorage.getItem('template_profiles_v2') || '{}');
+    
+    let lensName = document.getElementById('template-name-select').value;
+    if (lensName === 'custom') lensName = document.getElementById('custom-template-name').value.trim() || 'PMI';
+    let reportIdStr = `report${document.getElementById('report-target-select').value}`;
+    
+    if (profiles[profileId]) {
+        currentProfile = profiles[profileId];
+        if (!currentProfile.sectionOrder) currentProfile.sectionOrder = ["specs", "pmi", "diagnostics", "startup", "extras"];
     } else {
-        masterSequence = [];
-        ['specs', 'pmi', 'diagnostics', 'startup'].forEach(sourceKey => {
-            const items = payloadActiveItems.filter(i => i.source === sourceKey);
-            if (items.length > 0) {
-                masterSequence.push(`__HDR_${sourceKey === 'diagnostics' ? 'DIAG__' : (sourceKey === 'startup' ? 'STARTUP__' : (sourceKey === 'specs' ? 'SPECS__' : 'PMI__'))}`);
-                items.forEach(i => masterSequence.push(i.key));
-            }
-        });
+        currentProfile = migrateLegacyProfile(lensName, reportIdStr);
+        saveCurrentProfile();
     }
     
-    localStorage.setItem('template_sequence_v1', JSON.stringify(masterSequence));
+    updateReportSelectorUI();
+    renderMainCanvas();
+    renderTemplateBuilder();
+}
 
+function renderMainCanvas() {
     const list = document.getElementById('template-sort-list');
-    let inDetails = false;
-    let layoutHtml = '';
-
-    const activeHeaderMap = {
-        '__HDR_SPECS__': payloadActiveItems.some(i => i.source === 'specs'),
-        '__HDR_PMI__': payloadActiveItems.some(i => i.source === 'pmi'),
-        '__HDR_DIAG__': payloadActiveItems.some(i => i.source === 'diagnostics'),
-        '__HDR_STARTUP__': payloadActiveItems.some(i => i.source === 'startup'),
-        '__HDR_UNIVERSAL__': Object.keys(univSaved).length > 0
-    };
-
+    if (!list) return;
+    if (activeLens === 'Vault Dump') {
+        renderVaultDump(list);
+        return;
+    }
+    if (!currentProfile) return;
+    
+    let html = '';
     let renderedCount = 0;
-
-    masterSequence.forEach((key, index) => {
-        const item = rawItems[key];
+    const payload = loadCompilerPayload();
+    
+    currentProfile.sectionOrder.forEach(secKey => {
+        const fields = currentProfile.sections[secKey] || [];
+        if (fields.length === 0) return; 
         
-        if (key.startsWith('compiler:') && !item) return;
-        if (!key.startsWith('__HDR_') && !key.startsWith('univ_') && !key.startsWith('compiler:') && !item) return;
-
-        if (item && item.isHeader) {
-            if (!activeHeaderMap[key]) return; 
-            if (inDetails) layoutHtml += `</div></details>`;
-            layoutHtml += `
-            <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden mt-2 group" open data-index="${index}" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)">
-                <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer outline-none select-none transition-colors group-hover:bg-slate-600" draggable="true" data-index="${index}" ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
-                    <div class="flex items-center gap-2">
-                        <span class="text-slate-400 cursor-grab hover:text-white px-2">⋮⋮</span>
-                        <span>${item.label}</span>
-                    </div>
-                    <span class="text-slate-400 text-xs">▼</span>
-                </summary>
-                <div class="p-2 flex flex-col gap-1 min-h-[20px]">`;
-            inDetails = true;
-        } else if (item) {
+        let displaySec = secKey.toUpperCase();
+        if (secKey === 'extras') displaySec = 'EXTRAS / UNASSIGNED';
+        
+        html += `
+        <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden mt-2 group" open>
+            <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest outline-none select-none">
+                <span>${displaySec}</span>
+                <span class="text-slate-400 text-xs">▼</span>
+            </summary>
+            <div class="p-2 flex flex-col gap-1 min-h-[20px]">`;
+            
+        fields.forEach(field => {
             renderedCount++;
-            if (!inDetails) {
-                layoutHtml += `<div class="p-2 flex flex-col gap-1 w-full min-h-[20px]">`;
-                inDetails = true;
+            let val = '---';
+            if (payload && payload.sources && payload.sources[field.source]) {
+                const srcGroup = payload.sources[field.source];
+                const match = srcGroup.items.find(i => i.id === field.sourceId || i.label === field.label);
+                if (match) val = match.value !== "" ? match.value : "---";
+            } else if (field.source === 'extras') {
+                const univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
+                if (univSaved[field.sourceId]) val = univSaved[field.sourceId].value || 'Manual Entry';
             }
+            
             let badge = '';
-            if (item.type === 'DIAG') badge = `<span class="bg-blue-900/50 text-blue-300 px-1 py-0.5 rounded mr-2 border border-blue-700 text-[8px] shrink-0">DIAG</span>`;
-            else if (item.type === 'PMI') badge = `<span class="bg-emerald-900/50 text-emerald-300 px-1 py-0.5 rounded mr-2 border border-emerald-700 text-[8px] shrink-0">PMI</span>`;
-            else if (item.type === 'STARTUP') badge = `<span class="bg-orange-900/50 text-orange-300 px-1 py-0.5 rounded mr-2 border border-orange-700 text-[8px] shrink-0">STRT</span>`;
-            else if (item.type === 'SPECS') badge = `<span class="bg-cyan-900/50 text-cyan-300 px-1 py-0.5 rounded mr-2 border border-cyan-700 text-[8px] shrink-0">SPEC</span>`;
+            let t = field.source.toUpperCase();
+            if (t === 'DIAGNOSTICS') badge = `<span class="bg-blue-900/50 text-blue-300 px-1 py-0.5 rounded mr-2 border border-blue-700 text-[8px] shrink-0">DIAG</span>`;
+            else if (t === 'PMI') badge = `<span class="bg-emerald-900/50 text-emerald-300 px-1 py-0.5 rounded mr-2 border border-emerald-700 text-[8px] shrink-0">PMI</span>`;
+            else if (t === 'STARTUP') badge = `<span class="bg-orange-900/50 text-orange-300 px-1 py-0.5 rounded mr-2 border border-orange-700 text-[8px] shrink-0">STRT</span>`;
+            else if (t === 'SPECS') badge = `<span class="bg-cyan-900/50 text-cyan-300 px-1 py-0.5 rounded mr-2 border border-cyan-700 text-[8px] shrink-0">SPEC</span>`;
             else badge = `<span class="bg-purple-900/50 text-purple-300 px-1 py-0.5 rounded mr-2 border border-purple-700 text-[8px] shrink-0">UNIV</span>`;
 
-            const isMapped = masterFieldMap.some(m => {
-                let [rawLabel] = m.split('|');
-                let lbl = rawLabel ? rawLabel.trim() : "";
-                return lbl === item.label || lbl === item.sourceId;
-            });
-            const orphanClass = isMapped ? 'border-slate-600 bg-slate-800' : 'border-orange-500 bg-orange-900/30';
-            const orphanTextClass = isMapped ? 'text-white' : 'text-orange-300';
-
-            layoutHtml += `
-            <div class="template-item-row flex items-stretch w-full box-border ${orphanClass} rounded overflow-hidden transition-all duration-200" data-label="${item.label}" data-key="${item.key || key}" draggable="true" data-index="${index}" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)" ondragend="handleDragEnd(event)">
-                <div class="flex items-center justify-center px-4 cursor-pointer bg-slate-900/50 hover:bg-slate-700 hover:text-white text-slate-400 border-r border-slate-700 select-none transition-colors" onclick="moveSequenceItem(${index}, -1)" title="Move Up">▲</div>
+            html += `
+            <div class="template-item-row flex items-stretch w-full box-border border-slate-600 bg-slate-800 rounded overflow-hidden transition-all duration-200">
                 <div class="flex-1 flex justify-between items-center p-2 overflow-hidden gap-2">
                     <div class="flex items-center w-1/2 overflow-hidden pr-2">
                         ${badge}
-                        <span class="text-[10px] font-bold ${orphanTextClass} uppercase tracking-wider truncate" title="${item.label}">${item.label}</span>
+                        <span class="text-[10px] font-bold text-white uppercase tracking-wider truncate" title="${field.label}">${field.label}</span>
                     </div>
-                    <span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal flex-1">${item.value}</span>
+                    <span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal flex-1">${val}</span>
                 </div>
-                <div class="flex items-center justify-center px-4 cursor-pointer bg-slate-900/50 hover:bg-slate-700 hover:text-white text-slate-400 border-l border-slate-700 select-none transition-colors" onclick="moveSequenceItem(${index}, 1)" title="Move Down">▼</div>
             </div>`;
-        }
+        });
+        html += `</div></details>`;
     });
-    if (inDetails) layoutHtml += `</div></details>`;
     
     if (renderedCount === 0) {
-        list.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-6">No active payload data for sequencing...</div>';
+        list.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-6">No fields mapped for this report profile. Open Fields to configure.</div>';
     } else {
-        list.innerHTML = layoutHtml;
+        list.innerHTML = html;
     }
-    
-    if (typeof applyLensFilter === 'function') applyLensFilter();
 }
 
-// NATIVE HTML5 DRAG & DROP ENGINE
-function handleDragStart(e) {
-    draggedIndex = parseInt(e.currentTarget.getAttribute('data-index'));
-    e.currentTarget.style.opacity = '0.4';
-    e.dataTransfer.effectAllowed = 'move';
-}
-function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
-function handleDragEnter(e) { e.preventDefault(); e.currentTarget.classList.add('border-blue-500'); }
-function handleDragLeave(e) { e.currentTarget.classList.remove('border-blue-500'); }
-function handleDrop(e) {
-    e.stopPropagation();
-    const targetIndex = parseInt(e.currentTarget.getAttribute('data-index'));
-    if (draggedIndex !== null && draggedIndex !== targetIndex) {
-        const movedItem = masterSequence.splice(draggedIndex, 1)[0];
-        masterSequence.splice(targetIndex, 0, movedItem);
-        localStorage.setItem('template_sequence_v1', JSON.stringify(masterSequence));
-        initTemplateManager();
+function renderVaultDump(list) {
+    const payload = loadCompilerPayload();
+    if (!payload || !payload.sources) {
+        list.innerHTML = '<div class="text-slate-500 text-xs italic text-center py-6">No Compiler Payload found.</div>';
+        return;
     }
-    return false;
-}
-function handleDragEnd(e) {
-    e.currentTarget.style.opacity = '1';
-    document.querySelectorAll('[draggable="true"]').forEach(row => row.classList.remove('border-blue-500'));
-}
-
-function moveSequenceItem(index, direction) {
-    if (index < 0 || index >= masterSequence.length) return;
-    
-    let targetIndex = -1;
-    
-    if (direction === -1) {
-        for (let i = index - 1; i >= 0; i--) {
-            if (masterSequence[i].startsWith('__HDR_')) return;
-            const targetRow = document.querySelector(`.template-item-row[data-index="${i}"]`);
-            if (targetRow && targetRow.style.display !== 'none') {
-                targetIndex = i;
-                break;
-            }
-        }
-    } else if (direction === 1) {
-        for (let i = index + 1; i < masterSequence.length; i++) {
-            if (masterSequence[i].startsWith('__HDR_')) return;
-            const targetRow = document.querySelector(`.template-item-row[data-index="${i}"]`);
-            if (targetRow && targetRow.style.display !== 'none') {
-                targetIndex = i;
-                break;
-            }
-        }
-    }
-    
-    if (targetIndex === -1) return;
-    
-    const movedItem = masterSequence.splice(index, 1)[0];
-    masterSequence.splice(targetIndex, 0, movedItem);
-    localStorage.setItem('template_sequence_v1', JSON.stringify(masterSequence));
-    initTemplateManager();
+    let html = '';
+    ['specs','pmi','diagnostics','startup'].forEach(srcKey => {
+        const srcGroup = payload.sources[srcKey];
+        if (!srcGroup || !srcGroup.items || srcGroup.items.length === 0) return;
+        let displaySec = srcKey.toUpperCase();
+        html += `
+        <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden mt-2 group" open>
+            <summary class="flex justify-between items-center bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest outline-none select-none">
+                <span>[ VAULT ] ${displaySec}</span>
+                <span class="text-slate-400 text-xs">▼</span>
+            </summary>
+            <div class="p-2 flex flex-col gap-1 min-h-[20px]">`;
+        srcGroup.items.forEach(item => {
+            if (item.value.trim() === '') return;
+            html += `
+            <div class="template-item-row flex items-stretch w-full box-border border-slate-600 bg-slate-800 rounded overflow-hidden transition-all duration-200">
+                <div class="flex-1 flex justify-between items-center p-2 overflow-hidden gap-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate w-1/2">${item.label}</span>
+                    <span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal flex-1">${item.value}</span>
+                </div>
+            </div>`;
+        });
+        html += `</div></details>`;
+    });
+    list.innerHTML = html;
 }
 
 
@@ -1069,109 +1046,117 @@ const activeTemplateSelection = new Set();
 
 function renderTemplateBuilder() {
     const canvas = document.getElementById('template-builder-canvas');
-    if (!canvas) return;
-
-    const groupedData = {};
-    masterFieldMap.forEach(item => {
-        // Use array destructuring to safely separate the 3 parts without bracket indices
-        let [rawLabel, rawCell, rawPage] = item.split('|');
-
-        let label = rawLabel ? rawLabel.trim() : "Unknown";
-        let page = rawPage ? rawPage.trim() : "Unassigned Fields";
-
-        if (!groupedData[page]) groupedData[page] = [];
-        groupedData[page].push(label);
-    });
+    if (!canvas || !currentProfile) return;
 
     let html = '';
-    for (const [page, fields] of Object.entries(groupedData)) {
+    currentProfile.sectionOrder.forEach(secKey => {
+        let displaySec = secKey.toUpperCase();
+        if (secKey === 'extras') displaySec = 'EXTRAS / UNASSIGNED';
+        
         html += `
         <details class="w-full bg-slate-800 border border-slate-600 rounded overflow-hidden shrink-0" open>
-            <summary class="bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest cursor-pointer select-none outline-none">
-                [ ${page} ]
+            <summary class="bg-slate-700 p-3 text-[10px] text-white font-bold uppercase tracking-widest flex justify-between items-center cursor-pointer select-none outline-none">
+                <span>[ ${displaySec} ]</span>
+                <button onclick="openImporter('${secKey}'); event.stopPropagation();" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-[8px] transition-colors border border-blue-400 shadow">IMPORT</button>
             </summary>
-            <div class="p-2 flex flex-col gap-1">`;
-
-        fields.forEach(label => {
-            const isStamped = activeTemplateSelection.has(label) ? 'bg-blue-600 text-white shadow-sm border-blue-500' : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500';
-            html += `<div class="pmi-label field-label w-full text-[10px] font-bold border rounded cursor-pointer transition-colors py-2 px-3 select-none ${isStamped}" onclick="toggleTemplateStamp('${label}', this)">${label}</div>`;
-        });
-
+            <div class="p-2 flex flex-col gap-1 min-h-[30px]">`;
+            
+        if (currentProfile.sections[secKey]) {
+            currentProfile.sections[secKey].forEach((field, fIdx) => {
+                html += `
+                <div class="flex items-center justify-between bg-slate-900 border border-slate-700 p-2 rounded w-full">
+                    <span class="text-[10px] font-bold text-white truncate w-1/2">${field.label}</span>
+                    <div class="flex items-center gap-1">
+                        <span class="text-[8px] text-slate-500 uppercase mx-1">${field.source}</span>
+                        <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, -1)" class="bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded">▲</button>
+                        <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, 1)" class="bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded">▼</button>
+                        <button onclick="openMoveFieldDialog('${secKey}', ${fIdx})" class="bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded">MOVE</button>
+                        <button onclick="removeFieldFromBuilder('${secKey}', ${fIdx})" class="bg-red-900/60 text-red-300 hover:text-red-100 px-2 py-1 rounded">×</button>
+                    </div>
+                </div>`;
+            });
+        }
+        
         html += `</div></details>`;
-    }
+    });
+    
+    html += `
+    <div class="mt-4 border-t border-slate-700 pt-3">
+        <div class="text-[9px] text-slate-400 uppercase tracking-widest mb-2 font-bold">Reorder Sections</div>
+        <div class="flex flex-col gap-1">`;
+    currentProfile.sectionOrder.forEach((secKey, sIdx) => {
+        let displaySec = secKey.toUpperCase();
+        if (secKey === 'extras') displaySec = 'EXTRAS';
+        html += `
+        <div class="flex justify-between items-center bg-slate-800 p-2 rounded border border-slate-700 text-[10px] text-white">
+            <span>${displaySec}</span>
+            <div class="flex gap-1">
+                <button onclick="moveSectionOrder(${sIdx}, -1)" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded">▲</button>
+                <button onclick="moveSectionOrder(${sIdx}, 1)" class="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded">▼</button>
+            </div>
+        </div>`;
+    });
+    html += `</div></div>`;
+    
     canvas.innerHTML = html;
-}
-
-function toggleTemplateStamp(label, element) {
-    if (activeTemplateSelection.has(label)) {
-        activeTemplateSelection.delete(label);
-        element.className = "pmi-label field-label w-full text-[10px] font-bold border rounded cursor-pointer transition-colors py-2 px-3 select-none bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500";
-    } else {
-        activeTemplateSelection.add(label);
-        element.className = "pmi-label field-label w-full text-[10px] font-bold border rounded cursor-pointer transition-colors py-2 px-3 select-none bg-blue-600 text-white shadow-sm border-blue-500";
-    }
-    if (navigator.vibrate) navigator.vibrate(50);
 }
 
 let activeLens = 'PMI';
 
-function handleTemplateDropdownChange(selectEl) {
+function handleTemplateDropdownChange() {
+    const selectEl = document.getElementById('template-name-select');
     const customInput = document.getElementById('custom-template-name');
     if (selectEl.value === 'custom') {
         selectEl.classList.add('hidden');
         customInput.classList.remove('hidden');
         customInput.focus();
-        activeTemplateSelection.clear();
     } else {
         selectEl.classList.remove('hidden');
         customInput.classList.add('hidden');
-        loadTemplateRuleset(selectEl.value);
     }
-    renderTemplateBuilder();
-}
-
-function loadTemplateRuleset(lensName) {
-    activeTemplateSelection.clear();
-    const savedRules = JSON.parse(localStorage.getItem('template_rules_v1') || '{}');
-    if (savedRules[lensName]) {
-        savedRules[lensName].forEach(lbl => activeTemplateSelection.add(lbl));
-    }
-}
-
-function saveTemplateLens() {
-    const selectEl = document.getElementById('template-name-select');
-    const customInput = document.getElementById('custom-template-name');
     let lensName = selectEl.value;
-    let isCustom = false;
-
-    if (lensName === 'custom') {
-        lensName = customInput.value.trim();
-        if (!lensName) { alert("Please enter a custom template name."); return; }
-        isCustom = true;
-    }
-
-    const savedRules = JSON.parse(localStorage.getItem('template_rules_v1') || '{}');
-    savedRules[lensName] = Array.from(activeTemplateSelection);
-    localStorage.setItem('template_rules_v1', JSON.stringify(savedRules));
-
-    if (isCustom) {
+    if (lensName === 'custom') lensName = customInput.value.trim() || 'PMI';
+    
+    if (lensName !== 'PMI' && lensName !== 'No Cool' && lensName !== 'Water Leak' && lensName !== 'Change Out' && lensName !== 'Proposal' && lensName !== 'Miscellaneous') {
         const customNames = JSON.parse(localStorage.getItem('template_custom_names_v1') || '[]');
-        if (!customNames.includes(lensName)) {
+        if (!customNames.includes(lensName) && lensName.trim() !== '') {
             customNames.push(lensName);
             localStorage.setItem('template_custom_names_v1', JSON.stringify(customNames));
         }
     }
-
-    selectEl.classList.remove('hidden');
-    customInput.classList.add('hidden');
-    customInput.value = '';
-    selectEl.value = isCustom ? 'PMI' : lensName;
-
-    activeLens = lensName;
-    localStorage.setItem('template_active_lens_v1', lensName);
+    
+    loadCurrentProfile();
     renderLensRow();
-    applyLensFilter();
-    toggleEditFieldsModal();
+}
+
+function renameReport() {
+    let lensName = document.getElementById('template-name-select').value;
+    if (lensName === 'custom') lensName = document.getElementById('custom-template-name').value.trim() || 'PMI';
+    const reportIdStr = `report${document.getElementById('report-target-select').value}`;
+    
+    const currName = getReportDisplayName(lensName, reportIdStr);
+    const newName = prompt(`Enter custom name for ${lensName} ${reportIdStr}:`, currName);
+    if (newName && newName.trim() !== '') {
+        setReportDisplayName(lensName, reportIdStr, newName);
+        if(currentProfile) {
+            currentProfile.reportName = newName.trim();
+            saveCurrentProfile();
+        }
+        updateReportSelectorUI();
+        renderMainCanvas();
+    }
+}
+
+function updateReportSelectorUI() {
+    const select = document.getElementById('report-target-select');
+    if(!select) return;
+    let lensName = document.getElementById('template-name-select').value;
+    if (lensName === 'custom') lensName = document.getElementById('custom-template-name').value.trim() || 'PMI';
+    
+    Array.from(select.options).forEach((opt, idx) => {
+        const repId = `report${idx+1}`;
+        opt.innerText = getReportDisplayName(lensName, repId);
+    });
 }
 
 function renderLensRow() {
@@ -1210,67 +1195,253 @@ function switchLens(lensName) {
     activeLens = lensName;
     localStorage.setItem('template_active_lens_v1', lensName);
     renderLensRow();
-    applyLensFilter();
+    
+    if (lensName !== 'Vault Dump') {
+        const selectEl = document.getElementById('template-name-select');
+        const customInput = document.getElementById('custom-template-name');
+        
+        const hardcoded = ['PMI', 'No Cool', 'Water Leak', 'Change Out', 'Proposal', 'Miscellaneous'];
+        if (hardcoded.includes(lensName)) {
+            selectEl.value = lensName;
+            selectEl.classList.remove('hidden');
+            customInput.classList.add('hidden');
+        } else {
+            selectEl.value = 'custom';
+            customInput.value = lensName;
+            selectEl.classList.add('hidden');
+            customInput.classList.remove('hidden');
+        }
+        loadCurrentProfile();
+    } else {
+        renderMainCanvas();
+    }
+    
     if (navigator.vibrate) navigator.vibrate(50);
 }
 
-function applyLensFilter() {
-    const rows = document.querySelectorAll('.template-item-row');
-    const details = document.querySelectorAll('details.group');
-    const list = document.getElementById('template-sort-list');
+let importerDest = '';
 
-    let emptyMsg = document.getElementById('lens-empty-message');
-    if (emptyMsg) emptyMsg.remove();
+function openImporter(destSec) {
+    importerDest = destSec;
+    let displaySec = destSec.toUpperCase();
+    if (destSec === 'extras') displaySec = 'EXTRAS';
+    document.getElementById('importer-title').innerText = `Import to ${displaySec}`;
+    
+    document.getElementById('importer-modal').classList.remove('hidden');
+    document.getElementById('importer-modal').classList.add('flex');
+    renderImporterList();
+}
 
-    if (activeLens === 'Vault Dump') {
-        rows.forEach(r => r.style.display = 'flex');
-        details.forEach(d => d.style.display = 'block');
-        return;
-    }
+function closeImporter() {
+    document.getElementById('importer-modal').classList.add('hidden');
+    document.getElementById('importer-modal').classList.remove('flex');
+}
 
-    const savedRules = JSON.parse(localStorage.getItem('template_rules_v1') || '{}');
-    const allowedFields = savedRules[activeLens] || [];
-
-    if (allowedFields.length === 0) {
-        rows.forEach(r => r.style.display = 'none');
-        details.forEach(d => d.style.display = 'none');
+function renderImporterList() {
+    const canvas = document.getElementById('importer-list-canvas');
+    const sourceKey = document.getElementById('importer-source-select').value;
+    
+    const payload = loadCompilerPayload();
+    let items = [];
+    
+    if (sourceKey !== 'extras') {
+        const sourceMapName = sourceKey === 'diagnostics' ? 'Diag' : (sourceKey === 'specs' ? 'Specs' : (sourceKey === 'pmi' ? 'PMI' : 'Startup'));
         
-        emptyMsg = document.createElement('div');
-        emptyMsg.id = 'lens-empty-message';
-        emptyMsg.className = "text-orange-400 font-bold text-[10px] uppercase tracking-widest text-center py-10 px-4 border border-orange-900/50 bg-orange-900/20 rounded mt-4 mx-2";
-        emptyMsg.innerText = `NO FIELDS SELECTED FOR ${activeLens.toUpperCase()} — USE FIELDS TO CONFIGURE THIS TEMPLATE`;
-        list.appendChild(emptyMsg);
+        masterFieldMap.forEach(itemStr => {
+            const parts = itemStr.split('|');
+            const label = parts[0] ? parts[0].trim() : '';
+            const page = parts[2] ? parts[2].trim() : '';
+            
+            if (page === sourceMapName) {
+                let currVal = '';
+                let sourceId = label;
+                if (payload && payload.sources && payload.sources[sourceKey]) {
+                    const match = payload.sources[sourceKey].items.find(i => i.label === label || i.id === label);
+                    if (match) {
+                        currVal = match.value || '';
+                        sourceId = match.id || label;
+                    }
+                }
+                items.push({ id: sourceId, label: label, value: currVal });
+            }
+        });
+        
+        if (payload && payload.sources && payload.sources[sourceKey]) {
+            payload.sources[sourceKey].items.forEach(match => {
+                if (!items.find(i => i.label === match.label || i.id === match.id)) {
+                    items.push({ id: match.id || match.label, label: match.label, value: match.value || '' });
+                }
+            });
+        }
+    } else {
+        const univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
+        Object.keys(univSaved).forEach(k => {
+            items.push({ id: k, label: univSaved[k].label, value: univSaved[k].value || 'Manual Entry' });
+        });
+    }
+    
+    if (items.length === 0) {
+        canvas.innerHTML = `<div class="text-slate-500 text-xs italic text-center py-6">No fields mapped for ${sourceKey.toUpperCase()}</div>`;
         return;
     }
-
-    rows.forEach(r => {
-        const label = r.getAttribute('data-label');
-        const key = r.getAttribute('data-key');
-        if (allowedFields.includes(label) || allowedFields.includes(key)) {
-            r.style.display = 'flex';
-        } else {
-            r.style.display = 'none';
+    
+    let html = '';
+    items.forEach(item => {
+        const stableKey = `compiler:${sourceKey}:${item.id}`;
+        let alreadyMappedDest = null;
+        for (const [sec, fields] of Object.entries(currentProfile.sections)) {
+            const matchedField = fields.find(f => 
+                f.stableKey === stableKey || 
+                (f.sourceId === item.id && f.source === sourceKey) ||
+                (f.source === sourceKey && f.label === item.label)
+            );
+            if (matchedField) {
+                alreadyMappedDest = sec;
+                if (item.id && item.id.trim() !== '' && matchedField.sourceId !== item.id) {
+                    matchedField.sourceId = item.id;
+                    matchedField.stableKey = `compiler:${sourceKey}:${item.id}`;
+                    saveCurrentProfile();
+                }
+                break;
+            }
         }
+        
+        let actionBtn = '';
+        if (alreadyMappedDest) {
+            if (alreadyMappedDest === importerDest) {
+                actionBtn = `<span class="text-[8px] text-emerald-400 border border-emerald-500/50 px-2 py-1 rounded">ADDED</span>`;
+            } else {
+                actionBtn = `<button onclick="moveExistingFieldToDest('${alreadyMappedDest}', '${importerDest}', '${item.id.replace(/'/g, "\\'")}', '${sourceKey}')" class="bg-slate-700 hover:bg-slate-600 text-blue-300 px-2 py-1 rounded text-[8px] tracking-widest border border-slate-500 transition-colors shadow">MOVE HERE</button>`;
+            }
+        } else {
+            actionBtn = `<button onclick="importFieldToDest('${item.label.replace(/'/g, "\\'")}', '${sourceKey}', '${item.id.replace(/'/g, "\\'")}', '${stableKey}')" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-[10px] tracking-widest font-bold transition-colors shadow">IMPORT</button>`;
+        }
+        
+        const hasVal = item.value !== undefined && item.value.trim() !== '' && item.value !== 'Manual Entry';
+        const valBadge = hasVal ? `<span class="bg-emerald-900/50 text-emerald-400 text-[8px] px-1 py-[2px] rounded ml-2 border border-emerald-700/50">VALUE</span>` : '';
+        
+        html += `
+        <div class="flex items-center justify-between bg-slate-900 border border-slate-700 p-2 rounded w-full mb-1">
+            <div class="flex items-center w-2/3 overflow-hidden">
+                <span class="text-[10px] font-bold text-white truncate max-w-[200px]" title="${item.label}">${item.label}</span>
+                ${valBadge}
+            </div>
+            ${actionBtn}
+        </div>`;
     });
+    canvas.innerHTML = html;
+}
 
-    details.forEach(d => {
-        const visibleRows = d.querySelectorAll('.template-item-row[style="display: flex;"]');
-        d.style.display = visibleRows.length > 0 ? 'block' : 'none';
+function importFieldToDest(label, source, sourceId, stableKey) {
+    if (!currentProfile.sections[importerDest]) currentProfile.sections[importerDest] = [];
+    currentProfile.sections[importerDest].push({
+        label: label,
+        source: source,
+        sourceId: sourceId,
+        stableKey: stableKey
     });
+    saveCurrentProfile();
+    renderImporterList();
+    renderTemplateBuilder();
+    renderMainCanvas();
+}
+
+function moveExistingFieldToDest(oldDest, newDest, sourceId, source) {
+    let field = null;
+    const oldArr = currentProfile.sections[oldDest];
+    const idx = oldArr.findIndex(f => f.sourceId === sourceId && f.source === source);
+    if (idx !== -1) {
+        field = oldArr.splice(idx, 1)[0];
+        if (!currentProfile.sections[newDest]) currentProfile.sections[newDest] = [];
+        currentProfile.sections[newDest].push(field);
+        saveCurrentProfile();
+        renderImporterList();
+        renderTemplateBuilder();
+        renderMainCanvas();
+    }
+}
+
+function moveFieldInBuilder(secKey, fIdx, dir) {
+    const arr = currentProfile.sections[secKey];
+    if (dir === -1 && fIdx > 0) {
+        const temp = arr[fIdx];
+        arr[fIdx] = arr[fIdx-1];
+        arr[fIdx-1] = temp;
+    } else if (dir === 1 && fIdx < arr.length - 1) {
+        const temp = arr[fIdx];
+        arr[fIdx] = arr[fIdx+1];
+        arr[fIdx+1] = temp;
+    }
+    saveCurrentProfile();
+    renderTemplateBuilder();
+    renderMainCanvas();
+}
+
+function removeFieldFromBuilder(secKey, fIdx) {
+    currentProfile.sections[secKey].splice(fIdx, 1);
+    saveCurrentProfile();
+    renderTemplateBuilder();
+    renderMainCanvas();
+}
+
+function moveSectionOrder(sIdx, dir) {
+    const arr = currentProfile.sectionOrder;
+    if (dir === -1 && sIdx > 0) {
+        const temp = arr[sIdx];
+        arr[sIdx] = arr[sIdx-1];
+        arr[sIdx-1] = temp;
+    } else if (dir === 1 && sIdx < arr.length - 1) {
+        const temp = arr[sIdx];
+        arr[sIdx] = arr[sIdx+1];
+        arr[sIdx+1] = temp;
+    }
+    saveCurrentProfile();
+    renderTemplateBuilder();
+    renderMainCanvas();
+}
+
+let pendingMoveField = null;
+
+function openMoveFieldDialog(secKey, fIdx) {
+    pendingMoveField = { secKey, fIdx };
+    const optionsDiv = document.getElementById('move-dest-options');
+    let html = '';
+    currentProfile.sectionOrder.forEach(optSec => {
+        if (optSec === secKey) return;
+        let displaySec = optSec.toUpperCase();
+        if (optSec === 'extras') displaySec = 'EXTRAS';
+        html += `<button onclick="confirmMoveField('${optSec}')" class="bg-slate-700 hover:bg-slate-600 text-white p-2 text-xs rounded border border-slate-500">${displaySec}</button>`;
+    });
+    optionsDiv.innerHTML = html;
+    
+    document.getElementById('move-dest-modal').classList.remove('hidden');
+    document.getElementById('move-dest-modal').classList.add('flex');
+}
+
+function closeMoveDestModal() {
+    document.getElementById('move-dest-modal').classList.add('hidden');
+    document.getElementById('move-dest-modal').classList.remove('flex');
+    pendingMoveField = null;
+}
+
+function confirmMoveField(destSec) {
+    if (!pendingMoveField) return;
+    const { secKey, fIdx } = pendingMoveField;
+    const field = currentProfile.sections[secKey].splice(fIdx, 1)[0];
+    if (!currentProfile.sections[destSec]) currentProfile.sections[destSec] = [];
+    currentProfile.sections[destSec].push(field);
+    saveCurrentProfile();
+    closeMoveDestModal();
+    renderTemplateBuilder();
+    renderMainCanvas();
 }
 
 function injectUniversal(label) {
     const key = 'univ_' + label.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-    if (!masterSequence.includes('__HDR_UNIVERSAL__')) masterSequence.push('__HDR_UNIVERSAL__');
-    
-    if (!masterSequence.includes(key)) {
-        masterSequence.push(key);
-        let univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
+    let univSaved = JSON.parse(localStorage.getItem('template_univ_v1') || '{}');
+    if (!univSaved[key]) {
         univSaved[key] = { label: label, value: 'Manual Entry', type: 'UNIV' };
         localStorage.setItem('template_univ_v1', JSON.stringify(univSaved));
-        localStorage.setItem('template_sequence_v1', JSON.stringify(masterSequence));
-        initTemplateManager();
-        toggleEditFieldsModal();
     }
 }
 
@@ -1292,7 +1463,7 @@ const FALLBACK_PAGES_REGISTRY = [
     { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
     { name: "Startup", file: "startup.html", state: "ACTIVE" },
     { name: "Compiler", file: "compiler.html", state: "ACTIVE" },
-    { name: "Templates", file: "templates.html", state: "PLANNED" },
+    { name: "Templates", file: "templates.html", state: "ACTIVE" },
     { name: "Reports", file: "reports.html", state: "PLANNED" },
     { name: "Data Block", file: "datablock.html", state: "PLANNED" }
 ];
@@ -1363,7 +1534,6 @@ function toggleBottomNav() {
     }
 }
 
-// Modify the bootloader to render the modal builder instead
 window.addEventListener('DOMContentLoaded', () => {
     const validLenses = ['Vault Dump', 'PMI', 'No Cool', 'Water Leak', 'Change Out', 'Proposal', 'Miscellaneous'];
     const customNames = JSON.parse(localStorage.getItem('template_custom_names_v1') || '[]');
@@ -1377,15 +1547,33 @@ window.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('template_active_lens_v1', 'PMI');
     }
 
+    if (activeLens !== 'Vault Dump') {
+        const selectEl = document.getElementById('template-name-select');
+        const customInput = document.getElementById('custom-template-name');
+        if (validLenses.includes(activeLens)) {
+            selectEl.value = activeLens;
+        } else {
+            selectEl.value = 'custom';
+            customInput.value = activeLens;
+            selectEl.classList.add('hidden');
+            customInput.classList.remove('hidden');
+        }
+    }
+
     initTemplateManager();
-    loadTemplateRuleset(document.getElementById('template-name-select').value);
-    renderTemplateBuilder();
     renderLensRow();
     renderBottomNav();
 });
 
 window.addEventListener('pageshow', (e) => {
     initTemplateManager();
+});
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'hvacActiveJob') {
+        updateActiveJobTicket();
+        loadCurrentProfile();
+    }
 });
 </script>
 </body>
