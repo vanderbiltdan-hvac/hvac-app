@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PMI Ledger v2.00.3</title>
+    <title>PMI Ledger v2.01.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
+    <script src="mirror-data.js"></script>
     <style>
 :root {
   --pmi-row-height: 30px;
@@ -83,7 +84,7 @@
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
   <div style="width:40px;"></div><!-- Spacer for center alignment -->
   <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-  <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v2.00.3</div>
+  <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[10px] font-bold">v2.01.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -204,7 +205,59 @@ class="mt-4 w-full min-h-[40px] shrink-0 py-2 bg-slate-800 border border-dashed 
         };
         let activeSentence = [];
 
-        const pmiRegistry = {};
+        let currentJob = localStorage.getItem('hvacActiveJob') || null;
+
+        function getSafeJobKey(job) {
+            if (!job) return null;
+            let safe = job.trim();
+            safe = safe.replace(/[^a-zA-Z0-9]+/g, '_');
+            safe = safe.replace(/^_+|_+$/g, '');
+            return safe || null;
+        }
+
+        function getPMIDataKey() {
+            const safeJob = getSafeJobKey(currentJob);
+            if (!safeJob) return null;
+            return `pmi_data_v2::${safeJob}`;
+        }
+
+        function updateActiveJobTicket() {
+            currentJob = localStorage.getItem('hvacActiveJob') || null;
+            const ticket = document.getElementById('active-job-ticket');
+            if (ticket) ticket.innerText = currentJob ? currentJob : "[ Awaiting New Call Info ]";
+        }
+
+        function loadMirrorCacheForCurrentJob() {
+            if (!currentJob) return false;
+            const safeJob = getSafeJobKey(currentJob);
+            if (!safeJob) return false;
+            
+            const newKey = `mirror_cache_v1::${safeJob}`;
+            const legacyKey = `mirror_cache_v1::${currentJob}`;
+            const raw = localStorage.getItem(newKey) || localStorage.getItem(legacyKey);
+            if (!raw) return false;
+            
+            try {
+                const cached = JSON.parse(raw);
+                if (cached.job && cached.job !== currentJob) {
+                    console.warn(`PMI Mirror cache rejected. Expected job: ${currentJob}, got: ${cached.job}`);
+                    return false;
+                }
+                if (cached && cached.mirrorState && window.PLATTS_MIRROR_DATA) {
+                    window.PLATTS_MIRROR_DATA.currentJob = currentJob;
+                    window.PLATTS_MIRROR_DATA.fields = cached.mirrorState || {};
+                    window.PLATTS_MIRROR_DATA.schema = cached.liveMirrorSchema || [];
+                    window.PLATTS_MIRROR_DATA.pmi = cached.liveMirrorPMI || [];
+                    window.PLATTS_MIRROR_DATA.conflict = cached.liveMirrorConflict || "";
+                    return true;
+                }
+            } catch (e) {
+                console.warn("PMI Mirror cache read failed:", e);
+            }
+            return false;
+        }
+
+        let pmiRegistry = {};
         let currentActiveCategory = null;
 
         const ledgerRows = [
@@ -238,7 +291,7 @@ function initLedger() {
         html += `
         <div class="pmi-row flex items-stretch w-full box-border bg-slate-800 ${borderStyle} rounded overflow-hidden transition-all duration-200" draggable="true" data-index="${index}" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)" ondragend="handleDragEnd(event)">
             <div class="flex items-center justify-center px-3 text-slate-500 cursor-grab hover:text-white active:cursor-grabbing bg-slate-900/50 border-r border-slate-700 select-none">⋮⋮</div>
-            <div class="pmi-label field-label font-bold border-r border-slate-700 cursor-pointer transition-colors" onclick="toggleBlueStamp('${category}', this)">${category}</div>
+            <div class="pmi-label field-label font-bold border-r border-slate-700 cursor-pointer transition-colors select-none" onclick="toggleMirrorAcceptance('${category}', this)">${category}</div>
             <div data-category="${category}" class="content-cell flex-1 bg-slate-700 flex items-center justify-center cursor-pointer hover:bg-slate-600 transition-colors text-xl" onclick="openContentLocker('${category}')"></div>
             ${deleteHtml}
             <button onclick="clearCategory('${category}')" class="bg-slate-700 hover:bg-slate-600 border-l border-slate-600 text-slate-400 hover:text-white flex items-center justify-center w-8 transition-colors text-xs" title="Clear Row">↺</button>
@@ -292,7 +345,16 @@ function handleDragEnd(e) {
 // OMNIPRESENT DRAWER ACTIONS
 function createNewJob() {
     const name = prompt("Enter new Job Name/ID:");
-    if(name && name.trim() !== '') document.getElementById('active-job-ticket').innerText = name.trim();
+    if(name && name.trim() !== '') {
+        const trimmed = name.trim();
+        localStorage.setItem('hvacActiveJob', trimmed);
+        currentJob = trimmed;
+        updateActiveJobTicket();
+        if (currentJob) {
+            loadMirrorCacheForCurrentJob();
+        }
+        loadPMIData();
+    }
 }
 function openDrive() { console.log("Google Drive bridge triggered"); }
 function openAlbum() { console.log("Photo Album bridge triggered"); }
@@ -442,52 +504,87 @@ function toggleFullScreen() {
 }
 
         function savePMIData() {
-            localStorage.setItem('pmi_data_v1', JSON.stringify(pmiRegistry));
+            const key = getPMIDataKey();
+            if (key) {
+                localStorage.setItem(key, JSON.stringify(pmiRegistry));
+            }
             localStorage.setItem('pmi_ledger_rows_v1', JSON.stringify(ledgerRows));
         }
 
         function loadPMIData() {
+            const safeJob = getSafeJobKey(currentJob);
+            if (safeJob) {
+                const dataKey = `pmi_data_v2::${safeJob}`;
+                const globalMarker = `pmi_data_v1_migration_consumed`;
+                
+                if (!localStorage.getItem(dataKey) && !localStorage.getItem(globalMarker)) {
+                    const legacy = localStorage.getItem('pmi_data_v1');
+                    if (legacy) {
+                        localStorage.setItem(dataKey, legacy);
+                        localStorage.setItem(globalMarker, "true");
+                    }
+                }
+            }
+
             const savedRows = localStorage.getItem('pmi_ledger_rows_v1');
             if (savedRows) {
                 try {
                     const parsedRows = JSON.parse(savedRows);
                     ledgerRows.length = 0;
                     parsedRows.forEach(r => ledgerRows.push(r));
-                    initLedger();
                 } catch(e) { console.error('Failed to load ledger rows', e); }
             }
 
-            const saved = localStorage.getItem('pmi_data_v1');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    Object.assign(pmiRegistry, data);
+            initLedger();
 
-                    Object.keys(pmiRegistry).forEach(category => {
-                        const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
-                        if (cell) {
-                            const label = cell.previousElementSibling;
-                            if (pmiRegistry[category].stamped) {
-                                label.classList.add('bg-blue-600', 'text-white');
-                            }
-                            renderCell(category);
-                        }
-                    });
-                } catch (e) {
-                    console.error('Failed to load PMI data', e);
+            // Clear before loading so we don't bleed between jobs
+            for (let prop in pmiRegistry) { if (pmiRegistry.hasOwnProperty(prop)) { delete pmiRegistry[prop]; } }
+
+            const key = getPMIDataKey();
+            if (key) {
+                const saved = localStorage.getItem(key);
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        Object.assign(pmiRegistry, data);
+                    } catch (e) {
+                        console.error('Failed to load PMI data', e);
+                    }
                 }
             }
+
+            ledgerRows.forEach(category => {
+                if (!pmiRegistry[category]) {
+                    pmiRegistry[category] = { stamped: false, comments: [], mirrorAcceptedValue: null };
+                }
+            });
+
+            reconcilePMIMirrorAcceptance();
+
+            Object.keys(pmiRegistry).forEach(category => {
+                renderCell(category);
+            });
         }
 
         function clearAllPMIData() {
-            if (confirm("Are you sure you want to clear the entire ledger?")) {
-                Object.keys(pmiRegistry).forEach(key => delete pmiRegistry[key]);
+            if (confirm("Are you sure you want to clear the entire ledger for this job?")) {
+                Object.keys(pmiRegistry).forEach(key => {
+                    pmiRegistry[key].stamped = false;
+                    pmiRegistry[key].comments = [];
+                    delete pmiRegistry[key].mirrorAcceptedValue;
+                    let canonicalLabel = key;
+                    if (window.PLATTS_MIRROR_DATA) {
+                        const resolved = window.PLATTS_MIRROR_DATA.getCanonicalLabel(key);
+                        if (resolved) canonicalLabel = resolved;
+                        if (window.PLATTS_MIRROR_DATA.isAccepted(canonicalLabel)) {
+                            window.PLATTS_MIRROR_DATA.setAccepted(canonicalLabel, false);
+                        }
+                    }
+                });
                 savePMIData();
 
-                document.querySelectorAll('.pmi-label').forEach(el => el.classList.remove('bg-blue-600', 'text-white'));
-                document.querySelectorAll('.content-cell').forEach(el => {
-                    el.innerText = '';
-                    el.classList.remove('text-blue-300', 'text-xs', 'p-2');
+                Object.keys(pmiRegistry).forEach(category => {
+                    renderCell(category);
                 });
             }
         }
@@ -496,14 +593,19 @@ function toggleFullScreen() {
             if (pmiRegistry[category]) {
                 pmiRegistry[category].stamped = false;
                 pmiRegistry[category].comments = [];
+                delete pmiRegistry[category].mirrorAcceptedValue;
                 savePMIData();
-
-                const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
-                if (cell) {
-                    const label = cell.previousElementSibling;
-                    label.classList.remove('bg-blue-600', 'text-white');
-                    renderCell(category);
+                
+                let canonicalLabel = category;
+                if (window.PLATTS_MIRROR_DATA) {
+                    const resolved = window.PLATTS_MIRROR_DATA.getCanonicalLabel(category);
+                    if (resolved) canonicalLabel = resolved;
+                    if (window.PLATTS_MIRROR_DATA.isAccepted(canonicalLabel)) {
+                        window.PLATTS_MIRROR_DATA.setAccepted(canonicalLabel, false);
+                    }
                 }
+
+                renderCell(category);
             }
         }
 
@@ -527,18 +629,137 @@ function deleteCustomRow(category) {
     }
 }
 
-        function toggleBlueStamp(category, element) {
-            if (!pmiRegistry[category]) {
-                pmiRegistry[category] = { stamped: false, comments: [] };
+        function notifyLocalContentChanged(category) {
+            if (pmiRegistry[category]) {
+                delete pmiRegistry[category].mirrorAcceptedValue;
+                let canonicalLabel = category;
+                if (window.PLATTS_MIRROR_DATA) {
+                    const resolved = window.PLATTS_MIRROR_DATA.getCanonicalLabel(category);
+                    if (resolved) canonicalLabel = resolved;
+                    if (window.PLATTS_MIRROR_DATA.isAccepted(canonicalLabel)) {
+                        window.PLATTS_MIRROR_DATA.setAccepted(canonicalLabel, false);
+                    }
+                }
+                savePMIData();
             }
-            pmiRegistry[category].stamped = !pmiRegistry[category].stamped;
+        }
 
-            if (pmiRegistry[category].stamped) {
-                element.classList.add('bg-blue-600', 'text-white');
-            } else {
-                element.classList.remove('bg-blue-600', 'text-white');
+        function getPMIMirrorValue(category) {
+            if (!window.PLATTS_MIRROR_DATA) return null;
+            const canonical = window.PLATTS_MIRROR_DATA.getCanonicalLabel(category);
+            if (!canonical) {
+                return null;
             }
-            savePMIData();
+            const val = window.PLATTS_MIRROR_DATA.getField(canonical);
+            return (val !== null && val !== undefined) ? String(val).trim() : null;
+        }
+
+        function normalizePMIMirrorValue(category, val) {
+            if (!val) return "";
+            if (category.toLowerCase() === 'date') {
+                const m = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
+                if (m) return `${m[2]}/${m[3]}/${m[1]}`;
+            }
+            return val;
+        }
+
+        let isReconcilingMirror = false;
+        function toggleMirrorAcceptance(category, element) {
+            if (!pmiRegistry[category]) {
+                pmiRegistry[category] = { stamped: false, comments: [], mirrorAcceptedValue: null };
+            }
+            
+            let mirrorVal = getPMIMirrorValue(category);
+            let canonicalLabel = category;
+            if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.getCanonicalLabel === "function") {
+                const resolved = window.PLATTS_MIRROR_DATA.getCanonicalLabel(category);
+                if (resolved) canonicalLabel = resolved;
+            }
+            
+            if (!window.PLATTS_MIRROR_DATA) return;
+            
+            const currentlyAccepted = window.PLATTS_MIRROR_DATA.isAccepted(canonicalLabel);
+            
+            isReconcilingMirror = true;
+            try {
+                if (!currentlyAccepted) {
+                    if (mirrorVal !== null && mirrorVal !== "") {
+                        const norm = normalizePMIMirrorValue(category, mirrorVal);
+                        pmiRegistry[category].comments = [norm];
+                        pmiRegistry[category].mirrorAcceptedValue = norm;
+                        savePMIData();
+                        window.PLATTS_MIRROR_DATA.setAccepted(canonicalLabel, true);
+                    }
+                } else {
+                    const currentContent = pmiRegistry[category].comments.join(' ');
+                    if (currentContent === pmiRegistry[category].mirrorAcceptedValue) {
+                        pmiRegistry[category].comments = [];
+                    }
+                    delete pmiRegistry[category].mirrorAcceptedValue;
+                    savePMIData();
+                    window.PLATTS_MIRROR_DATA.setAccepted(canonicalLabel, false);
+                }
+            } finally {
+                isReconcilingMirror = false;
+            }
+            
+            renderCell(category);
+        }
+        function reconcilePMIMirrorAcceptance() {
+            if (isReconcilingMirror) return;
+            isReconcilingMirror = true;
+            
+            try {
+                let dataChanged = false;
+                Object.keys(pmiRegistry).forEach(category => {
+                    let canonical = category;
+                    if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.getCanonicalLabel === "function") {
+                        const resolved = window.PLATTS_MIRROR_DATA.getCanonicalLabel(category);
+                        if (resolved) canonical = resolved;
+                    }
+                    
+                    if (!window.PLATTS_MIRROR_DATA) return;
+                    
+                    const accepted = window.PLATTS_MIRROR_DATA.isAccepted(canonical);
+                    const mirrorVal = getPMIMirrorValue(category);
+                    const hasLocalComments = (pmiRegistry[category].comments.length > 0);
+                    const hasAcceptedVal = (pmiRegistry[category].mirrorAcceptedValue !== undefined && pmiRegistry[category].mirrorAcceptedValue !== null);
+                    
+                    if (accepted && mirrorVal !== null && mirrorVal !== "") {
+                        if (!hasLocalComments || hasAcceptedVal) {
+                            // Rule A: Accepted + No local override
+                            const norm = normalizePMIMirrorValue(category, mirrorVal);
+                            const currentStr = pmiRegistry[category].comments.join(' ');
+                            if (currentStr !== norm || pmiRegistry[category].mirrorAcceptedValue !== norm) {
+                                pmiRegistry[category].comments = [norm];
+                                pmiRegistry[category].mirrorAcceptedValue = norm;
+                                dataChanged = true;
+                            }
+                        } else if (hasLocalComments && !hasAcceptedVal) {
+                            // Rule B: Accepted + Local Override
+                            window.PLATTS_MIRROR_DATA.setAccepted(canonical, false);
+                        }
+                    } else if (!accepted && hasAcceptedVal) {
+                        // Rule C: Not Accepted + Previous Mirror-derived content
+                        const currentStr = pmiRegistry[category].comments.join(' ');
+                        
+                        if (currentStr === pmiRegistry[category].mirrorAcceptedValue) {
+                            pmiRegistry[category].comments = [];
+                            delete pmiRegistry[category].mirrorAcceptedValue;
+                            dataChanged = true;
+                        } else {
+                            delete pmiRegistry[category].mirrorAcceptedValue;
+                            dataChanged = true;
+                        }
+                    }
+                });
+                
+                if (dataChanged) {
+                    savePMIData();
+                }
+            } finally {
+                isReconcilingMirror = false;
+            }
         }
 
         function openContentLocker(category) {
@@ -550,7 +771,11 @@ function deleteCustomRow(category) {
             // Legacy Recovery: Ensure selected comments exist in prefabData
             if (!prefabData[category]) prefabData[category] = [];
             let libraryChanged = false;
+            const mirrorAcceptedValue = pmiRegistry[category].mirrorAcceptedValue;
             pmiRegistry[category].comments.forEach(c => {
+                if (mirrorAcceptedValue !== undefined && mirrorAcceptedValue !== null && c === mirrorAcceptedValue) {
+                    return; // Skip Mirror-derived accepted values
+                }
                 if (!prefabData[category].includes(c)) {
                     prefabData[category].push(c);
                     libraryChanged = true;
@@ -705,20 +930,61 @@ function toggleComment(category, text, btnElement) {
         btnElement.classList.remove('bg-slate-700', 'border-slate-600');
         btnElement.classList.add('border-blue-500', 'bg-blue-900');
     }
+    notifyLocalContentChanged(category);
     savePMIData();
     renderCell(category);
 }
 
         function renderCell(category) {
             const cell = document.querySelector(`.content-cell[data-category="${category}"]`);
-            if (cell && pmiRegistry[category]) {
-                if (pmiRegistry[category].comments.length > 0) {
-                    cell.innerText = pmiRegistry[category].comments.join(' ');
-                    cell.classList.add('text-blue-300', 'text-xs', 'p-2');
-                } else {
-                    cell.innerText = '';
-                    cell.classList.remove('text-blue-300', 'text-xs', 'p-2');
-                }
+            if (!cell || !pmiRegistry[category]) return;
+
+            const row = cell.closest('.pmi-row');
+            const label = cell.previousElementSibling;
+            
+            let mirrorVal = getPMIMirrorValue(category);
+            let canonicalLabel = category;
+            if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.getCanonicalLabel === "function") {
+                const resolved = window.PLATTS_MIRROR_DATA.getCanonicalLabel(category);
+                if (resolved) canonicalLabel = resolved;
+            }
+            
+            let accepted = false;
+            if (window.PLATTS_MIRROR_DATA) {
+                accepted = window.PLATTS_MIRROR_DATA.isAccepted(canonicalLabel);
+            }
+
+            const hasMirrorData = (mirrorVal !== null && mirrorVal !== "");
+            const hasLocalComments = (pmiRegistry[category].comments.length > 0);
+            const hasAcceptedVal = (pmiRegistry[category].mirrorAcceptedValue !== undefined && pmiRegistry[category].mirrorAcceptedValue !== null);
+
+            // Row Outline
+            if (hasMirrorData) {
+                row.classList.add('ring-1', 'ring-inset', 'ring-blue-500');
+            } else {
+                row.classList.remove('ring-1', 'ring-inset', 'ring-blue-500');
+            }
+
+            // Remove previous mutual exclusive text classes from cell and label
+            cell.classList.remove('text-white', 'text-blue-300', 'text-slate-400', 'text-xs', 'p-2');
+            label.classList.remove('text-blue-300');
+
+            if (accepted && hasAcceptedVal) {
+                // Accepted Mirror State
+                cell.innerText = pmiRegistry[category].comments.join(' ');
+                cell.classList.add('text-blue-300', 'text-xs', 'p-2');
+                label.classList.add('text-blue-300');
+            } else if (hasLocalComments && !hasAcceptedVal) {
+                // Local Content State
+                cell.innerText = pmiRegistry[category].comments.join(' ');
+                cell.classList.add('text-white', 'text-xs', 'p-2');
+            } else if (hasMirrorData && !accepted && !hasLocalComments) {
+                // Gray Mirror Preview
+                cell.innerText = normalizePMIMirrorValue(category, mirrorVal);
+                cell.classList.add('text-slate-400', 'text-xs', 'p-2');
+            } else {
+                // Empty
+                cell.innerText = '';
             }
         }
 
@@ -760,6 +1026,7 @@ function toggleComment(category, text, btnElement) {
                     pmiRegistry[category].comments.push(sentence);
                 }
                 activeSentence = [];
+                notifyLocalContentChanged(category);
                 savePMIData();
                 openContentLocker(category);
                 renderCell(category);
@@ -783,6 +1050,7 @@ function toggleComment(category, text, btnElement) {
                         pmiRegistry[category].comments[cIndex] = cleanNewText;
                     }
                 }
+                notifyLocalContentChanged(category);
                 savePMIData();
                 openContentLocker(category);
                 renderCell(category);
@@ -803,6 +1071,7 @@ function toggleComment(category, text, btnElement) {
                         pmiRegistry[category].comments.splice(cIndex, 1);
                     }
                 }
+                notifyLocalContentChanged(category);
                 savePMIData();
                 openContentLocker(category);
                 renderCell(category);
@@ -826,6 +1095,7 @@ function toggleComment(category, text, btnElement) {
                 }
 
                 input.value = '';
+                notifyLocalContentChanged(currentActiveCategory);
                 savePMIData();
                 openContentLocker(currentActiveCategory);
                 renderCell(currentActiveCategory);
@@ -839,9 +1109,37 @@ function toggleCalibrationDock() {
 
 window.addEventListener('DOMContentLoaded', () => {
   loadPrefabData();
-  initLedger();
+  updateActiveJobTicket();
+  if (currentJob) {
+      loadMirrorCacheForCurrentJob();
+  }
   loadPMIData();
   renderBottomNav();
+});
+
+window.addEventListener('storage', (e) => {
+    if (e.key === 'hvacActiveJob') {
+        currentJob = e.newValue || null;
+        updateActiveJobTicket();
+        if (currentJob) {
+            loadMirrorCacheForCurrentJob();
+        }
+        loadPMIData();
+    }
+});
+
+window.addEventListener('platts-mirror-updated', (e) => {
+    if (e.detail && e.detail.currentJob === currentJob) {
+        reconcilePMIMirrorAcceptance();
+        Object.keys(pmiRegistry).forEach(category => renderCell(category));
+    }
+});
+
+window.addEventListener('platts-mirror-acceptance-changed', (e) => {
+    if (e.detail && e.detail.currentJob === currentJob) {
+        reconcilePMIMirrorAcceptance();
+        Object.keys(pmiRegistry).forEach(category => renderCell(category));
+    }
 });
 </script>
 </body>
