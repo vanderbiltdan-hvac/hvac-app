@@ -1,5 +1,5 @@
 // Platts Proposal Shared Mirror Data Engine
-// Registry Version: v1.2.0
+// Registry Version: v1.3.1
 // Canonical source of shared Mirror data state for deployed app.
 
 window.PLATTS_MIRROR_DATA = {
@@ -143,6 +143,111 @@ window.PLATTS_MIRROR_DATA = {
         }
         
         return report;
+    },
+
+    getAcceptanceStorageKey: function() {
+        const activeJob = this.getActiveJob();
+        if (!activeJob) return null;
+        let safe = activeJob.trim();
+        safe = safe.replace(/[^a-zA-Z0-9]+/g, '_');
+        safe = safe.replace(/^_+|_+$/g, '');
+        return safe ? `mirror_acceptance_v1::${safe}` : null;
+    },
+
+    loadAcceptanceState: function() {
+        const key = this.getAcceptanceStorageKey();
+        if (!key) return { accepted: {} };
+        try {
+            const raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : { accepted: {} };
+        } catch(e) {
+            return { accepted: {} };
+        }
+    },
+
+    saveAcceptanceState: function(state) {
+        const key = this.getAcceptanceStorageKey();
+        if (key) localStorage.setItem(key, JSON.stringify(state));
+    },
+
+    isAccepted: function(label) {
+        const canonical = this.getCanonicalLabel(label);
+        if (!canonical) return false;
+        const state = this.loadAcceptanceState();
+        return !!state.accepted[canonical];
+    },
+
+    setAccepted: function(label, accepted) {
+        const canonical = this.getCanonicalLabel(label);
+        if (!canonical) return false;
+        const state = this.loadAcceptanceState();
+        if (accepted) {
+            state.accepted[canonical] = true;
+        } else {
+            delete state.accepted[canonical];
+        }
+        this.saveAcceptanceState(state);
+        
+        window.dispatchEvent(new CustomEvent('platts-mirror-acceptance-changed', {
+            detail: {
+                currentJob: this.getActiveJob(),
+                canonicalLabel: canonical,
+                accepted: accepted
+            }
+        }));
+        return true;
+    },
+
+    acceptAllPopulated: function() {
+        let count = 0;
+        const schema = this.getActiveSchema();
+        const state = this.loadAcceptanceState();
+        
+        schema.forEach(label => {
+            const val = this._getRawValue(label);
+            if (val !== undefined && val !== null && val !== "") {
+                if (!state.accepted[label]) {
+                    state.accepted[label] = true;
+                    count++;
+                }
+            }
+        });
+        
+        if (count > 0) {
+            this.saveAcceptanceState(state);
+            window.dispatchEvent(new CustomEvent('platts-mirror-acceptance-changed', {
+                detail: {
+                    currentJob: this.getActiveJob(),
+                    bulk: true
+                }
+            }));
+        }
+        return count;
+    },
+
+    clearAllAccepted: function(lockedLabels = []) {
+        let cleared = 0;
+        const state = this.loadAcceptanceState();
+        
+        const canonicalLockedLabels = lockedLabels.map(l => this.getCanonicalLabel(l)).filter(Boolean);
+
+        Object.keys(state.accepted).forEach(canonical => {
+            if (!canonicalLockedLabels.includes(canonical)) {
+                delete state.accepted[canonical];
+                cleared++;
+            }
+        });
+        
+        if (cleared > 0) {
+            this.saveAcceptanceState(state);
+            window.dispatchEvent(new CustomEvent('platts-mirror-acceptance-changed', {
+                detail: {
+                    currentJob: this.getActiveJob(),
+                    bulk: true
+                }
+            }));
+        }
+        return cleared;
     },
 
     refresh: async function() {
