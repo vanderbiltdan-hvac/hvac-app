@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Sequencer v2.03.2</title>
+    <title>Template Sequencer v2.03.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -78,7 +78,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.03.2</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.03.3</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -169,7 +169,7 @@
 <div id="edit-fields-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-start pt-10 px-4 pb-4">
     <div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center shrink-0">
-            <span class="text-[8px] font-bold tracking-widest text-blue-300 ml-3 uppercase">v2.03.2</span><h3 class="text-white font-bold tracking-widest text-xs uppercase ml-2">Template Lens Builder</h3>
+            <span class="text-[8px] font-bold tracking-widest text-blue-300 ml-3 uppercase">v2.03.3</span><h3 class="text-white font-bold tracking-widest text-xs uppercase ml-2">Template Lens Builder</h3>
             <button onclick="toggleEditFieldsModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
         </div>
         
@@ -273,7 +273,7 @@
         let currentActiveCategory = null;
 
 let currentProfile = null;
-const TEMPLATE_VERSION = 'v2.03.2';
+const TEMPLATE_VERSION = 'v2.03.3';
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function toggleFullScreen() {
@@ -498,17 +498,15 @@ function renderMainCanvas() {
 
             html += `
             <div class="template-item-row flex items-stretch w-full box-border border-slate-600 bg-slate-800 rounded overflow-hidden transition-all duration-200">
+                <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, -1); event.stopPropagation();" class="bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-white px-3 flex items-center justify-center shrink-0 border-r border-slate-600 transition-colors">▲</button>
                 <div class="flex-1 flex justify-between items-center p-2 overflow-hidden gap-2">
                     <div class="flex items-center w-1/2 overflow-hidden pr-2">
                         ${badge}
                         <span class="text-[10px] font-bold text-white uppercase tracking-wider truncate" title="${field.label}">${field.label}</span>
                     </div>
                     <span class="text-[10px] text-blue-300 font-bold text-right leading-tight whitespace-normal flex-1">${val}</span>
-                    <div class="flex items-center gap-1 shrink-0 ml-2">
-                        <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, -1); event.stopPropagation();" class="text-slate-400 hover:text-white px-2 py-1">▲</button>
-                        <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, 1); event.stopPropagation();" class="text-slate-400 hover:text-white px-2 py-1">▼</button>
-                    </div>
                 </div>
+                <button onclick="moveFieldInBuilder('${secKey}', ${fIdx}, 1); event.stopPropagation();" class="bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-white px-3 flex items-center justify-center shrink-0 border-l border-slate-600 transition-colors">▼</button>
             </div>`;
         });
         html += `</div></details>`;
@@ -940,9 +938,29 @@ function toggleCalibrationDock() {
 }
 
 function resetTemplateSequence() {
-    if (confirm("Are you sure you want to reset your canvas layout? This will snap all fields back to their default page headers.")) {
-        localStorage.removeItem('template_sequence_v1');
-        location.reload();
+    if (confirm("Are you sure you want to reset the permanent layout for THIS specific Template + Report?\n\nCurrent job overrides (if any) will NOT be deleted.")) {
+        const profileId = getActiveTemplateProfileId();
+        const profiles = JSON.parse(localStorage.getItem('template_profiles_v2') || '{}');
+        
+        let templateName = document.getElementById('template-name-select').value;
+        if (templateName === 'custom') templateName = document.getElementById('custom-template-name').value.trim() || 'PMI';
+        const reportIdStr = `report${document.getElementById('report-target-select').value}`;
+        
+        const currentName = getReportDisplayName(templateName, reportIdStr);
+        
+        profiles[profileId] = {
+            templateName: templateName,
+            reportId: reportIdStr,
+            reportName: currentName,
+            sectionOrder: ['specs', 'pmi', 'diagnostics', 'startup', 'extras'],
+            sections: {}
+        };
+        
+        localStorage.setItem('template_profiles_v2', JSON.stringify(profiles));
+        
+        loadCurrentProfile();
+        renderTemplateBuilder();
+        renderMainCanvas();
     }
 }
 
@@ -1159,69 +1177,56 @@ function renderTemplateBuilder() {
                 const label = parts[0] ? parts[0].trim() : '';
                 const page = parts[2] ? parts[2].trim() : '';
                 if (page === sourceMapName) {
+                    const stableKey = `compiler:${secKey}:${label}`;
+                    let mapped = false;
+                    let mappedDest = null;
+                    let fIdx = -1;
+                    let fieldObj = null;
+                    
+                    const mapInfo = findMappedFieldByIdentity(secKey, label, stableKey, label);
+                    if (mapInfo) {
+                        mapped = true;
+                        mappedDest = mapInfo.destSection;
+                        fIdx = mapInfo.fIdx;
+                        fieldObj = mapInfo.fieldObj;
+                    }
+                    
                     itemsToRender.push({
                         label: label,
                         source: secKey,
                         sourceId: label,
-                        stableKey: `compiler:${secKey}:${label}`,
-                        isNative: true
+                        stableKey: stableKey,
+                        isNative: true,
+                        mapped: mapped,
+                        mappedDest: mappedDest,
+                        fIdx: fIdx,
+                        fieldObj: fieldObj
                     });
                 }
             });
         }
         
+        let nonNativeItems = [];
         if (currentProfile.sections[secKey]) {
             currentProfile.sections[secKey].forEach((field, fIdx) => {
-                const existing = itemsToRender.find(i => 
-                    i.stableKey === field.stableKey || 
-                    (i.sourceId === field.sourceId && i.source === field.source) ||
-                    (i.source === field.source && i.label === field.label)
-                );
-                if (existing) {
-                    existing.mapped = true;
-                    existing.fIdx = fIdx;
-                    existing.fieldObj = field;
-                    existing.mappedDest = secKey;
-                } else {
-                    itemsToRender.push({
+                const isNativeToSecKey = isNativeField(secKey, field.label) && field.source === secKey;
+                if (!isNativeToSecKey) {
+                    nonNativeItems.push({
                         label: field.label,
                         source: field.source,
                         sourceId: field.sourceId,
                         stableKey: field.stableKey,
                         isNative: false,
                         mapped: true,
+                        mappedDest: secKey,
                         fIdx: fIdx,
-                        fieldObj: field,
-                        mappedDest: secKey
+                        fieldObj: field
                     });
                 }
             });
         }
         
-        itemsToRender.forEach(item => {
-            if (!item.mapped) {
-                const mapInfo = findMappedFieldByIdentity(item.source, item.sourceId, item.stableKey, item.label);
-                if (mapInfo) {
-                    item.mapped = true;
-                    item.mappedDest = mapInfo.destSection;
-                    item.fIdx = mapInfo.fIdx;
-                    item.fieldObj = mapInfo.fieldObj;
-                }
-            }
-        });
-        
-        let orderedItems = [];
-        if (currentProfile.sections[secKey]) {
-            currentProfile.sections[secKey].forEach((field, fIdx) => {
-                const item = itemsToRender.find(i => i.mapped && i.mappedDest === secKey && i.fIdx === fIdx);
-                if (item) orderedItems.push(item);
-            });
-        }
-        itemsToRender.forEach(item => {
-            if (item.isNative && (!item.mapped || item.mappedDest !== secKey)) {
-                orderedItems.push(item);
-            }
-        });
+        const orderedItems = [...itemsToRender, ...nonNativeItems];
 
         orderedItems.forEach(item => {
             let currVal = '';
@@ -1236,23 +1241,18 @@ function renderTemplateBuilder() {
             const valBadge = (currVal !== '') ? `<span class="text-[9px] text-emerald-400 font-mono ml-2 truncate max-w-[80px]">${currVal}</span>` : '';
 
             if (item.mapped) {
-                if (item.mappedDest === secKey) {
+                if (item.mappedDest === secKey && item.isNative) {
                     html += `
-                    <div class="flex items-center justify-between ${item.isNative ? 'bg-blue-900 border-blue-500 cursor-pointer' : 'bg-slate-900 border-slate-700'} border p-2 rounded w-full" ${item.isNative ? `onclick="toggleNativeField('${encodeURIComponent(item.label)}', '${item.source}', '${item.sourceId.replace(/'/g, "\\'")}', '${item.stableKey}')"` : ''}>
-                        <div class="flex items-center w-1/2 overflow-hidden pr-2">
+                    <div class="flex items-center justify-between bg-blue-900 border-blue-500 cursor-pointer border p-2 rounded w-full" onclick="toggleNativeField('${encodeURIComponent(item.label)}', '${item.source}', '${item.sourceId.replace(/'/g, "\\'")}', '${item.stableKey}')">
+                        <div class="flex items-center w-2/3 overflow-hidden pr-2">
                             <span class="text-[10px] font-bold text-white truncate shrink-0" title="${item.label}">${item.label}</span>
                             ${valBadge}
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
-                            ${item.isNative ? `<span class="bg-blue-600 text-white px-2 py-[2px] rounded text-[8px] font-bold tracking-widest mr-2">ON</span>` : ''}
-                            <span class="text-[8px] text-slate-500 uppercase mx-1">${item.source}</span>
-                            <button onclick="moveFieldInBuilder('${secKey}', ${item.fIdx}, -1); event.stopPropagation();" class="bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded">▲</button>
-                            <button onclick="moveFieldInBuilder('${secKey}', ${item.fIdx}, 1); event.stopPropagation();" class="bg-slate-700 text-slate-300 hover:text-white px-2 py-1 rounded">▼</button>
-                            <button onclick="openMoveFieldDialog('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded">MOVE</button>
-                            <button onclick="removeFieldFromBuilder('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-red-900/60 text-red-300 hover:text-red-100 px-2 py-1 rounded">×</button>
+                            <button onclick="openMoveFieldDialog('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded text-[8px] font-bold">MOVE</button>
                         </div>
                     </div>`;
-                } else {
+                } else if (item.mappedDest !== secKey && item.isNative) {
                     let displayDest = item.mappedDest.toUpperCase();
                     if (item.mappedDest === 'extras') displayDest = 'EXTRAS';
                     html += `
@@ -1265,16 +1265,26 @@ function renderTemplateBuilder() {
                             <span class="text-[8px] text-blue-300 uppercase font-bold tracking-widest px-2">MAPPED &rarr; ${displayDest}</span>
                         </div>
                     </div>`;
+                } else if (!item.isNative) {
+                    html += `
+                    <div class="flex items-center justify-between bg-blue-900 border-blue-500 border p-2 rounded w-full">
+                        <div class="flex items-center w-1/2 overflow-hidden pr-2">
+                            <span class="text-[10px] font-bold text-white truncate shrink-0" title="${item.label}">${item.label}</span>
+                            ${valBadge}
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <span class="text-[8px] text-slate-500 uppercase mx-1">${item.source}</span>
+                            <button onclick="openMoveFieldDialog('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded text-[8px] font-bold">MOVE</button>
+                            <button onclick="removeFieldFromBuilder('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-red-900/60 text-red-300 hover:text-red-100 px-2 py-1 rounded text-[8px] font-bold">×</button>
+                        </div>
+                    </div>`;
                 }
             } else {
                 html += `
                 <div class="flex items-center justify-between bg-slate-800 border border-slate-600 p-2 rounded w-full cursor-pointer hover:bg-slate-700" onclick="toggleNativeField('${encodeURIComponent(item.label)}', '${item.source}', '${item.sourceId.replace(/'/g, "\\'")}', '${item.stableKey}')">
-                    <div class="flex items-center w-1/2 overflow-hidden pr-2 opacity-60">
+                    <div class="flex items-center w-2/3 overflow-hidden pr-2 opacity-60">
                         <span class="text-[10px] font-bold text-slate-300 truncate shrink-0" title="${item.label}">${item.label}</span>
                         ${valBadge}
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold px-2">+ ADD</span>
                     </div>
                 </div>`;
             }
