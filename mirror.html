@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mirror Radar v1.13.2</title>
+    <title>Mirror Radar v1.14.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -185,7 +185,7 @@
 </div>
 
 <script>
-// LIVE MIRROR BRIDGE (v1.13.2)
+// LIVE MIRROR BRIDGE (v1.14.1)
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
 let currentJob = localStorage.getItem('hvacActiveJob') || null;
 let mirrorState = {};
@@ -193,6 +193,167 @@ let liveMirrorSchema = [];
 let liveMirrorPMI = [];
 let liveMirrorConflict = "";
 let mirrorUsingFallback = true;
+
+function getSafeJobKey(job) {
+    if (!job) return null;
+    let safe = job.trim();
+    safe = safe.replace(/[^a-zA-Z0-9]+/g, '_');
+    safe = safe.replace(/^_+|_+$/g, '');
+    return safe || null;
+}
+
+function resetMirrorSourceState() {
+    mirrorState = {};
+    liveMirrorSchema = [];
+    liveMirrorPMI = [];
+    liveMirrorConflict = "";
+    mirrorUsingFallback = true;
+    initRadar();
+}
+
+function getCacheKey() {
+    if (!currentJob) return null;
+    const safeJob = getSafeJobKey(currentJob);
+    if (!safeJob) return null;
+    return `mirror_cache_v1::${safeJob}`;
+}
+
+function getUIStateKey() {
+    if (!currentJob) return null;
+    const safeJob = getSafeJobKey(currentJob);
+    if (!safeJob) return null;
+    return `mirror_ui_state_v1::${safeJob}`;
+}
+
+function saveMirrorCache() {
+    const key = getCacheKey();
+    if (!key) return;
+    const cachePayload = {
+        job: currentJob,
+        mirrorState,
+        liveMirrorSchema,
+        liveMirrorPMI,
+        liveMirrorConflict,
+        folderId: localStorage.getItem('hvacActiveFolderId') || null,
+        cachedAt: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(cachePayload));
+}
+
+function loadMirrorCacheForCurrentJob() {
+    if (!currentJob) return false;
+    
+    const safeJob = getSafeJobKey(currentJob);
+    if (!safeJob) return false;
+    
+    const newKey = `mirror_cache_v1::${safeJob}`;
+    const legacyKey = `mirror_cache_v1::${currentJob}`;
+    
+    let raw = localStorage.getItem(newKey);
+    let isLegacy = false;
+    
+    if (!raw) {
+        raw = localStorage.getItem(legacyKey);
+        if (raw) isLegacy = true;
+    }
+    
+    if (!raw) return false;
+    
+    try {
+        const cached = JSON.parse(raw);
+        
+        if (cached.job) {
+            if (cached.job !== currentJob) {
+                console.warn(`Mirror cache rejected: job identity mismatch. Expected '${currentJob}', got '${cached.job}'.`);
+                return false;
+            }
+        } else {
+            if (!isLegacy) {
+                // If loaded from newKey but no job property, allow it and stamp below.
+            }
+        }
+        
+        if (cached && cached.mirrorState && Array.isArray(cached.liveMirrorSchema)) {
+            mirrorState = cached.mirrorState || {};
+            liveMirrorSchema = cached.liveMirrorSchema || [];
+            liveMirrorPMI = cached.liveMirrorPMI || [];
+            liveMirrorConflict = cached.liveMirrorConflict || "";
+            if (cached.folderId) {
+                localStorage.setItem('hvacActiveFolderId', cached.folderId);
+            }
+            mirrorUsingFallback = false;
+            
+            if (isLegacy || !cached.job) {
+                cached.job = currentJob;
+                localStorage.setItem(newKey, JSON.stringify(cached));
+            }
+            
+            initRadar();
+            return true;
+        }
+    } catch (e) {
+        console.warn("Mirror cache read failed:", e);
+    }
+    return false;
+}
+
+function loadUIState() {
+    if (!currentJob) return { stamped: {}, locked: {} };
+    
+    const safeJob = getSafeJobKey(currentJob);
+    if (!safeJob) return { stamped: {}, locked: {} };
+    
+    const newKey = `mirror_ui_state_v1::${safeJob}`;
+    const legacyKey = `mirror_ui_state_v1::${currentJob}`;
+    
+    let raw = localStorage.getItem(newKey);
+    let isLegacy = false;
+    
+    if (!raw) {
+        raw = localStorage.getItem(legacyKey);
+        if (raw) isLegacy = true;
+    }
+    
+    if (!raw) return { stamped: {}, locked: {} };
+    
+    try {
+        const state = JSON.parse(raw) || { stamped: {}, locked: {} };
+        if (isLegacy) {
+            localStorage.setItem(newKey, JSON.stringify(state));
+        }
+        return state;
+    } catch (e) {
+        return { stamped: {}, locked: {} };
+    }
+}
+
+function saveUIState(state) {
+    const key = getUIStateKey();
+    if (key) localStorage.setItem(key, JSON.stringify(state));
+}
+
+function applyMirrorUIState() {
+    const state = loadUIState();
+    Object.keys(state.stamped).forEach(id => {
+        if (state.stamped[id]) {
+            const label = document.getElementById('label-' + id);
+            if (label) {
+                label.classList.remove('border-blue-400', 'border-l-2');
+                label.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
+            }
+        }
+    });
+    Object.keys(state.locked).forEach(id => {
+        if (state.locked[id]) {
+            const label = document.getElementById('label-' + id);
+            const lock = document.getElementById('lock-' + id);
+            if (label && lock) {
+                label.classList.add('bg-blue-800', 'shadow-inner', 'text-slate-200');
+                lock.classList.remove('hidden');
+            }
+        }
+    });
+}
 
 async function callAppsScript(payload) {
     if (currentJob) payload.sheetName = currentJob;
@@ -239,6 +400,7 @@ async function mirrorSync() {
             liveMirrorPMI = data.pmi;
             liveMirrorConflict = data.conflict;
             mirrorUsingFallback = false;
+            saveMirrorCache();
             initRadar();
         } catch (e) {
             console.error("Mirror pull failed via shared engine:", e);
@@ -265,6 +427,7 @@ async function mirrorSync() {
                 if (response.data.folderId) {
                     localStorage.setItem('hvacActiveFolderId', response.data.folderId);
                 }
+                saveMirrorCache();
                 initRadar();
             } else {
                 throw new Error(response.data?.error || "Invalid response structure");
@@ -280,6 +443,7 @@ function syncAllToCompiler() {
     // Target only the rows that currently have database information in them
     const populatedRows = document.querySelectorAll('.radar-row[data-populated="true"]');
     let stampCount = 0;
+    const state = loadUIState();
 
     populatedRows.forEach(row => {
         // Extract the specific ID from the row to target its label
@@ -290,9 +454,12 @@ function syncAllToCompiler() {
         if (!label.classList.contains('bg-blue-600')) {
             label.classList.remove('border-blue-400', 'border-l-2');
             label.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
+            state.stamped[id] = true;
             stampCount++;
         }
     });
+    
+    saveUIState(state);
 
     // Provide tactile feedback for a bulk action
     if (navigator.vibrate) navigator.vibrate([1]);
@@ -305,13 +472,18 @@ function unsyncAllFromCompiler() {
     // Target only the labels that currently have the Blue Stamp
     const stampedLabels = document.querySelectorAll('.radar-row .bg-blue-600');
     let unsyncCount = 0;
+    const state = loadUIState();
 
     stampedLabels.forEach(label => {
+        const id = label.id.replace('label-', '');
         // Strip the Blue Stamp and restore the waiting border state
         label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
         label.classList.add('border-blue-400', 'border-l-2'); 
+        delete state.stamped[id];
         unsyncCount++;
     });
+    
+    saveUIState(state);
 
     if (navigator.vibrate) navigator.vibrate([1]);
     alert(`Bulk Unsync Complete! ${unsyncCount} records were successfully removed from Compiler Staging without deleting data.`);
@@ -524,6 +696,8 @@ function initRadar() {
   // Render Unassigned Fields at the absolute bottom
   const unassigned = groupedData["Unassigned Fields"] || [];
   renderAccordion("Unassigned Fields", unassigned, true);
+  
+  applyMirrorUIState();
 }
 
 // 2-Tap Smart Label & Long-Press Lock Engine
@@ -575,20 +749,34 @@ function triggerMechanicalLock(id) {
         label.classList.toggle('shadow-inner');
         label.classList.toggle('text-slate-200');
         lock.classList.toggle('hidden');
+        
+        const state = loadUIState();
+        if (!lock.classList.contains('hidden')) {
+            state.locked[id] = true;
+        } else {
+            delete state.locked[id];
+        }
+        saveUIState(state);
     }, 150);
 }
 
 function handleSmartTap(id) {
     const label = document.getElementById('label-' + id);
+    const state = loadUIState();
+    
     if (label.classList.contains('bg-blue-600')) {
         // UN-STAMP (Remove push state, return to waiting state)
         label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
         label.classList.add('border-blue-400', 'border-l-2'); 
+        delete state.stamped[id];
     } else {
         // STAMP (Apply Electric Blue Push)
         label.classList.remove('border-blue-400', 'border-l-2');
         label.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
+        state.stamped[id] = true;
     }
+    
+    saveUIState(state);
 }
 
 function clearRow(id) {
@@ -598,6 +786,11 @@ function clearRow(id) {
     label.className = "w-[30%] text-[10px] font-bold border-r border-slate-700 cursor-pointer transition-all flex justify-between items-center px-3 relative select-none";
     document.getElementById('lock-' + id).classList.add('hidden');
     input.value = '';
+    
+    const state = loadUIState();
+    delete state.stamped[id];
+    delete state.locked[id];
+    saveUIState(state);
     input.closest('.radar-row').setAttribute('data-populated', 'false');
 }
 
@@ -709,10 +902,12 @@ function toggleFullScreen() {
 
 window.addEventListener('DOMContentLoaded', () => { 
     renderBottomNav();
-    updateActiveJobTicket();
     currentJob = localStorage.getItem('hvacActiveJob') || null;
+    updateActiveJobTicket();
     if (currentJob) {
-        mirrorSync();
+        if (!loadMirrorCacheForCurrentJob()) {
+            mirrorSync();
+        }
     } else {
         initRadar();
     }
@@ -722,11 +917,13 @@ window.addEventListener('storage', (e) => {
     if (e.key === 'hvacActiveJob') {
         currentJob = e.newValue || null;
         updateActiveJobTicket();
-        if (currentJob) mirrorSync();
-        else {
-            mirrorUsingFallback = true;
-            mirrorState = {};
-            initRadar();
+        if (currentJob) {
+            resetMirrorSourceState();
+            if (!loadMirrorCacheForCurrentJob()) {
+                mirrorSync();
+            }
+        } else {
+            resetMirrorSourceState();
         }
     }
 });
