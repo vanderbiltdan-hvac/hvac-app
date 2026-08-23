@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Sequencer v2.03.3</title>
+    <title>Template Sequencer v2.03.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -78,7 +78,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.03.3</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.03.4</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -169,7 +169,7 @@
 <div id="edit-fields-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-start pt-10 px-4 pb-4">
     <div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center shrink-0">
-            <span class="text-[8px] font-bold tracking-widest text-blue-300 ml-3 uppercase">v2.03.3</span><h3 class="text-white font-bold tracking-widest text-xs uppercase ml-2">Template Lens Builder</h3>
+            <span class="text-[8px] font-bold tracking-widest text-blue-300 ml-3 uppercase">v2.03.4</span><h3 class="text-white font-bold tracking-widest text-xs uppercase ml-2">Template Lens Builder</h3>
             <button onclick="toggleEditFieldsModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
         </div>
         
@@ -273,7 +273,7 @@
         let currentActiveCategory = null;
 
 let currentProfile = null;
-const TEMPLATE_VERSION = 'v2.03.3';
+const TEMPLATE_VERSION = 'v2.03.4';
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function toggleFullScreen() {
@@ -1256,13 +1256,14 @@ function renderTemplateBuilder() {
                     let displayDest = item.mappedDest.toUpperCase();
                     if (item.mappedDest === 'extras') displayDest = 'EXTRAS';
                     html += `
-                    <div class="flex items-center justify-between bg-blue-900/40 border-blue-500/50 cursor-pointer border p-2 rounded w-full" onclick="toggleNativeField('${encodeURIComponent(item.label)}', '${item.source}', '${item.sourceId.replace(/'/g, "\\'")}', '${item.stableKey}')">
+                    <div class="flex items-center justify-between bg-blue-900/40 border-blue-500/50 border p-2 rounded w-full">
                         <div class="flex items-center w-1/2 overflow-hidden pr-2 opacity-80">
                             <span class="text-[10px] font-bold text-blue-200 truncate shrink-0" title="${item.label}">${item.label}</span>
                             ${valBadge}
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <span class="text-[8px] text-blue-300 uppercase font-bold tracking-widest px-2">MAPPED &rarr; ${displayDest}</span>
+                            <button onclick="openMoveFieldDialog('${item.mappedDest}', ${item.fIdx}); event.stopPropagation();" class="bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded text-[8px] font-bold">MOVE</button>
                         </div>
                     </div>`;
                 } else if (!item.isNative) {
@@ -1275,7 +1276,6 @@ function renderTemplateBuilder() {
                         <div class="flex items-center gap-1 shrink-0">
                             <span class="text-[8px] text-slate-500 uppercase mx-1">${item.source}</span>
                             <button onclick="openMoveFieldDialog('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-slate-700 text-blue-300 hover:text-blue-100 px-2 py-1 rounded text-[8px] font-bold">MOVE</button>
-                            <button onclick="removeFieldFromBuilder('${secKey}', ${item.fIdx}); event.stopPropagation();" class="bg-red-900/60 text-red-300 hover:text-red-100 px-2 py-1 rounded text-[8px] font-bold">×</button>
                         </div>
                     </div>`;
                 }
