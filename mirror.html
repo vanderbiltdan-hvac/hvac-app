@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mirror Radar v1.14.2</title>
+    <title>Mirror Radar v1.15.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -81,7 +81,7 @@
 <!-- STATUS BAR LAUNCHER -->
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[10px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v1.14.2</div>
+    <div class="text-slate-500 font-mono text-[10px] tracking-wider font-bold">v1.15.2</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -118,8 +118,8 @@
 <!-- Radar Master Controls -->
 <div class="flex justify-between items-center bg-slate-800 p-2 border-b border-slate-700">
         <div class="flex gap-2">
-            <button onclick="syncAllToCompiler()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">🔄 Stage All</button>
-            <button onclick="unsyncAllFromCompiler()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm border border-slate-600">🚫 Unstage All</button>
+            <button onclick="acceptAllMirrorValues()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">🔄 Accept All</button>
+            <button onclick="clearAcceptedMirrorValues()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm border border-slate-600">🚫 Clear Accepted</button>
         </div>
     <div class="flex bg-slate-900 rounded overflow-hidden border border-slate-600">
         <button id="view-all-btn" onclick="toggleRadarView('all')" class="bg-blue-600 text-white font-bold px-3 py-2 text-[9px] uppercase transition-colors">View All</button>
@@ -186,7 +186,7 @@
 </div>
 
 <script>
-// LIVE MIRROR BRIDGE (v1.14.2)
+// LIVE MIRROR BRIDGE (v1.15.2)
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
 let currentJob = localStorage.getItem('hvacActiveJob') || null;
 let mirrorState = {};
@@ -209,6 +209,17 @@ function resetMirrorSourceState() {
     liveMirrorPMI = [];
     liveMirrorConflict = "";
     mirrorUsingFallback = true;
+    
+    if (window.PLATTS_MIRROR_DATA) {
+        window.PLATTS_MIRROR_DATA.currentJob = currentJob;
+        window.PLATTS_MIRROR_DATA.fields = {};
+        window.PLATTS_MIRROR_DATA.schema = [];
+        window.PLATTS_MIRROR_DATA.pmi = [];
+        window.PLATTS_MIRROR_DATA.conflict = "";
+        window.PLATTS_MIRROR_DATA.folderId = null;
+        window.PLATTS_MIRROR_DATA.lastUpdated = null;
+    }
+    
     initRadar();
 }
 
@@ -289,6 +300,14 @@ function loadMirrorCacheForCurrentJob() {
                 localStorage.setItem(newKey, JSON.stringify(cached));
             }
             
+            if (window.PLATTS_MIRROR_DATA) {
+                window.PLATTS_MIRROR_DATA.currentJob = currentJob;
+                window.PLATTS_MIRROR_DATA.fields = mirrorState;
+                window.PLATTS_MIRROR_DATA.schema = liveMirrorSchema;
+                window.PLATTS_MIRROR_DATA.pmi = liveMirrorPMI;
+                window.PLATTS_MIRROR_DATA.conflict = liveMirrorConflict;
+            }
+            
             initRadar();
             return true;
         }
@@ -335,22 +354,66 @@ function saveUIState(state) {
 
 function applyMirrorUIState() {
     const state = loadUIState();
-    Object.keys(state.stamped).forEach(id => {
-        if (state.stamped[id]) {
-            const label = document.getElementById('label-' + id);
-            if (label) {
-                label.classList.remove('border-blue-400', 'border-l-2');
-                label.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
+    
+    let migrated = false;
+    if (Object.keys(state.stamped || {}).length > 0 && window.PLATTS_MIRROR_DATA) {
+        const migratableCanonicalLabels = [];
+        Object.keys(state.stamped).forEach(id => {
+            if (state.stamped[id]) {
+                const labelEl = document.getElementById('label-' + id);
+                let labelStr = id;
+                if (labelEl) {
+                    const span = labelEl.querySelector('span:first-child');
+                    if (span) labelStr = span.innerText;
+                }
+                const canonical = window.PLATTS_MIRROR_DATA.getCanonicalLabel(labelStr);
+                if (canonical) {
+                    migratableCanonicalLabels.push(canonical);
+                    migrated = true;
+                }
+            }
+        });
+        if (migrated) {
+            state.stamped = {};
+            saveUIState(state);
+            migratableCanonicalLabels.forEach(canonical => {
+                window.PLATTS_MIRROR_DATA.setAccepted(canonical, true);
+            });
+        }
+    }
+
+    const rows = document.querySelectorAll('.radar-row');
+    rows.forEach(row => {
+        const id = row.id.replace('row-', '');
+        const labelEl = document.getElementById('label-' + id);
+        if (!labelEl) return;
+        
+        let labelStr = id;
+        const span = labelEl.querySelector('span:first-child');
+        if (span) labelStr = span.innerText;
+        
+        const isAcc = window.PLATTS_MIRROR_DATA ? window.PLATTS_MIRROR_DATA.isAccepted(labelStr) : false;
+        
+        if (isAcc) {
+            labelEl.classList.remove('border-blue-400', 'border-l-2');
+            labelEl.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
+        } else {
+            labelEl.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+            if (row.getAttribute('data-populated') === 'true') {
+                labelEl.classList.add('border-blue-400', 'border-l-2');
+            } else {
+                labelEl.classList.remove('border-blue-400', 'border-l-2');
             }
         }
     });
-    Object.keys(state.locked).forEach(id => {
+
+    Object.keys(state.locked || {}).forEach(id => {
         if (state.locked[id]) {
-            const label = document.getElementById('label-' + id);
-            const lock = document.getElementById('lock-' + id);
-            if (label && lock) {
-                label.classList.add('bg-blue-800', 'shadow-inner', 'text-slate-200');
-                lock.classList.remove('hidden');
+            const labelEl = document.getElementById('label-' + id);
+            const lockEl = document.getElementById('lock-' + id);
+            if (labelEl && lockEl) {
+                labelEl.classList.add('bg-blue-800', 'shadow-inner', 'text-slate-200');
+                lockEl.classList.remove('hidden');
             }
         }
     });
@@ -440,54 +503,41 @@ async function mirrorSync() {
         }
     }
 }
-function syncAllToCompiler() {
-    // Target only the rows that currently have database information in them
-    const populatedRows = document.querySelectorAll('.radar-row[data-populated="true"]');
-    let stampCount = 0;
-    const state = loadUIState();
-
-    populatedRows.forEach(row => {
-        // Extract the specific ID from the row to target its label
-        const id = row.id.replace('row-', '');
-        const label = document.getElementById('label-' + id);
-
-        // If the label is NOT already blue-stamped, apply the push state!
-        if (!label.classList.contains('bg-blue-600')) {
-            label.classList.remove('border-blue-400', 'border-l-2');
-            label.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
-            state.stamped[id] = true;
-            stampCount++;
-        }
-    });
-    
-    saveUIState(state);
-
-    // Provide tactile feedback for a bulk action
-    if (navigator.vibrate) navigator.vibrate([1]);
-
-    // Give the technician a clean summary of what was routed
-    alert(`Stage All Complete! ${stampCount} records were successfully staged for Compiler.`);
+function acceptAllMirrorValues() {
+    if (window.PLATTS_MIRROR_DATA) {
+        const count = window.PLATTS_MIRROR_DATA.acceptAllPopulated();
+        if (navigator.vibrate) navigator.vibrate([1]);
+        applyMirrorUIState();
+        alert(`Accepted ${count} populated Mirror values.`);
+    }
 }
 
-function unsyncAllFromCompiler() {
-    // Target only the labels that currently have the Blue Stamp
-    const stampedLabels = document.querySelectorAll('.radar-row .bg-blue-600');
-    let unsyncCount = 0;
-    const state = loadUIState();
-
-    stampedLabels.forEach(label => {
-        const id = label.id.replace('label-', '');
-        // Strip the Blue Stamp and restore the waiting border state
-        label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
-        label.classList.add('border-blue-400', 'border-l-2'); 
-        delete state.stamped[id];
-        unsyncCount++;
-    });
-    
-    saveUIState(state);
-
-    if (navigator.vibrate) navigator.vibrate([1]);
-    alert(`Unstage All Complete! ${unsyncCount} records were successfully removed from Compiler staging without deleting Mirror data.`);
+function clearAcceptedMirrorValues() {
+    if (window.PLATTS_MIRROR_DATA) {
+        const state = loadUIState();
+        const lockedIds = Object.keys(state.locked || {});
+        
+        const lockedLabels = [];
+        lockedIds.forEach(id => {
+            if (state.locked[id]) {
+                const labelEl = document.getElementById('label-' + id);
+                let labelStr = id;
+                if (labelEl) {
+                    const span = labelEl.querySelector('span:first-child');
+                    if (span) labelStr = span.innerText;
+                }
+                const canonical = window.PLATTS_MIRROR_DATA.getCanonicalLabel(labelStr);
+                if (canonical) {
+                    lockedLabels.push(canonical);
+                }
+            }
+        });
+        
+        const count = window.PLATTS_MIRROR_DATA.clearAllAccepted(lockedLabels);
+        if (navigator.vibrate) navigator.vibrate([1]);
+        applyMirrorUIState();
+        alert(`Clear Accepted Complete! ${count} records were successfully unaccepted.`);
+    }
 }
 function openDrive() { console.log("Google Drive bridge triggered"); }
 function openAlbum() { console.log("Photo Album bridge triggered"); }
@@ -762,37 +812,43 @@ function triggerMechanicalLock(id) {
 }
 
 function handleSmartTap(id) {
-    const label = document.getElementById('label-' + id);
-    const state = loadUIState();
+    const labelEl = document.getElementById('label-' + id);
+    if (!labelEl) return;
     
-    if (label.classList.contains('bg-blue-600')) {
-        // UN-STAMP (Remove push state, return to waiting state)
-        label.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
-        label.classList.add('border-blue-400', 'border-l-2'); 
-        delete state.stamped[id];
-    } else {
-        // STAMP (Apply Electric Blue Push)
-        label.classList.remove('border-blue-400', 'border-l-2');
-        label.classList.add('bg-blue-600', 'text-white', 'shadow-sm'); 
-        state.stamped[id] = true;
+    let labelStr = id;
+    const span = labelEl.querySelector('span:first-child');
+    if (span) labelStr = span.innerText;
+    
+    if (window.PLATTS_MIRROR_DATA) {
+        const currentlyAccepted = window.PLATTS_MIRROR_DATA.isAccepted(labelStr);
+        window.PLATTS_MIRROR_DATA.setAccepted(labelStr, !currentlyAccepted);
     }
     
-    saveUIState(state);
+    applyMirrorUIState();
 }
 
 function clearRow(id) {
-    const label = document.getElementById('label-' + id);
+    const labelEl = document.getElementById('label-' + id);
     const input = document.getElementById('input-' + id);
-    // Reset to neutral waiting state (Preserving 30% Width and Select-None Lock)
-    label.className = "w-[30%] text-[10px] font-bold border-r border-slate-700 cursor-pointer transition-all flex justify-between items-center px-3 relative select-none";
+    
+    let labelStr = id;
+    const span = labelEl.querySelector('span:first-child');
+    if (span) labelStr = span.innerText;
+
+    labelEl.className = "w-[30%] text-[10px] font-bold border-r border-slate-700 cursor-pointer transition-all flex justify-between items-center px-3 relative select-none";
     document.getElementById('lock-' + id).classList.add('hidden');
     input.value = '';
     
     const state = loadUIState();
-    delete state.stamped[id];
     delete state.locked[id];
     saveUIState(state);
+    
+    if (window.PLATTS_MIRROR_DATA) {
+        window.PLATTS_MIRROR_DATA.setAccepted(labelStr, false);
+    }
+    
     input.closest('.radar-row').setAttribute('data-populated', 'false');
+    applyMirrorUIState();
 }
 
 // Radar View Logic
@@ -926,6 +982,12 @@ window.addEventListener('storage', (e) => {
         } else {
             resetMirrorSourceState();
         }
+    }
+});
+
+window.addEventListener('platts-mirror-acceptance-changed', (e) => {
+    if (e.detail && e.detail.currentJob === currentJob) {
+        applyMirrorUIState();
     }
 });
 </script>
