@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Compiler v2.07.3</title>
+    <title>Report Compiler v2.07.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -78,7 +78,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.07.3</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.07.4</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -181,7 +181,7 @@
       <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
     </summary>
     <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.07.3</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.07.4</div>
     </div>
   </details>
 </div>
@@ -320,6 +320,12 @@ function getSafeJobKey(job) {
     return safe || null;
 }
 
+function getCompilerPMIDataKey() {
+    const job = localStorage.getItem('hvacActiveJob');
+    const safeJob = getSafeJobKey(job);
+    return safeJob ? `pmi_data_v2::${safeJob}` : null;
+}
+
 function loadCompilerViewState() {
     const job = localStorage.getItem('hvacActiveJob');
     const safeJob = getSafeJobKey(job) || 'no_job';
@@ -379,20 +385,24 @@ function renderViewControls(section, currentMode) {
 }
 
 function setCompilerPMIActive(key, selected) {
-    const pmiSaved = localStorage.getItem('pmi_data_v1');
+    const pmiKey = getCompilerPMIDataKey();
+    if (!pmiKey) return;
+    const pmiSaved = localStorage.getItem(pmiKey);
     if (!pmiSaved) return;
     try {
         const pmiData = JSON.parse(pmiSaved);
         if (pmiData[key]) {
             pmiData[key].stamped = selected;
-            localStorage.setItem('pmi_data_v1', JSON.stringify(pmiData));
+            localStorage.setItem(pmiKey, JSON.stringify(pmiData));
             initCompiler();
         }
     } catch(e) {}
 }
 
 function setCompilerPMIActiveBulk(selectPopulated) {
-    const pmiSaved = localStorage.getItem('pmi_data_v1');
+    const pmiKey = getCompilerPMIDataKey();
+    if (!pmiKey) return;
+    const pmiSaved = localStorage.getItem(pmiKey);
     if (!pmiSaved) return;
     try {
         const pmiData = JSON.parse(pmiSaved);
@@ -408,7 +418,7 @@ function setCompilerPMIActiveBulk(selectPopulated) {
                 entry.stamped = false;
             }
         });
-        localStorage.setItem('pmi_data_v1', JSON.stringify(pmiData));
+        localStorage.setItem(pmiKey, JSON.stringify(pmiData));
         initCompiler();
     } catch(e) {}
 }
@@ -592,7 +602,8 @@ function initCompiler() {
 
     // --- PMI ---
     let pmiPopulated = 0;
-    const pmiSaved = localStorage.getItem('pmi_data_v1');
+    const pmiKey = getCompilerPMIDataKey();
+    const pmiSaved = pmiKey ? localStorage.getItem(pmiKey) : null;
     const pmiData = pmiSaved ? JSON.parse(pmiSaved) : {};
     
     const allKeys = getCompilerPMIKeys(pmiData);
@@ -692,7 +703,7 @@ function fastPassToReport() {
     if (input.value.trim() === '') return;
     // Future: Push raw string directly into the active report payload array
     console.log("Ad-Hoc Fast Pass Added:", input.value);
-    alert("Fast Pass is NOT YET WIRED in v2.07.3");
+    alert("Fast Pass is NOT YET WIRED in v2.07.4");
     input.value = '';
 }
 
@@ -842,12 +853,13 @@ function softRejectItem(source, key) {
     } else if (source === 'startup') {
         setCompilerStartupActive(key, false);
     } else if (source === 'pmi') {
-        const pmiSaved = localStorage.getItem('pmi_data_v1');
+        const pmiKey = getCompilerPMIDataKey();
+        const pmiSaved = pmiKey ? localStorage.getItem(pmiKey) : null;
         if (pmiSaved) {
             const data = JSON.parse(pmiSaved);
             if (data[key]) {
                 data[key].stamped = false;
-                localStorage.setItem('pmi_data_v1', JSON.stringify(data));
+                localStorage.setItem(pmiKey, JSON.stringify(data));
                 initCompiler();
             }
         }
@@ -886,7 +898,7 @@ function resetLayoutDefaults() {
   document.getElementById('val-data-width').innerText = '80px';
 }
 
-const COMPILER_VERSION = "v2.07.3";
+const COMPILER_VERSION = "v2.07.4";
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function buildCompilerPayload() {
@@ -1023,7 +1035,8 @@ function buildCompilerPayload() {
 
     // PMI
     try {
-        const pmiSaved = localStorage.getItem('pmi_data_v1');
+        const pmiKey = getCompilerPMIDataKey();
+        const pmiSaved = pmiKey ? localStorage.getItem(pmiKey) : null;
         const pmiData = pmiSaved ? JSON.parse(pmiSaved) : {};
         const pmiKeys = getCompilerPMIKeys(pmiData);
         payload.sources.pmi.total = pmiKeys.length;
@@ -1077,7 +1090,7 @@ function saveCompilerPayload() {
 
 function reflowCompiler(showFeedback = false) {
     initCompiler();
-    const payload = saveCompilerPayload();
+    // initCompiler already rebuilds and saves payload
     
     if (showFeedback) {
         const btn = document.getElementById('reflow-btn');
@@ -1093,8 +1106,6 @@ function reflowCompiler(showFeedback = false) {
             }, 2000);
         }
     }
-    
-    return payload;
 }
 
 function getSplashDestination() {
@@ -1186,11 +1197,13 @@ function toggleBottomNav() {
 }
 
         function savePMIData() {
-            localStorage.setItem('pmi_data_v1', JSON.stringify(pmiRegistry));
+            const pmiKey = getCompilerPMIDataKey();
+            if (pmiKey) localStorage.setItem(pmiKey, JSON.stringify(pmiRegistry));
         }
 
         function loadPMIData() {
-            const saved = localStorage.getItem('pmi_data_v1');
+            const pmiKey = getCompilerPMIDataKey();
+            const saved = pmiKey ? localStorage.getItem(pmiKey) : null;
             if (saved) {
                 try {
                     const data = JSON.parse(saved);
@@ -1596,7 +1609,7 @@ window.addEventListener('storage', (e) => {
         return;
     }
     if (
-        e.key === 'pmi_data_v1' ||
+        e.key === getCompilerPMIDataKey() ||
         e.key === 'hvac_startup_v1' ||
         e.key === 'hvac_startup_compiler_v1' ||
         e.key === 'hvac_app_v4' ||
