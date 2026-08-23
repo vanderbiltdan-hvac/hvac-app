@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Compiler v2.07.2</title>
+    <title>Report Compiler v2.07.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -78,7 +78,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.07.2</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.07.3</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -119,6 +119,7 @@
     <div class="flex gap-2 w-full">
       <input type="text" id="fast-pass-input" placeholder="Type custom field note..." class="flex-1 bg-slate-800 border border-slate-600 text-white text-[10px] p-2 rounded focus:outline-none focus:border-blue-500">
       <button onclick="fastPassToReport()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm">Fast Pass</button>
+      <button id="reflow-btn" onclick="reflowCompiler(true)" class="bg-slate-700 hover:bg-slate-600 border border-slate-500 text-white font-bold px-4 py-2 rounded text-[10px] uppercase tracking-widest transition-colors shadow-sm whitespace-nowrap">↻ REFLOW</button>
     </div>
     <div id="compiler-payload-status" class="w-full text-[10px] font-mono text-slate-500 tracking-wider text-right uppercase mt-1">COMPILED · 0 POPULATED · 0 ACTIVE</div>
   </div>
@@ -180,7 +181,7 @@
       <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
     </summary>
     <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.07.2</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.07.3</div>
     </div>
   </details>
 </div>
@@ -691,7 +692,7 @@ function fastPassToReport() {
     if (input.value.trim() === '') return;
     // Future: Push raw string directly into the active report payload array
     console.log("Ad-Hoc Fast Pass Added:", input.value);
-    alert("Fast Pass is NOT YET WIRED in v2.07.2");
+    alert("Fast Pass is NOT YET WIRED in v2.07.3");
     input.value = '';
 }
 
@@ -885,7 +886,7 @@ function resetLayoutDefaults() {
   document.getElementById('val-data-width').innerText = '80px';
 }
 
-const COMPILER_VERSION = "v2.07.2";
+const COMPILER_VERSION = "v2.07.3";
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function buildCompilerPayload() {
@@ -1069,6 +1070,28 @@ function saveCompilerPayload() {
     const statusEl = document.getElementById('compiler-payload-status');
     if (statusEl) {
         statusEl.innerText = `COMPILED · ${payload.summary.populated} POPULATED · ${payload.summary.active} ACTIVE`;
+    }
+    
+    return payload;
+}
+
+function reflowCompiler(showFeedback = false) {
+    initCompiler();
+    const payload = saveCompilerPayload();
+    
+    if (showFeedback) {
+        const btn = document.getElementById('reflow-btn');
+        if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'REFLOWED ✓';
+            btn.classList.replace('bg-slate-700', 'bg-emerald-600');
+            btn.classList.replace('hover:bg-slate-600', 'hover:bg-emerald-500');
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.replace('bg-emerald-600', 'bg-slate-700');
+                btn.classList.replace('hover:bg-emerald-500', 'hover:bg-slate-600');
+            }, 2000);
+        }
     }
     
     return payload;
@@ -1557,14 +1580,29 @@ function updateActiveJobTicket() {
 window.addEventListener('DOMContentLoaded', () => {
   renderBottomNav();
   updateActiveJobTicket();
-  initCompiler();
   loadPMIData();
+  reflowCompiler(false);
+});
+
+window.addEventListener('pageshow', () => {
+    updateActiveJobTicket();
+    reflowCompiler(false);
 });
 
 window.addEventListener('storage', (e) => {
     if (e.key === 'hvacActiveJob') {
         updateActiveJobTicket();
-        initCompiler();
+        reflowCompiler(false);
+        return;
+    }
+    if (
+        e.key === 'pmi_data_v1' ||
+        e.key === 'hvac_startup_v1' ||
+        e.key === 'hvac_startup_compiler_v1' ||
+        e.key === 'hvac_app_v4' ||
+        e.key === getCompilerSpecsStorageKey()
+    ) {
+        reflowCompiler(false);
     }
 });
 </script>
