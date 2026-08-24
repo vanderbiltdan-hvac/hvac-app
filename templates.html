@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Sequencer v2.03.4</title>
+    <title>Template Sequencer v2.04.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -78,7 +78,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.03.4</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.04.1</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -169,7 +169,7 @@
 <div id="edit-fields-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm hidden flex-col items-center justify-start pt-10 px-4 pb-4">
     <div class="bg-slate-800 w-full max-w-md rounded-xl border border-slate-600 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         <div class="bg-slate-700 px-4 py-3 border-b border-slate-600 flex justify-between items-center shrink-0">
-            <span class="text-[8px] font-bold tracking-widest text-blue-300 ml-3 uppercase">v2.03.4</span><h3 class="text-white font-bold tracking-widest text-xs uppercase ml-2">Template Lens Builder</h3>
+            <span class="text-[8px] font-bold tracking-widest text-blue-300 ml-3 uppercase">v2.04.1</span><h3 class="text-white font-bold tracking-widest text-xs uppercase ml-2">Template Lens Builder</h3>
             <button onclick="toggleEditFieldsModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
         </div>
         
@@ -273,7 +273,7 @@
         let currentActiveCategory = null;
 
 let currentProfile = null;
-const TEMPLATE_VERSION = 'v2.03.4';
+const TEMPLATE_VERSION = 'v2.04.1';
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
 function toggleFullScreen() {
@@ -990,6 +990,7 @@ function toggleCalibration() {
     }
 }
 
+// LEGACY MIGRATION METADATA ONLY
 const masterFieldMap = [
     "Date | W12 | Specs",
     "Customer Name | W13 | Specs",
@@ -1096,15 +1097,17 @@ const masterFieldMap = [
 
 const activeTemplateSelection = new Set();
 
-function isNativeField(secKey, label) {
+function isNativeField(secKey, label, optionalId) {
     if (secKey === 'extras') return false;
-    const sourceMapName = secKey === 'diagnostics' ? 'Diag' : (secKey === 'specs' ? 'Specs' : (secKey === 'pmi' ? 'PMI' : 'Startup'));
-    return masterFieldMap.some(itemStr => {
-        const parts = itemStr.split('|');
-        const l = parts[0] ? parts[0].trim() : '';
-        const p = parts[2] ? parts[2].trim() : '';
-        return l === label && p === sourceMapName;
-    });
+    const payload = loadCompilerPayload();
+    if (payload && payload.sources && payload.sources[secKey] && payload.sources[secKey].items) {
+        return payload.sources[secKey].items.some(i => {
+            if (optionalId && i.id === optionalId) return true;
+            if (i.id === label || i.label === label) return true;
+            return false;
+        });
+    }
+    return false;
 }
 
 function findMappedFieldByIdentity(source, sourceId, stableKey, label) {
@@ -1172,18 +1175,17 @@ function renderTemplateBuilder() {
         const sourceMapName = secKey === 'diagnostics' ? 'Diag' : (secKey === 'specs' ? 'Specs' : (secKey === 'pmi' ? 'PMI' : 'Startup'));
         
         if (secKey !== 'extras') {
-            masterFieldMap.forEach(itemStr => {
-                const parts = itemStr.split('|');
-                const label = parts[0] ? parts[0].trim() : '';
-                const page = parts[2] ? parts[2].trim() : '';
-                if (page === sourceMapName) {
-                    const stableKey = `compiler:${secKey}:${label}`;
+            if (payload && payload.sources && payload.sources[secKey] && payload.sources[secKey].items) {
+                payload.sources[secKey].items.forEach(match => {
+                    const label = match.label;
+                    const sourceId = match.id || match.label;
+                    const stableKey = `compiler:${secKey}:${sourceId}`;
                     let mapped = false;
                     let mappedDest = null;
                     let fIdx = -1;
                     let fieldObj = null;
                     
-                    const mapInfo = findMappedFieldByIdentity(secKey, label, stableKey, label);
+                    const mapInfo = findMappedFieldByIdentity(secKey, sourceId, stableKey, label);
                     if (mapInfo) {
                         mapped = true;
                         mappedDest = mapInfo.destSection;
@@ -1194,7 +1196,7 @@ function renderTemplateBuilder() {
                     itemsToRender.push({
                         label: label,
                         source: secKey,
-                        sourceId: label,
+                        sourceId: sourceId,
                         stableKey: stableKey,
                         isNative: true,
                         mapped: mapped,
@@ -1202,14 +1204,14 @@ function renderTemplateBuilder() {
                         fIdx: fIdx,
                         fieldObj: fieldObj
                     });
-                }
-            });
+                });
+            }
         }
         
         let nonNativeItems = [];
         if (currentProfile.sections[secKey]) {
             currentProfile.sections[secKey].forEach((field, fIdx) => {
-                const isNativeToSecKey = isNativeField(secKey, field.label) && field.source === secKey;
+                const isNativeToSecKey = isNativeField(secKey, field.label, field.sourceId) && field.source === secKey;
                 if (!isNativeToSecKey) {
                     nonNativeItems.push({
                         label: field.label,
@@ -1458,32 +1460,9 @@ function renderImporterList() {
     let items = [];
     
     if (sourceKey !== 'extras') {
-        const sourceMapName = sourceKey === 'diagnostics' ? 'Diag' : (sourceKey === 'specs' ? 'Specs' : (sourceKey === 'pmi' ? 'PMI' : 'Startup'));
-        
-        masterFieldMap.forEach(itemStr => {
-            const parts = itemStr.split('|');
-            const label = parts[0] ? parts[0].trim() : '';
-            const page = parts[2] ? parts[2].trim() : '';
-            
-            if (page === sourceMapName) {
-                let currVal = '';
-                let sourceId = label;
-                if (payload && payload.sources && payload.sources[sourceKey]) {
-                    const match = payload.sources[sourceKey].items.find(i => i.label === label || i.id === label);
-                    if (match) {
-                        currVal = match.value || '';
-                        sourceId = match.id || label;
-                    }
-                }
-                items.push({ id: sourceId, label: label, value: currVal, source: sourceKey });
-            }
-        });
-        
-        if (payload && payload.sources && payload.sources[sourceKey]) {
+        if (payload && payload.sources && payload.sources[sourceKey] && payload.sources[sourceKey].items) {
             payload.sources[sourceKey].items.forEach(match => {
-                if (!items.find(i => i.label === match.label || i.id === match.id)) {
-                    items.push({ id: match.id || match.label, label: match.label, value: match.value || '', source: sourceKey });
-                }
+                items.push({ id: match.id || match.label, label: match.label, value: match.value || '', source: sourceKey });
             });
         }
     } else {
@@ -1496,7 +1475,7 @@ function renderImporterList() {
             ['specs', 'pmi', 'diagnostics', 'startup'].forEach(src => {
                 if (payload.sources[src] && payload.sources[src].items) {
                     payload.sources[src].items.forEach(match => {
-                        const isNative = isNativeField(src, match.label);
+                        const isNative = isNativeField(src, match.label, match.id);
                         if (!isNative) {
                             const exists = items.find(i => (i.id === match.id || i.label === match.label) && i.source === src);
                             if (!exists) {
@@ -1538,7 +1517,7 @@ function renderImporterList() {
             }
         }
         
-        const isNativeToDest = (actualSourceKey === importerDest) && isNativeField(importerDest, item.label);
+        const isNativeToDest = (actualSourceKey === importerDest) && isNativeField(importerDest, item.label, item.id);
         
         let actionBtn = '';
         if (alreadyMappedDest) {
@@ -1841,3 +1820,4 @@ window.addEventListener('storage', (e) => {
 
 
 
+2.04.1252
