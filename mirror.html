@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mirror Radar v1.16.2</title>
+    <title>Mirror Radar v1.17.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -84,7 +84,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.16.2</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.17.1</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -186,8 +186,7 @@
 </div>
 
 <script>
-// LIVE MIRROR BRIDGE (v1.16.2)
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
+// LIVE MIRROR BRIDGE (v1.17.1)
 let currentJob = localStorage.getItem('hvacActiveJob') || null;
 let mirrorState = {};
 let liveMirrorSchema = [];
@@ -204,33 +203,7 @@ function getSafeJobKey(job) {
     return safe || null;
 }
 
-function resetMirrorSourceState() {
-    mirrorState = {};
-    liveMirrorSchema = [];
-    liveMirrorPMI = [];
-    liveMirrorConflict = "";
-    liveMirrorInvoiceReport = "";
-    mirrorUsingFallback = true;
-    
-    if (window.PLATTS_MIRROR_DATA) {
-        window.PLATTS_MIRROR_DATA.currentJob = currentJob;
-        window.PLATTS_MIRROR_DATA.fields = {};
-        window.PLATTS_MIRROR_DATA.schema = [];
-        window.PLATTS_MIRROR_DATA.pmi = [];
-        window.PLATTS_MIRROR_DATA.conflict = "";
-        window.PLATTS_MIRROR_DATA.folderId = null;
-        window.PLATTS_MIRROR_DATA.lastUpdated = null;
-    }
-    
-    initRadar();
-}
 
-function getCacheKey() {
-    if (!currentJob) return null;
-    const safeJob = getSafeJobKey(currentJob);
-    if (!safeJob) return null;
-    return `mirror_cache_v1::${safeJob}`;
-}
 
 function getUIStateKey() {
     if (!currentJob) return null;
@@ -239,87 +212,6 @@ function getUIStateKey() {
     return `mirror_ui_state_v1::${safeJob}`;
 }
 
-function saveMirrorCache() {
-    const key = getCacheKey();
-    if (!key) return;
-    const cachePayload = {
-        job: currentJob,
-        mirrorState,
-        liveMirrorSchema,
-        liveMirrorPMI,
-        liveMirrorConflict,
-        liveMirrorInvoiceReport,
-        folderId: localStorage.getItem('hvacActiveFolderId') || null,
-        cachedAt: Date.now()
-    };
-    localStorage.setItem(key, JSON.stringify(cachePayload));
-}
-
-function loadMirrorCacheForCurrentJob() {
-    if (!currentJob) return false;
-    
-    const safeJob = getSafeJobKey(currentJob);
-    if (!safeJob) return false;
-    
-    const newKey = `mirror_cache_v1::${safeJob}`;
-    const legacyKey = `mirror_cache_v1::${currentJob}`;
-    
-    let raw = localStorage.getItem(newKey);
-    let isLegacy = false;
-    
-    if (!raw) {
-        raw = localStorage.getItem(legacyKey);
-        if (raw) isLegacy = true;
-    }
-    
-    if (!raw) return false;
-    
-    try {
-        const cached = JSON.parse(raw);
-        
-        if (cached.job) {
-            if (cached.job !== currentJob) {
-                console.warn(`Mirror cache rejected: job identity mismatch. Expected '${currentJob}', got '${cached.job}'.`);
-                return false;
-            }
-        } else {
-            if (!isLegacy) {
-                // If loaded from newKey but no job property, allow it and stamp below.
-            }
-        }
-        
-        if (cached && cached.mirrorState && Array.isArray(cached.liveMirrorSchema)) {
-            mirrorState = cached.mirrorState || {};
-            liveMirrorSchema = cached.liveMirrorSchema || [];
-            liveMirrorPMI = cached.liveMirrorPMI || [];
-            liveMirrorConflict = cached.liveMirrorConflict || "";
-            liveMirrorInvoiceReport = cached.liveMirrorInvoiceReport || "";
-            if (cached.folderId) {
-                localStorage.setItem('hvacActiveFolderId', cached.folderId);
-            }
-            mirrorUsingFallback = false;
-            
-            if (isLegacy || !cached.job) {
-                cached.job = currentJob;
-                localStorage.setItem(newKey, JSON.stringify(cached));
-            }
-            
-            if (window.PLATTS_MIRROR_DATA) {
-                window.PLATTS_MIRROR_DATA.currentJob = currentJob;
-                window.PLATTS_MIRROR_DATA.fields = mirrorState;
-                window.PLATTS_MIRROR_DATA.schema = liveMirrorSchema;
-                window.PLATTS_MIRROR_DATA.pmi = liveMirrorPMI;
-                window.PLATTS_MIRROR_DATA.conflict = liveMirrorConflict;
-            }
-            
-            initRadar();
-            return true;
-        }
-    } catch (e) {
-        console.warn("Mirror cache read failed:", e);
-    }
-    return false;
-}
 
 function loadUIState() {
     if (!currentJob) return { stamped: {}, locked: {} };
@@ -423,15 +315,7 @@ function applyMirrorUIState() {
     });
 }
 
-async function callAppsScript(payload) {
-    if (currentJob) payload.sheetName = currentJob;
-    const response = await fetch(WEB_APP_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-    });
-    const json = await response.json();
-    return json;
-}
+
 
 function updateActiveJobTicket() {
     currentJob = localStorage.getItem('hvacActiveJob') || null;
@@ -449,6 +333,7 @@ function toggleEditFieldsModal() {
     modal.classList.toggle('hidden');
     modal.classList.toggle('flex');
 }
+
 async function mirrorSync() {
     currentJob = localStorage.getItem('hvacActiveJob') || null;
     updateActiveJobTicket();
@@ -469,7 +354,6 @@ async function mirrorSync() {
             liveMirrorConflict = data.conflict;
             liveMirrorInvoiceReport = data.invoiceReport || "";
             mirrorUsingFallback = false;
-            saveMirrorCache();
             initRadar();
         } catch (e) {
             console.error("Mirror pull failed via shared engine:", e);
@@ -483,32 +367,10 @@ async function mirrorSync() {
             alert("No active job selected.");
             return;
         }
-        
-        try {
-            const response = await callAppsScript({ action: "getJobData" });
-            if (response.status === "success" && response.data && !response.data.error && response.data.fields && Array.isArray(response.data.schema)) {
-                mirrorState = response.data.fields || {};
-                liveMirrorSchema = response.data.schema || [];
-                liveMirrorPMI = response.data.pmi || [];
-                liveMirrorConflict = response.data.conflict || "";
-                liveMirrorInvoiceReport = response.data.invoiceReport || "";
-                mirrorUsingFallback = false;
-                
-                if (response.data.folderId) {
-                    localStorage.setItem('hvacActiveFolderId', response.data.folderId);
-                }
-                saveMirrorCache();
-                initRadar();
-            } else {
-                throw new Error(response.data?.error || "Invalid response structure");
-            }
-        } catch (e) {
-            console.error("Mirror pull failed:", e);
-            if (mirrorUsingFallback) initRadar();
-            alert("Mirror pull failed: " + e.message);
-        }
+        alert("Shared mirror engine not available.");
     }
 }
+
 function acceptAllMirrorValues() {
     if (window.PLATTS_MIRROR_DATA) {
         const count = window.PLATTS_MIRROR_DATA.acceptAllPopulated();
@@ -555,110 +417,37 @@ function toggleTopRibbon() {
     document.getElementById('top-ribbon-drawer').classList.toggle('hidden');
 }
 
-// TIER 3 HARDCODED FALLBACK (TRUE SPREADSHEET MAP)
-const hardcodedFieldMap = [
-  "Date | W12 | Specs",
-  "Customer Name | W13 | Specs",
-  "Address | W14 | Specs",
-  "Phone | W15 | Specs",
-  "email | W16 | Specs",
-  "Reason for Call | W17 | Specs",
-  "System # (Service Area) | W18 | Specs",
-  "System Type | W19 | Specs",
-  "Outdoor Model | W21 | Specs",
-  "Outdoor Serial | W22 | Specs",
-  "Indoor Model | W23 | Specs",
-  "Indoor Serial | W24 | Specs",
-  "Furnace Model | W25 | Specs",
-  "Furnace Serial | W26 | Specs",
-  "Refrigerant | W33 | Specs",
-  "Metering Device | W34 | Specs",
-  "Outdoor Tonnage | W35 | Specs",
-  "Indoor Tonnage | W36 | Specs",
-  "Furnace BTU | W37 | Specs",
-  "Heat Strips kW | W39 | Specs",
-  "Thermostat | W40 | Specs",
-  "Filter Size | W41 | Specs",
-  "Capacitor MFD | W42 | Specs",
-  "RLA | W43 | Specs",
-  "RLA 2 | W44 | Specs",
-  "FLA ODF | W45 | Specs",
-  "FLA ODF2 | W46 | Specs",
-  "FLA IDF | W47 | Specs",
-  "Target Subcool | W49 | Specs",
-  "Belts | W50 | Specs",
-  "System Description | W52 | Specs",
-  "Call Summary | W55 | PMI",
-  "Filter | W57 | PMI",
-  "Evaporator Coil | W59 | PMI",
-  "Blower Visual | W65 | PMI",
-  "Blower Mechanical | W68 | PMI",
-  "Drain Pan | W71 | PMI",
-  "Drain | W72 | PMI",
-  "Heater | W77 | PMI",
-  "Float Switch | W78 | PMI",
-  "IAQ | W80 | PMI",
-  "Condenser | W81 | PMI",
-  "Tech Notes | W83 | PMI",
-  "Capacitor Tolerance | W86 | Diag",
-  "Herm MFD Rating | W87 | Diag",
-  "Herm Volts | W88 | Diag",
-  "Herm Amps | W89 | Diag",
-  "Herm Results | W90 | Diag",
-  "Fan MFD Rating | W91 | Diag",
-  "Fan Volts | W92 | Diag",
-  "Fan Amps | W93 | Diag",
-  "Fan Results | W94 | Diag",
-  "Capacitor Results | W95 | Diag",
-  "Capacitor Replaced | W96 | Diag",
-  "RLA (Measured) | W99 | Diag",
-  "RLA 2 (Measured) | W100 | Diag",
-  "FLA ODF (Measured) | W101 | Diag",
-  "FLA ODF2 (Measured) | W102 | Diag",
-  "FLA IDF (Measured) | W103 | Diag",
-  "Motor Load Results | W105 | Diag",
-  "ODAT | W108 | Startup",
-  "Suction Pressure | W109 | Startup",
-  "Liquid Pressure | W110 | Startup",
-  "Suction Line Temp | W111 | Startup",
-  "Vapor Saturation | W112 | Startup",
-  "Indoor Suction Line Temp | W113 | Startup",
-  "Indoor SH | W114 | Startup",
-  "SH | W115 | Startup",
-  "Target SH | W116 | Startup",
-  "Liquid Line Temp | W117 | Startup",
-  "Liquid Saturation | W118 | Startup",
-  "Indoor Liquid Line Temp | W119 | Startup",
-  "Indoor SC | W120 | Startup",
-  "SC | W121 | Startup",
-  "Return Temp | W123 | Startup",
-  "Return Wet Bulb | W124 | Startup",
-  "Return Humidity | W125 | Startup",
-  "Return Dew Point | W126 | Startup",
-  "Supply Temp | W127 | Startup",
-  "∆T | W128 | Startup",
-  "Supply Wet Bulb | W130 | Startup",
-  "Supply Relative Humidity | W131 | Startup",
-  "Supply Dew Point | W133 | Startup",
-  "Return Enthalpy | W134 | Startup",
-  "Supply Enthalpy | W135 | Startup",
-  "Compression Ratio | W160 | Startup",
-  "Approach | W161 | Startup",
-  "CTOA | W162 | Startup",
-  "Evap TD | W163 | Startup",
-  "Pressures | W167 | Startup",
-  "Saturation Temps | W168 | Startup",
-  "SH / SC | W169 | Startup",
-  "Nitrogen Start | W170 | Startup",
-  "Nitrogen Finish | W171 | Startup",
-  "∆ Nitrogen | W172 | Startup",
-  "Nitrogen Duration | W173 | Startup",
-  "∆ N per minute | W174 | Startup",
-  "Micron Low | W176 | Startup",
-  "Micron Decay | W177 | Startup",
-  "(417) 576-0324 | W212 | ",
-  "TOP | W217 | "
-];
+// GROUPING METADATA ONLY - Used to organize fields visually. Does not dictate field existence.
+const labelToGroup = {
+  "Date": "Specs", "Customer Name": "Specs", "Address": "Specs", "Phone": "Specs", "email": "Specs",
+  "Reason for Call": "Specs", "System # (Service Area)": "Specs", "System Type": "Specs",
+  "Outdoor Model": "Specs", "Outdoor Serial": "Specs", "Indoor Model": "Specs", "Indoor Serial": "Specs",
+  "Furnace Model": "Specs", "Furnace Serial": "Specs", "Refrigerant": "Specs", "Metering Device": "Specs",
+  "Outdoor Tonnage": "Specs", "Indoor Tonnage": "Specs", "Furnace BTU": "Specs", "Heat Strips kW": "Specs",
+  "Thermostat": "Specs", "Filter Size": "PMI", "Filter Location": "PMI", "Filter Condition": "PMI",
+  "Capacitor MFD": "Specs", "RLA": "Specs", "RLA 2": "Specs", "FLA ODF": "Specs", "FLA ODF2": "Specs",
+  "FLA IDF": "Specs", "Target Subcool": "Specs", "Belts": "Specs", "System Description": "Specs",
+  "Call Summary": "PMI", "Filter": "PMI", "Evaporator Coil": "PMI", "Blower Visual": "PMI",
+  "Blower Mechanical": "PMI", "Drain Pan": "PMI", "Drain": "PMI", "Heater": "PMI",
+  "Float Switch": "PMI", "IAQ": "PMI", "Condenser": "PMI", "Tech Notes": "PMI",
+  "Capacitor Tolerance": "Diag", "Herm MFD Rating": "Diag", "Herm Volts": "Diag", "Herm Amps": "Diag",
+  "Herm Results": "Diag", "Fan MFD Rating": "Diag", "Fan Volts": "Diag", "Fan Amps": "Diag",
+  "Fan Results": "Diag", "Capacitor Results": "Diag", "Capacitor Replaced": "Diag",
+  "RLA (Measured)": "Diag", "RLA 2 (Measured)": "Diag", "FLA ODF (Measured)": "Diag",
+  "FLA ODF2 (Measured)": "Diag", "FLA IDF (Measured)": "Diag", "Motor Load Results": "Diag",
+  "ODAT": "Startup", "Suction Pressure": "Startup", "Liquid Pressure": "Startup",
+  "Suction Line Temp": "Startup", "Vapor Saturation": "Startup", "Indoor Suction Line Temp": "Startup",
+  "Indoor SH": "Startup", "SH": "Startup", "Target SH": "Startup", "Liquid Line Temp": "Startup",
+  "Liquid Saturation": "Startup", "Indoor Liquid Line Temp": "Startup", "Indoor SC": "Startup",
+  "SC": "Startup", "Return Temp": "Startup", "Return Wet Bulb": "Startup", "Return Humidity": "Startup",
+  "Return Dew Point": "Startup", "Supply Temp": "Startup", "∆T": "Startup", "Supply Wet Bulb": "Startup",
+  "Supply Relative Humidity": "Startup", "Supply Dew Point": "Startup", "Return Enthalpy": "Startup",
+  "Supply Enthalpy": "Startup", "Compression Ratio": "Startup", "Approach": "Startup",
+  "CTOA": "Startup", "Evap TD": "Startup", "Pressures": "Startup", "Saturation Temps": "Startup",
+  "SH / SC": "Startup", "Nitrogen Start": "Startup", "Nitrogen Finish": "Startup",
+  "∆ Nitrogen": "Startup", "Nitrogen Duration": "Startup", "∆ N per minute": "Startup",
+  "Micron Low": "Startup", "Micron Decay": "Startup"
+};
 
 function makeMirrorDomId(label, index) {
     return 'LIVE_' + label.replace(/[^a-zA-Z0-9]/g, '_') + '_' + index;
@@ -680,33 +469,32 @@ function initRadar() {
   workspace.innerHTML = ''; 
 
   const groupedData = { "Unassigned Fields": [] };
-  const labelToMeta = {};
-  hardcodedFieldMap.forEach(item => {
-    const parts = item.split('|').map(s => s.trim());
-    labelToMeta[parts[0]] = { id: parts[1], page: parts[2] || "Unassigned Fields" };
-  });
-
-  if (!mirrorUsingFallback && liveMirrorSchema.length > 0) {
-      liveMirrorSchema.forEach((label, index) => {
-          const meta = labelToMeta[label];
-          const page = meta ? meta.page : "Unassigned Fields";
-          const id = meta ? meta.id : makeMirrorDomId(label, index);
-          const val = mirrorState[label] || '';
+  
+  let activeSchema = liveMirrorSchema;
+  let engineFields = mirrorState;
+  
+  if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.getActiveSchema === 'function') {
+      const live = window.PLATTS_MIRROR_DATA.getActiveSchema();
+      if (live && live.length > 0) activeSchema = live;
+  }
+  
+  if (activeSchema.length > 0) {
+      activeSchema.forEach((label, index) => {
+          const page = labelToGroup[label] || "Unassigned Fields";
+          const id = makeMirrorDomId(label, index);
+          
+          let val = '';
+          if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.getField === 'function') {
+              val = window.PLATTS_MIRROR_DATA.getField(label) || '';
+          } else {
+              val = engineFields[label] || '';
+          }
           
           if (!groupedData[page]) groupedData[page] = [];
           groupedData[page].push({ id, label, val });
       });
   } else {
-      hardcodedFieldMap.forEach(item => {
-        const parts = item.split('|').map(s => s.trim());
-        const label = parts[0];
-        const id = parts[1];
-        const page = parts[2] || "Unassigned Fields";
-        const val = mirrorState[label] || '';
-        
-        if (!groupedData[page]) groupedData[page] = [];
-        groupedData[page].push({ id, label, val });
-      });
+      groupedData["Unassigned Fields"].push({ id: makeMirrorDomId("No Data", 0), label: "No Data", val: "" });
   }
 
   let isFirst = true;
@@ -752,7 +540,7 @@ function initRadar() {
             <span class="z-10 pointer-events-none">${item.label}</span>
             <span id="lock-${item.id}" class="z-10 text-[8px] pointer-events-none hidden">🔒</span>
           </div>
-          <input type="text" id="input-${item.id}" class="flex-1 bg-slate-700 text-slate-300 font-mono text-[10px] px-3 focus:outline-none focus:bg-slate-600" value="${displayVal}" placeholder="Awaiting ${item.id}..." readonly>
+          <input type="text" id="input-${item.id}" class="flex-1 bg-slate-700 text-slate-300 font-mono text-[10px] px-3 focus:outline-none focus:bg-slate-600" value="${displayVal}" placeholder="Awaiting..." readonly>
           <button onclick="clearRow('${item.id}')" class="w-8 bg-slate-700 hover:bg-slate-600 border-l border-slate-600 text-slate-400 hover:text-white flex items-center justify-center transition-colors text-xs">⟲</button>
         </div>`;
     });
@@ -1015,27 +803,23 @@ window.addEventListener('DOMContentLoaded', () => {
     renderBottomNav();
     currentJob = localStorage.getItem('hvacActiveJob') || null;
     updateActiveJobTicket();
-    if (currentJob) {
-        if (!loadMirrorCacheForCurrentJob()) {
-            mirrorSync();
-        }
-    } else {
-        initRadar();
-    }
+    
+    // mirror-data.js restores cached snapshots synchronously.
+    // We can immediately render what we have.
+    initRadar();
 });
 
 window.addEventListener('storage', (e) => {
     if (e.key === 'hvacActiveJob') {
         currentJob = e.newValue || null;
         updateActiveJobTicket();
-        if (currentJob) {
-            resetMirrorSourceState();
-            if (!loadMirrorCacheForCurrentJob()) {
-                mirrorSync();
-            }
-        } else {
-            resetMirrorSourceState();
-        }
+        // mirror-data.js storage listener handles snapshot restoring automatically.
+    }
+});
+
+window.addEventListener('platts-mirror-updated', (e) => {
+    if (e.detail && e.detail.currentJob === currentJob) {
+        initRadar();
     }
 });
 
