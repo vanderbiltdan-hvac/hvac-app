@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Startup Tracker v1.32.2</title>
+    <title>Startup Tracker v1.33.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -106,7 +106,7 @@
 <div id="top-status-bar" onclick="toggleTopRibbon()" class="w-full bg-slate-900 border-b border-slate-700 flex justify-between items-center px-4 py-2 cursor-pointer hover:bg-slate-800 transition-colors">
     <div style="width:40px;"></div><!-- Spacer for center alignment -->
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[11px] font-bold">v1.32.2</div>
+    <div class="text-slate-500 bg-slate-800 px-2 py-0.5 rounded text-[11px] font-bold">v1.33.1</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -554,7 +554,7 @@
 </div>
 
 <script>
-const STARTUP_VERSION = "v1.32.2";
+const STARTUP_VERSION = "v1.33.1";
 
 // PAGE REGISTRY & NAVIGATION
 function getSplashDestination() {
@@ -642,32 +642,9 @@ function getSafeJob(name) {
     return name.trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 
-function loadMirrorCacheForStartup(currentJob, safeJob) {
-    if (!window.PLATTS_MIRROR_DATA) return;
-    try {
-        let cached = null;
-        const raw = localStorage.getItem('mirror_cache_v1::' + safeJob);
-        if (raw) {
-            cached = JSON.parse(raw);
-        } else {
-            const rawLegacy = localStorage.getItem('mirror_cache_v1::' + currentJob);
-            if (rawLegacy) cached = JSON.parse(rawLegacy);
-        }
-        
-        if (cached) {
-            if (cached.job && cached.job !== currentJob) {
-                console.warn('Startup cache identity mismatch. Expected:', currentJob, 'Got:', cached.job);
-                return false;
-            }
-            PLATTS_MIRROR_DATA.currentJob = currentJob;
-            PLATTS_MIRROR_DATA.fields = cached.mirrorState || {};
-            PLATTS_MIRROR_DATA.schema = cached.liveMirrorSchema || [];
-            PLATTS_MIRROR_DATA.pmi = cached.liveMirrorPMI || [];
-            PLATTS_MIRROR_DATA.conflict = cached.liveMirrorConflict || "";
-            if (cached.folderId) PLATTS_MIRROR_DATA.folderId = cached.folderId;
-            if (cached.lastUpdated) PLATTS_MIRROR_DATA.lastUpdated = cached.lastUpdated;
-        }
-    } catch(e) {}
+function getStartupDomKey(id) {
+    if (!id) return '';
+    return id.toString().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 
 function switchJob() {
@@ -726,7 +703,34 @@ function switchJob() {
         }
     }
 
-    loadMirrorCacheForStartup(currentJob, safeJob);
+    let needsMigrationSave = false;
+    for (const [wKey, canKey] of Object.entries(LEGACY_STARTUP_W_KEY_MAP)) {
+        if (startupMemory[wKey] !== undefined) {
+            if (startupMemory[canKey] === undefined || startupMemory[canKey] === '') {
+                startupMemory[canKey] = startupMemory[wKey];
+            }
+            delete startupMemory[wKey];
+            needsMigrationSave = true;
+        }
+        if (startupMirrorAcceptedValues[wKey] !== undefined) {
+            if (startupMirrorAcceptedValues[canKey] === undefined) {
+                startupMirrorAcceptedValues[canKey] = startupMirrorAcceptedValues[wKey];
+            }
+            delete startupMirrorAcceptedValues[wKey];
+            needsMigrationSave = true;
+        }
+        if (startupValueProvenance && startupValueProvenance[wKey] !== undefined) {
+            if (startupValueProvenance[canKey] === undefined) {
+                startupValueProvenance[canKey] = startupValueProvenance[wKey];
+            }
+            delete startupValueProvenance[wKey];
+            needsMigrationSave = true;
+        }
+    }
+    if (needsMigrationSave) {
+        saveCurrentJobState();
+    }
+
     initStartup();
     runAutoMath();
     reconcileStartupMirrorAcceptance();
@@ -812,8 +816,9 @@ function cancelPress() {
 }
 
 function triggerMechanicalLock(id) {
-    const label = document.getElementById('label-' + id);
-    const lock = document.getElementById('lock-' + id);
+    const domKey = getStartupDomKey(id);
+    const label = document.getElementById('label-' + domKey);
+    const lock = document.getElementById('lock-' + domKey);
     if (!label) return;
     
     label.style.backgroundColor = '#ffffff';
@@ -888,8 +893,8 @@ function valuesEquivalent(a, b) {
 }
 
 const STARTUP_DISPLAY_PRECISION = {
-    'W128': 1, 'W115': 1, 'W121': 1, 'W163': 1,
-    'W160': 2, 'W161': 1, 'W162': 1
+    '∆T': 1, 'SH': 1, 'SC': 1, 'Evap TD': 1,
+    'Compression Ratio': 2, 'Approach': 1, 'CTOA': 1
 };
 
 function formatDisplayValue(id, val) {
@@ -915,24 +920,24 @@ function getCalculatedValidationValue(id) {
     let result = NaN;
     let prec = 1;
 
-    if (id === 'W128') { // ∆T
+    if (id === '∆T') { // ∆T
         result = Math.abs(getVal('return temp') - getVal('supply temp'));
-    } else if (id === 'W115') { // SH
+    } else if (id === 'SH') { // SH
         result = getVal('suction line temp') - getVal('vapor saturation');
-    } else if (id === 'W121') { // SC
+    } else if (id === 'SC') { // SC
         result = getVal('liquid saturation') - getVal('liquid line temp');
-    } else if (id === 'W163') { // Evap TD
+    } else if (id === 'Evap TD') { // Evap TD
         result = getVal('return temp') - getVal('vapor saturation');
-    } else if (id === 'W160') { // Compression Ratio
+    } else if (id === 'Compression Ratio') { // Compression Ratio
         let sucPress = getVal('suction pressure');
         let liqPress = getVal('liquid pressure');
         if (!isNaN(sucPress) && !isNaN(liqPress) && (sucPress + 14.7) > 0) {
             result = (liqPress + 14.7) / (sucPress + 14.7);
             prec = 2;
         }
-    } else if (id === 'W161') { // Approach
+    } else if (id === 'Approach') { // Approach
         result = getVal('liquid line temp') - getVal('odat');
-    } else if (id === 'W162') { // CTOA
+    } else if (id === 'CTOA') { // CTOA
         result = getVal('liquid saturation') - getVal('odat');
     }
 
@@ -994,14 +999,15 @@ function getStartupConflictState(id) {
 function renderStartupRow(id) {
     const f = startupFieldMap.find(item => item.id === id);
     if(!f) return;
-    const labelEl = document.getElementById('label-' + id);
-    const inputEl = document.getElementById('recorded-' + id);
-    const rowEl = document.getElementById('row-' + id);
-    const mirrorSpan = document.getElementById('mirror-conflict-' + id);
-    const sepSpan = document.getElementById('conflict-separator-' + id);
-    const mirrorCheck = document.getElementById('mirror-validation-' + id);
-    const currentCheck = document.getElementById('current-validation-' + id);
-    const thirdCalc = document.getElementById('third-validation-' + id);
+    const domKey = getStartupDomKey(id);
+    const labelEl = document.getElementById('label-' + domKey);
+    const inputEl = document.getElementById('recorded-' + domKey);
+    const rowEl = document.getElementById('row-' + domKey);
+    const mirrorSpan = document.getElementById('mirror-conflict-' + domKey);
+    const sepSpan = document.getElementById('conflict-separator-' + domKey);
+    const mirrorCheck = document.getElementById('mirror-validation-' + domKey);
+    const currentCheck = document.getElementById('current-validation-' + domKey);
+    const thirdCalc = document.getElementById('third-validation-' + domKey);
     if(!labelEl || !inputEl || !rowEl) return;
 
     const { hasConflict, mirrorVal, currentVal, validationVal, validationMatch } = getStartupConflictState(id);
@@ -1172,9 +1178,10 @@ function filterView(mode) {
     localStorage.setItem('startup_view_pref', mode);
     startupFieldMap.forEach(f => {
         const id = f.id;
-        const labelEl = document.getElementById('label-' + id);
+        const domKey = getStartupDomKey(id);
+        const labelEl = document.getElementById('label-' + domKey);
         if (!labelEl) return;
-        const row = document.getElementById('row-' + id) || labelEl.parentElement;
+        const row = document.getElementById('row-' + domKey) || labelEl.parentElement;
         
         // Strict Bypass Rule: Do not show if it's in the Recycle Bin
         const hiddenIds = recycleBin.map(field => field.id);
@@ -1195,8 +1202,9 @@ function filterView(mode) {
 function pushToCompiler() {
     startupFieldMap.forEach(f => {
         const id = f.id;
+        const domKey = getStartupDomKey(id);
         const val = startupMemory[id] || '';
-        const label = document.getElementById('label-' + id);
+        const label = document.getElementById('label-' + domKey);
         if (val.toString().trim() !== '' && label && !label.classList.contains('bg-blue-600')) {
             label.classList.remove('text-slate-300', 'text-orange-400');
             label.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
@@ -1230,7 +1238,8 @@ function runAutoMath() {
             return;
         }
         
-        const input = document.getElementById('recorded-' + id);
+        const domKey = getStartupDomKey(id);
+        const input = document.getElementById('recorded-' + domKey);
         
         if (isNaN(val) || val === null || val === undefined) {
             if (startupMirrorAcceptedValues[id] !== undefined && !sourceChangedLocally) {
@@ -1307,55 +1316,98 @@ setTimeout(() => {
 }, 200);
 
 const STARTUP_DERIVED_DEPENDENCIES = {
-  'W128': ['W123', 'W127'],        // ∆T <- Return Temp, Supply Temp
-  'W115': ['W111', 'W112'],        // SH <- Suction Line Temp, Vapor Saturation
-  'W121': ['W118', 'W117'],        // SC <- Liquid Saturation, Liquid Line Temp
-  'W163': ['W123', 'W112'],        // Evap TD <- Return Temp, Vapor Saturation
-  'W160': ['W109', 'W110'],        // Compression Ratio <- Suction Pressure, Liquid Pressure
-  'W161': ['W117', 'W108'],        // Approach <- Liquid Line Temp, ODAT
-  'W162': ['W118', 'W108']         // CTOA <- Liquid Saturation, ODAT
+  '∆T': ['Return Temp', 'Supply Temp'],
+  'SH': ['Suction Line Temp', 'Vapor Saturation'],
+  'SC': ['Liquid Saturation', 'Liquid Line Temp'],
+  'Evap TD': ['Return Temp', 'Vapor Saturation'],
+  'Compression Ratio': ['Suction Pressure', 'Liquid Pressure'],
+  'Approach': ['Liquid Line Temp', 'ODAT'],
+  'CTOA': ['Liquid Saturation', 'ODAT']
+};
+
+// LEGACY STORAGE MIGRATION ONLY
+const LEGACY_STARTUP_W_KEY_MAP = {
+  W108: 'ODAT',
+  W109: 'Suction Pressure',
+  W110: 'Liquid Pressure',
+  W111: 'Suction Line Temp',
+  W112: 'Vapor Saturation',
+  W113: 'Indoor Suction Line Temp',
+  W114: 'Indoor SH',
+  W115: 'SH',
+  W116: 'Target SH',
+  W117: 'Liquid Line Temp',
+  W118: 'Liquid Saturation',
+  W119: 'Indoor Liquid Line Temp',
+  W120: 'Indoor SC',
+  W121: 'SC',
+  W123: 'Return Temp',
+  W124: 'Return Wet Bulb',
+  W125: 'Return Humidity',
+  W126: 'Return Dew Point',
+  W127: 'Supply Temp',
+  W128: '∆T',
+  W130: 'Supply Wet Bulb',
+  W131: 'Supply Relative Humidity',
+  W133: 'Supply Dew Point',
+  W134: 'Return Enthalpy',
+  W135: 'Supply Enthalpy',
+  W160: 'Compression Ratio',
+  W161: 'Approach',
+  W162: 'CTOA',
+  W163: 'Evap TD',
+  W167: 'Pressures',
+  W168: 'Saturation Temps',
+  W169: 'SH / SC',
+  W170: 'Nitrogen Start',
+  W171: 'Nitrogen Finish',
+  W172: '∆ Nitrogen',
+  W173: 'Nitrogen Duration',
+  W174: '∆ N per minute',
+  W176: 'Micron Low',
+  W177: 'Micron Decay'
 };
 
 const startupFieldMap = [
-  { id: 'W108', label: 'ODAT', category: 'refrigerant', mapped: true },
-  { id: 'W109', label: 'Suction Pressure', category: 'refrigerant', mapped: true },
-  { id: 'W110', label: 'Liquid Pressure', category: 'refrigerant', mapped: true },
-  { id: 'W111', label: 'Suction Line Temp', category: 'refrigerant', mapped: true },
-  { id: 'W112', label: 'Vapor Saturation', category: 'refrigerant', mapped: true },
-  { id: 'W113', label: 'Indoor Suction Line Temp', category: 'refrigerant', mapped: true },
-  { id: 'W114', label: 'Indoor SH', category: 'refrigerant', mapped: true },
-  { id: 'W115', label: 'SH', category: 'refrigerant', mapped: true },
-  { id: 'W116', label: 'Target SH', category: 'refrigerant', mapped: true },
-  { id: 'W117', label: 'Liquid Line Temp', category: 'refrigerant', mapped: true },
-  { id: 'W118', label: 'Liquid Saturation', category: 'refrigerant', mapped: true },
-  { id: 'W119', label: 'Indoor Liquid Line Temp', category: 'refrigerant', mapped: true },
-  { id: 'W120', label: 'Indoor SC', category: 'refrigerant', mapped: true },
-  { id: 'W121', label: 'SC', category: 'refrigerant', mapped: true },
-  { id: 'W123', label: 'Return Temp', category: 'airside', mapped: true },
-  { id: 'W124', label: 'Return Wet Bulb', category: 'airside', mapped: true },
-  { id: 'W125', label: 'Return Humidity', category: 'airside', mapped: true },
-  { id: 'W126', label: 'Return Dew Point', category: 'airside', mapped: true },
-  { id: 'W127', label: 'Supply Temp', category: 'airside', mapped: true },
-  { id: 'W128', label: '∆T', category: 'airside', mapped: true },
-  { id: 'W130', label: 'Supply Wet Bulb', category: 'airside', mapped: true },
-  { id: 'W131', label: 'Supply Relative Humidity', category: 'airside', mapped: true },
-  { id: 'W133', label: 'Supply Dew Point', category: 'airside', mapped: true },
-  { id: 'W134', label: 'Return Enthalpy', category: 'airside', mapped: true },
-  { id: 'W135', label: 'Supply Enthalpy', category: 'airside', mapped: true },
-  { id: 'W160', label: 'Compression Ratio', category: 'refrigerant', mapped: true },
-  { id: 'W161', label: 'Approach', category: 'refrigerant', mapped: true },
-  { id: 'W162', label: 'CTOA', category: 'refrigerant', mapped: true },
-  { id: 'W163', label: 'Evap TD', category: 'refrigerant', mapped: true },
-  { id: 'W167', label: 'Pressures', category: 'refrigerant', mapped: true },
-  { id: 'W168', label: 'Saturation Temps', category: 'refrigerant', mapped: true },
-  { id: 'W169', label: 'SH / SC', category: 'refrigerant', mapped: true },
-  { id: 'W170', label: 'Nitrogen Start', category: 'pressure', mapped: true },
-  { id: 'W171', label: 'Nitrogen Finish', category: 'pressure', mapped: true },
-  { id: 'W172', label: '∆ Nitrogen', category: 'pressure', mapped: true },
-  { id: 'W173', label: 'Nitrogen Duration', category: 'pressure', mapped: true },
-  { id: 'W174', label: '∆ N per minute', category: 'pressure', mapped: true },
-  { id: 'W176', label: 'Micron Low', category: 'vacuum', mapped: true },
-  { id: 'W177', label: 'Micron Decay', category: 'vacuum', mapped: true },
+  { id: 'ODAT', label: 'ODAT', category: 'refrigerant', mapped: true },
+  { id: 'Suction Pressure', label: 'Suction Pressure', category: 'refrigerant', mapped: true },
+  { id: 'Liquid Pressure', label: 'Liquid Pressure', category: 'refrigerant', mapped: true },
+  { id: 'Suction Line Temp', label: 'Suction Line Temp', category: 'refrigerant', mapped: true },
+  { id: 'Vapor Saturation', label: 'Vapor Saturation', category: 'refrigerant', mapped: true },
+  { id: 'Indoor Suction Line Temp', label: 'Indoor Suction Line Temp', category: 'refrigerant', mapped: true },
+  { id: 'Indoor SH', label: 'Indoor SH', category: 'refrigerant', mapped: true },
+  { id: 'SH', label: 'SH', category: 'refrigerant', mapped: true },
+  { id: 'Target SH', label: 'Target SH', category: 'refrigerant', mapped: true },
+  { id: 'Liquid Line Temp', label: 'Liquid Line Temp', category: 'refrigerant', mapped: true },
+  { id: 'Liquid Saturation', label: 'Liquid Saturation', category: 'refrigerant', mapped: true },
+  { id: 'Indoor Liquid Line Temp', label: 'Indoor Liquid Line Temp', category: 'refrigerant', mapped: true },
+  { id: 'Indoor SC', label: 'Indoor SC', category: 'refrigerant', mapped: true },
+  { id: 'SC', label: 'SC', category: 'refrigerant', mapped: true },
+  { id: 'Return Temp', label: 'Return Temp', category: 'airside', mapped: true },
+  { id: 'Return Wet Bulb', label: 'Return Wet Bulb', category: 'airside', mapped: true },
+  { id: 'Return Humidity', label: 'Return Humidity', category: 'airside', mapped: true },
+  { id: 'Return Dew Point', label: 'Return Dew Point', category: 'airside', mapped: true },
+  { id: 'Supply Temp', label: 'Supply Temp', category: 'airside', mapped: true },
+  { id: '∆T', label: '∆T', category: 'airside', mapped: true },
+  { id: 'Supply Wet Bulb', label: 'Supply Wet Bulb', category: 'airside', mapped: true },
+  { id: 'Supply Relative Humidity', label: 'Supply Relative Humidity', category: 'airside', mapped: true },
+  { id: 'Supply Dew Point', label: 'Supply Dew Point', category: 'airside', mapped: true },
+  { id: 'Return Enthalpy', label: 'Return Enthalpy', category: 'airside', mapped: true },
+  { id: 'Supply Enthalpy', label: 'Supply Enthalpy', category: 'airside', mapped: true },
+  { id: 'Compression Ratio', label: 'Compression Ratio', category: 'refrigerant', mapped: true },
+  { id: 'Approach', label: 'Approach', category: 'refrigerant', mapped: true },
+  { id: 'CTOA', label: 'CTOA', category: 'refrigerant', mapped: true },
+  { id: 'Evap TD', label: 'Evap TD', category: 'refrigerant', mapped: true },
+  { id: 'Pressures', label: 'Pressures', category: 'refrigerant', mapped: true },
+  { id: 'Saturation Temps', label: 'Saturation Temps', category: 'refrigerant', mapped: true },
+  { id: 'SH / SC', label: 'SH / SC', category: 'refrigerant', mapped: true },
+  { id: 'Nitrogen Start', label: 'Nitrogen Start', category: 'pressure', mapped: true },
+  { id: 'Nitrogen Finish', label: 'Nitrogen Finish', category: 'pressure', mapped: true },
+  { id: '∆ Nitrogen', label: '∆ Nitrogen', category: 'pressure', mapped: true },
+  { id: 'Nitrogen Duration', label: 'Nitrogen Duration', category: 'pressure', mapped: true },
+  { id: '∆ N per minute', label: '∆ N per minute', category: 'pressure', mapped: true },
+  { id: 'Micron Low', label: 'Micron Low', category: 'vacuum', mapped: true },
+  { id: 'Micron Decay', label: 'Micron Decay', category: 'vacuum', mapped: true },
   { id: 'vac_beta_rate', label: 'Micron Decay Rate', category: 'vacuum', mapped: false },
   { id: 'vac_beta_proj', label: '10 Min Projection', category: 'vacuum', mapped: false }
 ];
@@ -1457,7 +1509,8 @@ function getContainerId(item) {
 }
 
 function hideStartupRow(id) {
-    const row = document.getElementById('row-' + id);
+    const domKey = getStartupDomKey(id);
+    const row = document.getElementById('row-' + domKey);
     if (row) {
         row.style.display = 'none';
         
@@ -1471,7 +1524,8 @@ function hideStartupRow(id) {
 }
 
 function restoreStartupRow(id) {
-    const row = document.getElementById('row-' + id);
+    const domKey = getStartupDomKey(id);
+    const row = document.getElementById('row-' + domKey);
     if (row) {
         row.style.display = 'flex';
         
@@ -1484,7 +1538,8 @@ function restoreStartupRow(id) {
 }
 
 function clearStartupRow(id) {
-    const input = document.getElementById('recorded-' + id);
+    const domKey = getStartupDomKey(id);
+    const input = document.getElementById('recorded-' + domKey);
     if (input) input.value = '';
     
     delete startupMemory[id];
@@ -1593,7 +1648,8 @@ function loadUniversalPage(pageName) {
 }
 
 function markPopulated(id) {
-    const input = document.getElementById('recorded-' + id);
+    const domKey = getStartupDomKey(id);
+    const input = document.getElementById('recorded-' + domKey);
     if (input) saveStartupData(id, input.value);
     updateTelemetryHeaders();
 }
@@ -1656,31 +1712,32 @@ function initStartup() {
             labelClasses += "border-slate-700 text-slate-300";
         }
         
+        const domKey = getStartupDomKey(id);
         const rowHtml = `
-        <div id="row-${id}" class="matrix-row box-border border-b border-slate-700 bg-slate-900 group transition-colors hover:bg-slate-800/50">
+        <div id="row-${domKey}" class="matrix-row box-border border-b border-slate-700 bg-slate-900 group transition-colors hover:bg-slate-800/50">
             <div class="col-label flex items-center px-2 border-r border-slate-700">
-                <span class="${labelClasses}" id="label-${id}" onclick="handleSmartTap('${id}')">${item.label}</span>
+                <span class="${labelClasses}" id="label-${domKey}" onclick="handleSmartTap('${id}')">${item.label}</span>
             </div>
             <div class="col-recorded flex flex-col items-center justify-center border-r border-slate-700 px-1 relative">
                 <div class="flex items-center justify-center w-full flex-1">
-                    <span id="mirror-conflict-${id}" class="hidden text-blue-400 font-bold shrink-0" style="font-size: var(--font-recorded-val);"></span>
-                    <span id="mirror-validation-${id}" class="hidden text-green-400 text-[11px] font-bold mx-0.5 shrink-0">✓</span>
-                    <span id="conflict-separator-${id}" class="hidden text-slate-500 font-bold mx-1 shrink-0" style="font-size: var(--font-recorded-val);">/</span>
-                    <input type="number" inputmode="decimal" id="recorded-${id}" value="${val}" oninput="saveStartupData('${id}', this.value)" class="w-full bg-transparent text-center text-white font-bold focus:outline-none focus:bg-slate-800/80 rounded transition-colors" style="font-size: var(--font-recorded-val);" placeholder="---" onchange="markPopulated('${id}')">
-                    <span id="current-validation-${id}" class="hidden text-green-400 text-[11px] font-bold ml-1 shrink-0">✓</span>
+                    <span id="mirror-conflict-${domKey}" class="hidden text-blue-400 font-bold shrink-0" style="font-size: var(--font-recorded-val);"></span>
+                    <span id="mirror-validation-${domKey}" class="hidden text-green-400 text-[11px] font-bold mx-0.5 shrink-0">✓</span>
+                    <span id="conflict-separator-${domKey}" class="hidden text-slate-500 font-bold mx-1 shrink-0" style="font-size: var(--font-recorded-val);">/</span>
+                    <input type="number" inputmode="decimal" id="recorded-${domKey}" value="${val}" oninput="saveStartupData('${id}', this.value)" class="w-full bg-transparent text-center text-white font-bold focus:outline-none focus:bg-slate-800/80 rounded transition-colors" style="font-size: var(--font-recorded-val);" placeholder="---" onchange="markPopulated('${id}')">
+                    <span id="current-validation-${domKey}" class="hidden text-green-400 text-[11px] font-bold ml-1 shrink-0">✓</span>
                 </div>
-                <div id="third-validation-${id}" class="hidden text-slate-400 text-[9px] w-full text-center pb-0.5"></div>
+                <div id="third-validation-${domKey}" class="hidden text-slate-400 text-[9px] w-full text-center pb-0.5"></div>
             </div>
             <div class="col-telemetry justify-around">
-                <div class="flex flex-col items-center justify-center flex-1 cursor-pointer bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded py-0.5 transition-colors relative" onclick="dumpLiveToRecorded('${id}')" id="live-cell-${id}" title="Tap to Record Live">
-                    <span class="hidden text-[8px] absolute top-1 right-1" id="bt-icon-${id}">📡</span>
-                    <span class="text-white font-mono leading-none" id="live-${id}" style="font-size: var(--font-bottom-val);">--</span>
+                <div class="flex flex-col items-center justify-center flex-1 cursor-pointer bg-slate-800/80 hover:bg-slate-700 border border-slate-600 rounded py-0.5 transition-colors relative" onclick="dumpLiveToRecorded('${id}')" id="live-cell-${domKey}" title="Tap to Record Live">
+                    <span class="hidden text-[8px] absolute top-1 right-1" id="bt-icon-${domKey}">📡</span>
+                    <span class="text-white font-mono leading-none" id="live-${domKey}" style="font-size: var(--font-bottom-val);">--</span>
                 </div>
                 <div class="flex flex-col items-center justify-center flex-1 opacity-70">
-                    <span class="text-slate-400 font-mono leading-none" id="min-${id}" style="font-size: var(--font-bottom-val);">--</span>
+                    <span class="text-slate-400 font-mono leading-none" id="min-${domKey}" style="font-size: var(--font-bottom-val);">--</span>
                 </div>
                 <div class="flex flex-col items-center justify-center flex-1 opacity-70">
-                    <span class="text-slate-400 font-mono leading-none" id="max-${id}" style="font-size: var(--font-bottom-val);">--</span>
+                    <span class="text-slate-400 font-mono leading-none" id="max-${domKey}" style="font-size: var(--font-bottom-val);">--</span>
                 </div>
             </div>
             <div class="col-btn ml-1">
@@ -1711,14 +1768,16 @@ let activeBtTarget = null;
 
 function setBluetoothTarget(id) {
     if (activeBtTarget) {
-        const oldIcon = document.getElementById('bt-icon-' + activeBtTarget);
-        const oldCell = document.getElementById('live-cell-' + activeBtTarget);
+        const oldKey = getStartupDomKey(activeBtTarget);
+        const oldIcon = document.getElementById('bt-icon-' + oldKey);
+        const oldCell = document.getElementById('live-cell-' + oldKey);
         if (oldIcon) oldIcon.classList.add('hidden');
         if (oldCell) oldCell.classList.remove('border-yellow-500', 'bg-yellow-900/20');
     }
     activeBtTarget = id;
-    const newIcon = document.getElementById('bt-icon-' + id);
-    const newCell = document.getElementById('live-cell-' + id);
+    const domKey = getStartupDomKey(id);
+    const newIcon = document.getElementById('bt-icon-' + domKey);
+    const newCell = document.getElementById('live-cell-' + domKey);
     if (newIcon) {
         newIcon.classList.remove('hidden');
         newIcon.innerText = '📡 🔋85%';
@@ -1736,8 +1795,11 @@ function takeSnapshot(categoryId, e) {
     if(container) {
         const inputs = container.querySelectorAll('input[id^="recorded-"]');
         inputs.forEach(input => {
-            const id = input.id.replace('recorded-', '');
-            if (input.value.trim() !== '') snapData.data[id] = input.value;
+            const domKey = input.id.replace('recorded-', '');
+            const field = startupFieldMap.find(item => getStartupDomKey(item.id) === domKey);
+            if (field && input.value.trim() !== '') {
+                snapData.data[field.id] = input.value;
+            }
         });
     }
     
@@ -1877,7 +1939,8 @@ function updateTelemetryHeaders() {
 
         const mappedItem = startupFieldMap.find(item => item.label === labelText);
         if (mappedItem) {
-            const inputEl = document.getElementById('recorded-' + mappedItem.id);
+            const domKey = getStartupDomKey(mappedItem.id);
+            const inputEl = document.getElementById('recorded-' + domKey);
             valSpan.innerText = (inputEl && inputEl.value !== '') ? inputEl.value : '--';
         }
     });
@@ -1885,8 +1948,9 @@ function updateTelemetryHeaders() {
 
 function dumpLiveToRecorded(id) {
     setBluetoothTarget(id);
-    const liveSpan = document.getElementById('live-' + id);
-    const recInput = document.getElementById('recorded-' + id);
+    const domKey = getStartupDomKey(id);
+    const liveSpan = document.getElementById('live-' + domKey);
+    const recInput = document.getElementById('recorded-' + domKey);
     if (liveSpan && recInput) {
         const liveText = liveSpan.innerText.trim();
         if (liveText !== '--' && liveText !== '') {
