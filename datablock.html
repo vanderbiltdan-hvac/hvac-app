@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Block v1.00.1</title>
+    <title>Data Block v1.01.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
+    <script src="mirror-data.js"></script>
     <style>
         .raw-block-area {
             white-space: pre-wrap;
@@ -21,7 +22,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.00.1</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.01.1</div>
 </div>
 
 <div class="max-w-4xl mx-auto p-4 space-y-4">
@@ -46,6 +47,14 @@
     <div id="no-payload-warning" class="hidden bg-slate-800 border border-slate-700 p-4 rounded text-center text-slate-400">
         <div class="font-bold tracking-wider mb-1">No Compiler payload available.</div>
         <div class="text-sm">Open Compiler and REFLOW first.</div>
+    </div>
+    <div id="mirror-unavailable-warning" class="hidden bg-slate-800 border-l-4 border-slate-500 p-4 rounded text-slate-300">
+        <div class="font-bold tracking-wider mb-1">MIRROR FIELD MAP UNAVAILABLE</div>
+        <div class="text-sm">Mapping review states will show as UNKNOWN.</div>
+    </div>
+    <div id="mirror-mismatch-warning" class="hidden bg-red-900/50 border-l-4 border-red-500 p-4 rounded text-red-200">
+        <div class="font-bold tracking-wider mb-1">MIRROR JOB MISMATCH</div>
+        <div class="text-sm">Mirror data belongs to a different job. Mapping review disabled.</div>
     </div>
 
     <!-- SUMMARY CARD -->
@@ -73,6 +82,10 @@
                 <div class="text-slate-500 text-[10px]">CHARACTERS</div>
                 <div id="summary-chars" class="text-slate-300">0</div>
             </div>
+            <div>
+                <div class="text-slate-500 text-[10px]">FIELD MAP</div>
+                <div id="summary-map-source" class="text-slate-300">-</div>
+            </div>
         </div>
 
         <div class="bg-slate-900 rounded p-3 mt-2 grid grid-cols-4 text-center text-[10px] font-mono border border-slate-700">
@@ -80,6 +93,12 @@
             <div><div class="text-slate-500">PMI</div><div id="count-pmi" class="text-slate-300">0</div></div>
             <div><div class="text-slate-500">DIAG</div><div id="count-diag" class="text-slate-300">0</div></div>
             <div><div class="text-slate-500">STARTUP</div><div id="count-startup" class="text-slate-300">0</div></div>
+        </div>
+
+        <div class="bg-slate-900 rounded p-3 mt-2 grid grid-cols-3 text-center text-[10px] font-mono border border-slate-700">
+            <div><div class="text-emerald-500/80">MATCHED</div><div id="count-matched" class="text-emerald-400">0</div></div>
+            <div><div class="text-amber-500/80">LIKELY</div><div id="count-likely" class="text-amber-400">0</div></div>
+            <div><div class="text-slate-500">UNMATCHED</div><div id="count-unmatched" class="text-slate-300">0</div></div>
         </div>
     </div>
 
@@ -132,10 +151,108 @@
 </div>
 
 <script>
-    const DATABLOCK_VERSION = "v1.00.1";
+    const DATABLOCK_VERSION = "v1.01.1";
     const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
     let currentRawBlock = "";
+
+    function stringSimilarity(a, b) {
+        if (!a || !b) return 0;
+        a = a.toLowerCase().replace(/\s+/g, '');
+        b = b.toLowerCase().replace(/\s+/g, '');
+        if (a === b) return 1;
+        if (a.length < 2 || b.length < 2) return 0;
+        
+        let firstBigrams = new Map();
+        for (let i = 0; i < a.length - 1; i++) {
+            const bigram = a.substring(i, i + 2);
+            firstBigrams.set(bigram, (firstBigrams.get(bigram) || 0) + 1);
+        }
+        
+        let intersectionSize = 0;
+        for (let i = 0; i < b.length - 1; i++) {
+            const bigram = b.substring(i, i + 2);
+            let count = firstBigrams.get(bigram) || 0;
+            if (count > 0) {
+                firstBigrams.set(bigram, count - 1);
+                intersectionSize++;
+            }
+        }
+        
+        return (2.0 * intersectionSize) / (a.length - 1 + b.length - 1);
+    }
+
+    function getMirrorMapContext() {
+        if (typeof window.PLATTS_MIRROR_DATA === 'undefined') {
+            return { labels: [], source: 'UNAVAILABLE', job: null };
+        }
+        
+        const engine = window.PLATTS_MIRROR_DATA;
+        const liveSchema = engine.schema;
+        
+        if (Array.isArray(liveSchema) && liveSchema.length > 0) {
+            return {
+                labels: liveSchema,
+                source: 'LIVE',
+                job: engine.currentJob || null
+            };
+        }
+        
+        const baseline = engine.baselineSchema;
+        if (Array.isArray(baseline) && baseline.length > 0) {
+            return {
+                labels: baseline,
+                source: 'BASELINE',
+                job: null
+            };
+        }
+        
+        return { labels: [], source: 'UNAVAILABLE', job: null };
+    }
+
+    function checkMirrorJobMismatch(context, activeJob) {
+        if (context.source === 'LIVE') {
+            if (context.job && activeJob && context.job !== activeJob) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function findFieldLabelMatch(label, mirrorLabels) {
+        if (!mirrorLabels || mirrorLabels.length === 0) return { state: 'UNKNOWN', match: null };
+        
+        // Exact normalized using shared helper if available
+        if (typeof window.PLATTS_MIRROR_DATA !== 'undefined' && typeof window.PLATTS_MIRROR_DATA.resolveFieldKey === 'function') {
+            const exact = window.PLATTS_MIRROR_DATA.resolveFieldKey(label);
+            if (exact) {
+                return { state: 'EXACT', match: exact };
+            }
+        } else {
+            // Fallback exact normalization
+            const norm = (s) => (s||"").trim().replace(/[-_\s]+/g, ' ').toLowerCase();
+            const nl = norm(label);
+            const exact = mirrorLabels.find(m => norm(m) === nl);
+            if (exact) return { state: 'EXACT', match: exact };
+        }
+        
+        // Find closest
+        let bestMatch = null;
+        let bestScore = 0;
+        mirrorLabels.forEach(m => {
+            const score = stringSimilarity(label, m);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = m;
+            }
+        });
+        
+        if (bestScore > 0.65) {
+            return { state: 'LIKELY', match: bestMatch };
+        }
+        
+        return { state: 'UNMATCHED', match: null };
+    }
 
     function getActiveJob() {
         return localStorage.getItem("hvacActiveJob") || "";
@@ -242,6 +359,10 @@
         safeSet("count-diag", "0");
         safeSet("count-startup", "0");
         
+        safeSet("count-matched", "0");
+        safeSet("count-likely", "0");
+        safeSet("count-unmatched", "0");
+        
         safeSet("raw-block", "");
         
         const previewList = document.getElementById("preview-list");
@@ -249,6 +370,15 @@
         
         const delimiterList = document.getElementById("delimiter-list");
         if (delimiterList) delimiterList.innerHTML = "";
+        
+        const mapSourceEl = document.getElementById("summary-map-source");
+        if (mapSourceEl) {
+            mapSourceEl.innerText = "-";
+            mapSourceEl.className = "text-slate-300";
+        }
+        
+        document.getElementById("mirror-unavailable-warning").classList.add("hidden");
+        document.getElementById("mirror-mismatch-warning").classList.add("hidden");
     }
     function renderDataBlock() {
         const payload = getCompilerPayload();
@@ -257,6 +387,8 @@
         document.getElementById("no-payload-warning").classList.add("hidden");
         document.getElementById("job-mismatch-warning").classList.add("hidden");
         document.getElementById("delimiter-warning").classList.add("hidden");
+        document.getElementById("mirror-unavailable-warning").classList.add("hidden");
+        document.getElementById("mirror-mismatch-warning").classList.add("hidden");
         document.getElementById("copy-btn").disabled = false;
         document.getElementById("copy-btn").classList.remove("opacity-50", "cursor-not-allowed");
         document.getElementById("summary-job").classList.remove("text-red-400");
@@ -318,27 +450,104 @@
         document.getElementById("count-diag").innerText = items.filter(i => i.sourceKey === 'diagnostics').length;
         document.getElementById("count-startup").innerText = items.filter(i => i.sourceKey === 'startup').length;
 
+        const mapContext = getMirrorMapContext();
+        let mirrorLabels = mapContext.labels;
+        const mirrorMismatch = checkMirrorJobMismatch(mapContext, activeJob);
+        
+        const mapSourceEl = document.getElementById("summary-map-source");
+        if (mirrorMismatch) {
+            mapSourceEl.innerText = "MISMATCH";
+            mapSourceEl.className = "text-red-400";
+        } else if (mapContext.source === 'LIVE') {
+            mapSourceEl.innerText = "LIVE MIRROR";
+            mapSourceEl.className = "text-emerald-400";
+        } else if (mapContext.source === 'BASELINE') {
+            mapSourceEl.innerText = "BASELINE";
+            mapSourceEl.className = "text-amber-400";
+        } else {
+            mapSourceEl.innerText = "UNAVAILABLE";
+            mapSourceEl.className = "text-slate-500";
+        }
+        
+        if (mirrorMismatch) {
+            mirrorLabels = null; // Disable matching
+            document.getElementById("mirror-mismatch-warning").classList.remove("hidden");
+        } else if (mapContext.source === 'UNAVAILABLE') {
+            document.getElementById("mirror-unavailable-warning").classList.remove("hidden");
+        }
+
+        // Add Match status
+        let matchedCount = 0;
+        let likelyCount = 0;
+        let unmatchedCount = 0;
+
+        items.forEach(item => {
+            const matchInfo = findFieldLabelMatch(item.label, mirrorLabels);
+            item.matchState = matchInfo.state;
+            item.matchLabel = matchInfo.match;
+            
+            if (item.matchState === 'EXACT') matchedCount++;
+            else if (item.matchState === 'LIKELY') likelyCount++;
+            else if (item.matchState === 'UNMATCHED') unmatchedCount++;
+        });
+        
+        document.getElementById("count-matched").innerText = matchedCount;
+        document.getElementById("count-likely").innerText = likelyCount;
+        document.getElementById("count-unmatched").innerText = unmatchedCount;
+
         // Render preview
         const previewList = document.getElementById("preview-list");
         previewList.innerHTML = "";
         items.forEach(item => {
             const row = document.createElement("div");
             row.className = "p-3 hover:bg-slate-700/50 transition-colors flex justify-between items-start";
+            if (item.matchState) row.setAttribute('data-match-state', item.matchState);
+            if (item.matchLabel) row.setAttribute('data-match-label', item.matchLabel);
             
             const left = document.createElement("div");
             left.className = "flex flex-col gap-1 pr-4";
+            
             const lbl = document.createElement("div");
-            lbl.className = "text-slate-400 text-[10px] font-bold uppercase tracking-wider";
+            let lblColor = "text-slate-400";
+            if (item.matchState === 'EXACT') lblColor = "text-emerald-400";
+            else if (item.matchState === 'LIKELY') lblColor = "text-amber-400";
+            
+            lbl.className = `${lblColor} text-[10px] font-bold uppercase tracking-wider`;
             lbl.innerText = item.label;
+            
             const val = document.createElement("div");
-            val.className = "text-slate-200 text-sm";
+            val.className = "text-slate-200 text-base";
             val.innerText = item.value;
             left.appendChild(lbl);
             left.appendChild(val);
 
             const right = document.createElement("div");
-            right.className = "text-blue-400/80 text-[9px] font-mono font-bold tracking-widest uppercase shrink-0 pt-1";
-            right.innerText = item.source;
+            right.className = "flex flex-col items-end gap-1 shrink-0 pt-1";
+            
+            const src = document.createElement("div");
+            src.className = "text-blue-400/80 text-[9px] font-mono font-bold tracking-widest uppercase";
+            src.innerText = item.source;
+            right.appendChild(src);
+            
+            const matchStatus = document.createElement("div");
+            matchStatus.className = "text-[9px] font-mono font-bold tracking-widest uppercase";
+            
+            if (item.matchState === 'EXACT') {
+                matchStatus.className += " text-emerald-500";
+                matchStatus.innerText = mapContext.source === 'LIVE' ? "MATCHED" : "KNOWN FIELD";
+            } else if (item.matchState === 'LIKELY') {
+                matchStatus.className += " text-amber-500 text-right";
+                const likelyText = mapContext.source === 'LIVE' ? "CLOSEST MATCH" : "CLOSEST FIELD";
+                matchStatus.innerHTML = `${likelyText}<br><span class="text-amber-300">${item.matchLabel}</span>`;
+            } else if (item.matchState === 'UNMATCHED') {
+                matchStatus.className += " text-slate-500";
+                matchStatus.innerText = "NO MATCH";
+            } else {
+                matchStatus.className += " text-slate-500";
+                matchStatus.innerText = "UNKNOWN";
+            }
+            
+            right.appendChild(matchStatus);
 
             row.appendChild(left);
             row.appendChild(right);
@@ -506,6 +715,10 @@
         if (e.key === 'hvacActiveJob' || e.key === COMPILER_PAYLOAD_KEY) {
             refreshDataBlock(false);
         }
+    });
+
+    window.addEventListener('platts-mirror-updated', () => {
+        refreshDataBlock(false);
     });
 
 </script>
