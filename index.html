@@ -6,19 +6,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.00.9</title>
+    <title>HVAC Splash v2.01.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .action-pill { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; }
-        .qs-action-col { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; margin-left: 5px; }
-        @media (min-width: 500px) { .qs-action-col { flex-direction: row; margin-top: 1px; } }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .action-pill {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .qs-action-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex-shrink: 0;
+            margin-left: 5px;
+        }
+
+        @media (min-width: 500px) {
+            .qs-action-col {
+                flex-direction: row;
+                margin-top: 1px;
+            }
+        }
     </style>
     <!-- BUILD: index_v28_25_2026_04_10_0540.html -->
     <!-- v25.7: Row Logic Update (Full-Width PMI Rows, DRAIN AND PAN Force, Symbols: Degree Only, Raw Data for Spreadsheet) -->
@@ -1291,22 +1318,37 @@
 
 </head>
 
-<body id="masterBody" class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen text-white" style="overscroll-behavior-y: contain;">
+<body id="masterBody" class="bg-slate-900 m-0 p-0 flex flex-col min-h-screen text-white"
+    style="overscroll-behavior-y: contain;">
 
     <div id="masterIndicator" class="master-indicator"></div>
 
     <!-- STATUS BAR LAUNCHER -->
-    <div id="top-status-bar" onclick="document.getElementById('top-ribbon-drawer').classList.toggle('hidden')" class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
-        <div id="active-job-ticket" class="job-header-text text-slate-400 font-mono text-base font-bold tracking-wider uppercase">[ Awaiting New Call Info ]</div>
+    <div id="top-status-bar" onclick="document.getElementById('top-ribbon-drawer').classList.toggle('hidden')"
+        class="w-full bg-slate-900 border-b border-slate-700 flex justify-center items-center px-4 py-2 sticky top-0 z-50 cursor-pointer hover:bg-slate-800 transition-colors shadow-sm">
+        <div id="active-job-ticket"
+            class="job-header-text text-slate-400 font-mono text-base font-bold tracking-wider uppercase">[ Awaiting New
+            Call Info ]</div>
     </div>
 
     <!-- TOP RIBBON DRAWER (ACCORDION) -->
-    <div id="top-ribbon-drawer" class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-3 px-4 py-3 hidden origin-top transition-all duration-300 z-40 sticky top-8 shadow-md">
-      <button onclick="startJob()" class="action-pill bg-emerald-600 hover:bg-emerald-500 text-slate-900 flex items-center justify-center text-xl transition-colors border border-emerald-400 shadow-sm" title="New Job">➕</button>
-      <button onclick="openActiveDriveFolder()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Drive">📁</button>
-      <button onclick="openGallery()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Album">📷</button>
-      <button onclick="showSection('section-manuals')" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Manuals">📖</button>
-      <button onclick="toggleGlobalMic()" class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm" title="Mic">🎙️</button>
+    <div id="top-ribbon-drawer"
+        class="w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 flex justify-start overflow-x-auto no-scrollbar gap-3 px-4 py-3 hidden origin-top transition-all duration-300 z-40 sticky top-8 shadow-md">
+        <button onclick="startJob()"
+            class="action-pill bg-emerald-600 hover:bg-emerald-500 text-slate-900 flex items-center justify-center text-xl transition-colors border border-emerald-400 shadow-sm"
+            title="New Job">➕</button>
+        <button onclick="openActiveDriveFolder()"
+            class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm"
+            title="Drive">📁</button>
+        <button onclick="openGallery()"
+            class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm"
+            title="Album">📷</button>
+        <button onclick="showSection('section-manuals')"
+            class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm"
+            title="Manuals">📖</button>
+        <button onclick="toggleGlobalMic()"
+            class="action-pill bg-slate-700 hover:bg-slate-600 text-white flex items-center justify-center text-xl transition-colors border border-slate-500 shadow-sm"
+            title="Mic">🎙️</button>
     </div>
 
     <!-- MAIN SPLASH WORKSPACE -->
@@ -1315,67 +1357,89 @@
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
-                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded" style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.00.9</span>
+                    <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded"
+                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.0</span>
                 </h2>
                 <div class="flex items-center gap-2">
-                    <button id="pwaInstallBtn" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL APP</button>
-                    <span id="pwaModeIndicator" class="hidden text-xs font-bold text-blue-400 border border-blue-400 px-2 py-1 rounded">APP MODE</span>
-                    <button onclick="toggleGlobalMic()" class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
+                    <button id="pwaInstallBtn" onclick="installPWA()"
+                        class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg border border-emerald-400 shadow-sm whitespace-nowrap">INSTALL
+                        APP</button>
+                    <span id="pwaModeIndicator"
+                        class="hidden text-xs font-bold text-blue-400 border border-blue-400 px-2 py-1 rounded">APP
+                        MODE</span>
+                    <button onclick="toggleGlobalMic()"
+                        class="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(37,99,235,0.5)] border border-blue-400 transition-transform active:scale-95">🎙</button>
                 </div>
             </div>
-            
-            <div id="conflictBadgeHeader" style="display:none;" class="w-full text-center p-2 rounded-lg font-bold mb-4 bg-red-900/30 border border-red-500 text-red-500 text-xs"></div>
-            
-            <input type="text" id="custName" placeholder="Enter Name / Job #" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white placeholder-slate-500 mb-3 focus:outline-none focus:border-blue-500 transition-colors">
-            
+
+            <div id="conflictBadgeHeader" style="display:none;"
+                class="w-full text-center p-2 rounded-lg font-bold mb-4 bg-red-900/30 border border-red-500 text-red-500 text-xs">
+            </div>
+
+            <input type="text" id="custName" placeholder="Enter Name / Job #"
+                class="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white placeholder-slate-500 mb-3 focus:outline-none focus:border-blue-500 transition-colors">
+
             <div class="grid grid-cols-2 gap-3">
-                <button id="shellBtn" onclick="startJob()" class="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-bold py-5 rounded-xl shadow-lg border border-emerald-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg">
+                <button id="shellBtn" onclick="startJob()"
+                    class="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-slate-900 font-bold py-5 rounded-xl shadow-lg border border-emerald-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg">
                     <span class="text-2xl">🚀</span> CREATE SHELL
                 </button>
-                <div id="createShellDiagnostic" class="col-span-2 bg-slate-900 border border-amber-500 text-[10px] font-mono text-amber-500 p-2 rounded w-full whitespace-pre-wrap break-words" style="display:none;"></div>
+                <div id="createShellDiagnostic"
+                    class="col-span-2 bg-slate-900 border border-amber-500 text-[10px] font-mono text-amber-500 p-2 rounded w-full whitespace-pre-wrap break-words"
+                    style="display:none;"></div>
 
                 <!-- Hidden input for file upload -->
-                <input type="file" id="fileInputHome" style="display:none;" accept="image/*" multiple onchange="handleMultiPhotos(this)">
+                <input type="file" id="fileInputHome" style="display:none;" accept="image/*" multiple
+                    onchange="handleMultiPhotos(this)">
 
-                <button onclick="document.getElementById('fileInputHome').click()" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-5 rounded-xl shadow-lg border border-blue-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg">
+                <button onclick="document.getElementById('fileInputHome').click()"
+                    class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-5 rounded-xl shadow-lg border border-blue-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg">
                     <span class="text-2xl">📸</span> UPLOAD PHOTOS
                 </button>
 
-                <button onclick="openQuickStash()" class="col-span-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-5 rounded-xl shadow-lg border border-indigo-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg mt-2 mb-2">
+                <button onclick="openQuickStash()"
+                    class="col-span-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-5 rounded-xl shadow-lg border border-indigo-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg mt-2 mb-2">
                     <span class="text-2xl">📥</span> QUICK STASH
                 </button>
 
-                <button onclick="openJobPortal()" class="col-span-2 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold py-5 rounded-xl shadow-lg border border-amber-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg mb-2">
+                <button onclick="openJobPortal()"
+                    class="col-span-2 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold py-5 rounded-xl shadow-lg border border-amber-400 transition-transform active:scale-95 flex items-center justify-center gap-2 text-lg mb-2">
                     <span class="text-2xl">📂</span> JOB PORTAL
                 </button>
-                
-                <button onclick="triggerAppParser(this)" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-xl shadow-lg border border-purple-400 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+
+                <button onclick="triggerAppParser(this)"
+                    class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-xl shadow-lg border border-purple-400 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
                     <span class="text-2xl">⚡</span>
                     <span class="text-[10px] tracking-wider uppercase">Process Photos</span>
                 </button>
-                
-                <button onclick="openActiveDriveFolder()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold py-4 rounded-xl shadow-lg border border-emerald-500/50 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+
+                <button onclick="openActiveDriveFolder()"
+                    class="bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold py-4 rounded-xl shadow-lg border border-emerald-500/50 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
                     <span class="text-2xl">📁</span>
                     <span class="text-[10px] tracking-wider uppercase">Drive Folder</span>
                 </button>
 
-                <button onclick="openGallery()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 font-bold py-4 rounded-xl shadow-lg border border-blue-500/50 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                <button onclick="openGallery()"
+                    class="bg-slate-800 hover:bg-slate-700 text-blue-400 font-bold py-4 rounded-xl shadow-lg border border-blue-500/50 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
                     <span class="text-2xl">🖼️</span>
                     <span class="text-[10px] tracking-wider uppercase">Gallery</span>
                 </button>
-                
-                <button id="librarianBtn" onclick="runLibrarianInApp()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded-xl shadow-lg border border-slate-600 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+
+                <button id="librarianBtn" onclick="runLibrarianInApp()"
+                    class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded-xl shadow-lg border border-slate-600 transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
                     <span class="text-2xl">🔍</span>
                     <span class="text-[10px] tracking-wider uppercase">Librarian</span>
                 </button>
-                
-                <button onclick="showSection('section-manuals')" class="col-span-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded-xl shadow-lg border border-slate-600 transition-transform active:scale-95 flex items-center justify-center gap-2">
+
+                <button onclick="showSection('section-manuals')"
+                    class="col-span-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded-xl shadow-lg border border-slate-600 transition-transform active:scale-95 flex items-center justify-center gap-2">
                     <span class="text-xl">📖</span>
                     <span class="text-xs tracking-wider uppercase">Manuals</span>
                 </button>
             </div>
-            
-            <div id="photoStatus" style="display:none;" class="mt-6 text-center text-xs text-amber-500 font-bold tracking-wider"></div>
+
+            <div id="photoStatus" style="display:none;"
+                class="mt-6 text-center text-xs text-amber-500 font-bold tracking-wider"></div>
         </div>
     </div>
 
@@ -1533,11 +1597,15 @@
             </div> <!-- CRITICAL BUGFIX: Closes the text container div -->
 
             <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-                <button onclick="wipeSpecsData()" class="btn-utility danger" style="font-size:9px; padding:6px 10px;">☢️ WIPE SPECS</button>
+                <button onclick="wipeSpecsData()" class="btn-utility danger" style="font-size:9px; padding:6px 10px;">☢️
+                    WIPE SPECS</button>
                 <button onclick="applyMirrorToHub('specs')" class="btn-utility"
                     style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:9px;">⚡ MIRROR
                     SYNC</button>
-                <button onclick="document.getElementById('sysSpecsMirrorModal').style.display='flex';" class="btn-utility" style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:9px;">◨ MIRROR SYNC</button>
+                <button onclick="document.getElementById('sysSpecsMirrorModal').style.display='flex';"
+                    class="btn-utility"
+                    style="border-color:var(--electric-blue); color:var(--electric-blue); font-size:9px;">◨ MIRROR
+                    SYNC</button>
                 <button onclick="openJobPortal()" class="btn-utility"
                     style="background:#222; border:1px solid #c5a059; color:#c5a059; padding:6px 10px; border-radius:12px; display:flex; align-items:center; gap:4px;">
                     <span style="font-size:14px;">📂</span><span style="font-size:9px; font-weight:900;">PORTAL</span>
@@ -1897,77 +1965,109 @@
     </div>
 
     <!-- QUICK STASH MODAL -->
-    <div id="quickStashModal" class="modal-overlay" style="background:#121212; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; overflow-x:hidden; top:0; z-index:10000; align-items:center;">
+    <div id="quickStashModal" class="modal-overlay"
+        style="background:#121212; display:none; flex-direction:column; height:100dvh; max-height:100%; box-sizing:border-box; overflow-x:hidden; top:0; z-index:10000; align-items:center;">
         <!-- QUICK STASH TUNER PANEL -->
-        <div id="qsSettingsPanel" style="display:none; position:fixed; top:50px; right:20px; z-index:10001; background:rgba(18,18,18,0.95); border:1px solid #444; border-radius:8px; width:90vw; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); flex-direction:column; max-height:85vh; transition: max-height 0.2s; box-sizing:border-box; overflow-x:hidden;">
+        <div id="qsSettingsPanel"
+            style="display:none; position:fixed; top:50px; right:20px; z-index:10001; background:rgba(18,18,18,0.95); border:1px solid #444; border-radius:8px; width:90vw; max-width:400px; box-shadow:0 8px 32px rgba(0,0,0,0.8); flex-direction:column; max-height:85vh; transition: max-height 0.2s; box-sizing:border-box; overflow-x:hidden;">
             <!-- Header / Drag Handle -->
-            <div onmousedown="initQsTunerDrag(event)" ontouchstart="initQsTunerDrag(event)" style="padding:10px 15px; background:rgba(255,255,255,0.05); border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; cursor:move; border-radius:8px 8px 0 0; user-select:none; -webkit-user-select:none;">
-                <div style="font-weight:900; color:var(--electric-blue); font-size:14px; pointer-events:none;" id="qsTunerHeaderTitle">QUICK STASH TUNER</div>
+            <div onmousedown="initQsTunerDrag(event)" ontouchstart="initQsTunerDrag(event)"
+                style="padding:10px 15px; background:rgba(255,255,255,0.05); border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; cursor:move; border-radius:8px 8px 0 0; user-select:none; -webkit-user-select:none;">
+                <div style="font-weight:900; color:var(--electric-blue); font-size:14px; pointer-events:none;"
+                    id="qsTunerHeaderTitle">QUICK STASH TUNER</div>
                 <div style="display:flex; gap:10px;">
-                    <button onclick="toggleQsTunerSize()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Toggle Size">↕</button>
-                    <button onclick="toggleQsTunerCollapse()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Minimize">_</button>
-                    <button onclick="toggleQsSettings()" style="background:none; border:none; color:#aaa; cursor:pointer;" title="Close">✕</button>
+                    <button onclick="toggleQsTunerSize()"
+                        style="background:none; border:none; color:#aaa; cursor:pointer;" title="Toggle Size">↕</button>
+                    <button onclick="toggleQsTunerCollapse()"
+                        style="background:none; border:none; color:#aaa; cursor:pointer;" title="Minimize">_</button>
+                    <button onclick="toggleQsSettings()"
+                        style="background:none; border:none; color:#aaa; cursor:pointer;" title="Close">✕</button>
                 </div>
             </div>
             <!-- Scrollable content -->
-            <div id="qsSettingsContent" style="padding:15px; font-size:11px; color:#ccc; overflow-y:auto; display:grid; grid-template-columns:1fr; gap:15px; max-height:calc(85vh - 40px); width:100%; max-width:100%; min-width:0; box-sizing:border-box; overflow-x:hidden;">
+            <div id="qsSettingsContent"
+                style="padding:15px; font-size:11px; color:#ccc; overflow-y:auto; display:grid; grid-template-columns:1fr; gap:15px; max-height:calc(85vh - 40px); width:100%; max-width:100%; min-width:0; box-sizing:border-box; overflow-x:hidden;">
                 <!-- Dynamic fields rendered here by JS -->
             </div>
-</div>
-        <div id="qsWorkspaceWrapper" class="w-full flex flex-col h-full" style="max-width:672px; box-sizing:border-box; overflow-x:clip;">
-            <input type="file" id="quickStashFileInput" style="display:none;" accept="image/*" multiple onchange="handleQuickStashPhoto(this)">
+        </div>
+        <div id="qsWorkspaceWrapper" class="w-full flex flex-col h-full"
+            style="max-width:672px; box-sizing:border-box; overflow-x:clip;">
+            <input type="file" id="quickStashFileInput" style="display:none;" accept="image/*" multiple
+                onchange="handleQuickStashPhoto(this)">
 
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
+            <div
+                style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-bottom:1px solid #333; flex-shrink:0;">
                 <div style="width:var(--qs-hdr-active-wd);">
-                    <h2 style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
+                    <h2
+                        style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
-                        <span id="qsVerBadge" style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.00.9</span>
-                        <button onclick="toggleQsSettings()" style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
+                        <span id="qsVerBadge"
+                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.0</span>
+                        <button onclick="toggleQsSettings()"
+                            style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
-                    <div style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
+                    <div
+                        style="font-size:var(--qs-hdr-storage-fs); color:var(--amber-orange); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
                         <span style="font-size:var(--qs-hdr-workspace-fs);">LOCAL STASH</span>
-                        <span id="qsStorageUsage" style="background:var(--electric-blue); color:#000; padding:4px 8px; border-radius:6px; font-weight:900;"></span>
+                        <span id="qsStorageUsage"
+                            style="background:var(--electric-blue); color:#000; padding:4px 8px; border-radius:6px; font-weight:900;"></span>
                     </div>
                     <!-- ACTIVE STASH LABEL -->
-                    <div style="font-size:var(--qs-hdr-active-fs); color:var(--text-primary); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px; margin-top:6px;">
+                    <div
+                        style="font-size:var(--qs-hdr-active-fs); color:var(--text-primary); font-weight:900; letter-spacing:1px; display:flex; align-items:center; gap:8px; margin-top:6px;">
                         ACTIVE STASH: <span id="qsActiveStashLabel" style="color:var(--emerald-green);">NONE</span>
                     </div>
-                    <div id="qsActiveStashJobStatus" style="font-size:12px; color:#888; font-weight:900; margin-top:2px;">JOB: --</div>
+                    <div id="qsActiveStashJobStatus"
+                        style="font-size:12px; color:#888; font-weight:900; margin-top:2px;">JOB: --</div>
                 </div>
-                <button onclick="closeQuickStash()" style="background:none; border:none; font-size:var(--qs-hdr-close-fs); width:var(--qs-hdr-close-wd); padding:0; cursor:pointer; color:var(--crimson-red);">✖</button>
+                <button onclick="closeQuickStash()"
+                    style="background:none; border:none; font-size:var(--qs-hdr-close-fs); width:var(--qs-hdr-close-wd); padding:0; cursor:pointer; color:var(--crimson-red);">✖</button>
             </div>
 
-            <div id="quickStashContent" style="flex:1; overflow-y:auto; overflow-x:hidden; padding:15px; display:flex; flex-direction:column; gap:15px; box-sizing:border-box; padding-bottom:calc(64px + env(safe-area-inset-bottom,0px));">
+            <div id="quickStashContent"
+                style="flex:1; overflow-y:auto; overflow-x:hidden; padding:15px; display:flex; flex-direction:column; gap:15px; box-sizing:border-box; padding-bottom:calc(64px + env(safe-area-inset-bottom,0px));">
 
 
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <button onclick="createNewQuickStash()" class="btn btn-outline" style="border-color:var(--emerald-green); color:var(--emerald-green); font-weight:900;">+ NEW STASH</button>
-                    <button onclick="document.getElementById('quickStashFileInput').click()" class="btn btn-outline" style="border-color:var(--electric-blue); color:var(--electric-blue); font-weight:900;">📸 PICK PHOTO</button>
-                    <button onclick="showQuickStashBrowser()" class="btn btn-outline" style="grid-column:span 2; border-color:#888; color:#ccc; font-weight:900;">📂 BROWSE STASHES</button>
+                    <button onclick="createNewQuickStash()" class="btn btn-outline"
+                        style="border-color:var(--emerald-green); color:var(--emerald-green); font-weight:900;">+ NEW
+                        STASH</button>
+                    <button onclick="document.getElementById('quickStashFileInput').click()" class="btn btn-outline"
+                        style="border-color:var(--electric-blue); color:var(--electric-blue); font-weight:900;">📸 PICK
+                        PHOTO</button>
+                    <button onclick="showQuickStashBrowser()" class="btn btn-outline"
+                        style="grid-column:span 2; border-color:#888; color:#ccc; font-weight:900;">📂 BROWSE
+                        STASHES</button>
                 </div>
 
                 <!-- Configuration & Hopper -->
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; cursor:pointer; margin-bottom:-5px;" onclick="toggleQsSection('ScanSettings')">
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; cursor:pointer; margin-bottom:-5px;"
+                    onclick="toggleQsSection('ScanSettings')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <span style="font-size:12px; color:var(--electric-blue); font-weight:900;">SCAN SETTINGS</span>
                         <span id="qsSecArr_ScanSettings" style="color:#aaa;">▼</span>
                     </div>
-                    <div id="qsScanSettingsSummary" style="font-size:10px; color:#aaa; margin-top:4px;">AUTO • NORMAL • BOTH</div>
+                    <div id="qsScanSettingsSummary" style="font-size:10px; color:#aaa; margin-top:4px;">AUTO • NORMAL •
+                        BOTH</div>
                 </div>
                 <div id="qsSec_ScanSettings" style="display:none; border-top:1px solid #333; padding-top:10px;">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/5 p-4 rounded-b-lg">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:12px; color:#aaa; font-weight:900;">REVIEW RESULTS:</span>
-                            <button id="qsToggleReviewBtn" onclick="toggleQsReview()" class="btn-utility" style="padding:4px 8px; font-size:10px;">ON</button>
+                            <button id="qsToggleReviewBtn" onclick="toggleQsReview()" class="btn-utility"
+                                style="padding:4px 8px; font-size:10px;">ON</button>
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:12px; color:#aaa; font-weight:900;">DESTINATION:</span>
-                            <select id="qsDestSelect" onchange="updateQsDest()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:140px;"></select>
+                            <select id="qsDestSelect" onchange="updateQsDest()"
+                                style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:140px;"></select>
                         </div>
-                        
+
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:12px; color:#aaa; font-weight:900;">SCAN PROFILE:</span>
-                            <select id="qsScanType" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:120px;" onchange="updateQsScanType()">
+                            <select id="qsScanType"
+                                style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px; max-width:120px;"
+                                onchange="updateQsScanType()">
                                 <option value="AUTO">AUTO</option>
                                 <option value="DATA TAG">DATA TAG</option>
                                 <option value="THERMOSTAT">THERMOSTAT</option>
@@ -1977,7 +2077,9 @@
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:12px; color:#aaa; font-weight:900;">DEPTH:</span>
-                            <select id="qsScanDepth" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanDepth()">
+                            <select id="qsScanDepth"
+                                style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;"
+                                onchange="updateQsScanDepth()">
                                 <option value="QUICK">QUICK</option>
                                 <option value="NORMAL" selected>NORMAL</option>
                                 <option value="DEEP">DEEP</option>
@@ -1986,15 +2088,19 @@
 
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:12px; color:#aaa; font-weight:900;">FOCUS:</span>
-                            <select id="qsScanFocus" style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;" onchange="updateQsScanFocus()">
+                            <select id="qsScanFocus"
+                                style="background:#222; color:white; border:1px solid #444; border-radius:4px; padding:4px; font-size:10px;"
+                                onchange="updateQsScanFocus()">
                                 <option value="VALUES">VALUES</option>
                                 <option value="RESULTS">RESULTS</option>
                                 <option value="BOTH" selected>BOTH</option>
                             </select>
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER DETAIL:</span>
-                            <button onclick="toggleQsDetail()" id="qsToggleDetailBtn" class="btn-utility" style="padding:2px 6px; font-size:9px;">MINIMAL</button>
+                            <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER
+                                DETAIL:</span>
+                            <button onclick="toggleQsDetail()" id="qsToggleDetailBtn" class="btn-utility"
+                                style="padding:2px 6px; font-size:9px;">MINIMAL</button>
                         </div>
                     </div>
                 </div>
@@ -2003,22 +2109,29 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                         <span style="font-size:12px; color:var(--amber-orange); font-weight:900;">HOPPER QUEUE</span>
                     </div>
-                    <div id="quickStashHopperStats" style="font-size:10px; color:#ccc; display:flex; gap:10px; flex-wrap:wrap;"></div>
-                    <div id="quickStashHopperList" style="display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; margin-top:5px;"></div>
+                    <div id="quickStashHopperStats"
+                        style="font-size:10px; color:#ccc; display:flex; gap:10px; flex-wrap:wrap;"></div>
+                    <div id="quickStashHopperList"
+                        style="display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; margin-top:5px;">
+                    </div>
                 </div>
 
-                <div id="quickStashStatus" style="display:none; color:var(--amber-orange); font-weight:900; text-align:center; padding:10px; background:rgba(255,171,0,0.1); border-radius:8px;"></div>
+                <div id="quickStashStatus"
+                    style="display:none; color:var(--amber-orange); font-weight:900; text-align:center; padding:10px; background:rgba(255,171,0,0.1); border-radius:8px;">
+                </div>
                 <div id="quickStashViewArea"></div>
             </div>
         </div>
         <!-- QUICK STASH NAVIGATION PANEL -->
-        <div id="qs-bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 flex flex-col" style="position:fixed; left:0; right:0; bottom:0; z-index:10005; padding-bottom:env(safe-area-inset-bottom,0px);">
-          <div id="qs-bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
-            <div id="qs-bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
-          </div>
-          <button id="qs-bottom-nav-launcher" onclick="toggleQsBottomNav()" class="w-full h-12 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
-            <span id="qs-bottom-nav-icon" class="mr-2">☰</span> PAGES
-          </button>
+        <div id="qs-bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 flex flex-col"
+            style="position:fixed; left:0; right:0; bottom:0; z-index:10005; padding-bottom:env(safe-area-inset-bottom,0px);">
+            <div id="qs-bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+                <div id="qs-bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+            </div>
+            <button id="qs-bottom-nav-launcher" onclick="toggleQsBottomNav()"
+                class="w-full h-12 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
+                <span id="qs-bottom-nav-icon" class="mr-2">☰</span> PAGES
+            </button>
         </div>
     </div>
 
@@ -2289,18 +2402,20 @@
     </div>
 
     <!-- BOTTOM APP NAVIGATION PANEL -->
-    <div id="bottom-page-nav" class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
-      
-      <!-- Expanded Grid (Hidden by default) -->
-      <div id="bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
-        <!-- Dynamic Grid -->
-        <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
-      </div>
+    <div id="bottom-page-nav"
+        class="w-full bg-slate-900 border-t border-slate-700 mt-auto sticky bottom-0 z-40 flex flex-col pb-[env(safe-area-inset-bottom,0px)]">
 
-      <!-- Launcher / Collapse Control -->
-      <button id="bottom-nav-launcher" onclick="toggleBottomNav()" class="w-full h-12 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
-        <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
-      </button>
+        <!-- Expanded Grid (Hidden by default) -->
+        <div id="bottom-nav-grid" class="hidden w-full p-2 bg-slate-900 border-b border-slate-800">
+            <!-- Dynamic Grid -->
+            <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+        </div>
+
+        <!-- Launcher / Collapse Control -->
+        <button id="bottom-nav-launcher" onclick="toggleBottomNav()"
+            class="w-full h-12 flex items-center justify-center text-slate-300 font-bold text-sm tracking-widest bg-slate-800 hover:bg-slate-700 transition-colors active:bg-slate-600">
+            <span id="bottom-nav-icon" class="mr-2">☰</span> PAGES
+        </button>
 
     </div>
 
@@ -2332,7 +2447,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.00.9";
+        const APP_VERSION = "v2.01.0";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, startup: { label: "STARTUP", enabled: true }, pmi: { label: "PMI", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
@@ -2381,7 +2496,7 @@
         function getNavHtmlForRegistry() {
             let currentPath = window.location.pathname.split('/').pop().toLowerCase();
             let isQs = window.location.hash === '#quickstash';
-            
+
             let html = "";
             const registry = getPagesRegistry();
             registry.forEach(p => {
@@ -2391,10 +2506,10 @@
                 } else if (!isQs && (currentPath === "splash.html" || currentPath === "index.html" || !currentPath) && p.name === "Splash") {
                     isCurrent = true;
                 }
-                
+
                 let clickAction = "";
                 let hrefTarget = p.file;
-                
+
                 if (isQs && p.name === "Splash") {
                     hrefTarget = "javascript:void(0);";
                     clickAction = ` onclick="closeQuickStash(); return false;"`;
@@ -2422,10 +2537,10 @@
 
         function renderBottomNav() {
             const html = getNavHtmlForRegistry();
-            
+
             const mainGrid = document.getElementById('bottom-nav-grid-inner');
             if (mainGrid) mainGrid.innerHTML = html;
-            
+
             const qsGrid = document.getElementById('qs-bottom-nav-grid-inner');
             if (qsGrid) qsGrid.innerHTML = html;
         }
@@ -2696,6 +2811,9 @@
             if (id === 'section-datablock') renderDraftBlock();
             if (id === 'reportModal') {
                 renderCompiler(); initTechNotes(); loadRefInputs();
+            }
+            if (id === 'section-manuals') {
+                loadJobManuals();
             }
             if (id === 'settingsModal') {
                 isSettingsMode = true;
@@ -3978,50 +4096,50 @@
                         isJobMode = true;
                         refreshSyncUI();
                         updateUniversalJobHeaders();
-                        
+
                         currentJobTab = jobName;
                         localStorage.setItem('hvacCurrentJobTabV20', jobName);
                         localStorage.setItem('hvacActiveFolderId', folderId);
-                        
+
                         let rawStashes = localStorage.getItem('hvacQuickStashesV1');
                         if (rawStashes) quickStashes = JSON.parse(rawStashes);
-                        
+
                         let targetStashId = hvacQsAttachContext.stashId;
                         let stash = quickStashes[targetStashId];
-                        
+
                         if (stash) {
                             if (!stash.linkHistory) stash.linkHistory = [];
                             let actionType = "attached";
                             if (stash.jobLink && stash.jobLink.attached && stash.jobLink.sheetName !== jobName) {
                                 actionType = "relinked";
                             }
-                            
+
                             stash.jobLink = {
                                 attached: true,
                                 sheetName: jobName,
                                 folderId: folderId,
                                 attachedAt: Date.now()
                             };
-                            
+
                             stash.linkHistory.push({
                                 action: actionType,
                                 sheetName: jobName,
                                 folderId: folderId,
                                 timestamp: Date.now()
                             });
-                            
+
                             localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
                             console.log("QS ATTACH SAVE\n- stashId: " + targetStashId + "\n- sheetName: " + jobName + "\n- folderId: " + folderId + "\n- persisted: YES");
-                            
+
                             activeQuickStashId = targetStashId;
                             localStorage.setItem('hvacActiveQuickStashId', targetStashId);
                         } else {
                             console.log("QS ATTACH SAVE\n- stashId: " + targetStashId + "\n- persisted: NO (Stash not found)");
                         }
-                        
+
                         hvacQsAttachMode = false;
                         hvacQsAttachContext = null;
-                        
+
                         closeJobPortal();
                         document.getElementById('quickStashModal').style.display = 'flex';
                         renderActiveQuickStash();
@@ -4081,9 +4199,9 @@
                     body: JSON.stringify(payload),
                     signal: controller.signal
                 });
-                
+
                 console.log(`APPS SCRIPT REQUEST ACTION: ${payload.action}\nHTTP STATUS: ${response.status}\nHTTP OK: ${response.ok}\nCONTENT TYPE: ${response.headers.get('content-type')}`);
-                
+
                 clearTimeout(timeoutId);
                 const rawText = await response.text();
                 try {
@@ -4194,22 +4312,22 @@
             collapseDiagnostics: true,
             collapseCopyOptions: false,
             collapseScanSettings: true,
-            
+
             pushAllEquipment: true,
             pushAllDiagnostics: true,
             pushAllStartup: true,
-            
-            widthMode: 'Standard', 
+
+            widthMode: 'Standard',
             fixedWidth: 800,
             outerPadding: 15,
             sectionGap: 15,
-            
+
             hdrFs: 11,
             hdrMinHt: 40,
             hdrPadV: 0,
             hdrPadH: 0,
             hdrRad: 0,
-            
+
             hdrActiveFs: 20,
             hdrActiveWd: 0,
             hdrCloseWd: 30,
@@ -4244,15 +4362,15 @@
             lockedFields: {}
         };
 
-        let savedGlobalSettings = JSON.parse(localStorage.getItem('qsSettingsV1_26')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_25')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_24')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_23')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_22')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_21')) 
-                         || JSON.parse(localStorage.getItem('qsSettingsV1_20')) 
-                         || {};
-                         
+        let savedGlobalSettings = JSON.parse(localStorage.getItem('qsSettingsV1_26'))
+            || JSON.parse(localStorage.getItem('qsSettingsV1_25'))
+            || JSON.parse(localStorage.getItem('qsSettingsV1_24'))
+            || JSON.parse(localStorage.getItem('qsSettingsV1_23'))
+            || JSON.parse(localStorage.getItem('qsSettingsV1_22'))
+            || JSON.parse(localStorage.getItem('qsSettingsV1_21'))
+            || JSON.parse(localStorage.getItem('qsSettingsV1_20'))
+            || {};
+
         let qsSettings = { ...defaultQsGlobalSettings };
         for (const key in savedGlobalSettings) {
             if (savedGlobalSettings[key] !== undefined && savedGlobalSettings[key] !== null && qsSettings.hasOwnProperty(key)) {
@@ -4283,7 +4401,7 @@
                 }
             }
         });
-        
+
         if (!savedSectionSettings) {
             localStorage.setItem('qsSectionSettingsV1_26', JSON.stringify(qsSectionSettings));
             localStorage.setItem('qsSettingsV1_26', JSON.stringify(qsSettings));
@@ -4296,21 +4414,21 @@
         let qsLongPressFired = false;
         let qsPointerStartX = 0;
         let qsPointerStartY = 0;
-        
+
         function qsHandlePointerDown(e, sectionKey, fieldPath) {
             qsLongPressFired = false;
             qsLongPressTarget = e.target;
             let touch = e.touches ? e.touches[0] : e;
             qsPointerStartX = touch.clientX;
             qsPointerStartY = touch.clientY;
-            
+
             qsLongPressTimer = setTimeout(() => {
                 qsLongPressFired = true;
                 toggleQsFieldLock(sectionKey, fieldPath);
                 if (navigator.vibrate) navigator.vibrate(50);
             }, 600);
         }
-        
+
         function qsHandlePointerMove(e) {
             if (qsLongPressTimer) {
                 let touch = e.touches ? e.touches[0] : e;
@@ -4322,14 +4440,14 @@
                 }
             }
         }
-        
+
         function qsHandlePointerUp(e) {
             if (qsLongPressTimer) {
                 clearTimeout(qsLongPressTimer);
                 qsLongPressTimer = null;
             }
         }
-        
+
         function qsHandleClick(e) {
             if (qsLongPressFired) {
                 e.preventDefault();
@@ -4337,12 +4455,12 @@
                 qsLongPressFired = false;
             }
         }
-        
+
         function toggleQsFieldLock(sectionKey, fieldPath) {
             if (!qsSectionSettings[sectionKey].lockedFields) qsSectionSettings[sectionKey].lockedFields = {};
             let isLocked = !qsSectionSettings[sectionKey].lockedFields[fieldPath];
             qsSectionSettings[sectionKey].lockedFields[fieldPath] = isLocked;
-            
+
             if (isLocked) {
                 let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
                 let stash = stashes[activeQuickStashId];
@@ -4355,10 +4473,10 @@
                     }
                 }
             }
-            
+
             localStorage.setItem('qsSectionSettingsV1_26', JSON.stringify(qsSectionSettings));
             renderActiveQuickStash();
-            
+
             let el = document.getElementById('qsSettingsPanel');
             if (el && el.style.display !== 'none') {
                 updateQsTunerDisplays();
@@ -4368,7 +4486,7 @@
         // FLOATING TUNER DRAG & BEHAVIOR
         let isQsTunerDragging = false;
         let qsTunerDragStartX, qsTunerDragStartY;
-        
+
         function initQsTunerDrag(e) {
             if (e.target.closest('button, input, select')) return;
             isQsTunerDragging = true;
@@ -4378,9 +4496,9 @@
             qsTunerDragStartY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
             e.preventDefault();
             document.addEventListener('mousemove', onQsTunerDrag);
-            document.addEventListener('touchmove', onQsTunerDrag, {passive: false});
+            document.addEventListener('touchmove', onQsTunerDrag, { passive: false });
         }
-        
+
         function onQsTunerDrag(e) {
             if (!isQsTunerDragging) return;
             if (e.cancelable !== false) e.preventDefault();
@@ -4389,20 +4507,20 @@
             let ey = e.clientY || (e.touches && e.touches[0].clientY);
             let x = ex - qsTunerDragStartX;
             let y = ey - qsTunerDragStartY;
-            
+
             let maxX = window.innerWidth - el.offsetWidth;
             let maxY = window.innerHeight - el.offsetHeight;
-            
+
             x = Math.max(0, Math.min(x, maxX));
             y = Math.max(0, Math.min(y, maxY));
-            
+
             el.style.left = x + 'px';
             el.style.top = y + 'px';
             el.style.transform = 'none';
             el.style.bottom = 'auto';
             el.style.right = 'auto';
         }
-        
+
         function stopQsTunerDrag() {
             isQsTunerDragging = false;
             document.removeEventListener('mousemove', onQsTunerDrag);
@@ -4423,7 +4541,7 @@
                 content.style.maxHeight = 'calc(40vh - 40px)';
             }
         }
-        
+
         function toggleQsTunerCollapse() {
             let content = document.getElementById('qsSettingsContent');
             content.style.display = content.style.display === 'none' ? 'grid' : 'none';
@@ -4440,7 +4558,7 @@
                 }
             }
         }
-        
+
         function openQsTunerForSection(sec, e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
             activeTunerSection = sec;
@@ -4451,7 +4569,7 @@
             }
         }
 
-        function adjQsSet(key, step, isGlobal=false) {
+        function adjQsSet(key, step, isGlobal = false) {
             if (isGlobal) {
                 let cur = parseFloat(qsSettings[key] || 0);
                 let next = cur + step;
@@ -4483,10 +4601,10 @@
             applyQsLiveSettings();
         }
 
-        function saveQsSettingsFromInputs(isGlobal=false) {
+        function saveQsSettingsFromInputs(isGlobal = false) {
             let v = id => { let e = document.getElementById(id); return e ? e.value : null; };
             let c = id => { let e = document.getElementById(id); return e ? e.checked : false; };
-            
+
             if (isGlobal) {
                 qsSettings.widthMode = v('qsTunerWidthMode') || 'Standard';
                 qsSettings.showHopper = c('qsSetShowHopper');
@@ -4510,16 +4628,16 @@
         function updateQsTunerDisplays() {
             let content = document.getElementById('qsSettingsContent');
             if (!content) return;
-            
+
             let sSet = qsSectionSettings[activeTunerSection];
             let secName = activeTunerSection.toUpperCase();
-            
+
             let titleEl = document.getElementById('qsTunerHeaderTitle');
             if (titleEl) titleEl.innerText = secName + " TUNER";
-            
+
             let html = '';
-            
-            const bGrp = (label, key, isGlobal=false) => {
+
+            const bGrp = (label, key, isGlobal = false) => {
                 let val = isGlobal ? qsSettings[key] : sSet[key];
                 return `<div class="qs-tuner-row">
                             <span style="flex:1; min-width:0; word-wrap:break-word; padding-right:5px; line-height:1.2;">${label}</span>
@@ -4530,18 +4648,18 @@
                             </div>
                         </div>`;
             };
-            
+
             // GLOBAL SECTION
             html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
                         <div style="color:var(--emerald-green); font-weight:900; margin-bottom:8px;">GLOBAL</div>
                         <div class="qs-tuner-row">
                             <span style="flex:1; min-width:0; word-wrap:break-word; padding-right:5px; line-height:1.2;">Width Mode</span>
                             <select id="qsTunerWidthMode" onchange="saveQsSettingsFromInputs(true)" style="background:#222; color:white; border:1px solid #444; border-radius:4px; flex-shrink:0; max-width:50%;">
-                                <option value="Compact" ${qsSettings.widthMode==='Compact'?'selected':''}>Compact</option>
-                                <option value="Standard" ${qsSettings.widthMode==='Standard'?'selected':''}>Standard</option>
-                                <option value="Wide" ${qsSettings.widthMode==='Wide'?'selected':''}>Wide</option>
-                                <option value="Full" ${qsSettings.widthMode==='Full'?'selected':''}>Full</option>
-                                <option value="Fixed" ${qsSettings.widthMode==='Fixed'?'selected':''}>Fixed</option>
+                                <option value="Compact" ${qsSettings.widthMode === 'Compact' ? 'selected' : ''}>Compact</option>
+                                <option value="Standard" ${qsSettings.widthMode === 'Standard' ? 'selected' : ''}>Standard</option>
+                                <option value="Wide" ${qsSettings.widthMode === 'Wide' ? 'selected' : ''}>Wide</option>
+                                <option value="Full" ${qsSettings.widthMode === 'Full' ? 'selected' : ''}>Full</option>
+                                <option value="Fixed" ${qsSettings.widthMode === 'Fixed' ? 'selected' : ''}>Fixed</option>
                             </select>
                         </div>
                         ${bGrp('Fixed Width (px)', 'fixedWidth', true)}
@@ -4550,9 +4668,9 @@
                         ${bGrp('Header Min Height', 'hdrMinHt', true)}
                         ${bGrp('Tuner Row Height', 'tunerRowMinHt', true)}
                         <div style="display:flex; justify-content:space-between; margin-top:8px; border-top:1px solid #444; padding-top:8px;">
-                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowHopper" ${qsSettings.showHopper?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Hopper</label>
-                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowExtra" ${qsSettings.showExtra?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Extra</label>
-                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowRawScans" ${qsSettings.showRawScans?'checked':''} onchange="saveQsSettingsFromInputs(true)"> Raw Scans</label>
+                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowHopper" ${qsSettings.showHopper ? 'checked' : ''} onchange="saveQsSettingsFromInputs(true)"> Hopper</label>
+                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowExtra" ${qsSettings.showExtra ? 'checked' : ''} onchange="saveQsSettingsFromInputs(true)"> Extra</label>
+                            <label style="display:flex; align-items:center; gap:5px;"><input type="checkbox" id="qsSetShowRawScans" ${qsSettings.showRawScans ? 'checked' : ''} onchange="saveQsSettingsFromInputs(true)"> Raw Scans</label>
                         </div>
                     </div>`;
             html += `<style>
@@ -4573,21 +4691,21 @@
                             <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; cursor:pointer;">
                                 <span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">SPECS</span>
                                 <div class="qs-toggle">
-                                    <input type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)">
+                                    <input type="checkbox" id="qsSetPushEq" ${qsSettings.pushAllEquipment !== false ? 'checked' : ''} onchange="saveQsSettingsFromInputs(true)">
                                     <span class="qs-slider"></span>
                                 </div>
                             </label>
                             <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; cursor:pointer;">
                                 <span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">DIAGNOSTICS</span>
                                 <div class="qs-toggle">
-                                    <input type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)">
+                                    <input type="checkbox" id="qsSetPushDiag" ${qsSettings.pushAllDiagnostics !== false ? 'checked' : ''} onchange="saveQsSettingsFromInputs(true)">
                                     <span class="qs-slider"></span>
                                 </div>
                             </label>
                             <label style="display:flex; align-items:center; justify-content:space-between; width:100%; min-width:0; box-sizing:border-box; font-weight:bold; font-size:12px; cursor:pointer;">
                                 <span style="flex:1; min-width:0; white-space:normal; overflow-wrap:anywhere;">STARTUP</span>
                                 <div class="qs-toggle">
-                                    <input type="checkbox" id="qsSetPushStartup" ${qsSettings.pushAllStartup!==false?'checked':''} onchange="saveQsSettingsFromInputs(true)">
+                                    <input type="checkbox" id="qsSetPushStartup" ${qsSettings.pushAllStartup !== false ? 'checked' : ''} onchange="saveQsSettingsFromInputs(true)">
                                     <span class="qs-slider"></span>
                                 </div>
                             </label>
@@ -4608,30 +4726,30 @@
                             </label>
                         </div>
                     </div>`;
-                    
+
             // FIELD ROWS SECTION
             html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
                         <div style="color:var(--electric-blue); font-weight:900; margin-bottom:8px;">FIELD ROWS (${secName})</div>
                         <div class="qs-tuner-row">
                             <span style="flex:1; min-width:0; word-wrap:break-word; padding-right:5px; line-height:1.2;">Field Layout</span>
                             <select id="qsTunerFieldLayout" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; flex-shrink:0; max-width:50%;">
-                                <option value="ROW" ${sSet.fieldLayout==='ROW'?'selected':''}>ROW</option>
-                                <option value="STACK" ${sSet.fieldLayout==='STACK'?'selected':''}>STACK</option>
+                                <option value="ROW" ${sSet.fieldLayout === 'ROW' ? 'selected' : ''}>ROW</option>
+                                <option value="STACK" ${sSet.fieldLayout === 'STACK' ? 'selected' : ''}>STACK</option>
                             </select>
                         </div>
                         <div class="qs-tuner-row">
                             <span style="flex:1; min-width:0; word-wrap:break-word; padding-right:5px; line-height:1.2;">Row Mode</span>
                             <select id="qsTunerRowMode" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; flex-shrink:0; max-width:50%;">
-                                <option value="Fixed" ${sSet.rowMode==='Fixed'?'selected':''}>Fixed</option>
-                                <option value="Weight" ${sSet.rowMode==='Weight'?'selected':''}>Weight</option>
+                                <option value="Fixed" ${sSet.rowMode === 'Fixed' ? 'selected' : ''}>Fixed</option>
+                                <option value="Weight" ${sSet.rowMode === 'Weight' ? 'selected' : ''}>Weight</option>
                             </select>
                         </div>
                         <div class="qs-tuner-row">
                             <span style="flex:1; min-width:0; word-wrap:break-word; padding-right:5px; line-height:1.2;">Data Align</span>
                             <select id="qsTunerDatAlign" onchange="saveQsSettingsFromInputs()" style="background:#222; color:white; border:1px solid #444; border-radius:4px; flex-shrink:0; max-width:50%;">
-                                <option value="left" ${sSet.datAlign==='left'?'selected':''}>Left</option>
-                                <option value="center" ${sSet.datAlign==='center'?'selected':''}>Center</option>
-                                <option value="right" ${sSet.datAlign==='right'?'selected':''}>Right</option>
+                                <option value="left" ${sSet.datAlign === 'left' ? 'selected' : ''}>Left</option>
+                                <option value="center" ${sSet.datAlign === 'center' ? 'selected' : ''}>Center</option>
+                                <option value="right" ${sSet.datAlign === 'right' ? 'selected' : ''}>Right</option>
                             </select>
                         </div>
                         ${bGrp('Label Font Size', 'lblFs')}
@@ -4652,7 +4770,7 @@
             html += `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:6px; margin-bottom:15px;">
                         <div style="color:var(--amber-orange); font-weight:900; margin-bottom:8px;">LOCKED FIELDS (${secName})</div>
                         <div style="display:grid; grid-template-columns:1fr; gap:5px;">`;
-            
+
             // Collect keys for active section
             let keys = [];
             if (activeTunerSection === 'customer') keys = ['date', 'invoiceDate', 'name', 'address', 'phone', 'email'];
@@ -4664,22 +4782,22 @@
                     keys = Object.keys(quickStashes[activeQuickStashId].extra);
                 }
             }
-            
+
             keys.forEach(k => {
                 let fp = `${activeTunerSection}.${k}`;
                 let isLocked = sSet.lockedFields && sSet.lockedFields[fp];
                 html += `<label style="display:flex; align-items:center; justify-content:flex-start; gap:10px; width:100%; box-sizing:border-box; padding:4px 0; min-height:var(--qs-tuner-row-ht, 44px); cursor:pointer;">
-                            <input type="checkbox" ${isLocked?'checked':''} onchange="toggleQsFieldLock('${activeTunerSection}', '${fp}')" style="width: 22px !important; height: 22px !important; padding: 0 !important; margin: 0 !important; flex-shrink: 0; outline: none;">
+                            <input type="checkbox" ${isLocked ? 'checked' : ''} onchange="toggleQsFieldLock('${activeTunerSection}', '${fp}')" style="width: 22px !important; height: 22px !important; padding: 0 !important; margin: 0 !important; flex-shrink: 0; outline: none;">
                             <span style="flex:1; word-wrap:break-word; line-height:1.2; font-size:12px;">${k}</span>
                         </label>`;
             });
             html += `</div></div>`;
-            
+
             content.innerHTML = html;
         }
 
         // Backward compatibility stub if anywhere else invokes this
-        function saveQsSettings() {}
+        function saveQsSettings() { }
 
         function applyQsLiveSettings() {
             let modal = document.getElementById('qsWorkspaceWrapper');
@@ -4690,7 +4808,7 @@
                 if (qsSettings.widthMode === 'Wide') mw = '900px';
                 if (qsSettings.widthMode === 'Full') mw = '100%';
                 if (qsSettings.widthMode === 'Fixed') mw = qsSettings.fixedWidth + 'px';
-                
+
                 modal.style.maxWidth = mw;
             }
 
@@ -4700,12 +4818,12 @@
                 styleEl.id = 'qsLiveStyle';
                 document.head.appendChild(styleEl);
             }
-            
+
             let css = `
                 :root {
                     --qs-tuner-row-ht: ${qsSettings.tunerRowMinHt || 44}px;
                     --qs-hdr-fs: ${qsSettings.hdrFs}px;
-                    --qs-hdr-min-ht: ${qsSettings.hdrMinHt||40}px;
+                    --qs-hdr-min-ht: ${qsSettings.hdrMinHt || 40}px;
                     --qs-hdr-pad: ${qsSettings.hdrPadV}px ${qsSettings.hdrPadH}px;
                     --qs-hdr-rad: ${qsSettings.hdrRad}px;
                     --qs-outer-padding: ${qsSettings.outerPadding}px;
@@ -4750,16 +4868,16 @@
                 }
                 /* Active fields get white border when checked, amber when locked. Done via inline style mostly, but can add css here */
             `;
-            
+
             ['customer', 'equipment', 'readings', 'diagnostics', 'extra'].forEach(sec => {
                 let sSet = qsSectionSettings[sec];
-                if(!sSet) return;
-                
+                if (!sSet) return;
+
                 let id = 'qsSec_' + sec.charAt(0).toUpperCase() + sec.slice(1);
                 if (sec === 'diagnostics') id = 'qsSec_Diagnostics'; // already matched above but ensuring case
-                
+
                 let gridCols = sSet.rowMode === 'Weight' ? `24px ${sSet.lblWeight}fr ${sSet.datWeight}fr` : `var(--qs-lbl-col) 1fr`;
-                if(sSet.fieldLayout === 'STACK') gridCols = '1fr';
+                if (sSet.fieldLayout === 'STACK') gridCols = '1fr';
 
                 css += `
                     #${id} {
@@ -4769,7 +4887,7 @@
                         --qs-row-min-ht: ${sSet.rowMinHeight}px;
                         --qs-row-pad: ${sSet.rowPadV}px ${sSet.rowPadH}px;
                         --qs-cb-size: ${sSet.cbSize};
-                        --qs-action-btn-size: ${sSet.actionBtnSize||9}px;
+                        --qs-action-btn-size: ${sSet.actionBtnSize || 9}px;
                         --qs-lbl-fs: ${sSet.lblFs}px;
                         --qs-dat-fs: ${sSet.datFs}px;
                         --qs-dat-align: ${sSet.datAlign};
@@ -4809,7 +4927,7 @@
                         margin: 0;
                     }
                 `;
-                
+
                 if (sSet.fieldLayout !== 'STACK') {
                     css += `
                         #${id} .qs-field-row {
@@ -4824,9 +4942,9 @@
                     `;
                 }
             });
-            
+
             styleEl.innerHTML = css;
-            
+
             setTimeout(() => {
                 document.querySelectorAll('.qs-textarea').forEach(ta => {
                     ta.style.height = '';
@@ -4867,7 +4985,7 @@
             if (btn) btn.innerText = qsReviewResults ? 'ON' : 'OFF';
             let detailBtn = document.getElementById('qsToggleDetailBtn');
             if (detailBtn) detailBtn.innerText = qsPhotoDetail;
-            
+
             let typeSel = document.getElementById('qsScanType');
             if (typeSel) typeSel.value = localStorage.getItem('qsScanProfile') || 'AUTO';
             let depthSel = document.getElementById('qsScanDepth');
@@ -4921,7 +5039,7 @@
                     const stash = quickStashes[activeQuickStashId];
                     lbl.innerText = stash.name.toUpperCase();
                     lbl.style.color = 'var(--emerald-green)';
-                    
+
                     if (jobStatusLbl) {
                         if (stash.jobLink && stash.jobLink.attached) {
                             jobStatusLbl.innerHTML = `☁ LINKED JOB: <span style="color:#fff;">${stash.jobLink.sheetName}</span>`;
@@ -4971,7 +5089,7 @@
         function updateDestDropdown() {
             let sel = document.getElementById('qsDestSelect');
             if (!sel) return;
-            
+
             // Auto-sync active stash to active dest if opening a stash or defaulting
             if (activeQuickStashId && (!qsActiveDest || qsActiveDest === 'CURRENT' || qsActiveDest === 'NEW')) {
                 qsActiveDest = activeQuickStashId;
@@ -4980,19 +5098,19 @@
                 qsActiveDest = 'NEW';
                 localStorage.setItem('qsActiveDest', qsActiveDest);
             }
-            
+
             let options = '';
-            
+
             if (qsActiveDest !== 'NEW' && quickStashes[qsActiveDest]) {
                 options += `<option value="${qsActiveDest}" selected>MERGE INTO: ${quickStashes[qsActiveDest].name}</option>`;
             }
-            
-            options += `<option value="NEW" ${qsActiveDest==='NEW'?'selected':''}>CREATE NEW STASH</option>`;
-            
-            let stashes = Object.values(quickStashes).sort((a,b) => b.updatedAt - a.updatedAt);
+
+            options += `<option value="NEW" ${qsActiveDest === 'NEW' ? 'selected' : ''}>CREATE NEW STASH</option>`;
+
+            let stashes = Object.values(quickStashes).sort((a, b) => b.updatedAt - a.updatedAt);
             let pinned = stashes.filter(s => s.pinned && s.id !== qsActiveDest);
             let unpinned = stashes.filter(s => !s.pinned && s.id !== qsActiveDest).slice(0, 5);
-            
+
             if (pinned.length > 0) {
                 options += `<optgroup label="PINNED">`;
                 pinned.forEach(s => options += `<option value="${s.id}">📌 ${s.name}</option>`);
@@ -5042,13 +5160,13 @@
                 renderActiveQuickStash();
                 return;
             }
-            
-            const stashes = Object.values(quickStashes).sort((a,b) => {
+
+            const stashes = Object.values(quickStashes).sort((a, b) => {
                 if (a.pinned && !b.pinned) return -1;
                 if (!a.pinned && b.pinned) return 1;
                 return b.updatedAt - a.updatedAt;
             });
-            
+
             if (stashes.length === 0) {
                 view.innerHTML = `
                     <div style="text-align:center; padding:40px; color:#888;">
@@ -5063,10 +5181,10 @@
                     html += `
                         <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
                             <div onclick="switchQuickStash('${s.id}')" style="cursor:pointer; flex:1;">
-                                <div style="color:var(--text-primary); font-weight:900;">${s.pinned?'📌 ':''}${s.name}</div>
+                                <div style="color:var(--text-primary); font-weight:900;">${s.pinned ? '📌 ' : ''}${s.name}</div>
                                 <div style="color:#666; font-size:10px;">Updated: ${new Date(s.updatedAt).toLocaleTimeString()}</div>
                             </div>
-                            <button onclick="toggleQsPin('${s.id}')" style="background:none; border:none; color:${s.pinned?'var(--amber-orange)':'#444'}; font-size:16px;">📌</button>
+                            <button onclick="toggleQsPin('${s.id}')" style="background:none; border:none; color:${s.pinned ? 'var(--amber-orange)' : '#444'}; font-size:16px;">📌</button>
                             <span onclick="switchQuickStash('${s.id}')" style="color:var(--electric-blue); cursor:pointer; margin-left:10px;">→</span>
                         </div>
                     `;
@@ -5117,16 +5235,16 @@
                         data: sysObj,
                         stagedFields: stagedObj
                     };
-                } catch(e) { console.error("Error archiving equipment", e); }
+                } catch (e) { console.error("Error archiving equipment", e); }
 
                 let refState = null;
-                try { refState = JSON.parse(localStorage.getItem('hvacRefDataV20')); } catch(e) {}
+                try { refState = JSON.parse(localStorage.getItem('hvacRefDataV20')); } catch (e) { }
 
                 let pmiState = null;
-                try { pmiState = JSON.parse(localStorage.getItem('hvacTechNotesV20')); } catch(e) {}
+                try { pmiState = JSON.parse(localStorage.getItem('hvacTechNotesV20')); } catch (e) { }
 
                 let diagState = null;
-                try { diagState = JSON.parse(localStorage.getItem('hvacStagingBufferV20')); } catch(e) {}
+                try { diagState = JSON.parse(localStorage.getItem('hvacStagingBufferV20')); } catch (e) { }
 
                 return {
                     schemaVersion: LOCAL_JOB_ARCHIVE_SCHEMA_VERSION,
@@ -5153,7 +5271,7 @@
                         photos: []
                     }
                 };
-            } catch(e) {
+            } catch (e) {
                 console.error("buildLocalJobArchiveSnapshot error", e);
                 return null;
             }
@@ -5162,10 +5280,10 @@
         function saveLocalJobArchiveSnapshot() {
             let archive = buildLocalJobArchiveSnapshot();
             if (!archive) return null;
-            
+
             let now = Date.now();
             archive.session.updatedAt = now;
-            
+
             try {
                 let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
                 if (rawSession) {
@@ -5173,8 +5291,8 @@
                     session.updatedAt = now;
                     localStorage.setItem('hvacLocalJobSessionV1', JSON.stringify(session));
                 }
-            } catch(e) { console.error("Error updating session timestamp", e); }
-            
+            } catch (e) { console.error("Error updating session timestamp", e); }
+
             localStorage.setItem('hvacLocalJobArchiveV1', JSON.stringify(archive));
             return archive;
         }
@@ -5200,11 +5318,11 @@
             refData = {};
             techNotes = [];
             buffer = {};
-            
+
             localStorage.removeItem('hvacRefDataV20');
             localStorage.removeItem('hvacTechNotesV20');
             localStorage.removeItem('hvacStagingBufferV20');
-            
+
             if (typeof renderRefrigRows === 'function') renderRefrigRows();
             if (typeof renderPMIGrid === 'function') renderPMIGrid();
             if (typeof syncLogToUI === 'function') syncLogToUI();
@@ -5283,7 +5401,7 @@
             let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
             let stash = stashes[stashId];
             if (!stash) return { success: false, msg: "Matching Quick Stash not found." };
-            
+
             let startupData = JSON.parse(localStorage.getItem('hvac_startup_v1') || '{}');
             let stats = { ready: 0, matched: 0, conflict: 0, missing: 0 };
             let written = 0;
@@ -5385,7 +5503,7 @@
                         }
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
 
             function applyStandaloneField(sourceVal, destKey) {
                 if (!sourceVal) return;
@@ -5424,12 +5542,12 @@
         function pullEquipmentFromQuickStash() {
             let rawSession = localStorage.getItem('hvacLocalJobSessionV1');
             if (!rawSession) {
-                if(typeof showToast === 'function') showToast("No Local Job Session found.");
+                if (typeof showToast === 'function') showToast("No Local Job Session found.");
                 return;
             }
             let session = JSON.parse(rawSession);
             if (!session.quickStashId) {
-                if(typeof showToast === 'function') showToast("Session has no Quick Stash ID.");
+                if (typeof showToast === 'function') showToast("Session has no Quick Stash ID.");
                 return;
             }
             let res = executeEquipmentPush(session.quickStashId);
@@ -5451,10 +5569,10 @@
                     const stashesRaw = localStorage.getItem('hvacQuickStashesV1');
                     let stashes = {};
                     if (stashesRaw) stashes = JSON.parse(stashesRaw);
-                    
+
                     let activeStashName = 'Unknown Stash';
                     let sessionStashName = 'Unknown Stash';
-                    
+
                     if (stashes[activeQuickStashId]) {
                         let aName = stashes[activeQuickStashId].customer?.name || '';
                         let aDate = new Date(stashes[activeQuickStashId].createdAt).toLocaleDateString();
@@ -5476,7 +5594,7 @@
                         </div>
                     `;
                 }
-            } catch (e) {}
+            } catch (e) { }
             return '';
         }
 
@@ -5495,7 +5613,7 @@
         function openQuickStashDestinationPage(destinationKey) {
             const url = getQuickStashPageDestination(destinationKey);
             if (!url) return;
-            
+
             if (['pmi', 'notes'].includes(destinationKey)) {
                 if (typeof showToast === 'function') {
                     showToast("Destination coming soon!");
@@ -5517,7 +5635,7 @@
         function openQsPushPreview(dests) {
             if (!Array.isArray(dests)) dests = [dests];
             if (!activeQuickStashId) { alert("No active Quick Stash selected."); return; }
-            
+
             let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
             let stash = stashes[activeQuickStashId];
             if (!stash) { alert("Matching Quick Stash not found."); return; }
@@ -5529,11 +5647,11 @@
 
             let html = `<div style="display:flex; flex-direction:column; gap:15px; padding-bottom:60px;">`;
             html += getQuickStashSessionMismatch();
-            
+
             if (dests.includes('equipment') || dests.includes('all')) {
                 let eqStats = { ready: 0, matched: 0, conflict: 0, missing: 0 };
                 let eqRows = [];
-                
+
                 function checkEq(sourceVal, destObj, destKey, label) {
                     let status = '';
                     let color = '';
@@ -5642,9 +5760,9 @@
                 let startupData = JSON.parse(localStorage.getItem('hvac_startup_v1') || '{}');
                 let stpStats = { ready: 0, matched: 0, conflict: 0, missing: 0 };
                 let stpRows = [];
-                
+
                 let contextRows = [];
-                
+
                 let meteringRaw = resolveStartupValue(stash, ['Metering Device', 'Metering', 'Metering Type']);
                 let meteringNorm = normalizeMeteringDevice(meteringRaw);
                 if (meteringNorm) {
@@ -5655,7 +5773,7 @@
                         </div>
                     `);
                 }
-                
+
                 let refrigRaw = resolveStartupValue(stash, ['Refrigerant', 'Refrigerant Type', 'Refrigerant Used']);
                 if (refrigRaw) {
                     contextRows.push(`
@@ -5665,7 +5783,7 @@
                         </div>
                     `);
                 }
-                
+
                 let targetScRaw = resolveStartupValue(stash, ['Target SC', 'Target Subcool', 'Target Subcooling']);
                 if (targetScRaw) {
                     contextRows.push(`
@@ -5699,7 +5817,7 @@
                     let sourceVal = resolveStartupValue(stash, item.aliases);
                     let status = '';
                     let color = '';
-                    
+
                     if (!sourceVal) {
                         status = 'MISSING'; color = '#888'; stpStats.missing++;
                     } else {
@@ -5713,7 +5831,7 @@
                             status = 'CONFLICT'; color = 'var(--amber-orange)'; stpStats.conflict++;
                         }
                     }
-                    
+
                     if (sourceVal) {
                         stpRows.push(`
                             <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
@@ -5778,7 +5896,7 @@
                     ${footerHtml}
                 </div>
             `;
-            
+
             let existing = document.getElementById('genericPushModal');
             if (existing) existing.remove();
             document.body.insertAdjacentHTML('beforeend', modalHtml);
@@ -5816,7 +5934,7 @@
 
         function executePushAll(stashId) {
             document.getElementById('genericPushModal').remove();
-            
+
             let qsSet = qsSettings || {};
             let pushEq = qsSet.pushAllEquipment !== false;
             let pushDiag = qsSet.pushAllDiagnostics !== false;
@@ -5852,15 +5970,15 @@
             let mm = String(today.getMonth() + 1).padStart(2, '0');
             let dd = String(today.getDate()).padStart(2, '0');
             let dateStr = `${yyyy}-${mm}-${dd}`;
-            
-            const id = 'stash_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+
+            const id = 'stash_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
             quickStashes[id] = {
                 id: id,
                 name: "",
                 pinned: false,
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
-                customer: { date: dateStr, invoiceDate: "", name: initialName || "", address: "", phone: "", email: "" , latitude: null, longitude: null, locationSource: null, locationConfirmed: false, locationTimestamp: null },
+                customer: { date: dateStr, invoiceDate: "", name: initialName || "", address: "", phone: "", email: "", latitude: null, longitude: null, locationSource: null, locationConfirmed: false, locationTimestamp: null },
                 equipment: { outdoorModel: "", outdoorSerial: "", indoorModel: "", indoorSerial: "", thermostatModel: "" },
                 readings: { odat: "", suctionPressure: "", liquidPressure: "", vaporSaturation: "", liquidSaturation: "", suctionLineTemp: "", liquidLineTemp: "", superheat: "", subcool: "", returnTemp: "", returnHumidity: "", supplyTemp: "", deltaT: "" },
                 diagnostics: { hermTargetMfd: "", fanTargetMfd: "", hermVolts: "", hermAmps: "", hermCalculatedUf: "", hermBenchUf: "", fanVolts: "", fanAmps: "", fanCalculatedUf: "", fanBenchUf: "", capacitorResult: "", capacitorDeviationPercent: "", compressorRlaRating: "", compressorLraRating: "", fanFlaRating: "", targetSubcool: "", rlaMeasured: "", rla2Measured: "", flaOdfMeasured: "", compressorLoadPercent: "", fanLoadPercent: "", motorLoadResult: "" },
@@ -5875,7 +5993,7 @@
             qsActiveDest = id;
             localStorage.setItem('qsActiveDest', qsActiveDest);
 
-            const sessionId = 'session_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+            const sessionId = 'session_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
             const localSession = {
                 sessionId: sessionId,
                 createdAt: Date.now(),
@@ -5912,7 +6030,7 @@
         function getQuickStashValue(fieldName) {
             if (!activeQuickStashId || !quickStashes[activeQuickStashId]) return "";
             let stash = quickStashes[activeQuickStashId];
-            
+
             let target = fieldName.toLowerCase().replace(/[^a-z0-9]/g, '');
             for (let cat of ['customer', 'equipment', 'readings', 'extra']) {
                 if (stash[cat] && stash[cat][fieldName] !== undefined && stash[cat][fieldName] !== "") {
@@ -5933,7 +6051,7 @@
         function renderActiveQuickStash() {
             const stash = quickStashes[activeQuickStashId];
             if (!stash) { activeQuickStashId = null; localStorage.removeItem('hvacActiveQuickStashId'); renderQuickStashHome(); return; }
-            
+
             updateActiveStashLabel();
 
             // backward compatibility
@@ -5946,7 +6064,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">
                         <div style="flex:1; min-width:0; padding-right:10px;">
                             <div style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden;">
-                                <button onclick="toggleQsPin('${stash.id}')" style="background:none; border:none; padding:0; color:${stash.pinned?'var(--amber-orange)':'#444'}; font-size:18px; flex-shrink:0;">📌</button>
+                                <button onclick="toggleQsPin('${stash.id}')" style="background:none; border:none; padding:0; color:${stash.pinned ? 'var(--amber-orange)' : '#444'}; font-size:18px; flex-shrink:0;">📌</button>
                                 <div style="font-size:18px; font-weight:900; color:var(--text-primary); cursor:pointer; overflow:hidden; text-overflow:ellipsis;" onclick="renameQuickStash('${stash.id}')">${stash.name}</div>
                             </div>
                             <div style="font-size:10px; color:#888; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Updated: ${new Date(stash.updatedAt).toLocaleString()}</div>
@@ -5957,21 +6075,21 @@
             `;
 
             updateQsStorageUsage();
-            
-            window.qsSelectSection = function(cat, isSelectAll, e) {
+
+            window.qsSelectSection = function (cat, isSelectAll, e) {
                 if (e) { e.preventDefault(); e.stopPropagation(); }
                 let stash = quickStashes[activeQuickStashId];
                 if (!stash.fieldSelection) stash.fieldSelection = {};
-                
+
                 let keys = [];
                 if (cat === 'customer') keys = ['date', 'invoiceDate', 'name', 'address', 'phone', 'email'];
                 else if (cat === 'equipment') keys = ['outdoorModel', 'outdoorSerial', 'indoorModel', 'indoorSerial', 'thermostatModel'];
                 else if (cat === 'readings') keys = ['odat', 'suctionPressure', 'liquidPressure', 'vaporSaturation', 'liquidSaturation', 'suctionLineTemp', 'liquidLineTemp', 'superheat', 'subcool', 'returnTemp', 'returnHumidity', 'supplyTemp', 'deltaT'];
                 else if (cat === 'diagnostics') keys = ['hermTargetMfd', 'fanTargetMfd', 'hermVolts', 'hermAmps', 'hermCalculatedUf', 'hermBenchUf', 'fanVolts', 'fanAmps', 'fanCalculatedUf', 'fanBenchUf', 'capacitorResult', 'capacitorDeviationPercent', 'compressorRlaRating', 'compressorLraRating', 'fanFlaRating', 'targetSubcool', 'rlaMeasured', 'rla2Measured', 'flaOdfMeasured', 'compressorLoadPercent', 'fanLoadPercent', 'motorLoadResult'];
                 else if (cat === 'extra' && stash.extra) keys = Object.keys(stash.extra);
-                
+
                 let sSet = qsSectionSettings[cat] || {};
-                
+
                 for (let k of keys) {
                     let fp = `${cat}.${k}`;
                     if (isSelectAll) {
@@ -5994,32 +6112,32 @@
                 let disp = isCol ? 'none' : 'block';
                 let arr = isCol ? '▼' : '▲';
                 let content = customHtml ? customHtml : `<span>${title}</span>`;
-                
+
                 let controls = '';
                 if (['customer', 'equipment', 'readings', 'diagnostics', 'extra'].includes(cat)) {
                     let total = 0;
                     let populated = 0;
-                    
+
                     let keys = [];
                     if (cat === 'customer') keys = ['date', 'invoiceDate', 'name', 'address', 'phone', 'email'];
                     else if (cat === 'equipment') keys = ['outdoorModel', 'outdoorSerial', 'indoorModel', 'indoorSerial', 'thermostatModel'];
                     else if (cat === 'readings') keys = ['odat', 'suctionPressure', 'liquidPressure', 'vaporSaturation', 'liquidSaturation', 'suctionLineTemp', 'liquidLineTemp', 'superheat', 'subcool', 'returnTemp', 'returnHumidity', 'supplyTemp', 'deltaT'];
                     else if (cat === 'diagnostics') keys = ['hermTargetMfd', 'fanTargetMfd', 'hermVolts', 'hermAmps', 'hermCalculatedUf', 'hermBenchUf', 'fanVolts', 'fanAmps', 'fanCalculatedUf', 'fanBenchUf', 'capacitorResult', 'capacitorDeviationPercent', 'compressorRlaRating', 'compressorLraRating', 'fanFlaRating', 'targetSubcool', 'rlaMeasured', 'rla2Measured', 'flaOdfMeasured', 'compressorLoadPercent', 'fanLoadPercent', 'motorLoadResult'];
                     else if (cat === 'extra' && stash.extra) keys = Object.keys(stash.extra);
-                    
+
                     for (let k of keys) {
                         total++;
                         let v = stash[cat] ? stash[cat][k] : "";
                         if (v !== undefined && v !== null && v.toString().trim() !== '') populated++;
                     }
-                    
+
                     content = `
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span>${title}</span>
                             <span style="font-size:10px; color:#888; font-family:monospace; background:rgba(0,0,0,0.4); padding:2px 4px; border-radius:4px;">${populated}/${total}</span>
                         </div>
                     `;
-                    
+
                     controls = `
                         <div style="display:flex; gap:5px; align-items:center;">
                             <button onclick="qsSelectSection('${cat}', true, event)" style="background:none; border:1px solid #555; color:#aaa; font-size:9px; padding:2px 6px; border-radius:4px; font-weight:bold; cursor:pointer;">ALL</button>
@@ -6038,8 +6156,8 @@
                     <div id="qsSec_${key}" style="display:${disp};">
                 `;
             }
-            
-            window.toggleQsCheckbox = function(cat, key, nextState) {
+
+            window.toggleQsCheckbox = function (cat, key, nextState) {
                 let stash = quickStashes[activeQuickStashId];
                 let sSet = qsSectionSettings[cat] || {};
                 let isLocked = sSet.lockedFields && sSet.lockedFields[`${cat}.${key}`];
@@ -6057,29 +6175,29 @@
                     rawVal = getQuickStashValue(label) || "";
                 }
                 const val = (rawVal || "").toString().replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                
+
                 let safeLabelStr = label.replace(/'/g, "\\'");
-                
+
                 let sSet = qsSectionSettings[cat] || defaultQsSectionSettingsTemplate;
-                
+
                 let mapBtn = `<button onclick="openQsFieldMapper('${cat}', '${key}', '${safeLabelStr}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:var(--qs-action-btn-size, 9px); font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">MAP</button>`;
                 let clearBtn = `<button onclick="clearQsField('${cat}', '${key}')" style="background:#333; color:#aaa; border:1px solid #555; font-size:var(--qs-action-btn-size, 9px); font-weight:bold; cursor:pointer; padding:3px 5px; border-radius:4px; flex-shrink:0;">CLR</button>`;
 
                 let inputHtml = `
                     <div style="display:flex; align-items:flex-start; width:100%;">
                         <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1" onpointerdown="qsHandlePointerDown(event, '${cat}', '${cat}.${key}')" onpointermove="qsHandlePointerMove(event)" onpointerup="qsHandlePointerUp(event)" onclick="qsHandleClick(event)">${val}</textarea>
-                        <div class="qs-action-col" style="gap:${sSet.actionBtnGap||2}px;">
+                        <div class="qs-action-col" style="gap:${sSet.actionBtnGap || 2}px;">
                             ${mapBtn}
                             ${clearBtn}
                         </div>
                     </div>
                 `;
-                
+
                 if (cat === 'customer' && (key === 'date' || key === 'invoiceDate')) {
                     inputHtml = `
                     <div style="display:flex; align-items:flex-start; width:100%;">
                         <input type="date" class="qs-textarea" style="flex:1; cursor:pointer; color-scheme:dark;" value="${val}" onclick="if(this.showPicker) this.showPicker(); qsHandleClick(event);" onchange="updateStashField('${cat}', '${key}', this.value); renderActiveQuickStash();" onpointerdown="qsHandlePointerDown(event, '${cat}', '${cat}.${key}')" onpointermove="qsHandlePointerMove(event)" onpointerup="qsHandlePointerUp(event)">
-                        <div class="qs-action-col" style="gap:${sSet.actionBtnGap||2}px;">
+                        <div class="qs-action-col" style="gap:${sSet.actionBtnGap || 2}px;">
                             ${mapBtn}
                             ${clearBtn}
                         </div>
@@ -6099,7 +6217,7 @@
                             <div style="display:flex; align-items:flex-start; width:100%;">
                                 <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1" onpointerdown="qsHandlePointerDown(event, '${cat}', '${cat}.${key}')" onpointermove="qsHandlePointerMove(event)" onpointerup="qsHandlePointerUp(event)" onclick="qsHandleClick(event)">${val}</textarea>
                                 ${pinBtn}
-                                <div class="qs-action-col" style="gap:${sSet.actionBtnGap||2}px;">
+                                <div class="qs-action-col" style="gap:${sSet.actionBtnGap || 2}px;">
                                     ${mapBtn}
                                     ${clearBtn}
                                 </div>
@@ -6108,12 +6226,12 @@
                         </div>
                     `;
                 }
-                
+
                 if (cat === 'extra') {
                     inputHtml = `
                         <div style="display:flex; align-items:flex-start; width:100%;">
                             <textarea class="qs-textarea" style="flex:1;" oninput="this.style.height=''; this.style.height=this.scrollHeight+'px';" onchange="updateStashField('${cat}', '${key}', this.value)" rows="1" onpointerdown="qsHandlePointerDown(event, '${cat}', '${cat}.${key}')" onpointermove="qsHandlePointerMove(event)" onpointerup="qsHandlePointerUp(event)" onclick="qsHandleClick(event)">${val}</textarea>
-                            <div class="qs-action-col" style="gap:${sSet.actionBtnGap||2}px;">
+                            <div class="qs-action-col" style="gap:${sSet.actionBtnGap || 2}px;">
                                 ${clearBtn}
                             </div>
                         </div>
@@ -6125,7 +6243,7 @@
                     isChecked = stash.fieldSelection[`${cat}.${key}`];
                 }
                 let isLocked = sSet.lockedFields && sSet.lockedFields[`${cat}.${key}`];
-                
+
                 let borderStyle = 'border:1px solid transparent;';
                 let lockIcon = '';
                 if (isLocked) {
@@ -6134,7 +6252,7 @@
                 } else if (isChecked) {
                     borderStyle = 'border:1px solid white;';
                 }
-                
+
                 let rowStyle = '';
                 if (sSet.fieldLayout === 'STACK') {
                     rowStyle = `display:flex !important; align-items:flex-start; width:100%; ${borderStyle}`;
@@ -6157,13 +6275,13 @@
                 `;
             }
 
-            window.clearQsField = function(cat, key) {
+            window.clearQsField = function (cat, key) {
                 updateStashField(cat, key, "");
                 renderActiveQuickStash();
             };
 
-            
-            window.qsSelectGlobal = function(isSelectAll, e) {
+
+            window.qsSelectGlobal = function (isSelectAll, e) {
                 if (e) { e.preventDefault(); e.stopPropagation(); }
                 ['customer', 'equipment', 'readings', 'diagnostics', 'extra'].forEach(cat => {
                     qsSelectSection(cat, isSelectAll, null);
@@ -6224,30 +6342,30 @@
             html += buildField('readings', 'deltaT', 'ΔT');
             html += `</div>`;
 
-              html += buildHeader('DIAGNOSTICS', 'var(--crimson-red)', 'Diagnostics');
-              html += buildField('diagnostics', 'hermTargetMfd', 'Herm Target MFD');
-              html += buildField('diagnostics', 'fanTargetMfd', 'Fan Target MFD');
-              html += buildField('diagnostics', 'hermVolts', 'Herm Volts');
-              html += buildField('diagnostics', 'hermAmps', 'Herm Amps');
-              html += buildField('diagnostics', 'hermCalculatedUf', 'Herm Calculated \u00B5F');
-              html += buildField('diagnostics', 'hermBenchUf', 'Herm Bench \u00B5F');
-              html += buildField('diagnostics', 'fanVolts', 'Fan Volts');
-              html += buildField('diagnostics', 'fanAmps', 'Fan Amps');
-              html += buildField('diagnostics', 'fanCalculatedUf', 'Fan Calculated \u00B5F');
-              html += buildField('diagnostics', 'fanBenchUf', 'Fan Bench \u00B5F');
-              html += buildField('diagnostics', 'capacitorResult', 'Capacitor Result');
-              html += buildField('diagnostics', 'capacitorDeviationPercent', 'Capacitor Deviation %');
-              html += buildField('diagnostics', 'compressorRlaRating', 'Compressor RLA Rating');
-              html += buildField('diagnostics', 'compressorLraRating', 'Compressor LRA Rating');
-              html += buildField('diagnostics', 'fanFlaRating', 'Fan FLA Rating');
-              html += buildField('diagnostics', 'targetSubcool', 'Target Subcool');
-              html += buildField('diagnostics', 'rlaMeasured', 'RLA Measured');
-              html += buildField('diagnostics', 'rla2Measured', 'RLA 2 Measured');
-              html += buildField('diagnostics', 'flaOdfMeasured', 'FLA ODF Measured');
-              html += buildField('diagnostics', 'compressorLoadPercent', 'Compressor Load %');
-              html += buildField('diagnostics', 'fanLoadPercent', 'Fan Load %');
-              html += buildField('diagnostics', 'motorLoadResult', 'Motor Load Result');
-              html += `</div>`;
+            html += buildHeader('DIAGNOSTICS', 'var(--crimson-red)', 'Diagnostics');
+            html += buildField('diagnostics', 'hermTargetMfd', 'Herm Target MFD');
+            html += buildField('diagnostics', 'fanTargetMfd', 'Fan Target MFD');
+            html += buildField('diagnostics', 'hermVolts', 'Herm Volts');
+            html += buildField('diagnostics', 'hermAmps', 'Herm Amps');
+            html += buildField('diagnostics', 'hermCalculatedUf', 'Herm Calculated \u00B5F');
+            html += buildField('diagnostics', 'hermBenchUf', 'Herm Bench \u00B5F');
+            html += buildField('diagnostics', 'fanVolts', 'Fan Volts');
+            html += buildField('diagnostics', 'fanAmps', 'Fan Amps');
+            html += buildField('diagnostics', 'fanCalculatedUf', 'Fan Calculated \u00B5F');
+            html += buildField('diagnostics', 'fanBenchUf', 'Fan Bench \u00B5F');
+            html += buildField('diagnostics', 'capacitorResult', 'Capacitor Result');
+            html += buildField('diagnostics', 'capacitorDeviationPercent', 'Capacitor Deviation %');
+            html += buildField('diagnostics', 'compressorRlaRating', 'Compressor RLA Rating');
+            html += buildField('diagnostics', 'compressorLraRating', 'Compressor LRA Rating');
+            html += buildField('diagnostics', 'fanFlaRating', 'Fan FLA Rating');
+            html += buildField('diagnostics', 'targetSubcool', 'Target Subcool');
+            html += buildField('diagnostics', 'rlaMeasured', 'RLA Measured');
+            html += buildField('diagnostics', 'rla2Measured', 'RLA 2 Measured');
+            html += buildField('diagnostics', 'flaOdfMeasured', 'FLA ODF Measured');
+            html += buildField('diagnostics', 'compressorLoadPercent', 'Compressor Load %');
+            html += buildField('diagnostics', 'fanLoadPercent', 'Fan Load %');
+            html += buildField('diagnostics', 'motorLoadResult', 'Motor Load Result');
+            html += `</div>`;
 
             if (qsSettings.showExtra && Object.keys(stash.extra).length > 0) {
                 html += buildHeader('EXTRA / OTHER', '#aaa', 'Extra');
@@ -6305,13 +6423,13 @@
             </div>`;
 
             const canCreateJob = stash.customer && stash.customer.name && stash.customer.name.trim() !== '' && stash.customer.date && stash.customer.date.trim() !== '';
-            
+
             let currentGlobalJob = currentJobTab || currentJob || '';
             let currentGlobalJobBtn = '';
             if (currentGlobalJob.trim() !== '') {
                 currentGlobalJobBtn = `<button id="qsBtnAttachCurrentJob" onclick="attachQsToCurrentJob()" class="btn btn-outline" style="width:100%; font-size:14px; font-weight:900; border-color:var(--emerald-green); color:var(--emerald-green); padding:12px; line-height:1.2;">🔗 ATTACH CURRENT JOB<br><span style="font-size:10px; color:#fff;">${currentGlobalJob}</span></button>`;
             }
-            
+
             html += `
                 <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
                     ${currentGlobalJobBtn}
@@ -6322,14 +6440,14 @@
             `;
 
             document.getElementById('quickStashViewArea').innerHTML = html;
-            
+
             document.querySelectorAll('.qs-textarea').forEach(ta => {
                 ta.style.height = '';
                 if (ta.scrollHeight > 0) {
                     ta.style.height = ta.scrollHeight + 'px';
                 }
             });
-            
+
             updateQsPreview();
         }
 
@@ -6337,10 +6455,10 @@
             if (!activeQuickStashId) return;
             let currentGlobalJob = currentJobTab || currentJob || '';
             if (!currentGlobalJob || currentGlobalJob.trim() === '') return;
-            
+
             let rawStashes = localStorage.getItem('hvacQuickStashesV1');
             if (rawStashes) quickStashes = JSON.parse(rawStashes);
-            
+
             const stash = quickStashes[activeQuickStashId];
             if (!stash) return;
 
@@ -6360,7 +6478,7 @@
                     }
                 }
             }
-            
+
             const btn = document.getElementById("qsBtnAttachCurrentJob");
             const origHtml = btn ? btn.innerHTML : "";
             if (btn) {
@@ -6370,7 +6488,7 @@
 
             try {
                 let folderId = localStorage.getItem('hvacActiveFolderId');
-                
+
                 if (!folderId) {
                     let response = await callAppsScript({ action: 'getJobData', sheetName: currentGlobalJob });
                     if (response && response.status === "success" && response.data && !response.data.error && response.data.folderId) {
@@ -6382,31 +6500,31 @@
                         return;
                     }
                 }
-                
+
                 if (!stash.linkHistory) stash.linkHistory = [];
                 let actionType = "attached";
                 if (stash.jobLink && stash.jobLink.attached && stash.jobLink.sheetName !== currentGlobalJob) {
                     actionType = "relinked";
                 }
-                
+
                 stash.jobLink = {
                     attached: true,
                     sheetName: currentGlobalJob,
                     folderId: folderId,
                     attachedAt: Date.now()
                 };
-                
+
                 stash.linkHistory.push({
                     action: actionType,
                     sheetName: currentGlobalJob,
                     folderId: folderId,
                     timestamp: Date.now()
                 });
-                
+
                 localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
                 renderActiveQuickStash();
                 if (typeof showQuickStashToast === 'function') showQuickStashToast("LINKED TO " + currentGlobalJob);
-                
+
             } catch (e) {
                 alert("Error linking to current job: " + e.message);
                 if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
@@ -6434,9 +6552,9 @@
         }
 
         function renameQuickStash(id) {
-            if(!quickStashes[id]) return;
+            if (!quickStashes[id]) return;
             let newName = prompt("Rename Stash Customer Name:", quickStashes[id].customer.name);
-            if(newName !== null) {
+            if (newName !== null) {
                 quickStashes[id].customer.name = newName.trim();
                 quickStashes[id]._nameManuallyEdited = true;
                 updateStashIdentity(quickStashes[id]);
@@ -6453,17 +6571,17 @@
                 alert("Cannot create job: Customer Name and Date are required.");
                 return;
             }
-            
+
             const btn = document.getElementById('qsBtnCreateJob');
             const origHtml = btn.innerHTML;
             btn.innerHTML = "⏳ CREATING JOB...";
-            btn.style.background = "#f39c12"; 
+            btn.style.background = "#f39c12";
             btn.disabled = true;
 
             try {
-                const reqDate = stash.customer.date; 
+                const reqDate = stash.customer.date;
                 const reqName = stash.customer.name.trim();
-                
+
                 const shellRes = await callAppsScript({
                     action: "createJob",
                     name: reqName,
@@ -6476,11 +6594,11 @@
 
                 const newSheetName = shellRes.data.newSheetName;
                 const folderId = shellRes.data.folderId;
-                
+
                 currentJob = newSheetName;
                 currentJobTab = newSheetName;
                 localStorage.setItem('hvacCurrentJobTabV20', currentJobTab);
-                localStorage.setItem('hvacActiveJob', currentJobTab); 
+                localStorage.setItem('hvacActiveJob', currentJobTab);
                 localStorage.setItem('hvacActiveFolderId', folderId);
                 if (typeof saveRecentFolder === 'function') {
                     saveRecentFolder(currentJobTab, folderId);
@@ -6511,15 +6629,15 @@
                 }
 
                 btn.innerHTML = "⏳ RUNNING PIPELINE...";
-                
-                const pipelinePromise = callAppsScript({ 
-                    action: "runPipeline", 
-                    sheetName: newSheetName 
+
+                const pipelinePromise = callAppsScript({
+                    action: "runPipeline",
+                    sheetName: newSheetName
                 });
-                const timeoutPromise = new Promise((_, reject) => 
+                const timeoutPromise = new Promise((_, reject) =>
                     setTimeout(() => reject(new Error("Pipeline request timed out.")), 30000)
                 );
-                
+
                 const pipeRes = await Promise.race([pipelinePromise, timeoutPromise]);
 
                 if (pipeRes && pipeRes.status === "success" && pipeRes.data && pipeRes.data.newName) {
@@ -6528,7 +6646,7 @@
                     localStorage.setItem('hvacActiveJob', currentJob);
                     localStorage.setItem('hvacCurrentJobTabV20', currentJobTab);
                 }
-                
+
                 stash.jobLink = {
                     attached: true,
                     sheetName: currentJobTab,
@@ -6568,14 +6686,14 @@
                             localStorage.setItem('hvacLocalJobSessionV1', JSON.stringify(sessionObj));
                             saveLocalJobArchiveSnapshot();
                         }
-                    } catch(e) { console.error("Error updating local job session:", e); }
+                    } catch (e) { console.error("Error updating local job session:", e); }
                 }
 
                 updateUniversalJobHeaders();
                 if (typeof updateJobBadge === 'function') updateJobBadge();
-                if (typeof pullMirror === 'function') pullMirror(); 
+                if (typeof pullMirror === 'function') pullMirror();
                 if (typeof showToast === 'function') showToast("Job Created: " + currentJobTab);
-                
+
                 if (typeof toggleQuickStash === 'function') toggleQuickStash();
 
             } catch (e) {
@@ -6589,236 +6707,236 @@
 
 
         async function sendSelectedToActiveJob() {
-    if (!activeQuickStashId) return;
+            if (!activeQuickStashId) return;
 
-    const stash = quickStashes[activeQuickStashId];
-    if (!stash) return;
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return;
 
-    if (!currentJobTab || currentJobTab.trim() === "") {
-        alert("Cannot send: No active job selected. Please create or open a job first.");
-        return;
-    }
-    
-    if (stash.jobLink && stash.jobLink.attached && stash.jobLink.sheetName !== currentJobTab) {
-        if (!confirm(`WARNING: This stash is linked to [${stash.jobLink.sheetName}], but the currently active job is [${currentJobTab}].\n\nAre you sure you want to send data to ${currentJobTab}?`)) {
-            return;
-        }
-    }
+            if (!currentJobTab || currentJobTab.trim() === "") {
+                alert("Cannot send: No active job selected. Please create or open a job first.");
+                return;
+            }
 
-    const confirmMsg =
-        "Send selected Quick Stash data to active job:\n\n" +
-        currentJobTab +
-        "\n\nThis will not create a new job or run the pipeline.";
+            if (stash.jobLink && stash.jobLink.attached && stash.jobLink.sheetName !== currentJobTab) {
+                if (!confirm(`WARNING: This stash is linked to [${stash.jobLink.sheetName}], but the currently active job is [${currentJobTab}].\n\nAre you sure you want to send data to ${currentJobTab}?`)) {
+                    return;
+                }
+            }
 
-    if (!confirm(confirmMsg)) return;
+            const confirmMsg =
+                "Send selected Quick Stash data to active job:\n\n" +
+                currentJobTab +
+                "\n\nThis will not create a new job or run the pipeline.";
 
-    const btn = document.getElementById("qsBtnSendJob");
-    const origHtml = btn ? btn.innerHTML : "";
+            if (!confirm(confirmMsg)) return;
 
-    if (btn) {
-        btn.innerHTML = "FETCHING SCHEMA...";
-        btn.style.background = "#f39c12";
-        btn.disabled = true;
-    }
+            const btn = document.getElementById("qsBtnSendJob");
+            const origHtml = btn ? btn.innerHTML : "";
 
-    try {
-        const schemaRes = await callAppsScript({
-            action: "getJobData"
-        });
+            if (btn) {
+                btn.innerHTML = "FETCHING SCHEMA...";
+                btn.style.background = "#f39c12";
+                btn.disabled = true;
+            }
 
-        if (
-            !schemaRes ||
-            schemaRes.status !== "success" ||
-            !schemaRes.data ||
-            !Array.isArray(schemaRes.data.schema) ||
-            schemaRes.data.schema.length === 0
-        ) {
-            throw new Error("Failed to retrieve schema from active job.");
-        }
-
-        const liveSchema = schemaRes.data.schema;
-
-        function resolveLabel(qsLabel) {
-            if (!qsLabel) return null;
-
-            const clean = String(qsLabel).trim().toLowerCase();
-
-            const exact = liveSchema.find(function (s) {
-                return String(s).trim().toLowerCase() === clean;
-            });
-
-            if (exact) return exact;
-
-            const mirrorMatch = findSheetLabelFor(qsLabel);
-
-            if (mirrorMatch) {
-                const mapped = liveSchema.find(function (s) {
-                    return String(s).trim().toLowerCase() ===
-                        String(mirrorMatch).trim().toLowerCase();
+            try {
+                const schemaRes = await callAppsScript({
+                    action: "getJobData"
                 });
 
-                if (mapped) return mapped;
-            }
-
-            const fuzzy = liveSchema.find(function (s) {
-                const sheetLabel = String(s).trim().toLowerCase();
-
-                if (sheetLabel.length < 3 || clean.length < 3) return false;
-
-                return sheetLabel.includes(clean) ||
-                    clean.includes(sheetLabel);
-            });
-
-            return fuzzy || null;
-        }
-
-        const payloadArr = [];
-        const unresolvedFields = [];
-
-        const checkboxes =
-            document.querySelectorAll(".qs-field-select");
-
-        checkboxes.forEach(function (cb) {
-            const cat = cb.getAttribute("data-cat");
-            const key = cb.getAttribute("data-key");
-            const label = cb.getAttribute("data-label");
-
-            const selectionKey = cat + "." + key;
-
-            let isChecked = true;
-
-            if (
-                stash.fieldSelection &&
-                stash.fieldSelection[selectionKey] !== undefined
-            ) {
-                isChecked = stash.fieldSelection[selectionKey];
-            }
-
-            if (isChecked === false) return;
-            if (!stash[cat]) return;
-            if (stash[cat][key] === undefined) return;
-
-            const val = String(stash[cat][key]).trim();
-
-            if (val === "") return;
-
-            const resolvedLabel = resolveLabel(label);
-
-            if (resolvedLabel) {
-                payloadArr.push(
-                    resolvedLabel + "◘" + val
-                );
-            } else {
-                unresolvedFields.push(label);
-            }
-        });
-
-        if (
-            stash.customer &&
-            stash.customer.locationConfirmed
-        ) {
-            const lat =
-                String(stash.customer.latitude || "").trim();
-
-            const lng =
-                String(stash.customer.longitude || "").trim();
-
-            if (lat !== "") {
-                const latLabel = resolveLabel("Latitude");
-
-                if (latLabel) {
-                    payloadArr.push(
-                        latLabel + "◘" + lat
-                    );
-                } else {
-                    unresolvedFields.push("Latitude");
+                if (
+                    !schemaRes ||
+                    schemaRes.status !== "success" ||
+                    !schemaRes.data ||
+                    !Array.isArray(schemaRes.data.schema) ||
+                    schemaRes.data.schema.length === 0
+                ) {
+                    throw new Error("Failed to retrieve schema from active job.");
                 }
-            }
 
-            if (lng !== "") {
-                const lngLabel = resolveLabel("Longitude");
+                const liveSchema = schemaRes.data.schema;
 
-                if (lngLabel) {
-                    payloadArr.push(
-                        lngLabel + "◘" + lng
-                    );
-                } else {
-                    unresolvedFields.push("Longitude");
+                function resolveLabel(qsLabel) {
+                    if (!qsLabel) return null;
+
+                    const clean = String(qsLabel).trim().toLowerCase();
+
+                    const exact = liveSchema.find(function (s) {
+                        return String(s).trim().toLowerCase() === clean;
+                    });
+
+                    if (exact) return exact;
+
+                    const mirrorMatch = findSheetLabelFor(qsLabel);
+
+                    if (mirrorMatch) {
+                        const mapped = liveSchema.find(function (s) {
+                            return String(s).trim().toLowerCase() ===
+                                String(mirrorMatch).trim().toLowerCase();
+                        });
+
+                        if (mapped) return mapped;
+                    }
+
+                    const fuzzy = liveSchema.find(function (s) {
+                        const sheetLabel = String(s).trim().toLowerCase();
+
+                        if (sheetLabel.length < 3 || clean.length < 3) return false;
+
+                        return sheetLabel.includes(clean) ||
+                            clean.includes(sheetLabel);
+                    });
+
+                    return fuzzy || null;
                 }
-            }
-        }
 
-        if (unresolvedFields.length > 0) {
-            const msg =
-                "The following fields could not be matched to the live sheet schema:\n\n" +
-                unresolvedFields.map(function (f) {
-                    return "- " + f;
-                }).join("\n") +
-                "\n\nThey will NOT be sent. Send the remaining matched fields anyway?";
+                const payloadArr = [];
+                const unresolvedFields = [];
 
-            if (!confirm(msg)) {
+                const checkboxes =
+                    document.querySelectorAll(".qs-field-select");
+
+                checkboxes.forEach(function (cb) {
+                    const cat = cb.getAttribute("data-cat");
+                    const key = cb.getAttribute("data-key");
+                    const label = cb.getAttribute("data-label");
+
+                    const selectionKey = cat + "." + key;
+
+                    let isChecked = true;
+
+                    if (
+                        stash.fieldSelection &&
+                        stash.fieldSelection[selectionKey] !== undefined
+                    ) {
+                        isChecked = stash.fieldSelection[selectionKey];
+                    }
+
+                    if (isChecked === false) return;
+                    if (!stash[cat]) return;
+                    if (stash[cat][key] === undefined) return;
+
+                    const val = String(stash[cat][key]).trim();
+
+                    if (val === "") return;
+
+                    const resolvedLabel = resolveLabel(label);
+
+                    if (resolvedLabel) {
+                        payloadArr.push(
+                            resolvedLabel + "◘" + val
+                        );
+                    } else {
+                        unresolvedFields.push(label);
+                    }
+                });
+
+                if (
+                    stash.customer &&
+                    stash.customer.locationConfirmed
+                ) {
+                    const lat =
+                        String(stash.customer.latitude || "").trim();
+
+                    const lng =
+                        String(stash.customer.longitude || "").trim();
+
+                    if (lat !== "") {
+                        const latLabel = resolveLabel("Latitude");
+
+                        if (latLabel) {
+                            payloadArr.push(
+                                latLabel + "◘" + lat
+                            );
+                        } else {
+                            unresolvedFields.push("Latitude");
+                        }
+                    }
+
+                    if (lng !== "") {
+                        const lngLabel = resolveLabel("Longitude");
+
+                        if (lngLabel) {
+                            payloadArr.push(
+                                lngLabel + "◘" + lng
+                            );
+                        } else {
+                            unresolvedFields.push("Longitude");
+                        }
+                    }
+                }
+
+                if (unresolvedFields.length > 0) {
+                    const msg =
+                        "The following fields could not be matched to the live sheet schema:\n\n" +
+                        unresolvedFields.map(function (f) {
+                            return "- " + f;
+                        }).join("\n") +
+                        "\n\nThey will NOT be sent. Send the remaining matched fields anyway?";
+
+                    if (!confirm(msg)) {
+                        if (btn) {
+                            btn.innerHTML = origHtml;
+                            btn.style.background = "";
+                            btn.disabled = false;
+                        }
+                        return;
+                    }
+                }
+
+                if (payloadArr.length === 0) {
+                    throw new Error("No matched fields contain data to send.");
+                }
+
+                if (btn) {
+                    btn.innerHTML = "SENDING...";
+                }
+
+                const payloadStr = payloadArr.join("|");
+
+                const syncRes = await callAppsScript({
+                    action: "syncVoice",
+                    payload: payloadStr,
+                    sheetName: currentJobTab
+                });
+
+                if (!syncRes || syncRes.status !== "success") {
+                    throw new Error(
+                        (syncRes && syncRes.message) ||
+                        "Failed to sync to sheet."
+                    );
+                }
+
+                if (btn) {
+                    btn.innerHTML = "SENT TO " + currentJobTab;
+                    btn.style.background = "var(--emerald-green)";
+                    btn.style.color = "black";
+
+                    setTimeout(function () {
+                        btn.innerHTML = origHtml;
+                        btn.style.background = "";
+                        btn.style.color = "";
+                        btn.disabled = false;
+                    }, 4000);
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("Error sending to job: " + e.message);
+
                 if (btn) {
                     btn.innerHTML = origHtml;
                     btn.style.background = "";
+                    btn.style.color = "";
                     btn.disabled = false;
                 }
-                return;
             }
         }
-
-        if (payloadArr.length === 0) {
-            throw new Error("No matched fields contain data to send.");
-        }
-
-        if (btn) {
-            btn.innerHTML = "SENDING...";
-        }
-
-        const payloadStr = payloadArr.join("|");
-
-        const syncRes = await callAppsScript({
-            action: "syncVoice",
-            payload: payloadStr,
-            sheetName: currentJobTab
-        });
-
-        if (!syncRes || syncRes.status !== "success") {
-            throw new Error(
-                (syncRes && syncRes.message) ||
-                "Failed to sync to sheet."
-            );
-        }
-
-        if (btn) {
-            btn.innerHTML = "SENT TO " + currentJobTab;
-            btn.style.background = "var(--emerald-green)";
-            btn.style.color = "black";
-
-            setTimeout(function () {
-                btn.innerHTML = origHtml;
-                btn.style.background = "";
-                btn.style.color = "";
-                btn.disabled = false;
-            }, 4000);
-        }
-
-    } catch (e) {
-        console.error(e);
-        alert("Error sending to job: " + e.message);
-
-        if (btn) {
-            btn.innerHTML = origHtml;
-            btn.style.background = "";
-            btn.style.color = "";
-            btn.disabled = false;
-        }
-    }
-}
 
         function updateStashIdentity(stash) {
             let n = stash.customer.name ? stash.customer.name.trim() : "";
             let d = stash.customer.date ? stash.customer.date.trim() : "";
-            
+
             let displayName = n ? n : "PENDING JOB";
             if (d) {
                 displayName += " | " + d;
@@ -6826,8 +6944,8 @@
             stash.name = displayName;
         }
 
-        
-        window.updateQsCheckbox = function(cat, key, isChecked) {
+
+        window.updateQsCheckbox = function (cat, key, isChecked) {
             if (!activeQuickStashId) return;
             const stash = quickStashes[activeQuickStashId];
             if (!stash) return;
@@ -6841,16 +6959,16 @@
             const stash = quickStashes[activeQuickStashId];
             if (!stash) return;
             stash[cat][key] = val;
-            
+
             if (cat === 'customer' && key === 'name') stash._nameManuallyEdited = true;
             if (cat === 'customer' && key === 'date') stash._dateManuallyEdited = true;
-            
+
             if (cat === 'customer' && (key === 'name' || key === 'date')) {
                 updateStashIdentity(stash);
                 updateActiveStashLabel();
                 updateDestDropdown();
             }
-            
+
             stash.updatedAt = Date.now();
             localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
             updateQsPreview();
@@ -6869,7 +6987,7 @@
             const opts = getCopyOptions();
             let block = "";
             let tsv = "";
-            
+
             const add = (cat, key, label) => {
                 if (selectedOnly) {
                     const cb = document.querySelector(`.qs-field-select[data-cat="${cat}"][data-key="${key}"]`);
@@ -6877,7 +6995,7 @@
                 }
                 const val = stash[cat][key] || "";
                 if (val.trim() === "") return false;
-                
+
                 if (opts.format === 'TABLE') {
                     tsv += opts.labels ? `${label}\t${val}\n` : `${val}\n`;
                 } else {
@@ -6893,35 +7011,35 @@
             };
 
             addSection([
-                {c:'customer', k:'date', l:'Date'},
-                {c:'customer', k:'name', l:'Customer Name'},
-                {c:'customer', k:'address', l:'Address'},
-                {c:'customer', k:'phone', l:'Phone'},
-                {c:'customer', k:'email', l:'Email'}
-            ]);
-            
-            addSection([
-                {c:'equipment', k:'outdoorModel', l:'Outdoor Model'},
-                {c:'equipment', k:'outdoorSerial', l:'Outdoor Serial'},
-                {c:'equipment', k:'indoorModel', l:'Indoor Model'},
-                {c:'equipment', k:'indoorSerial', l:'Indoor Serial'},
-                {c:'equipment', k:'thermostatModel', l:'Thermostat Model'}
+                { c: 'customer', k: 'date', l: 'Date' },
+                { c: 'customer', k: 'name', l: 'Customer Name' },
+                { c: 'customer', k: 'address', l: 'Address' },
+                { c: 'customer', k: 'phone', l: 'Phone' },
+                { c: 'customer', k: 'email', l: 'Email' }
             ]);
 
             addSection([
-                {c:'readings', k:'odat', l:'ODAT'},
-                {c:'readings', k:'suctionPressure', l:'Suction Pressure'},
-                {c:'readings', k:'liquidPressure', l:'Liquid Pressure'},
-                {c:'readings', k:'vaporSaturation', l:'Vapor Saturation'},
-                {c:'readings', k:'liquidSaturation', l:'Liquid Saturation'},
-                {c:'readings', k:'suctionLineTemp', l:'Suction Line Temp'},
-                {c:'readings', k:'liquidLineTemp', l:'Liquid Line Temp'},
-                {c:'readings', k:'superheat', l:'Superheat'},
-                {c:'readings', k:'subcool', l:'Subcool'},
-                {c:'readings', k:'returnTemp', l:'Return Temp'},
-                {c:'readings', k:'returnHumidity', l:'Return Humidity'},
-                {c:'readings', k:'supplyTemp', l:'Supply Temp'},
-                {c:'readings', k:'deltaT', l:'ΔT'}
+                { c: 'equipment', k: 'outdoorModel', l: 'Outdoor Model' },
+                { c: 'equipment', k: 'outdoorSerial', l: 'Outdoor Serial' },
+                { c: 'equipment', k: 'indoorModel', l: 'Indoor Model' },
+                { c: 'equipment', k: 'indoorSerial', l: 'Indoor Serial' },
+                { c: 'equipment', k: 'thermostatModel', l: 'Thermostat Model' }
+            ]);
+
+            addSection([
+                { c: 'readings', k: 'odat', l: 'ODAT' },
+                { c: 'readings', k: 'suctionPressure', l: 'Suction Pressure' },
+                { c: 'readings', k: 'liquidPressure', l: 'Liquid Pressure' },
+                { c: 'readings', k: 'vaporSaturation', l: 'Vapor Saturation' },
+                { c: 'readings', k: 'liquidSaturation', l: 'Liquid Saturation' },
+                { c: 'readings', k: 'suctionLineTemp', l: 'Suction Line Temp' },
+                { c: 'readings', k: 'liquidLineTemp', l: 'Liquid Line Temp' },
+                { c: 'readings', k: 'superheat', l: 'Superheat' },
+                { c: 'readings', k: 'subcool', l: 'Subcool' },
+                { c: 'readings', k: 'returnTemp', l: 'Return Temp' },
+                { c: 'readings', k: 'returnHumidity', l: 'Return Humidity' },
+                { c: 'readings', k: 'supplyTemp', l: 'Supply Temp' },
+                { c: 'readings', k: 'deltaT', l: 'ΔT' }
             ]);
 
             let addedExtra = false;
@@ -6996,12 +7114,12 @@
             localStorage.removeItem('hvacActiveQuickStashId');
             updateActiveStashLabel();
             const view = document.getElementById('quickStashViewArea');
-            const stashes = Object.values(quickStashes).sort((a,b) => {
-                if(a.pinned && !b.pinned) return -1;
-                if(!a.pinned && b.pinned) return 1;
+            const stashes = Object.values(quickStashes).sort((a, b) => {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
                 return b.updatedAt - a.updatedAt;
             });
-            
+
             let html = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                     <div style="font-size:16px; color:var(--text-primary); font-weight:900;">ALL STASHES</div>
@@ -7018,7 +7136,7 @@
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                                 <div style="flex:1;">
                                     <div style="display:flex; align-items:center; gap:5px;">
-                                        <button onclick="toggleQsPin('${s.id}')" style="background:none; border:none; padding:0; color:${s.pinned?'var(--amber-orange)':'#444'}; font-size:14px;">📌</button>
+                                        <button onclick="toggleQsPin('${s.id}')" style="background:none; border:none; padding:0; color:${s.pinned ? 'var(--amber-orange)' : '#444'}; font-size:14px;">📌</button>
                                         <div style="color:white; font-weight:900; font-size:16px;">${s.name}</div>
                                     </div>
                                     <div style="color:#666; font-size:10px; margin-left:22px;">Updated: ${new Date(s.updatedAt).toLocaleString()}</div>
@@ -7046,7 +7164,7 @@
         async function handleQuickStashPhoto(input) {
             const files = Array.from(input.files);
             if (files.length === 0) return;
-            
+
             let typeSel = document.getElementById('qsScanType');
             let depthSel = document.getElementById('qsScanDepth');
             let focusSel = document.getElementById('qsScanFocus');
@@ -7056,7 +7174,7 @@
 
             for (let i = 0; i < files.length; i++) {
                 let f = files[i];
-                let qId = 'qitem_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+                let qId = 'qitem_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
                 let qObj = {
                     id: qId,
                     file: f,
@@ -7071,17 +7189,17 @@
                 };
                 quickStashQueue.push(qObj);
             }
-            input.value = ""; 
+            input.value = "";
             renderHopper();
-            
-            if(!quickStashQueueRunning) {
+
+            if (!quickStashQueueRunning) {
                 processQuickStashQueue();
             }
         }
 
         function removeQuickStashQueueItem(itemId) {
             let q = quickStashQueue.find(x => x.id === itemId);
-            if(q && q.status === 'ANALYZING') return;
+            if (q && q.status === 'ANALYZING') return;
             quickStashQueue = quickStashQueue.filter(x => x.id !== itemId);
             renderHopper();
         }
@@ -7089,14 +7207,14 @@
         function renderHopper() {
             let listEl = document.getElementById('quickStashHopperList');
             let statsEl = document.getElementById('quickStashHopperStats');
-            if(!listEl || !statsEl) return;
-            
+            if (!listEl || !statsEl) return;
+
             let pending = quickStashQueue.filter(q => q.status === 'QUEUED').length;
             let analyzing = quickStashQueue.filter(q => q.status === 'ANALYZING').length;
             let review = quickStashQueue.filter(q => q.status === 'REVIEW').length;
             let done = quickStashQueue.filter(q => q.status === 'MERGED' || q.status === 'DISCARDED').length;
             let err = quickStashQueue.filter(q => q.status === 'ERROR').length;
-            
+
             statsEl.innerHTML = `
                 <div>TOTAL: ${quickStashQueue.length}</div>
                 <div style="color:var(--emerald-green);">DONE: ${done}</div>
@@ -7105,24 +7223,24 @@
                 ${pending > 0 ? `<div>WAITING: ${pending}</div>` : ''}
                 ${err > 0 ? `<div style="color:var(--crimson-red);">ERRORS: ${err}</div>` : ''}
             `;
-            
-            if(quickStashQueue.length === 0) {
+
+            if (quickStashQueue.length === 0) {
                 listEl.innerHTML = '<div style="color:#555; text-align:center; padding:10px;">Queue is empty</div>';
                 return;
             }
-            
+
             let html = '';
-            
+
             // Group by date logic
             let grouped = {};
             quickStashQueue.forEach(q => {
                 let d = new Date(q.lastModified);
-                let dStr = d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
-                if(!grouped[dStr]) grouped[dStr] = [];
+                let dStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                if (!grouped[dStr]) grouped[dStr] = [];
                 grouped[dStr].push(q);
             });
-            
-            for(let dStr in grouped) {
+
+            for (let dStr in grouped) {
                 html += `<div style="font-size:10px; color:#888; font-weight:900; margin-top:5px; border-bottom:1px solid #333;">${dStr.toUpperCase()}</div>`;
                 grouped[dStr].forEach(q => {
                     let icon = '⏳';
@@ -7132,7 +7250,7 @@
                     else if (q.status === 'MERGED') { icon = '✅'; color = 'var(--emerald-green)'; }
                     else if (q.status === 'DISCARDED') { icon = '🗑️'; color = '#666'; }
                     else if (q.status === 'ERROR') { icon = '❌'; color = 'var(--crimson-red)'; }
-                    
+
                     html += `
                         <div style="background:rgba(0,0,0,0.3); border-left:3px solid ${color}; padding:8px; border-radius:4px;">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -7140,13 +7258,13 @@
                                 <div style="font-size:9px; color:#888;">${new Date(q.lastModified).toLocaleTimeString()}</div>
                             </div>
                     `;
-                    
-                    if(qsPhotoDetail === 'DETAIL') {
+
+                    if (qsPhotoDetail === 'DETAIL') {
                         let sizeKB = (q.file.size / 1024).toFixed(1);
                         let sizeStr = sizeKB > 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
                         html += `<div style="font-size:9px; color:#666; margin-top:4px;">Profile: ${q.scanType} / ${q.scanDepth} | ${sizeStr}</div>`;
                     }
-                    
+
                     let removeBtn = `<button onclick="removeQuickStashQueueItem('${q.id}')" style="background:none; border:1px solid #555; color:#aaa; font-size:9px; padding:2px 6px; border-radius:4px; cursor:pointer;" title="Remove Item">✕</button>`;
                     if (q.status === 'REVIEW') {
                         html += `
@@ -7173,33 +7291,33 @@
                     html += `</div>`;
                 });
             }
-            
+
             listEl.innerHTML = html;
         }
 
         function retryQsItem(id) {
             let q = quickStashQueue.find(x => x.id === id);
-            if(q) {
+            if (q) {
                 q.status = 'QUEUED';
                 q.errorMsg = null;
                 renderHopper();
-                if(!quickStashQueueRunning) processQuickStashQueue();
+                if (!quickStashQueueRunning) processQuickStashQueue();
             }
         }
 
         async function processQuickStashQueue() {
             quickStashQueueRunning = true;
             let nextItem = quickStashQueue.find(q => q.status === 'QUEUED');
-            
-            if(!nextItem) {
+
+            if (!nextItem) {
                 quickStashQueueRunning = false;
                 renderHopper();
                 return;
             }
-            
+
             nextItem.status = 'ANALYZING';
             renderHopper();
-            
+
             try {
                 const base64 = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
@@ -7221,7 +7339,7 @@
                 if (res.status === "success" && res.data && res.data.extractedData) {
                     nextItem.extractedData = normalizeQuickStashData(res.data.extractedData);
                     nextItem.rawData = res.data.extractedData;
-                    
+
                     // Auto name generic stashes
                     let parsedCustName = nextItem.extractedData.customer.name;
                     let destStash = null;
@@ -7232,10 +7350,10 @@
                         if (destStash.name.match(/^Stash \d+$/)) {
                             destStash.name = parsedCustName.trim();
                             localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
-                            if(activeQuickStashId === destStash.id) renderActiveQuickStash();
+                            if (activeQuickStashId === destStash.id) renderActiveQuickStash();
                         }
                     }
-                    
+
                     if (qsReviewResults) {
                         nextItem.status = 'REVIEW';
                     } else {
@@ -7256,7 +7374,7 @@
                 }
                 nextItem.errorMsg = msg;
             }
-            
+
             renderHopper();
             // Continue processing sequentially
             setTimeout(processQuickStashQueue, 100);
@@ -7266,12 +7384,12 @@
 
         function reviewQsItem(id) {
             let q = quickStashQueue.find(x => x.id === id);
-            if(!q || !q.extractedData) return;
-            
+            if (!q || !q.extractedData) return;
+
             tempQuickStashData = q.extractedData;
-            
+
             const view = document.getElementById('quickStashViewArea');
-            
+
             let html = `
                 <div style="background:rgba(0,229,255,0.05); border:1px solid var(--amber-orange); border-radius:12px; padding:15px; margin-bottom:15px;">
                     <div style="color:var(--amber-orange); font-weight:900; font-size:16px; margin-bottom:15px;">REVIEW DATA: ${q.filename}</div>
@@ -7312,7 +7430,7 @@
             if (qsActiveDest !== 'NEW' && quickStashes[qsActiveDest]) activeDestText = quickStashes[qsActiveDest].name;
 
             html += `<button onclick="commitReviewItem('${q.id}', qsActiveDest)" class="btn btn-outline" style="border-color:var(--electric-blue); color:var(--electric-blue); font-weight:900;">MERGE INTO: ${activeDestText}</button>`;
-            
+
             html += `
                 <div style="display:flex; gap:5px; margin-top:5px;">
                     <select id="qsAltDestSelect" style="flex:1; background:#222; color:white; border:1px solid #444; border-radius:4px; padding:6px; font-size:10px;"></select>
@@ -7322,16 +7440,16 @@
 
             html += `<button onclick="discardReviewItem('${q.id}')" class="btn-utility" style="margin-top:10px;">DISCARD</button>`;
             html += `</div></div>`;
-            
+
             view.innerHTML = html;
-            
+
             // populate alt
             let altSel = document.getElementById('qsAltDestSelect');
-            if(altSel) {
-                let stashes = Object.values(quickStashes).sort((a,b) => b.updatedAt - a.updatedAt);
+            if (altSel) {
+                let stashes = Object.values(quickStashes).sort((a, b) => b.updatedAt - a.updatedAt);
                 let opts = `<option value="NEW">NEW STASH</option>`;
                 stashes.forEach(s => {
-                    if(s.id !== qsActiveDest) opts += `<option value="${s.id}">${s.name}</option>`;
+                    if (s.id !== qsActiveDest) opts += `<option value="${s.id}">${s.name}</option>`;
                 });
                 altSel.innerHTML = opts;
             }
@@ -7339,7 +7457,7 @@
 
         function discardReviewItem(qId) {
             let q = quickStashQueue.find(x => x.id === qId);
-            if(q) q.status = 'DISCARDED';
+            if (q) q.status = 'DISCARDED';
             tempQuickStashData = null;
             renderHopper();
             renderQuickStashHome(); // Go back to main
@@ -7361,8 +7479,8 @@
 
         function commitReviewItem(qId, targetId) {
             let q = quickStashQueue.find(x => x.id === qId);
-            if(!q || !q.extractedData) return;
-            
+            if (!q || !q.extractedData) return;
+
             let id = targetId;
             if (id === 'NEW') {
                 id = createNewQuickStash();
@@ -7382,7 +7500,7 @@
             let dt = q.extractedData;
             if (!stash.fieldMeta) stash.fieldMeta = {};
             if (!stash.rawScans) stash.rawScans = [];
-            
+
             stash.rawScans.push({
                 scanId: q.id,
                 filename: q.filename,
@@ -7400,10 +7518,10 @@
                     if (dt[cat][k]) {
                         if (cat === 'customer' && k === 'name' && stash._nameManuallyEdited) continue;
                         if (cat === 'customer' && k === 'date' && stash._dateManuallyEdited) continue;
-                        
+
                         stash[cat][k] = dt[cat][k];
                         let meta = (dt._meta && dt._meta[`${cat}.${k}`]) ? dt._meta[`${cat}.${k}`] : {};
-                        stash.fieldMeta[`${cat}.${k}`] = { 
+                        stash.fieldMeta[`${cat}.${k}`] = {
                             scanId: q.id,
                             filename: q.filename,
                             scanType: q.scanType,
@@ -7419,7 +7537,7 @@
                     if (dt.extra[k]) {
                         stash.extra[k] = dt.extra[k];
                         let meta = (dt._meta && dt._meta[`extra.${k}`]) ? dt._meta[`extra.${k}`] : {};
-                        stash.fieldMeta[`extra.${k}`] = { 
+                        stash.fieldMeta[`extra.${k}`] = {
                             scanId: q.id,
                             filename: q.filename,
                             scanType: q.scanType,
@@ -7430,25 +7548,25 @@
                     }
                 }
             }
-            
+
             // Auto-parse Dual-Run Capacitor Ratings
             let foundHerm = null;
             let foundFan = null;
             let foundCapKeys = []; // For debugging/reporting
-            
+
             ['diagnostics', 'equipment', 'extra', 'readings'].forEach(cat => {
                 if (stash[cat]) {
                     for (let k in stash[cat]) {
                         let kl = k.toLowerCase();
                         if (kl.includes('capacitor') || kl.includes('cap rating') || kl === 'cap' || kl.includes('capacitance')) {
                             foundCapKeys.push(k);
-                            
+
                             // First try combined format (e.g. 40+5)
                             let res = parseDualCapacitor(stash[cat][k]);
                             if (res && foundHerm === null && foundFan === null) {
                                 foundHerm = res.herm;
                                 foundFan = res.fan;
-                            } 
+                            }
                             // If combined parser fails, check if the key explicitly identifies Herm or Fan
                             else if (!res) {
                                 let valMatch = String(stash[cat][k]).match(/[\d\.]+/);
@@ -7484,9 +7602,9 @@
 
             stash.updatedAt = Date.now();
             localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
-            
+
             q.status = 'MERGED';
-            
+
             if (tempQuickStashData === dt) {
                 tempQuickStashData = null;
                 renderQuickStashHome();
@@ -7519,8 +7637,8 @@
 
                             if (!stash[cat]) stash[cat] = {};
                             stash[cat][k] = srcVal;
-                            
-                            stash.fieldMeta[`${cat}.${k}`] = { 
+
+                            stash.fieldMeta[`${cat}.${k}`] = {
                                 source: 'RESTORE',
                                 filename: stash.rawScans[scanIndex].filename || null
                             };
@@ -7543,7 +7661,7 @@
 
         function normalizeQuickStashData(raw) {
             const out = {
-                customer: { date: "", invoiceDate: "", name: "", address: "", phone: "", email: "" , latitude: null, longitude: null, locationSource: null, locationConfirmed: false, locationTimestamp: null },
+                customer: { date: "", invoiceDate: "", name: "", address: "", phone: "", email: "", latitude: null, longitude: null, locationSource: null, locationConfirmed: false, locationTimestamp: null },
                 equipment: { outdoorModel: "", outdoorSerial: "", indoorModel: "", indoorSerial: "", thermostatModel: "" },
                 readings: { odat: "", suctionPressure: "", liquidPressure: "", vaporSaturation: "", liquidSaturation: "", suctionLineTemp: "", liquidLineTemp: "", superheat: "", subcool: "", returnTemp: "", returnHumidity: "", supplyTemp: "", deltaT: "" },
                 diagnostics: { hermTargetMfd: "", fanTargetMfd: "", hermVolts: "", hermAmps: "", hermCalculatedUf: "", hermBenchUf: "", fanVolts: "", fanAmps: "", fanCalculatedUf: "", fanBenchUf: "", capacitorResult: "", capacitorDeviationPercent: "", compressorRlaRating: "", compressorLraRating: "", fanFlaRating: "", targetSubcool: "", rlaMeasured: "", rla2Measured: "", flaOdfMeasured: "", compressorLoadPercent: "", fanLoadPercent: "", motorLoadResult: "" },
@@ -7615,7 +7733,7 @@
             return out;
         }
 
-        
+
         // 🛑 ==========================================
         // 🛑 QUICK STASH MAP LOGIC
         // 🛑 ==========================================
@@ -7652,10 +7770,10 @@
 
             document.getElementById('qsMapModal').style.display = 'flex';
             initQsPopup('qsMapModal', 'qsMapHeader', ['#qsMapCoords', '#qsMapContainer', 'div:last-child']);
-            
+
             let center = [39.8283, -98.5795];
             let zoom = 4;
-            
+
             const needsGeocode = (!stash.customer.latitude || !stash.customer.longitude) && stash.customer.address && stash.customer.address.trim() !== '';
             let geocodeSuccess = false;
             let exactQuery = '';
@@ -7667,7 +7785,7 @@
             } else if (needsGeocode) {
                 document.getElementById('qsMapCoords').innerText = "LOCATING ADDRESS...";
                 exactQuery = stash.customer.address.trim().replace(/\s+/g, ' ');
-                
+
                 try {
                     const res = await fetch('https://nominatim.openstreetmap.org/search?limit=1&format=json&q=' + encodeURIComponent(exactQuery));
                     const data = await res.json();
@@ -7679,7 +7797,7 @@
                         let parts = exactQuery.split(',').map(s => s.trim());
                         parts = parts.filter(p => !/^united states$|^usa$|^us$/i.test(p));
                         fallbackQuery = parts.join(', ');
-                        
+
                         if (fallbackQuery && fallbackQuery !== exactQuery) {
                             const res2 = await fetch('https://nominatim.openstreetmap.org/search?limit=1&format=json&q=' + encodeURIComponent(fallbackQuery));
                             const data2 = await res2.json();
@@ -7697,12 +7815,12 @@
 
             if (!qsLeafletMap) {
                 qsLeafletMap = L.map('qsMapContainer', { zoomControl: false }).setView(center, zoom);
-                
+
                 qsLeafletMapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     attribution: '© OpenStreetMap'
                 });
-                
+
                 qsLeafletSatLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                     maxZoom: 19,
                     attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
@@ -7732,7 +7850,7 @@
                     document.getElementById('qsMapCoords').innerText = `Lat: ${c.lat.toFixed(6)} | Lng: ${c.lng.toFixed(6)}`;
                 }
             }, 300);
-            
+
             console.log("Geocoding attempt:");
             console.log("Exact Query: ", exactQuery);
             console.log("Fallback Query: ", fallbackQuery);
@@ -7754,10 +7872,10 @@
             stash.customer.locationSource = 'manual-pin';
             stash.customer.locationConfirmed = true;
             stash.customer.locationTimestamp = Date.now();
-            
+
             stash.updatedAt = Date.now();
             localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
-            
+
             document.getElementById('qsMapModal').style.display = 'none';
             renderActiveQuickStash();
         }
@@ -8015,59 +8133,65 @@
         function closeAiModal() { document.getElementById('aiModal').style.display = 'none'; document.getElementById('photoStatus').style.display = 'none'; }
 
         function runPipeline() {
-          const btn = document.getElementById('librarianBtn');
-          if (!btn) return;
+            const btn = document.getElementById('librarianBtn');
+            if (!btn) return;
 
-          const originalText = btn.innerHTML;
-          btn.disabled = true;
-          btn.style.background = "#f39c12"; // Orange Thinking State
-          btn.innerHTML = "⏳ PIPELINE RUNNING...";
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.style.background = "#f39c12"; // Orange Thinking State
+            btn.innerHTML = "⏳ PIPELINE RUNNING...";
 
-          callAppsScript({ action: "runPipeline" })
-            .then(res => {
-              btn.disabled = false;
-              btn.style.background = ""; // Restore original
-              btn.innerHTML = originalText;
+            return callAppsScript({ action: "runPipeline" })
+                .then(res => {
+                    btn.disabled = false;
+                    btn.style.background = ""; // Restore original
+                    btn.innerHTML = originalText;
 
-              if (res && res.status === "success" && res.data) {
-                showToast(res.data.message || "Pipeline Complete");
-                if (res.data.newName) {
-                  currentJob = res.data.newName;
-                  localStorage.setItem('hvacActiveJob', currentJob);
-                  updateUniversalJobHeaders();
-                }
-              } else {
-                showToast(res.message || "Pipeline Complete");
-              }
+                    let success = false;
+                    if (res && res.status === "success" && res.data) {
+                        showToast(res.data.message || "Pipeline Complete");
+                        if (res.data.newName) {
+                            currentJob = res.data.newName;
+                            localStorage.setItem('hvacActiveJob', currentJob);
+                            updateUniversalJobHeaders();
+                        }
+                        success = true;
+                    } else {
+                        showToast(res.message || "Pipeline Complete");
+                    }
 
-              pullMirror(); // Trigger clean UI refresh
-            })
-            .catch(err => {
-              btn.disabled = false;
-              btn.style.background = "#e74c3c"; // Red Danger State
-              btn.innerHTML = "❌ FAILED";
-              alert("System Error: " + err.message);
-              setTimeout(() => {
-                btn.style.background = "";
-                btn.innerHTML = originalText;
-              }, 3000);
-            });
+                    pullMirror(); // Trigger clean UI refresh
+                    return success;
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.style.background = "#e74c3c"; // Red Danger State
+                    btn.innerHTML = "❌ FAILED";
+                    alert("System Error: " + err.message);
+                    setTimeout(() => {
+                        btn.style.background = "";
+                        btn.innerHTML = originalText;
+                    }, 3000);
+                    return false;
+                });
         }
 
         // v28.42: Restoration Wrapper - handles both Pipeline and Manuals Search
-        async function runLibrarianInApp() {
-            const btn = document.getElementById('librarianBtn');
-            const originalText = btn.innerHTML;
+        let manualsRescanInProgress = false;
+
+        async function loadJobManuals() {
             const linksDiv = document.getElementById('manualLinks');
+            const currentJob = localStorage.getItem('hvacActiveJob');
 
-            // 1. Trigger Manual Pipeline
-            runPipeline();
+            if (!currentJob) {
+                linksDiv.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">No active job selected.<br>Select a job from Mirror to load manuals.</div>';
+                return;
+            }
 
-            // 2. Search Manuals (Legacy Action)
             linksDiv.innerHTML = '<div style="color:var(--amber-orange); text-align:center;">Searching Manuals...</div>';
             try {
                 const response = await callAppsScript({ action: "fetchManuals" });
-                if (response.status === "success" && response.data) {
+                if (response && response.status === "success" && response.data) {
                     const links = response.data;
                     if (links.length === 0) {
                         linksDiv.innerHTML = '<div style="color:#666; text-align:center;">No Manuals Indexed Yet.</div>';
@@ -8105,9 +8229,38 @@
 
                         linksDiv.innerHTML = finalHtml;
                     }
+                } else {
+                    linksDiv.innerHTML = '<div style="color:var(--error-red); text-align:center;">Failed to load manuals: ' + (response.message || "Unknown error") + '</div>';
                 }
             } catch (e) {
                 linksDiv.innerHTML = '<div style="color:var(--crimson-red); text-align:center;">Manuals Search Failed.</div>';
+            }
+        }
+
+        // v28.42: Restoration Wrapper - handles both Pipeline and Manuals Search
+        async function runLibrarianInApp() {
+            if (manualsRescanInProgress) return;
+
+            const btn = document.getElementById('librarianBtn');
+            const originalText = btn.innerHTML;
+
+            manualsRescanInProgress = true;
+            try {
+                // 1. Run Pipeline and Wait
+                const success = await runPipeline();
+
+                // 2. Search Manuals ONLY if pipeline succeeded
+                if (success) {
+                    btn.disabled = true; // runPipeline re-enables it
+                    btn.innerHTML = "🔍 SEARCHING MANUALS...";
+                    await loadJobManuals();
+                }
+            } finally {
+                manualsRescanInProgress = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
             }
         }
 
@@ -9304,7 +9457,7 @@
 
         function closeReport() { showSection('v23-home'); }
         function closeVoiceModal() { stopGlobalMic(); closeManualEntry(); showSection('v23-home'); }
-        
+
         function setCreateShellDiagnostic(text, isError = false) {
             const el = document.getElementById('createShellDiagnostic');
             if (!el) return;
@@ -9339,7 +9492,7 @@
                     name: name,
                     date: requestDate
                 });
-                
+
                 console.log("CREATE SHELL RAW RESPONSE:", res);
                 setCreateShellDiagnostic(`CREATE SHELL DIAGNOSTIC\nStage: Response Received\nAction: createJob\nRaw Response:\n${JSON.stringify(res, null, 2)}`);
 
@@ -9361,7 +9514,7 @@
                         currentJobTab = response.newSheetName;
                         localStorage.setItem('hvacCurrentJobTabV20', currentJobTab);
                         localStorage.setItem('hvacActiveJob', currentJobTab); // Sync legacy
-                        
+
                         // v28.42: Restoration Handshake (Folder Hooks)
                         localStorage.setItem('hvacActiveFolderId', response.folderId);
                         saveRecentFolder(currentJobTab, response.folderId);
@@ -9432,7 +9585,7 @@
             overlays.forEach(o => o.style.display = 'none');
 
             showSection('v23-home');
-            
+
             if (window.location.hash === '#quickstash') {
                 setTimeout(() => openQuickStash(), 100);
             }
@@ -9511,69 +9664,93 @@
     </script>
 
     <!-- QUICK STASH DIAGNOSTICS HANDOFF MODAL -->
-    <div id="qsDiagHandoffModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
-        <div id="qsDiagHandoffHeader" style="background:var(--card-bg); border-bottom:1px solid #333; padding:15px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="color:var(--amber-orange); font-weight:900; font-size:16px; pointer-events:none; display:flex; align-items:center; gap:8px;">⚡ DIAGNOSTICS HANDOFF</div>
-            <button onclick="document.getElementById('qsDiagHandoffModal').style.display='none';" style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
+    <div id="qsDiagHandoffModal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
+        <div id="qsDiagHandoffHeader"
+            style="background:var(--card-bg); border-bottom:1px solid #333; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+            <div
+                style="color:var(--amber-orange); font-weight:900; font-size:16px; pointer-events:none; display:flex; align-items:center; gap:8px;">
+                ⚡ DIAGNOSTICS HANDOFF</div>
+            <button onclick="document.getElementById('qsDiagHandoffModal').style.display='none';"
+                style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
         </div>
         <div style="padding:15px; flex:1; overflow-y:auto; background:var(--bg-dark);" id="qsDiagHandoffBody">
             <!-- Populated dynamically -->
         </div>
-        <div id="qsDiagHandoffFooter" style="padding:15px; background:var(--card-bg); border-top:1px solid #333; display:flex;">
-            <button onclick="executeDiagnosticsHandoff()" style="flex:1; padding:15px; border-radius:8px; background:var(--electric-blue); color:black; border:none; font-weight:900; font-size:14px; cursor:pointer;">OPEN DIAGNOSTICS ➔</button>
+        <div id="qsDiagHandoffFooter"
+            style="padding:15px; background:var(--card-bg); border-top:1px solid #333; display:flex;">
+            <button onclick="executeDiagnosticsHandoff()"
+                style="flex:1; padding:15px; border-radius:8px; background:var(--electric-blue); color:black; border:none; font-weight:900; font-size:14px; cursor:pointer;">OPEN
+                DIAGNOSTICS ➔</button>
         </div>
     </div>
 
     <!-- QUICK STASH MAP MODAL -->
-    <div id="qsMapModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
-        <div id="qsMapHeader" style="background:var(--card-bg); border-bottom:1px solid #333; padding:15px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="color:var(--electric-blue); font-weight:900; font-size:16px; pointer-events:none;">?? PIN LOCATION</div>
+    <div id="qsMapModal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
+        <div id="qsMapHeader"
+            style="background:var(--card-bg); border-bottom:1px solid #333; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="color:var(--electric-blue); font-weight:900; font-size:16px; pointer-events:none;">?? PIN
+                LOCATION</div>
             <div style="display:flex; background:#222; border-radius:6px; overflow:hidden; border:1px solid #444;">
-                <button id="qsMapBtnSat" onclick="setQsMapMode('sat')" style="padding:4px 12px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--electric-blue); color:black; border:none;">SATELLITE</button>
-                <button id="qsMapBtnMap" onclick="setQsMapMode('map')" style="padding:4px 12px; font-size:11px; font-weight:bold; cursor:pointer; background:#222; color:#888; border:none;">MAP</button>
+                <button id="qsMapBtnSat" onclick="setQsMapMode('sat')"
+                    style="padding:4px 12px; font-size:11px; font-weight:bold; cursor:pointer; background:var(--electric-blue); color:black; border:none;">SATELLITE</button>
+                <button id="qsMapBtnMap" onclick="setQsMapMode('map')"
+                    style="padding:4px 12px; font-size:11px; font-weight:bold; cursor:pointer; background:#222; color:#888; border:none;">MAP</button>
             </div>
-            <button onclick="cancelQsMap()" style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
+            <button onclick="cancelQsMap()"
+                style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
         </div>
         <div style="padding:10px; text-align:center; background:#222; font-size:12px; color:#aaa;" id="qsMapCoords">
             Latitude: -- | Longitude: --
         </div>
         <div style="flex:1; position:relative; overflow:hidden;">
             <div id="qsMapContainer" style="width:100%; height:100%;"></div>
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:red; font-size:32px; font-weight:bold; z-index:1000; pointer-events:none; text-shadow:0 0 5px white;">+</div>
+            <div
+                style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:red; font-size:32px; font-weight:bold; z-index:1000; pointer-events:none; text-shadow:0 0 5px white;">
+                +</div>
         </div>
         <div style="padding:15px; background:var(--card-bg); border-top:1px solid #333; display:flex; gap:10px;">
-            <button onclick="cancelQsMap()" style="flex:1; padding:12px; border-radius:8px; background:#444; color:white; border:none; font-weight:bold; cursor:pointer;">CANCEL</button>
-            <button onclick="confirmQsMap()" style="flex:1; padding:12px; border-radius:8px; background:var(--emerald-green); color:black; border:none; font-weight:bold; cursor:pointer;">CONFIRM PIN</button>
+            <button onclick="cancelQsMap()"
+                style="flex:1; padding:12px; border-radius:8px; background:#444; color:white; border:none; font-weight:bold; cursor:pointer;">CANCEL</button>
+            <button onclick="confirmQsMap()"
+                style="flex:1; padding:12px; border-radius:8px; background:var(--emerald-green); color:black; border:none; font-weight:bold; cursor:pointer;">CONFIRM
+                PIN</button>
         </div>
     </div>
     <!-- QUICK STASH MAPPER MODAL -->
-    <div id="qsMapperModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
-        <div id="qsMapperHeader" style="background:var(--card-bg); border-bottom:1px solid #333; padding:15px; display:flex; justify-content:space-between; align-items:center;">
-            <div id="qsMapperTitle" style="color:var(--electric-blue); font-weight:900; font-size:16px; pointer-events:none;">MAP INTO FIELD</div>
-            <button onclick="document.getElementById('qsMapperModal').style.display='none';" style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
+    <div id="qsMapperModal"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg-dark); z-index:99999; flex-direction:column;">
+        <div id="qsMapperHeader"
+            style="background:var(--card-bg); border-bottom:1px solid #333; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+            <div id="qsMapperTitle"
+                style="color:var(--electric-blue); font-weight:900; font-size:16px; pointer-events:none;">MAP INTO FIELD
+            </div>
+            <button onclick="document.getElementById('qsMapperModal').style.display='none';"
+                style="color:var(--crimson-red); font-size:20px; background:none; border:none; cursor:pointer;">✖</button>
         </div>
         <div style="padding:15px; flex:1; overflow-y:auto; background:var(--bg-dark);" id="qsMapperList">
             <!-- Populated dynamically -->
         </div>
     </div>
-    
+
     <script>
         let qsMapperTargetCat = null;
         let qsMapperTargetKey = null;
 
-        
+
         function resolveHandoffTarget(stash, targetKey, exactAliases, isHerm, isFan) {
             let candidates = [];
             let consumedKeys = [];
-            
+
             ['diagnostics', 'equipment', 'readings', 'extra'].forEach(sec => {
                 if (!stash[sec]) return;
                 Object.keys(stash[sec]).forEach(k => {
                     let val = stash[sec][k];
                     if (val === undefined || val === null || String(val).trim() === '') return;
-                    
+
                     let normKey = k.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    
+
                     for (let al of exactAliases) {
                         let normAl = al.toLowerCase().replace(/[^a-z0-9]/g, '');
                         if (normKey === normAl) {
@@ -9582,10 +9759,10 @@
                                 candidates.push(Number(numMatch[0]));
                                 consumedKeys.push(k);
                             }
-                            return; 
+                            return;
                         }
                     }
-                    
+
                     if ((isHerm || isFan) && candidates.length === 0) {
                         let isCompKey = (normKey === 'capacitorrating');
                         if (isCompKey) {
@@ -9625,7 +9802,7 @@
             }
             let rawStashes = localStorage.getItem('hvacQuickStashesV1');
             if (rawStashes) quickStashes = JSON.parse(rawStashes);
-            
+
             const stash = quickStashes[activeQuickStashId];
             if (!stash) {
                 alert("Active stash not found in registry.");
@@ -9692,13 +9869,13 @@
                 if (res.consumedKeys) {
                     res.consumedKeys.forEach(k => allConsumedKeys.add(k));
                 }
-                
+
                 let icon = '';
                 let color = '';
                 if (res.status === 'resolved') { icon = '✓'; color = 'var(--emerald-green)'; }
                 else if (res.status === 'conflict') { icon = '⚠'; color = 'var(--amber-orange)'; }
                 else { icon = '○'; color = '#555'; }
-                
+
                 html += `
                     <div style="display:flex; justify-content:space-between; align-items:center; background:#222; padding:8px; border-radius:6px; border:1px solid #333;">
                         <div style="display:flex; align-items:center; gap:8px;">
@@ -9714,14 +9891,14 @@
             if (stash.extra) {
                 Object.keys(stash.extra).forEach(k => {
                     if (allConsumedKeys.has(k)) return;
-                    
+
                     let kNorm = k.toLowerCase();
                     let isResultOrMeasured = kNorm.includes('measured') || kNorm.includes('deviation') || kNorm.includes('tolerance') || kNorm.includes('status') || kNorm.includes('results') || kNorm.includes('bench');
                     if (isResultOrMeasured) return;
-                    
+
                     let isLikelyUnmapped = false;
                     let targetMissingOrConflict = (key) => handoff.diagnostics[key] && handoff.diagnostics[key].status !== 'resolved';
-                    
+
                     if ((kNorm.includes('cap') || kNorm.includes('capacitor') || kNorm.includes('mfd') || kNorm.includes('µf')) && (targetMissingOrConflict('hermTargetMfd') || targetMissingOrConflict('fanTargetMfd'))) {
                         isLikelyUnmapped = true;
                     } else if ((kNorm.includes('rla') || kNorm.includes('lra') || kNorm.includes('fla') || kNorm.includes('amp')) && (targetMissingOrConflict('compressorRlaRating') || targetMissingOrConflict('compressorLraRating') || targetMissingOrConflict('fanFlaRating'))) {
@@ -9729,7 +9906,7 @@
                     } else if ((kNorm.includes('target sc') || kNorm.includes('subcool')) && targetMissingOrConflict('targetSubcool')) {
                         isLikelyUnmapped = true;
                     }
-                    
+
                     if (isLikelyUnmapped) {
                         unmappedExtraWarnings.push(`"${k}": ${stash.extra[k]}`);
                     }
@@ -9817,18 +9994,18 @@
             const btnCollapse = document.createElement('button');
             btnCollapse.innerHTML = '_';
             btnCollapse.style.cssText = 'background:none; border:none; color:white; cursor:pointer; font-size:14px;';
-            
+
             const btnExpand = document.createElement('button');
             btnExpand.innerHTML = '↕';
             btnExpand.style.cssText = 'background:none; border:none; color:white; cursor:pointer; font-size:14px;';
-            
+
             // Find existing close button
             const existingBtn = header.querySelector('button');
             const rightContainer = document.createElement('div');
             rightContainer.style.display = 'flex';
             rightContainer.style.alignItems = 'center';
             rightContainer.style.gap = '15px';
-            
+
             if (existingBtn) {
                 // If there are other buttons (like the Map Satellite/Map toggles), leave them alone
                 // We just want to put collapse/expand next to the close button
@@ -9891,7 +10068,7 @@
                     modal.style.maxWidth = '600px';
                 }
                 isExpanded = !isExpanded;
-                
+
                 // If we expand while collapsed, uncollapse
                 if (isExpanded && isCollapsed) {
                     btnCollapse.click();
@@ -9923,16 +10100,16 @@
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 const dx = clientX - startX;
                 const dy = clientY - startY;
-                
+
                 let newX = initialX + dx;
                 let newY = initialY + dy;
-                
+
                 // bounds
                 if (newY < 0) newY = 0;
                 if (newX < 0) newX = 0;
                 if (newX + modal.offsetWidth > window.innerWidth) newX = window.innerWidth - modal.offsetWidth;
                 if (newY + header.offsetHeight > window.innerHeight) newY = window.innerHeight - header.offsetHeight;
-                
+
                 modal.style.left = newX + 'px';
                 modal.style.top = newY + 'px';
                 modal.style.bottom = 'auto';
@@ -9946,12 +10123,12 @@
 
             header.style.cursor = 'grab';
             header.addEventListener('mousedown', startDrag);
-            header.addEventListener('touchstart', startDrag, {passive: false});
+            header.addEventListener('touchstart', startDrag, { passive: false });
             document.addEventListener('mousemove', doDrag);
-            document.addEventListener('touchmove', doDrag, {passive: false});
+            document.addEventListener('touchmove', doDrag, { passive: false });
             document.addEventListener('mouseup', stopDrag);
             document.addEventListener('touchend', stopDrag);
-            
+
             // Set initial floating styles if not already set
             if (!modal.style.maxWidth) {
                 modal.style.position = 'fixed';
@@ -9976,11 +10153,11 @@
 
             qsMapperTargetCat = cat;
             qsMapperTargetKey = key;
-            
+
             document.getElementById('qsMapperTitle').innerText = `MAP INTO [${label.toUpperCase()}]`;
-            
+
             let html = '';
-            
+
             const cats = [
                 { id: 'extra', title: 'EXTRA / OTHER' },
                 { id: 'customer', title: 'CUSTOMER' },
@@ -9995,7 +10172,7 @@
                 let cHtml = `<div style="margin-bottom:20px;">
                                 <div style="color:var(--electric-blue); font-weight:bold; margin-bottom:10px; font-size:12px; border-bottom:1px solid #333; padding-bottom:5px;">${c.title}</div>
                                 <div style="display:flex; flex-direction:column; gap:8px;">`;
-                                
+
                 for (let k in fields) {
                     if (c.id === cat && k === key) continue; // skip self
                     const val = fields[k];
@@ -10032,7 +10209,7 @@
             if (!stash) return;
 
             updateStashField(qsMapperTargetCat, qsMapperTargetKey, val);
-            
+
             document.getElementById('qsMapperModal').style.display = 'none';
             renderActiveQuickStash();
         }
@@ -10090,9 +10267,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
