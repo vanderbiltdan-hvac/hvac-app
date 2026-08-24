@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Block v1.01.1</title>
+    <title>Data Block v1.01.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -22,7 +22,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.01.1</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.01.2</div>
 </div>
 
 <div class="max-w-4xl mx-auto p-4 space-y-4">
@@ -138,12 +138,12 @@
 <!-- BOTTOM NAVIGATION -->
 <div class="fixed bottom-0 w-full bg-slate-800 border-t border-slate-700 p-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.2)] z-50">
     <div class="max-w-4xl mx-auto">
-        <div class="flex justify-between items-center px-4 mb-2">
-            <div class="text-slate-400 font-bold text-xs tracking-widest">PAGES <span class="text-slate-600">·</span> DATA BLOCK</div>
-            <button onclick="toggleBottomNav()" class="text-slate-400 hover:text-white p-1" id="bottom-nav-toggle">
-                <span class="text-xl">☰</span>
-            </button>
-        </div>
+        <button id="bottom-nav-toggle" onclick="toggleBottomNav()" class="w-full flex justify-between items-center px-4 mb-2 text-slate-400 hover:text-white transition-colors">
+            <div class="font-bold text-xs tracking-widest text-left">PAGES <span class="text-slate-600">·</span> DATA BLOCK</div>
+            <div class="p-1">
+                <span id="bottom-nav-icon" class="text-xl">☰</span>
+            </div>
+        </button>
         <div id="bottom-nav-grid" class="hidden">
             <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
         </div>
@@ -151,7 +151,7 @@
 </div>
 
 <script>
-    const DATABLOCK_VERSION = "v1.01.1";
+    const DATABLOCK_VERSION = "v1.01.2";
     const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
 
     let currentRawBlock = "";
@@ -637,13 +637,13 @@
 
     function toggleBottomNav() {
         const grid = document.getElementById('bottom-nav-grid');
-        const icon = document.querySelector('#bottom-nav-toggle span');
+        const icon = document.getElementById('bottom-nav-icon');
         if (grid.classList.contains('hidden')) {
             grid.classList.remove('hidden');
-            icon.innerText = '▼';
+            if (icon) icon.innerText = '▼';
         } else {
             grid.classList.add('hidden');
-            icon.innerText = '☰';
+            if (icon) icon.innerText = '☰';
         }
     }
 
