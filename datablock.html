@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Block v1.01.2</title>
+    <title>Data Block v1.02.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <script src="mirror-data.js"></script>
@@ -22,7 +22,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.01.2</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.02.0</div>
 </div>
 
 <div class="max-w-4xl mx-auto p-4 space-y-4">
@@ -127,10 +127,10 @@
 
     <!-- ACTIONS -->
     <div class="mt-8 space-y-3">
-        <button disabled class="w-full bg-slate-800 border border-slate-700 text-slate-500 font-bold py-4 rounded shadow uppercase tracking-widest text-sm flex flex-col items-center justify-center cursor-not-allowed">
-            <span>SEND TO SHEET</span>
-            <span class="text-[10px] mt-1 opacity-50">PLANNED</span>
+        <button id="send-to-sheet-btn" onclick="sendDataBlockToSheet()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded shadow uppercase tracking-widest text-sm transition-colors">
+            SEND TO SHEET
         </button>
+        <div id="send-status" class="text-center text-xs font-bold tracking-widest min-h-[1.5rem] flex items-center justify-center"></div>
     </div>
 
 </div>
@@ -151,10 +151,12 @@
 </div>
 
 <script>
-    const DATABLOCK_VERSION = "v1.01.2";
+    const DATABLOCK_VERSION = "v1.02.0";
     const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6cBAi3DIlnjOhOEdkYPGt5aijIl4jzOMLnhkxy8NXd6M33Tp9OZAzHezOMbINh-6n/exec";
 
     let currentRawBlock = "";
+    let isSendingToSheet = false;
 
     function stringSimilarity(a, b) {
         if (!a || !b) return 0;
@@ -618,9 +620,88 @@
         }
     }
 
-    // FUTURE BACKEND CONTRACT - COMMENT ONLY
-    // action: writeToNextDataBlock
-    // payload: { dataString: <serialized block> }
+    async function sendDataBlockToSheet() {
+        if (isSendingToSheet) return;
+        
+        const activeJob = getActiveJob();
+        const payload = getCompilerPayload();
+        
+        if (!activeJob) {
+            alert("No active job selected.");
+            return;
+        }
+        if (payload && payload.job && payload.job.activeJob && payload.job.activeJob !== activeJob) {
+            alert("Compiler payload does not match active job.");
+            return;
+        }
+        if (!currentRawBlock || currentRawBlock.trim() === "") {
+            alert("Data block is empty.");
+            return;
+        }
+        
+        const items = flattenCompilerItems(payload);
+        const warnings = validateDelimiters(items);
+        if (warnings.length > 0) {
+            alert("Cannot send: Reserved characters (pipe or space) found in labels or values.");
+            return;
+        }
+
+        isSendingToSheet = true;
+        const btn = document.getElementById("send-to-sheet-btn");
+        const statusEl = document.getElementById("send-status");
+        
+        btn.innerText = "SENDING...";
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-wait");
+        statusEl.innerText = "";
+        statusEl.className = "text-center text-xs font-bold tracking-widest min-h-[1.5rem] flex items-center justify-center";
+
+        try {
+            const reqPayload = {
+                action: "writeToNextDataBlock",
+                sheetName: activeJob,
+                payload: currentRawBlock
+            };
+
+            const response = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify(reqPayload)
+            });
+            const json = await response.json();
+
+            if (json.status === "success" && json.data) {
+                const targetCell = json.data.targetCell;
+                if (json.data.usedFallback) {
+                    statusEl.innerText = `AA7:AA16 FULL \u2014 WRITTEN TO ${targetCell}`;
+                    statusEl.classList.add("text-amber-400");
+                } else {
+                    statusEl.innerText = `WRITTEN TO ${targetCell}`;
+                    statusEl.classList.add("text-emerald-400");
+                }
+                
+                // Trigger mirror refresh immediately
+                try {
+                    if (window.PLATTS_MIRROR_DATA && typeof window.PLATTS_MIRROR_DATA.refresh === 'function') {
+                        await window.PLATTS_MIRROR_DATA.refresh();
+                    }
+                } catch(e) {
+                    statusEl.innerText += " \u00B7 MIRROR REFRESH FAILED";
+                    statusEl.classList.remove("text-emerald-400");
+                    statusEl.classList.add("text-red-400");
+                }
+            } else {
+                throw new Error(json.message || (json.data && json.data.error) || "Write failed");
+            }
+        } catch (e) {
+            statusEl.innerText = `ERROR: ${e.message}`;
+            statusEl.classList.add("text-red-400");
+        } finally {
+            isSendingToSheet = false;
+            btn.innerText = "SEND TO SHEET";
+            btn.disabled = false;
+            btn.classList.remove("opacity-50", "cursor-wait");
+        }
+    }
 
     // Navigation and UX
     function toggleFullScreen() {
