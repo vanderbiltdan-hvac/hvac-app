@@ -1,5 +1,5 @@
 // Platts Proposal Shared Mirror Data Engine
-// Registry Version: v1.3.1
+// Registry Version: v1.3.3
 // Canonical source of shared Mirror data state for deployed app.
 
 window.PLATTS_MIRROR_DATA = {
@@ -33,6 +33,57 @@ window.PLATTS_MIRROR_DATA = {
             return this.schema;
         }
         return this.baselineSchema;
+    },
+
+    getSnapshotStorageKey: function(job) {
+        if (!job) return null;
+        let safe = job.trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        return safe ? `platts_mirror_snapshot_v1::${safe}` : null;
+    },
+
+    _saveSnapshot: function() {
+        if (!this.currentJob) return;
+        const key = this.getSnapshotStorageKey(this.currentJob);
+        if (!key) return;
+        
+        const snapshot = {
+            job: this.currentJob,
+            fields: this.fields,
+            schema: this.schema,
+            pmi: this.pmi,
+            conflict: this.conflict,
+            folderId: this.folderId,
+            lastUpdated: this.lastUpdated
+        };
+        
+        try {
+            localStorage.setItem(key, JSON.stringify(snapshot));
+        } catch(e) {}
+    },
+
+    _restoreSnapshot: function(activeJob) {
+        if (!activeJob) return false;
+        const key = this.getSnapshotStorageKey(activeJob);
+        if (!key) return false;
+        
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return false;
+            
+            const snapshot = JSON.parse(raw);
+            if (snapshot && snapshot.job === activeJob && typeof snapshot.fields === 'object' && Array.isArray(snapshot.schema) && snapshot.schema.length > 0) {
+                this.currentJob = snapshot.job;
+                this.fields = snapshot.fields || {};
+                this.schema = snapshot.schema || [];
+                this.pmi = snapshot.pmi || [];
+                this.conflict = snapshot.conflict || "";
+                this.folderId = snapshot.folderId || null;
+                this.lastUpdated = snapshot.lastUpdated || Date.now();
+                return true;
+            }
+        } catch(e) {}
+        
+        return false;
     },
 
     _normalizeLabel: function(label) {
@@ -292,6 +343,8 @@ window.PLATTS_MIRROR_DATA = {
                 localStorage.setItem('hvacActiveFolderId', this.folderId);
             }
             
+            this._saveSnapshot();
+            
             const drift = this.compareSchemaToBaseline();
 
             const normalizedState = {
@@ -317,3 +370,61 @@ window.PLATTS_MIRROR_DATA = {
         }
     }
 };
+
+(function() {
+    const engine = window.PLATTS_MIRROR_DATA;
+    const activeJob = engine.getActiveJob();
+    if (activeJob) {
+        if (!engine._restoreSnapshot(activeJob)) {
+            engine.currentJob = null;
+            engine.fields = {};
+            engine.schema = [];
+            engine.pmi = [];
+            engine.conflict = "";
+            engine.folderId = null;
+            engine.lastUpdated = null;
+        }
+    }
+    
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'hvacActiveJob') {
+            const newJob = engine.getActiveJob();
+            if (newJob !== engine.currentJob) {
+                if (newJob) {
+                    if (!engine._restoreSnapshot(newJob)) {
+                        engine.currentJob = null;
+                        engine.fields = {};
+                        engine.schema = [];
+                        engine.pmi = [];
+                        engine.conflict = "";
+                        engine.folderId = null;
+                        engine.lastUpdated = null;
+                    }
+                } else {
+                    engine.currentJob = null;
+                    engine.fields = {};
+                    engine.schema = [];
+                    engine.pmi = [];
+                    engine.conflict = "";
+                    engine.folderId = null;
+                    engine.lastUpdated = null;
+                }
+                
+                window.dispatchEvent(
+                    new CustomEvent('platts-mirror-updated', {
+                        detail: {
+                            currentJob: engine.currentJob,
+                            fields: engine.fields,
+                            schema: engine.schema,
+                            pmi: engine.pmi,
+                            conflict: engine.conflict,
+                            folderId: engine.folderId,
+                            lastUpdated: engine.lastUpdated,
+                            schemaDrift: engine.compareSchemaToBaseline()
+                        }
+                    })
+                );
+            }
+        }
+    });
+})();
