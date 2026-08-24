@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Block v1.00.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="pages-registry.js"></script>
+    <style>
+        .raw-block-area {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans pb-32">
+
+<!-- STICKY HEADER -->
+<div class="sticky top-0 z-50 bg-slate-800 border-b border-slate-700 p-3 flex justify-between items-center shadow-md">
+    <button onclick="toggleFullScreen()" class="w-[50px] h-10 bg-slate-700 hover:bg-slate-600 rounded text-slate-300 flex items-center justify-center transition-colors">
+        <span class="text-xl leading-none">⛶</span>
+    </button>
+    <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v1.00.1</div>
+</div>
+
+<div class="max-w-4xl mx-auto p-4 space-y-4">
+    
+    <!-- TOP ACTIONS -->
+    <div class="flex gap-2">
+        <button onclick="refreshDataBlock(true)" id="refresh-btn" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded shadow transition-colors text-sm tracking-wider">
+            ↻ REFRESH
+        </button>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="job-mismatch-warning" class="hidden bg-red-900/50 border-l-4 border-red-500 p-4 rounded text-red-200">
+        <div class="font-bold tracking-wider mb-1">COMPILER PAYLOAD JOB MISMATCH</div>
+        <div class="text-sm">The active job does not match the Compiler payload job.</div>
+    </div>
+    <div id="delimiter-warning" class="hidden bg-amber-900/50 border-l-4 border-amber-500 p-4 rounded text-amber-200">
+        <div class="font-bold tracking-wider mb-1">RESERVED DELIMITER FOUND</div>
+        <div class="text-sm mb-2">The following fields contain reserved delimiter characters (◘ or |) which may corrupt the block:</div>
+        <ul id="delimiter-list" class="list-disc pl-5 text-sm font-mono text-amber-100"></ul>
+    </div>
+    <div id="no-payload-warning" class="hidden bg-slate-800 border border-slate-700 p-4 rounded text-center text-slate-400">
+        <div class="font-bold tracking-wider mb-1">No Compiler payload available.</div>
+        <div class="text-sm">Open Compiler and REFLOW first.</div>
+    </div>
+
+    <!-- SUMMARY CARD -->
+    <div class="bg-slate-800 p-4 rounded border border-slate-700 shadow flex flex-col gap-3">
+        <div class="font-bold tracking-widest text-slate-400 border-b border-slate-700 pb-2 mb-2">DATA BLOCK</div>
+        
+        <div class="grid grid-cols-2 gap-4 text-sm font-mono">
+            <div>
+                <div class="text-slate-500 text-[10px]">ACTIVE JOB</div>
+                <div id="summary-job" class="text-blue-300">-</div>
+            </div>
+            <div>
+                <div class="text-slate-500 text-[10px]">COMPILER VERSION</div>
+                <div id="summary-version" class="text-slate-300">-</div>
+            </div>
+            <div>
+                <div class="text-slate-500 text-[10px]">POPULATED ITEMS</div>
+                <div id="summary-populated" class="text-slate-300">0</div>
+            </div>
+            <div>
+                <div class="text-slate-500 text-[10px]">BLOCK PAIRS</div>
+                <div id="summary-pairs" class="text-emerald-400">0</div>
+            </div>
+            <div>
+                <div class="text-slate-500 text-[10px]">CHARACTERS</div>
+                <div id="summary-chars" class="text-slate-300">0</div>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 rounded p-3 mt-2 grid grid-cols-4 text-center text-[10px] font-mono border border-slate-700">
+            <div><div class="text-slate-500">SPECS</div><div id="count-specs" class="text-slate-300">0</div></div>
+            <div><div class="text-slate-500">PMI</div><div id="count-pmi" class="text-slate-300">0</div></div>
+            <div><div class="text-slate-500">DIAG</div><div id="count-diag" class="text-slate-300">0</div></div>
+            <div><div class="text-slate-500">STARTUP</div><div id="count-startup" class="text-slate-300">0</div></div>
+        </div>
+    </div>
+
+    <!-- HUMAN READABLE PREVIEW -->
+    <div class="bg-slate-800 rounded border border-slate-700 shadow">
+        <div class="p-3 bg-slate-800/80 rounded-t border-b border-slate-700 font-bold tracking-widest text-slate-400 text-xs">
+            HUMAN-READABLE PREVIEW
+        </div>
+        <div id="preview-list" class="divide-y divide-slate-700/50 max-h-96 overflow-y-auto">
+            <!-- Items -->
+        </div>
+    </div>
+
+    <!-- RAW DATA BLOCK -->
+    <div class="bg-slate-800 rounded border border-slate-700 shadow">
+        <div class="p-3 bg-slate-800/80 rounded-t border-b border-slate-700 font-bold tracking-widest text-slate-400 text-xs flex justify-between items-center">
+            RAW DATA BLOCK PREVIEW
+            <button onclick="copyDataBlock()" id="copy-btn" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-[10px] text-white transition-colors">
+                COPY DATA BLOCK
+            </button>
+        </div>
+        <div class="p-4 bg-slate-900 rounded-b">
+            <div id="raw-block" class="raw-block-area text-slate-300 font-mono text-sm leading-relaxed min-h-[100px]"></div>
+        </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="mt-8 space-y-3">
+        <button disabled class="w-full bg-slate-800 border border-slate-700 text-slate-500 font-bold py-4 rounded shadow uppercase tracking-widest text-sm flex flex-col items-center justify-center cursor-not-allowed">
+            <span>SEND TO SHEET</span>
+            <span class="text-[10px] mt-1 opacity-50">PLANNED</span>
+        </button>
+    </div>
+
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<div class="fixed bottom-0 w-full bg-slate-800 border-t border-slate-700 p-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.2)] z-50">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center px-4 mb-2">
+            <div class="text-slate-400 font-bold text-xs tracking-widest">PAGES <span class="text-slate-600">·</span> DATA BLOCK</div>
+            <button onclick="toggleBottomNav()" class="text-slate-400 hover:text-white p-1" id="bottom-nav-toggle">
+                <span class="text-xl">☰</span>
+            </button>
+        </div>
+        <div id="bottom-nav-grid" class="hidden">
+            <div id="bottom-nav-grid-inner" class="grid grid-cols-3 gap-2"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DATABLOCK_VERSION = "v1.00.1";
+    const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
+
+    let currentRawBlock = "";
+
+    function getActiveJob() {
+        return localStorage.getItem("hvacActiveJob") || "";
+    }
+
+    function updateActiveJob() {
+        const job = getActiveJob();
+        const tk = document.getElementById("active-job-ticket");
+        if (job) {
+            tk.innerText = job;
+            tk.classList.add("text-blue-300");
+            tk.classList.remove("text-slate-400");
+        } else {
+            tk.innerText = "[ Awaiting New Call Info ]";
+            tk.classList.remove("text-blue-300");
+            tk.classList.add("text-slate-400");
+        }
+    }
+
+    function getCompilerPayload() {
+        const saved = localStorage.getItem(COMPILER_PAYLOAD_KEY);
+        if (!saved) return null;
+        try {
+            return JSON.parse(saved);
+        } catch(e) {
+            console.error("Failed to parse Compiler Payload", e);
+            return null;
+        }
+    }
+
+    function flattenCompilerItems(payload) {
+        const items = [];
+        
+        const sourcesOrder = [
+            { key: 'specs', label: 'SPECS' },
+            { key: 'pmi', label: 'PMI' },
+            { key: 'diagnostics', label: 'DIAGNOSTICS' },
+            { key: 'startup', label: 'STARTUP' }
+        ];
+
+        sourcesOrder.forEach(src => {
+            if (payload.sources[src.key] && Array.isArray(payload.sources[src.key].items)) {
+                payload.sources[src.key].items.forEach(item => {
+                    const labelStr = item.label !== undefined && item.label !== null
+                        ? String(item.label)
+                        : String(item.id || "");
+                    
+                    if (
+                        item.value !== null &&
+                        item.value !== undefined &&
+                        String(item.value).trim() !== ''
+                    ) {
+                        items.push({
+                            label: labelStr,
+                            value: String(item.value).trim(),
+                            source: src.label,
+                            sourceKey: src.key
+                        });
+                    }
+                });
+            }
+        });
+
+        return items;
+    }
+
+    function validateDelimiters(items) {
+        const warnings = [];
+        items.forEach(item => {
+            if (item.label.includes('◘') || item.label.includes('|') ||
+                item.value.includes('◘') || item.value.includes('|')) {
+                warnings.push(item.label);
+            }
+        });
+        return warnings;
+    }
+
+    function buildDataBlock(items) {
+        const pairs = [];
+        // Data Source marker
+        pairs.push("Data Source◘Web App");
+        
+        items.forEach(item => {
+            pairs.push(`${item.label}◘${item.value}`);
+        });
+
+        return pairs.join("|");
+    }
+    function clearRenderedDataBlockState() {
+        currentRawBlock = "";
+        
+        const safeSet = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+        };
+        
+        safeSet("summary-version", "-");
+        safeSet("summary-populated", "0");
+        safeSet("summary-pairs", "0");
+        safeSet("summary-chars", "0");
+        
+        safeSet("count-specs", "0");
+        safeSet("count-pmi", "0");
+        safeSet("count-diag", "0");
+        safeSet("count-startup", "0");
+        
+        safeSet("raw-block", "");
+        
+        const previewList = document.getElementById("preview-list");
+        if (previewList) previewList.innerHTML = "";
+        
+        const delimiterList = document.getElementById("delimiter-list");
+        if (delimiterList) delimiterList.innerHTML = "";
+    }
+    function renderDataBlock() {
+        const payload = getCompilerPayload();
+        const activeJob = getActiveJob();
+        
+        document.getElementById("no-payload-warning").classList.add("hidden");
+        document.getElementById("job-mismatch-warning").classList.add("hidden");
+        document.getElementById("delimiter-warning").classList.add("hidden");
+        document.getElementById("copy-btn").disabled = false;
+        document.getElementById("copy-btn").classList.remove("opacity-50", "cursor-not-allowed");
+        document.getElementById("summary-job").classList.remove("text-red-400");
+
+        if (!activeJob) {
+            clearRenderedDataBlockState();
+            document.getElementById("summary-job").innerText = "No active job selected.";
+            document.getElementById("summary-job").classList.replace("text-blue-300", "text-slate-400");
+            document.getElementById("copy-btn").disabled = true;
+            document.getElementById("copy-btn").classList.add("opacity-50", "cursor-not-allowed");
+            return;
+        }
+
+        document.getElementById("summary-job").innerText = activeJob;
+        document.getElementById("summary-job").classList.replace("text-slate-400", "text-blue-300");
+
+        if (!payload) {
+            clearRenderedDataBlockState();
+            document.getElementById("no-payload-warning").classList.remove("hidden");
+            document.getElementById("copy-btn").disabled = true;
+            document.getElementById("copy-btn").classList.add("opacity-50", "cursor-not-allowed");
+            return;
+        }
+
+        document.getElementById("summary-version").innerText = payload.compilerVersion || "Unknown";
+        
+        // Mismatch check
+        if (payload.job && payload.job.activeJob && payload.job.activeJob !== activeJob) {
+            document.getElementById("job-mismatch-warning").classList.remove("hidden");
+            document.getElementById("copy-btn").disabled = true;
+            document.getElementById("copy-btn").classList.add("opacity-50", "cursor-not-allowed");
+            document.getElementById("summary-job").classList.replace("text-blue-300", "text-red-400");
+        }
+
+        const items = flattenCompilerItems(payload);
+        const warnings = validateDelimiters(items);
+
+        if (warnings.length > 0) {
+            document.getElementById("delimiter-warning").classList.remove("hidden");
+            const list = document.getElementById("delimiter-list");
+            list.innerHTML = "";
+            warnings.forEach(w => {
+                const li = document.createElement("li");
+                li.innerText = w;
+                list.appendChild(li);
+            });
+        }
+
+        currentRawBlock = buildDataBlock(items);
+
+        // Update counts
+        const numPairs = items.length + 1; // +1 for Data Source marker
+        document.getElementById("summary-populated").innerText = items.length;
+        document.getElementById("summary-pairs").innerText = numPairs;
+        document.getElementById("summary-chars").innerText = currentRawBlock.length;
+
+        document.getElementById("count-specs").innerText = items.filter(i => i.sourceKey === 'specs').length;
+        document.getElementById("count-pmi").innerText = items.filter(i => i.sourceKey === 'pmi').length;
+        document.getElementById("count-diag").innerText = items.filter(i => i.sourceKey === 'diagnostics').length;
+        document.getElementById("count-startup").innerText = items.filter(i => i.sourceKey === 'startup').length;
+
+        // Render preview
+        const previewList = document.getElementById("preview-list");
+        previewList.innerHTML = "";
+        items.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "p-3 hover:bg-slate-700/50 transition-colors flex justify-between items-start";
+            
+            const left = document.createElement("div");
+            left.className = "flex flex-col gap-1 pr-4";
+            const lbl = document.createElement("div");
+            lbl.className = "text-slate-400 text-[10px] font-bold uppercase tracking-wider";
+            lbl.innerText = item.label;
+            const val = document.createElement("div");
+            val.className = "text-slate-200 text-sm";
+            val.innerText = item.value;
+            left.appendChild(lbl);
+            left.appendChild(val);
+
+            const right = document.createElement("div");
+            right.className = "text-blue-400/80 text-[9px] font-mono font-bold tracking-widest uppercase shrink-0 pt-1";
+            right.innerText = item.source;
+
+            row.appendChild(left);
+            row.appendChild(right);
+            previewList.appendChild(row);
+        });
+
+        // Raw Block
+        document.getElementById("raw-block").innerText = currentRawBlock;
+    }
+
+    function refreshDataBlock(showFeedback = false) {
+        updateActiveJob();
+        renderDataBlock();
+        
+        if (showFeedback) {
+            const btn = document.getElementById('refresh-btn');
+            if (btn) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = 'REFRESHED ✓';
+                btn.classList.replace('bg-slate-700', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-slate-600', 'hover:bg-emerald-500');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-emerald-600', 'bg-slate-700');
+                    btn.classList.replace('hover:bg-emerald-500', 'hover:bg-slate-600');
+                }, 2000);
+            }
+        }
+    }
+
+    function copyDataBlock() {
+        if (!currentRawBlock) return;
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(currentRawBlock).then(showCopyFeedback);
+        } else {
+            // Fallback
+            let textArea = document.createElement("textarea");
+            textArea.value = currentRawBlock;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            textArea.style.top = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showCopyFeedback();
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+            document.body.removeChild(textArea);
+        }
+    }
+
+    function showCopyFeedback() {
+        const btn = document.getElementById('copy-btn');
+        if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'COPIED ✓';
+            btn.classList.replace('bg-slate-700', 'bg-emerald-600');
+            btn.classList.replace('hover:bg-slate-600', 'hover:bg-emerald-500');
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.replace('bg-emerald-600', 'bg-slate-700');
+                btn.classList.replace('hover:bg-emerald-500', 'hover:bg-slate-600');
+            }, 2000);
+        }
+    }
+
+    // FUTURE BACKEND CONTRACT - COMMENT ONLY
+    // action: writeToNextDataBlock
+    // payload: { dataString: <serialized block> }
+
+    // Navigation and UX
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    function toggleBottomNav() {
+        const grid = document.getElementById('bottom-nav-grid');
+        const icon = document.querySelector('#bottom-nav-toggle span');
+        if (grid.classList.contains('hidden')) {
+            grid.classList.remove('hidden');
+            icon.innerText = '▼';
+        } else {
+            grid.classList.add('hidden');
+            icon.innerText = '☰';
+        }
+    }
+
+    function renderBottomNav() {
+        const gridInner = document.getElementById('bottom-nav-grid-inner');
+        if (!gridInner) return;
+        
+        gridInner.innerHTML = '';
+        
+        let reg = [];
+        if (window.PLATTS_PAGES_REGISTRY) {
+            reg = window.PLATTS_PAGES_REGISTRY;
+        } else {
+            reg = [
+                { name: "Splash", file: location.protocol === 'file:' ? 'Splash.html' : 'index.html', state: "ACTIVE" },
+                { name: "Quick Stash", file: location.protocol === 'file:' ? 'Splash.html#quickstash' : 'index.html#quickstash', state: "ACTIVE" },
+                { name: "Notes", file: "notes.html", state: "ACTIVE" },
+                { name: "Mirror", file: "mirror.html", state: "ACTIVE" },
+                { name: "Specs", file: "specs.html", state: "ACTIVE" },
+                { name: "PMI", file: "pmi.html", state: "ACTIVE" },
+                { name: "Diag", file: "diagnostics.html", state: "ACTIVE" },
+                { name: "Startup", file: "startup.html", state: "ACTIVE" },
+                { name: "Compiler", file: "compiler.html", state: "ACTIVE" },
+                { name: "Templates", file: "templates.html", state: "ACTIVE" },
+                { name: "Reports", file: "reports.html", state: "ACTIVE" },
+                { name: "Data Block", file: "datablock.html", state: "ACTIVE" }
+            ];
+        }
+
+        const currentPath = window.location.pathname.toLowerCase();
+        
+        reg.forEach(page => {
+            const btn = document.createElement('button');
+            
+            let isCurrent = false;
+            if (page.name === 'Data Block' && (currentPath.endsWith('datablock.html') || currentPath.endsWith('datablock'))) {
+                isCurrent = true;
+            }
+            
+            if (isCurrent) {
+                btn.className = "h-14 flex flex-col items-center justify-center bg-slate-700 border-2 border-blue-500 rounded text-white font-bold text-[10px] shadow-sm uppercase tracking-wider";
+                btn.innerHTML = `<span>${page.name}</span><span class="text-[8px] text-blue-300 mt-1">CURRENT</span>`;
+            } else if (page.state === "ACTIVE" || page.name === "Data Block") {
+                btn.className = "h-14 flex flex-col items-center justify-center bg-slate-800 border border-slate-600 hover:bg-slate-700 rounded text-slate-300 font-bold text-[10px] transition-colors shadow-sm uppercase tracking-wider";
+                btn.innerText = page.name;
+                btn.onclick = () => {
+                    let dest = page.file;
+                    window.location.href = dest;
+                };
+            } else {
+                btn.className = "h-14 flex flex-col items-center justify-center bg-slate-900 border border-slate-800 rounded text-slate-600 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed";
+                btn.innerHTML = `<span>${page.name}</span><span class="text-[8px] text-slate-700 mt-1">PLANNED</span>`;
+            }
+            
+            gridInner.appendChild(btn);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        renderBottomNav();
+        refreshDataBlock(false);
+    });
+
+    window.addEventListener("pageshow", () => {
+        refreshDataBlock(false);
+    });
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'hvacActiveJob' || e.key === COMPILER_PAYLOAD_KEY) {
+            refreshDataBlock(false);
+        }
+    });
+
+</script>
+</body>
+</html>
