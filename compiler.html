@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Compiler v2.08.0</title>
+    <title>Report Compiler v2.08.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <style>
@@ -78,7 +78,7 @@
         <span class="text-xl leading-none">⛶</span>
     </button>
     <div id="active-job-ticket" class="text-slate-400 font-mono text-[12px] tracking-wider uppercase text-center flex-1 px-2">[ Awaiting New Call Info ]</div>
-    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.08.0</div>
+    <div class="text-slate-500 font-mono text-[11px] tracking-wider font-bold shrink-0 min-w-[50px] text-right">v2.08.1</div>
 </div>
 
 <!-- TOP RIBBON DRAWER (ACCORDION) -->
@@ -181,7 +181,7 @@
       <span class="bg-slate-900 px-2 py-1 rounded text-slate-500 font-mono">[ NOT WIRED ]</span>
     </summary>
     <div class="p-2 flex flex-col gap-2 min-h-[40px]">
-       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.08.0</div>
+       <div class="text-slate-500 text-xs italic text-center py-2">Not wired in v2.08.1</div>
     </div>
   </details>
 </div>
@@ -736,7 +736,7 @@ function fastPassToReport() {
     if (input.value.trim() === '') return;
     // Future: Push raw string directly into the active report payload array
     console.log("Ad-Hoc Fast Pass Added:", input.value);
-    alert("Fast Pass is NOT YET WIRED in v2.08.0");
+    alert("Fast Pass is NOT YET WIRED in v2.08.1");
     input.value = '';
 }
 
@@ -939,8 +939,23 @@ function resetLayoutDefaults() {
   document.getElementById('val-data-width').innerText = '80px';
 }
 
-const COMPILER_VERSION = "v2.08.0";
+const COMPILER_VERSION = "v2.08.1";
 const COMPILER_PAYLOAD_KEY = "hvac_compiler_payload_v1";
+
+const DIAGNOSTICS_INTERNAL_STATE_KEYS = new Set([
+    'activeField',
+    'micActive',
+    'isHermEnabled',
+    'isFanEnabled',
+    'comp_qty',
+    'fan_qty',
+    'selectedTolerance',
+    'description',
+    'testMode',
+    'flowMode',
+    'circ_a',
+    'circ_b'
+]);
 
 function buildCompilerPayload() {
     const payload = {
@@ -1048,6 +1063,8 @@ function buildCompilerPayload() {
             
             const allDiagKeys = Array.from(new Set([...Object.keys(reg), ...Object.keys(liveState)]));
             allDiagKeys.forEach(fieldId => {
+                if (DIAGNOSTICS_INTERNAL_STATE_KEYS.has(fieldId)) return;
+
                 let valStr = '';
                 const registryValue = reg[fieldId] ? reg[fieldId].displayValue : undefined;
                 const registryHasValue = registryValue !== undefined && registryValue !== null && String(registryValue).trim() !== '';
