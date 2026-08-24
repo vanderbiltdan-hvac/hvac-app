@@ -1,5 +1,5 @@
 // Platts Proposal Shared Mirror Data Engine
-// Registry Version: v1.3.3
+// Registry Version: v1.4.0
 // Canonical source of shared Mirror data state for deployed app.
 
 window.PLATTS_MIRROR_DATA = {
@@ -8,6 +8,7 @@ window.PLATTS_MIRROR_DATA = {
     schema: [],
     pmi: [],
     conflict: "",
+    invoiceReport: "",
     folderId: null,
     lastUpdated: null,
 
@@ -52,6 +53,7 @@ window.PLATTS_MIRROR_DATA = {
             schema: this.schema,
             pmi: this.pmi,
             conflict: this.conflict,
+            invoiceReport: this.invoiceReport,
             folderId: this.folderId,
             lastUpdated: this.lastUpdated
         };
@@ -77,6 +79,7 @@ window.PLATTS_MIRROR_DATA = {
                 this.schema = snapshot.schema || [];
                 this.pmi = snapshot.pmi || [];
                 this.conflict = snapshot.conflict || "";
+                this.invoiceReport = snapshot.invoiceReport || "";
                 this.folderId = snapshot.folderId || null;
                 this.lastUpdated = snapshot.lastUpdated || Date.now();
                 return true;
@@ -310,6 +313,7 @@ window.PLATTS_MIRROR_DATA = {
                 schema: [],
                 pmi: [],
                 conflict: "",
+                invoiceReport: "",
                 folderId: null,
                 lastUpdated: null,
                 schemaDrift: { liveOnly: [], baselineOnly: [], caseOrFormattingDifferences: [] }
@@ -336,6 +340,7 @@ window.PLATTS_MIRROR_DATA = {
             this.schema = json.data.schema || [];
             this.pmi = json.data.pmi || [];
             this.conflict = json.data.conflict || "";
+            this.invoiceReport = json.data.invoiceReport || "";
             this.folderId = json.data.folderId || null;
             this.lastUpdated = Date.now();
 
@@ -353,6 +358,7 @@ window.PLATTS_MIRROR_DATA = {
                 schema: this.schema,
                 pmi: this.pmi,
                 conflict: this.conflict,
+                invoiceReport: this.invoiceReport,
                 folderId: this.folderId,
                 lastUpdated: this.lastUpdated,
                 schemaDrift: drift
@@ -381,6 +387,7 @@ window.PLATTS_MIRROR_DATA = {
             engine.schema = [];
             engine.pmi = [];
             engine.conflict = "";
+            engine.invoiceReport = "";
             engine.folderId = null;
             engine.lastUpdated = null;
         }
@@ -397,6 +404,7 @@ window.PLATTS_MIRROR_DATA = {
                         engine.schema = [];
                         engine.pmi = [];
                         engine.conflict = "";
+                        engine.invoiceReport = "";
                         engine.folderId = null;
                         engine.lastUpdated = null;
                     }
@@ -406,6 +414,7 @@ window.PLATTS_MIRROR_DATA = {
                     engine.schema = [];
                     engine.pmi = [];
                     engine.conflict = "";
+                    engine.invoiceReport = "";
                     engine.folderId = null;
                     engine.lastUpdated = null;
                 }
@@ -418,6 +427,7 @@ window.PLATTS_MIRROR_DATA = {
                             schema: engine.schema,
                             pmi: engine.pmi,
                             conflict: engine.conflict,
+                            invoiceReport: engine.invoiceReport,
                             folderId: engine.folderId,
                             lastUpdated: engine.lastUpdated,
                             schemaDrift: engine.compareSchemaToBaseline()
