@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.01.0</title>
+    <title>HVAC Splash v2.01.1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1358,7 +1358,7 @@
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
                     <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded"
-                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.0</span>
+                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.1</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()"
@@ -2002,7 +2002,7 @@
                         style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
                         <span id="qsVerBadge"
-                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.0</span>
+                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.1</span>
                         <button onclick="toggleQsSettings()"
                             style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
@@ -2447,7 +2447,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.01.0";
+        const APP_VERSION = "v2.01.1";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, startup: { label: "STARTUP", enabled: true }, pmi: { label: "PMI", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
@@ -5331,42 +5331,42 @@
         }
 
         const STARTUP_HANDOFF_MAP = [
-            { id: 'W108', label: 'ODAT', aliases: ['ODAT', 'Outdoor Air Temp', 'Outdoor Air Temperature', 'Outdoor Temp'] },
-            { id: 'W109', label: 'Suction Pressure', aliases: ['Suction Pressure', 'Suction PSI', 'Low Side Pressure', 'Low Side'] },
-            { id: 'W110', label: 'Liquid Pressure', aliases: ['Liquid Pressure', 'Liquid PSI', 'High Side Pressure', 'High Side'] },
-            { id: 'W111', label: 'Suction Line Temp', aliases: ['Suction Line Temp', 'Suction Line Temperature', 'SLT'] },
-            { id: 'W112', label: 'Vapor Saturation', aliases: ['Vapor Saturation', 'Vapor Saturation Temp', 'Suction Saturation', 'Suction Saturation Temp', 'Evaporator Saturation'] },
-            { id: 'W113', label: 'Indoor Suction Line Temp', aliases: ['Indoor Suction Line Temp', 'Indoor Suction Temperature'] },
-            { id: 'W114', label: 'Indoor SH', aliases: ['Indoor SH', 'Indoor Superheat'] },
-            { id: 'W115', label: 'SH', aliases: ['SH', 'Superheat', 'Actual SH', 'Actual Superheat'] },
-            { id: 'W116', label: 'Target SH', aliases: ['Target SH', 'Target Superheat', 'Superheat Target'] },
-            { id: 'W117', label: 'Liquid Line Temp', aliases: ['Liquid Line Temp', 'Liquid Line Temperature', 'LLT'] },
-            { id: 'W118', label: 'Liquid Saturation', aliases: ['Liquid Saturation', 'Liquid Saturation Temp', 'Condensing Saturation', 'Condensing Saturation Temp'] },
-            { id: 'W119', label: 'Indoor Liquid Line Temp', aliases: ['Indoor Liquid Line Temp', 'Indoor Liquid Temperature'] },
-            { id: 'W120', label: 'Indoor SC', aliases: ['Indoor SC', 'Indoor Subcooling'] },
-            { id: 'W121', label: 'SC', aliases: ['SC', 'Subcooling', 'Actual SC', 'Actual Subcooling'] },
-            { id: 'W160', label: 'Compression Ratio', aliases: ['Compression Ratio'] },
-            { id: 'W161', label: 'Approach', aliases: ['Approach'] },
-            { id: 'W162', label: 'CTOA', aliases: ['CTOA', 'Condensing Temperature Over Ambient'] },
-            { id: 'W163', label: 'Evap TD', aliases: ['Evap TD', 'Evaporator TD'] },
-            { id: 'W123', label: 'Return Temp', aliases: ['Return Temp', 'Return Temperature', 'Return Air Temp', 'Return Air Temperature'] },
-            { id: 'W124', label: 'Return Wet Bulb', aliases: ['Return Wet Bulb', 'Return WB', 'Return Air Wet Bulb'] },
-            { id: 'W125', label: 'Return Humidity', aliases: ['Return Humidity', 'Return RH', 'Return Relative Humidity'] },
-            { id: 'W126', label: 'Return Dew Point', aliases: ['Return Dew Point', 'Return DP'] },
-            { id: 'W127', label: 'Supply Temp', aliases: ['Supply Temp', 'Supply Temperature', 'Supply Air Temp', 'Supply Air Temperature'] },
-            { id: 'W128', label: '∆T', aliases: ['∆T', 'ΔT', 'Delta T', 'Delta-T', 'Temperature Split', 'Temp Split'] },
-            { id: 'W130', label: 'Supply Wet Bulb', aliases: ['Supply Wet Bulb', 'Supply WB', 'Supply Air Wet Bulb'] },
-            { id: 'W131', label: 'Supply Relative Humidity', aliases: ['Supply Relative Humidity', 'Supply Humidity', 'Supply RH'] },
-            { id: 'W133', label: 'Supply Dew Point', aliases: ['Supply Dew Point', 'Supply DP'] },
-            { id: 'W134', label: 'Return Enthalpy', aliases: ['Return Enthalpy'] },
-            { id: 'W135', label: 'Supply Enthalpy', aliases: ['Supply Enthalpy'] },
-            { id: 'W170', label: 'Nitrogen Start', aliases: ['Nitrogen Start', 'Nitrogen Start Pressure', 'Starting Nitrogen Pressure'] },
-            { id: 'W171', label: 'Nitrogen Finish', aliases: ['Nitrogen Finish', 'Nitrogen Final', 'Nitrogen Finish Pressure', 'Final Nitrogen Pressure'] },
-            { id: 'W172', label: '∆ Nitrogen', aliases: ['∆ Nitrogen', 'Δ Nitrogen', 'Nitrogen Delta', 'Nitrogen Pressure Drop'] },
-            { id: 'W173', label: 'Nitrogen Duration', aliases: ['Nitrogen Duration', 'Pressure Test Duration'] },
-            { id: 'W174', label: '∆ N per minute', aliases: ['∆ N per minute', 'Δ N per minute', 'Nitrogen Drop Per Minute', 'Nitrogen Rate'] },
-            { id: 'W176', label: 'Micron Low', aliases: ['Micron Low', 'Lowest Micron', 'Lowest Microns', 'Vacuum Low'] },
-            { id: 'W177', label: 'Micron Decay', aliases: ['Micron Decay', 'Vacuum Decay', 'Decay Microns'] }
+            { id: 'ODAT', label: 'ODAT', aliases: ['ODAT', 'Outdoor Air Temp', 'Outdoor Air Temperature', 'Outdoor Temp'] },
+            { id: 'Suction Pressure', label: 'Suction Pressure', aliases: ['Suction Pressure', 'Suction PSI', 'Low Side Pressure', 'Low Side'] },
+            { id: 'Liquid Pressure', label: 'Liquid Pressure', aliases: ['Liquid Pressure', 'Liquid PSI', 'High Side Pressure', 'High Side'] },
+            { id: 'Suction Line Temp', label: 'Suction Line Temp', aliases: ['Suction Line Temp', 'Suction Line Temperature', 'SLT'] },
+            { id: 'Vapor Saturation', label: 'Vapor Saturation', aliases: ['Vapor Saturation', 'Vapor Saturation Temp', 'Suction Saturation', 'Suction Saturation Temp', 'Evaporator Saturation'] },
+            { id: 'Indoor Suction Line Temp', label: 'Indoor Suction Line Temp', aliases: ['Indoor Suction Line Temp', 'Indoor Suction Temperature'] },
+            { id: 'Indoor SH', label: 'Indoor SH', aliases: ['Indoor SH', 'Indoor Superheat'] },
+            { id: 'SH', label: 'SH', aliases: ['SH', 'Superheat', 'Actual SH', 'Actual Superheat'] },
+            { id: 'Target SH', label: 'Target SH', aliases: ['Target SH', 'Target Superheat', 'Superheat Target'] },
+            { id: 'Liquid Line Temp', label: 'Liquid Line Temp', aliases: ['Liquid Line Temp', 'Liquid Line Temperature', 'LLT'] },
+            { id: 'Liquid Saturation', label: 'Liquid Saturation', aliases: ['Liquid Saturation', 'Liquid Saturation Temp', 'Condensing Saturation', 'Condensing Saturation Temp'] },
+            { id: 'Indoor Liquid Line Temp', label: 'Indoor Liquid Line Temp', aliases: ['Indoor Liquid Line Temp', 'Indoor Liquid Temperature'] },
+            { id: 'Indoor SC', label: 'Indoor SC', aliases: ['Indoor SC', 'Indoor Subcooling'] },
+            { id: 'SC', label: 'SC', aliases: ['SC', 'Subcooling', 'Actual SC', 'Actual Subcooling'] },
+            { id: 'Compression Ratio', label: 'Compression Ratio', aliases: ['Compression Ratio'] },
+            { id: 'Approach', label: 'Approach', aliases: ['Approach'] },
+            { id: 'CTOA', label: 'CTOA', aliases: ['CTOA', 'Condensing Temperature Over Ambient'] },
+            { id: 'Evap TD', label: 'Evap TD', aliases: ['Evap TD', 'Evaporator TD'] },
+            { id: 'Return Temp', label: 'Return Temp', aliases: ['Return Temp', 'Return Temperature', 'Return Air Temp', 'Return Air Temperature'] },
+            { id: 'Return Wet Bulb', label: 'Return Wet Bulb', aliases: ['Return Wet Bulb', 'Return WB', 'Return Air Wet Bulb'] },
+            { id: 'Return Humidity', label: 'Return Humidity', aliases: ['Return Humidity', 'Return RH', 'Return Relative Humidity'] },
+            { id: 'Return Dew Point', label: 'Return Dew Point', aliases: ['Return Dew Point', 'Return DP'] },
+            { id: 'Supply Temp', label: 'Supply Temp', aliases: ['Supply Temp', 'Supply Temperature', 'Supply Air Temp', 'Supply Air Temperature'] },
+            { id: '∆T', label: '∆T', aliases: ['∆T', 'ΔT', 'Delta T', 'Delta-T', 'Temperature Split', 'Temp Split'] },
+            { id: 'Supply Wet Bulb', label: 'Supply Wet Bulb', aliases: ['Supply Wet Bulb', 'Supply WB', 'Supply Air Wet Bulb'] },
+            { id: 'Supply Relative Humidity', label: 'Supply Relative Humidity', aliases: ['Supply Relative Humidity', 'Supply Humidity', 'Supply RH'] },
+            { id: 'Supply Dew Point', label: 'Supply Dew Point', aliases: ['Supply Dew Point', 'Supply DP'] },
+            { id: 'Return Enthalpy', label: 'Return Enthalpy', aliases: ['Return Enthalpy'] },
+            { id: 'Supply Enthalpy', label: 'Supply Enthalpy', aliases: ['Supply Enthalpy'] },
+            { id: 'Nitrogen Start', label: 'Nitrogen Start', aliases: ['Nitrogen Start', 'Nitrogen Start Pressure', 'Starting Nitrogen Pressure'] },
+            { id: 'Nitrogen Finish', label: 'Nitrogen Finish', aliases: ['Nitrogen Finish', 'Nitrogen Final', 'Nitrogen Finish Pressure', 'Final Nitrogen Pressure'] },
+            { id: '∆ Nitrogen', label: '∆ Nitrogen', aliases: ['∆ Nitrogen', 'Δ Nitrogen', 'Nitrogen Delta', 'Nitrogen Pressure Drop'] },
+            { id: 'Nitrogen Duration', label: 'Nitrogen Duration', aliases: ['Nitrogen Duration', 'Pressure Test Duration'] },
+            { id: '∆ N per minute', label: '∆ N per minute', aliases: ['∆ N per minute', 'Δ N per minute', 'Nitrogen Drop Per Minute', 'Nitrogen Rate'] },
+            { id: 'Micron Low', label: 'Micron Low', aliases: ['Micron Low', 'Lowest Micron', 'Lowest Microns', 'Vacuum Low'] },
+            { id: 'Micron Decay', label: 'Micron Decay', aliases: ['Micron Decay', 'Vacuum Decay', 'Decay Microns'] }
         ];
 
         function resolveStartupValue(stash, exactAliases) {
