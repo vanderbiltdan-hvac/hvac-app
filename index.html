@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.01.2</title>
+    <title>HVAC Splash v2.01.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1358,7 +1358,7 @@
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
                     <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded"
-                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.2</span>
+                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.3</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()"
@@ -2002,7 +2002,7 @@
                         style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
                         <span id="qsVerBadge"
-                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.2</span>
+                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.3</span>
                         <button onclick="toggleQsSettings()"
                             style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
@@ -2447,7 +2447,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.01.2";
+        const APP_VERSION = "v2.01.3";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, startup: { label: "STARTUP", enabled: true }, pmi: { label: "PMI", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
@@ -5148,6 +5148,54 @@
             }
         }
 
+        function reconcileQuickStashLocalSession() {
+            if (!activeQuickStashId) return false;
+
+            const stash = quickStashes[activeQuickStashId];
+            if (!stash) return false;
+
+            const activeJob =
+                localStorage.getItem('hvacActiveJob') ||
+                localStorage.getItem('hvacCurrentJobTabV20') ||
+                '';
+
+            if (!activeJob) return false;
+
+            if (
+                !stash.jobLink ||
+                stash.jobLink.attached !== true ||
+                !stash.jobLink.sheetName ||
+                stash.jobLink.sheetName !== activeJob
+            ) {
+                return false;
+            }
+
+            let session = {};
+            try {
+                session = JSON.parse(localStorage.getItem('hvacLocalJobSessionV1') || '{}');
+            } catch (e) {
+                session = {};
+            }
+
+            if (session.quickStashId === activeQuickStashId) {
+                return false;
+            }
+
+            session.quickStashId = activeQuickStashId;
+            session.jobLink = {
+                attached: true,
+                sheetName: stash.jobLink.sheetName,
+                folderId: stash.jobLink.folderId || null
+            };
+            session.state = 'HOOKED';
+            session.updatedAt = Date.now();
+
+            if (!session.createdAt) session.createdAt = Date.now();
+
+            localStorage.setItem('hvacLocalJobSessionV1', JSON.stringify(session));
+            return true;
+        }
+
         function openQuickStash() {
             closeAllModals();
             document.getElementById('quickStashModal').style.display = 'flex';
@@ -5156,6 +5204,7 @@
             }
             if (typeof renderBottomNav === 'function') renderBottomNav();
             initQsUI();
+            reconcileQuickStashLocalSession();
             renderQuickStashHome();
         }
 
@@ -5222,6 +5271,7 @@
             localStorage.setItem('hvacActiveQuickStashId', id);
             qsActiveDest = id;
             localStorage.setItem('qsActiveDest', qsActiveDest);
+            reconcileQuickStashLocalSession();
             updateActiveStashLabel();
             renderActiveQuickStash();
         }
