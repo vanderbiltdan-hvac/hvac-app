@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.01.1</title>
+    <title>HVAC Splash v2.01.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1358,7 +1358,7 @@
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
                     <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded"
-                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.1</span>
+                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.2</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()"
@@ -2002,7 +2002,7 @@
                         style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
                         <span id="qsVerBadge"
-                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.1</span>
+                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.2</span>
                         <button onclick="toggleQsSettings()"
                             style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
@@ -2447,16 +2447,12 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.01.1";
+        const APP_VERSION = "v2.01.2";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, startup: { label: "STARTUP", enabled: true }, pmi: { label: "PMI", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
         function getQuickStashDestination() {
-            if (window.location.protocol === 'file:') {
-                return 'Splash.html#quickstash';
-            } else {
-                return 'index.html#quickstash';
-            }
+            return 'Splash.html#quickstash';
         }
 
         var hvacQsAttachMode = false;
@@ -2464,7 +2460,7 @@
         var currentJobTab = localStorage.getItem('hvacCurrentJobTabV20') || "";
 
         function getSplashDestination() {
-            return location.protocol === "file:" ? "Splash.html" : "index.html";
+            return 'Splash.html';
         }
 
         const FALLBACK_PAGES_REGISTRY = [
@@ -4128,8 +4124,27 @@
                                 timestamp: Date.now()
                             });
 
+                            // --- LOCAL SESSION REPAIR ---
+                            let session = {};
+                            try {
+                                session = JSON.parse(localStorage.getItem('hvacLocalJobSessionV1') || '{}');
+                            } catch (e) {
+                                session = {};
+                            }
+                            if (!session.createdAt) session.createdAt = Date.now();
+                            session.quickStashId = targetStashId;
+                            session.jobLink = {
+                                attached: true,
+                                sheetName: jobName,
+                                folderId: folderId
+                            };
+                            session.state = 'HOOKED';
+                            localStorage.setItem('hvacLocalJobSessionV1', JSON.stringify(session));
+                            console.log("QS ATTACH SESSION UPDATED");
+                            // ----------------------------
+
                             localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
-                            console.log("QS ATTACH SAVE\n- stashId: " + targetStashId + "\n- sheetName: " + jobName + "\n- folderId: " + folderId + "\n- persisted: YES");
+                            console.log("QS ATTACH SAVE\\n- stashId: " + targetStashId + "\\n- sheetName: " + jobName + "\\n- folderId: " + folderId + "\\n- persisted: YES");
 
                             activeQuickStashId = targetStashId;
                             localStorage.setItem('hvacActiveQuickStashId', targetStashId);
@@ -5397,27 +5412,41 @@
             return val;
         }
 
+        function getQuickStashStartupStorageKey() {
+            const job = localStorage.getItem('hvacActiveJob') || '';
+            if (!job) return null;
+            const safeJob = job.trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+            if (!safeJob) return null;
+            return 'hvac_startup_v2::' + safeJob;
+        }
+
         function executeStartupPush(stashId) {
             let stashes = JSON.parse(localStorage.getItem('hvacQuickStashesV1') || '{}');
             let stash = stashes[stashId];
             if (!stash) return { success: false, msg: "Matching Quick Stash not found." };
 
-            let startupData = JSON.parse(localStorage.getItem('hvac_startup_v1') || '{}');
+            let storageKey = getQuickStashStartupStorageKey();
+            if (!storageKey) {
+                return { success: false, msg: "No active job. Link a job before pushing to Startup." };
+            }
+
+            let startupData = JSON.parse(localStorage.getItem(storageKey) || '{}');
             let stats = { ready: 0, matched: 0, conflict: 0, missing: 0 };
             let written = 0;
 
             STARTUP_HANDOFF_MAP.forEach(item => {
                 let sourceVal = resolveStartupValue(stash, item.aliases);
-                if (!sourceVal) {
+                let isFalsyObjMissing = (sourceVal === undefined || sourceVal === null || String(sourceVal).trim() === '');
+                if (isFalsyObjMissing) {
                     stats.missing++;
                 } else {
                     let currentVal = startupData[item.id];
-                    let isEmpty = (!currentVal || currentVal.trim() === '' || currentVal === '--');
+                    let isEmpty = (currentVal === undefined || currentVal === null || String(currentVal).trim() === '' || currentVal === '--' || currentVal === '---');
                     if (isEmpty) {
-                        startupData[item.id] = sourceVal;
+                        startupData[item.id] = String(sourceVal);
                         stats.ready++;
                         written++;
-                    } else if (currentVal === sourceVal) {
+                    } else if (String(currentVal) === String(sourceVal)) {
                         stats.matched++;
                     } else {
                         stats.conflict++;
@@ -5426,7 +5455,7 @@
             });
 
             if (written > 0) {
-                localStorage.setItem('hvac_startup_v1', JSON.stringify(startupData));
+                localStorage.setItem(storageKey, JSON.stringify(startupData));
             }
 
             return {
@@ -5757,105 +5786,128 @@
             }
 
             if (dests.includes('startup') || dests.includes('all')) {
-                let startupData = JSON.parse(localStorage.getItem('hvac_startup_v1') || '{}');
-                let stpStats = { ready: 0, matched: 0, conflict: 0, missing: 0 };
-                let stpRows = [];
+                let storageKey = getQuickStashStartupStorageKey();
 
-                let contextRows = [];
-
-                let meteringRaw = resolveStartupValue(stash, ['Metering Device', 'Metering', 'Metering Type']);
-                let meteringNorm = normalizeMeteringDevice(meteringRaw);
-                if (meteringNorm) {
-                    contextRows.push(`
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
-                            <span style="color:#aaa;">Metering Device</span>
-                            <span style="color:#fff; font-weight:bold;">${meteringNorm}</span>
-                        </div>
-                    `);
-                }
-
-                let refrigRaw = resolveStartupValue(stash, ['Refrigerant', 'Refrigerant Type', 'Refrigerant Used']);
-                if (refrigRaw) {
-                    contextRows.push(`
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
-                            <span style="color:#aaa;">Refrigerant</span>
-                            <span style="color:#fff; font-weight:bold;">${refrigRaw}</span>
-                        </div>
-                    `);
-                }
-
-                let targetScRaw = resolveStartupValue(stash, ['Target SC', 'Target Subcool', 'Target Subcooling']);
-                if (targetScRaw) {
-                    contextRows.push(`
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
-                            <span style="color:#aaa;">Target SC</span>
-                            <span style="color:#fff; font-weight:bold;">${targetScRaw} — CONTEXT ONLY</span>
-                        </div>
-                    `);
-                }
-
-                let targetShRaw = resolveStartupValue(stash, ['Target SH', 'Target Superheat', 'Superheat Target']);
-                if (targetShRaw) {
-                    contextRows.push(`
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
-                            <span style="color:#aaa;">Target SH</span>
-                            <span style="color:#fff; font-weight:bold;">${targetShRaw}</span>
-                        </div>
-                    `);
-                }
-
-                if (contextRows.length > 0) {
+                if (!storageKey) {
                     html += `
                         <div style="background:#222; border:1px solid #444; padding:10px; border-radius:8px;">
-                            <div style="color:#fff; font-weight:900; margin-bottom:10px; font-size:13px;">CHARGING CONTEXT</div>
-                            ${contextRows.join('')}
+                            <div style="color:var(--crimson-red); font-weight:900; margin-bottom:10px; font-size:13px;">STARTUP PUSH BLOCKED</div>
+                            <div style="font-size:11px; color:#aaa;">NO ACTIVE JOB<br>Link a job before pushing to Startup.</div>
+                        </div>
+                    `;
+                } else {
+                    let startupData = JSON.parse(localStorage.getItem(storageKey) || '{}');
+                    let stpStats = { ready: 0, matched: 0, conflict: 0, missing: 0 };
+                    let stpRows = [];
+
+                    let contextRows = [];
+
+                    let meteringRaw = resolveStartupValue(stash, ['Metering Device', 'Metering', 'Metering Type']);
+                    let meteringNorm = normalizeMeteringDevice(meteringRaw);
+                    if (meteringNorm) {
+                        contextRows.push(`
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                                <span style="color:#aaa;">Metering Device</span>
+                                <span style="color:#fff; font-weight:bold;">${meteringNorm}</span>
+                            </div>
+                        `);
+                    }
+
+                    let refrigRaw = resolveStartupValue(stash, ['Refrigerant', 'Refrigerant Type', 'Refrigerant Used']);
+                    if (refrigRaw) {
+                        contextRows.push(`
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                                <span style="color:#aaa;">Refrigerant</span>
+                                <span style="color:#fff; font-weight:bold;">${refrigRaw}</span>
+                            </div>
+                        `);
+                    }
+
+                    let targetScRaw = resolveStartupValue(stash, ['Target SC', 'Target Subcool', 'Target Subcooling']);
+                    if (targetScRaw) {
+                        contextRows.push(`
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                                <span style="color:#aaa;">Target SC</span>
+                                <span style="color:#fff; font-weight:bold;">${targetScRaw} — CONTEXT ONLY</span>
+                            </div>
+                        `);
+                    }
+
+                    let targetShRaw = resolveStartupValue(stash, ['Target SH', 'Target Superheat', 'Superheat Target']);
+                    if (targetShRaw) {
+                        contextRows.push(`
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                                <span style="color:#aaa;">Target SH</span>
+                                <span style="color:#fff; font-weight:bold;">${targetShRaw}</span>
+                            </div>
+                        `);
+                    }
+
+                    if (contextRows.length > 0) {
+                        html += `
+                            <div style="background:#222; border:1px solid #444; padding:10px; border-radius:8px;">
+                                <div style="color:#fff; font-weight:900; margin-bottom:10px; font-size:13px;">CHARGING CONTEXT</div>
+                                ${contextRows.join('')}
+                            </div>
+                        `;
+                    }
+
+                    STARTUP_HANDOFF_MAP.forEach(item => {
+                        let sourceVal = resolveStartupValue(stash, item.aliases);
+                        let isMissing = (sourceVal === undefined || sourceVal === null || String(sourceVal).trim() === '');
+                        let status = '';
+                        let color = '';
+
+                        if (isMissing) {
+                            status = 'MISSING'; color = '#888'; stpStats.missing++;
+                        } else {
+                            let currentVal = startupData[item.id];
+                            let isEmpty = (currentVal === undefined || currentVal === null || String(currentVal).trim() === '' || currentVal === '--' || currentVal === '---');
+                            if (isEmpty) {
+                                status = 'READY'; color = 'var(--emerald-green)'; stpStats.ready++;
+                            } else if (String(currentVal) === String(sourceVal)) {
+                                status = 'MATCHED'; color = 'var(--electric-blue)'; stpStats.matched++;
+                            } else {
+                                status = 'CONFLICT'; color = 'var(--amber-orange)'; stpStats.conflict++;
+                            }
+                        }
+
+                        if (!isMissing) {
+                            if (status === 'CONFLICT') {
+                                stpRows.push(`
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                                        <span style="color:#aaa;">${item.label}</span>
+                                        <span style="color:${color}; font-weight:bold;">${status}</span>
+                                    </div>
+                                    <div style="font-size:10px; color:#ccc; margin-bottom:2px; padding-left:10px; border-left:2px solid #555;">Stash: <span style="font-weight:bold; color:#fff;">${sourceVal}</span></div>
+                                    <div style="font-size:10px; color:#888; margin-bottom:8px; padding-left:10px; border-left:2px solid #555;">Startup: <span>${startupData[item.id]}</span></div>
+                                `);
+                            } else {
+                                stpRows.push(`
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+                                        <span style="color:#aaa;">${item.label}</span>
+                                        <span style="color:${color}; font-weight:bold;">${status}</span>
+                                    </div>
+                                    <div style="font-size:10px; color:#ccc; margin-bottom:8px; padding-left:10px; border-left:2px solid #444;">${sourceVal}</div>
+                                `);
+                            }
+                        }
+                    });
+
+                    html += `
+                        <div style="background:#222; border:1px solid #444; padding:10px; border-radius:8px;">
+                            <div style="color:#fff; font-weight:900; margin-bottom:10px; font-size:13px;">STARTUP READINGS</div>
+                            <div style="display:flex; gap:10px; margin-bottom:10px; font-size:10px; color:#aaa; font-weight:bold;">
+                                <span style="color:var(--emerald-green)">Ready: ${stpStats.ready}</span>
+                                <span style="color:var(--electric-blue)">Matched: ${stpStats.matched}</span>
+                                <span style="color:var(--amber-orange)">Conflicts: ${stpStats.conflict}</span>
+                            </div>
+                            <div style="border-top:1px solid #444; padding-top:10px;">
+                                ${stpRows.join('')}
+                            </div>
                         </div>
                     `;
                 }
-
-                STARTUP_HANDOFF_MAP.forEach(item => {
-                    let sourceVal = resolveStartupValue(stash, item.aliases);
-                    let status = '';
-                    let color = '';
-
-                    if (!sourceVal) {
-                        status = 'MISSING'; color = '#888'; stpStats.missing++;
-                    } else {
-                        let currentVal = startupData[item.id];
-                        let isEmpty = (!currentVal || currentVal.trim() === '' || currentVal === '--');
-                        if (isEmpty) {
-                            status = 'READY'; color = 'var(--emerald-green)'; stpStats.ready++;
-                        } else if (currentVal === sourceVal) {
-                            status = 'MATCHED'; color = 'var(--electric-blue)'; stpStats.matched++;
-                        } else {
-                            status = 'CONFLICT'; color = 'var(--amber-orange)'; stpStats.conflict++;
-                        }
-                    }
-
-                    if (sourceVal) {
-                        stpRows.push(`
-                            <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
-                                <span style="color:#aaa;">${item.label}</span>
-                                <span style="color:${color}; font-weight:bold;">${status}</span>
-                            </div>
-                            <div style="font-size:10px; color:#ccc; margin-bottom:8px; padding-left:10px; border-left:2px solid #444;">${sourceVal}</div>
-                        `);
-                    }
-                });
-
-                html += `
-                    <div style="background:#222; border:1px solid #444; padding:10px; border-radius:8px;">
-                        <div style="color:#fff; font-weight:900; margin-bottom:10px; font-size:13px;">STARTUP READINGS</div>
-                        <div style="display:flex; gap:10px; margin-bottom:10px; font-size:10px; color:#aaa; font-weight:bold;">
-                            <span style="color:var(--emerald-green)">Ready: ${stpStats.ready}</span>
-                            <span style="color:var(--electric-blue)">Matched: ${stpStats.matched}</span>
-                            <span style="color:var(--amber-orange)">Conflicts: ${stpStats.conflict}</span>
-                        </div>
-                        <div style="border-top:1px solid #444; padding-top:10px;">
-                            ${stpRows.join('')}
-                        </div>
-                    </div>
-                `;
             }
 
             html += `</div>`;
