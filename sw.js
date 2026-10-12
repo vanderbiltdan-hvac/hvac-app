@@ -1,4 +1,4 @@
-const CACHE_NAME = 'platts-hvac-shell-v2';
+const CACHE_NAME = 'platts-hvac-shell-v2.01.6';
 const SHELL_ASSETS = [
   './',
   './index.html',
@@ -11,7 +11,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log('Opened cache', CACHE_NAME);
-      return cache.addAll(SHELL_ASSETS);
+      return cache.addAll(SHELL_ASSETS.map(url => new Request(url, { cache: 'reload' })));
     }).then(() => self.skipWaiting())
   );
 });

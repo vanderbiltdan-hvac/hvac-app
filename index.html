@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0f172a">
     <link rel="manifest" href="manifest.webmanifest">
-    <title>HVAC Splash v2.01.3</title>
+    <title>HVAC Splash v2.01.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="pages-registry.js"></script>
     <!-- Leaflet for Quick Stash Map -->
@@ -1358,7 +1358,7 @@
                 <h2 class="text-blue-400 font-bold text-2xl tracking-wide flex flex-col items-start gap-1">
                     <span>SPLASH</span>
                     <span id="launcherVerBadge" class="text-slate-500 bg-slate-800 px-2 py-1 rounded"
-                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.3</span>
+                        style="font-size:var(--splash-ver-badge-fs, 12px); -webkit-text-fill-color: initial;">v2.01.6</span>
                 </h2>
                 <div class="flex items-center gap-2">
                     <button id="pwaInstallBtn" onclick="installPWA()"
@@ -2002,7 +2002,7 @@
                         style="margin:0; font-size:var(--qs-hdr-active-fs); color:var(--electric-blue); font-weight:900; display:flex; align-items:center; gap:8px;">
                         QUICK STASH
                         <span id="qsVerBadge"
-                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.3</span>
+                            style="background:#444; color:#fff; padding:4px 8px; border-radius:6px; font-size:var(--qs-hdr-ver-fs); font-weight:bold; letter-spacing:normal; -webkit-text-fill-color: initial;">v2.01.6</span>
                         <button onclick="toggleQsSettings()"
                             style="background:none; border:none; font-size:16px; padding:0; margin-left:5px; cursor:pointer; color:#888;">⚙️</button>
                     </h2>
@@ -2447,7 +2447,7 @@
         // 🛑 ==========================================
         // 🛑 ZONE 1: GLOBAL VARIABLES & CONFIG
         // 🛑 ==========================================
-        const APP_VERSION = "v2.01.3";
+        const APP_VERSION = "v2.01.6";
         const LOCAL_JOB_ARCHIVE_SCHEMA_VERSION = "1.0";
         const QS_PUSH_DESTINATIONS = { equipment: { label: "SPECS", enabled: true }, diagnostics: { label: "DIAGNOSTICS", enabled: true }, startup: { label: "STARTUP", enabled: true }, pmi: { label: "PMI", enabled: false }, notes: { label: "NOTES", enabled: false } };
 
@@ -2691,7 +2691,7 @@
         };
         let refData = JSON.parse(localStorage.getItem('hvacRefDataV20')) || {};
         let techNotes = JSON.parse(localStorage.getItem('hvacTechNotesV20')) || [];
-        let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV20'));
+        let techNotesMaster = JSON.parse(localStorage.getItem('hvacTechMnstrV20')) || {};
         let activeTemplate = 'full';
         let previousSection = 'v23-home';
 
@@ -2840,7 +2840,7 @@
             return new Promise((resolve, reject) => {
                 try {
                     console.log("DB: Opening Request...");
-                    const request = indexedDB.open(DB_NAME, 2);
+                    const request = indexedDB.open(DB_NAME, 3);
 
                     request.onblocked = () => {
                         alert("DIAGNOSTIC: DB BLOCKED. Close all other tabs/windows of Service Pro.");
@@ -2853,6 +2853,9 @@
                         if (!dbInstance.objectStoreNames.contains(OS_NAME)) {
                             const store = dbInstance.createObjectStore(OS_NAME, { keyPath: "id", autoIncrement: true });
                             store.createIndex("shelf", "shelf", { unique: false });
+                        }
+                        if (!dbInstance.objectStoreNames.contains("QS_STAGE")) {
+                            dbInstance.createObjectStore("QS_STAGE", { keyPath: "id" });
                         }
                     };
 
@@ -2876,6 +2879,45 @@
             if (!confirm("WIPE ALL PHOTOS FROM LOCAL GALLERY?")) return;
             const request = indexedDB.deleteDatabase(DB_NAME);
             request.onsuccess = () => { alert("Storage Cleared. Reloading..."); location.reload(); };
+        }
+
+        async function saveQsStage(id, data, mime) {
+            const dbInstance = await initIndexedDB();
+            return new Promise((resolve, reject) => {
+                try {
+                    const transaction = dbInstance.transaction(["QS_STAGE"], "readwrite");
+                    const store = transaction.objectStore("QS_STAGE");
+                    store.put({ id: id, data: data, mime: mime, timestamp: Date.now() });
+                    transaction.oncomplete = () => { dbInstance.close(); resolve(true); };
+                    transaction.onerror = (e) => { dbInstance.close(); resolve(false); };
+                } catch (e) { dbInstance.close(); resolve(false); }
+            });
+        }
+
+        async function getQsStage(id) {
+            const dbInstance = await initIndexedDB();
+            return new Promise((resolve) => {
+                try {
+                    const transaction = dbInstance.transaction(["QS_STAGE"], "readonly");
+                    const store = transaction.objectStore("QS_STAGE");
+                    const req = store.get(id);
+                    req.onsuccess = () => { dbInstance.close(); resolve(req.result); };
+                    req.onerror = () => { dbInstance.close(); resolve(null); };
+                } catch (e) { dbInstance.close(); resolve(null); }
+            });
+        }
+
+        async function deleteQsStage(id) {
+            const dbInstance = await initIndexedDB();
+            return new Promise((resolve) => {
+                try {
+                    const transaction = dbInstance.transaction(["QS_STAGE"], "readwrite");
+                    const store = transaction.objectStore("QS_STAGE");
+                    const req = store.delete(id);
+                    req.onsuccess = () => { dbInstance.close(); resolve(true); };
+                    req.onerror = () => { dbInstance.close(); resolve(false); };
+                } catch (e) { dbInstance.close(); resolve(false); }
+            });
         }
 
         async function savePhotoToHoard(data, filename, mime) {
@@ -4988,8 +5030,11 @@
             if (hopperEl) hopperEl.style.display = qsSettings.showHopper ? 'block' : 'none';
         }
 
-        let quickStashQueue = [];
+        let quickStashQueue = JSON.parse(localStorage.getItem('hvacQsQueueV1') || '[]');
         let quickStashQueueRunning = false;
+        function saveQsQueue() {
+            localStorage.setItem('hvacQsQueueV1', JSON.stringify(quickStashQueue));
+        }
 
         let qsReviewResults = localStorage.getItem('qsReviewResults') !== 'false';
         let qsPhotoDetail = localStorage.getItem('qsPhotoDetail') || 'MINIMAL';
@@ -7277,20 +7322,36 @@
             for (let i = 0; i < files.length; i++) {
                 let f = files[i];
                 let qId = 'qitem_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+                let base64 = await new Promise((resolve) => {
+                    const r = new FileReader();
+                    r.onload = e => resolve(e.target.result.split(',')[1]);
+                    r.readAsDataURL(f);
+                });
+                await saveQsStage(qId, base64, f.type);
+
+                let st = quickStashes[qsActiveDest === 'CURRENT' ? (activeQuickStashId || '') : qsActiveDest];
+                let jobName = st && st.jobLink && st.jobLink.attached ? (st.jobLink.sheetName || '') : null;
+                let folderId = st && st.jobLink && st.jobLink.attached ? (st.jobLink.folderId || '') : null;
+
                 let qObj = {
                     id: qId,
-                    file: f,
                     filename: f.name,
+                    mimeType: f.type,
                     lastModified: f.lastModified,
                     scanType: scanType,
                     scanDepth: scanDepth,
                     scanFocus: scanFocus,
                     status: 'QUEUED',
+                    uploadStatus: folderId ? 'READY' : 'WAITING',
+                    linkedJob: jobName,
+                    linkedFolderId: folderId,
                     extractedData: null,
                     errorMsg: null
                 };
                 quickStashQueue.push(qObj);
             }
+            saveQsQueue();
             input.value = "";
             renderHopper();
 
@@ -7303,6 +7364,18 @@
             let q = quickStashQueue.find(x => x.id === itemId);
             if (q && q.status === 'ANALYZING') return;
             quickStashQueue = quickStashQueue.filter(x => x.id !== itemId);
+            deleteQsStage(itemId);
+            saveQsQueue();
+            renderHopper();
+        }
+
+        function changeQsBatchSize(delta) {
+            let b = appSettings.qsBatchSize || 3;
+            b += delta;
+            if (b < 1) b = 1;
+            if (b > 10) b = 10;
+            appSettings.qsBatchSize = b;
+            localStorage.setItem('hvacSettingsV20', JSON.stringify(appSettings));
             renderHopper();
         }
 
@@ -7317,12 +7390,27 @@
             let done = quickStashQueue.filter(q => q.status === 'MERGED' || q.status === 'DISCARDED').length;
             let err = quickStashQueue.filter(q => q.status === 'ERROR').length;
 
+            let uploadReady = quickStashQueue.filter(q => q.uploadStatus === 'READY').length;
+            let uploadWaiting = quickStashQueue.filter(q => q.uploadStatus === 'WAITING').length;
+            let batchSize = appSettings.qsBatchSize || 3;
+            let approxRuns = Math.ceil((uploadReady + uploadWaiting) / batchSize);
+
             statsEl.innerHTML = `
+                <div style="flex-basis:100%; display:flex; justify-content:space-between; border-bottom:1px solid #333; padding-bottom:4px; margin-bottom:4px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span>BATCH S: ${batchSize}</span>
+                        <button onclick="changeQsBatchSize(-1)" style="background:#333; color:white; border:none; border-radius:4px; padding:2px 8px; font-weight:900;">-</button>
+                        <button onclick="changeQsBatchSize(1)" style="background:#333; color:white; border:none; border-radius:4px; padding:2px 8px; font-weight:900;">+</button>
+                    </div>
+                    <div style="color:var(--emerald-green);">RUNS: ~${approxRuns}</div>
+                </div>
                 <div>TOTAL: ${quickStashQueue.length}</div>
                 <div style="color:var(--emerald-green);">DONE: ${done}</div>
+                <div>WAIT: ${uploadWaiting}</div>
+                <div style="color:var(--electric-blue);">READY: ${uploadReady}</div>
                 ${analyzing > 0 ? `<div style="color:var(--electric-blue); font-weight:900;">ANALYZING: ${analyzing}</div>` : ''}
                 ${review > 0 ? `<div style="color:var(--amber-orange); font-weight:900;">REVIEW: ${review}</div>` : ''}
-                ${pending > 0 ? `<div>WAITING: ${pending}</div>` : ''}
+                ${pending > 0 ? `<div>AWAIT PARSE: ${pending}</div>` : ''}
                 ${err > 0 ? `<div style="color:var(--crimson-red);">ERRORS: ${err}</div>` : ''}
             `;
 
@@ -7402,6 +7490,7 @@
             if (q) {
                 q.status = 'QUEUED';
                 q.errorMsg = null;
+                saveQsQueue();
                 renderHopper();
                 if (!quickStashQueueRunning) processQuickStashQueue();
             }
@@ -7409,7 +7498,26 @@
 
         async function processQuickStashQueue() {
             quickStashQueueRunning = true;
-            let nextItem = quickStashQueue.find(q => q.status === 'QUEUED');
+            let nextItem = null;
+
+            let st = quickStashes[qsActiveDest === 'CURRENT' ? (activeQuickStashId || '') : qsActiveDest];
+            let activeSheet = st && st.jobLink && st.jobLink.attached ? (st.jobLink.sheetName || '') : null;
+            let activeFolder = st && st.jobLink && st.jobLink.attached ? (st.jobLink.folderId || '') : null;
+
+            let dirty = false;
+            for (let i = 0; i < quickStashQueue.length; i++) {
+                let q = quickStashQueue[i];
+                if (q.uploadStatus === 'WAITING' && activeFolder) {
+                    q.uploadStatus = 'READY';
+                    q.linkedJob = activeSheet;
+                    q.linkedFolderId = activeFolder;
+                    dirty = true;
+                }
+                if (q.status === 'QUEUED' && !nextItem) {
+                    nextItem = q;
+                }
+            }
+            if (dirty) saveQsQueue();
 
             if (!nextItem) {
                 quickStashQueueRunning = false;
@@ -7418,21 +7526,19 @@
             }
 
             nextItem.status = 'ANALYZING';
+            saveQsQueue();
             renderHopper();
 
             try {
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = e => resolve(e.target.result.split(',')[1]);
-                    reader.onerror = () => reject(new Error("Could not read photo"));
-                    reader.readAsDataURL(nextItem.file);
-                });
+                const stageData = await getQsStage(nextItem.id);
+                if (!stageData || !stageData.data) throw new Error("Local photo blob missing");
+                const base64 = stageData.data;
 
                 const res = await callAppsScript({
                     action: "analyzePhotoOnly",
                     data: base64,
                     filename: nextItem.filename,
-                    mimeType: nextItem.file.type,
+                    mimeType: nextItem.mimeType,
                     scanType: nextItem.scanType,
                     scanDepth: nextItem.scanDepth,
                     scanFocus: nextItem.scanFocus
@@ -7442,7 +7548,6 @@
                     nextItem.extractedData = normalizeQuickStashData(res.data.extractedData);
                     nextItem.rawData = res.data.extractedData;
 
-                    // Auto name generic stashes
                     let parsedCustName = nextItem.extractedData.customer.name;
                     let destStash = null;
                     if (qsActiveDest !== 'NEW' && quickStashes[qsActiveDest]) {
@@ -7458,6 +7563,7 @@
 
                     if (qsReviewResults) {
                         nextItem.status = 'REVIEW';
+                        saveQsQueue();
                     } else {
                         commitReviewItem(nextItem.id, qsActiveDest);
                     }
@@ -7475,10 +7581,10 @@
                     msg = "Network request failed";
                 }
                 nextItem.errorMsg = msg;
+                saveQsQueue();
             }
 
             renderHopper();
-            // Continue processing sequentially
             setTimeout(processQuickStashQueue, 100);
         }
 
@@ -7560,6 +7666,7 @@
         function discardReviewItem(qId) {
             let q = quickStashQueue.find(x => x.id === qId);
             if (q) q.status = 'DISCARDED';
+            saveQsQueue();
             tempQuickStashData = null;
             renderHopper();
             renderQuickStashHome(); // Go back to main
@@ -7706,6 +7813,7 @@
             localStorage.setItem('hvacQuickStashesV1', JSON.stringify(quickStashes));
 
             q.status = 'MERGED';
+            saveQsQueue(); // Phase 1 status save
 
             if (tempQuickStashData === dt) {
                 tempQuickStashData = null;
@@ -7991,6 +8099,8 @@
         async function initSplash() {
             console.log(APP_VERSION + " Start - Vault SOP Verified");
             document.title = "HVAC Master Pro v" + APP_VERSION;
+            let qsBadge = document.getElementById("qsVerBadge");
+            if (qsBadge) qsBadge.innerText = APP_VERSION;
 
             renderSystemSpecs();
             if (currentJob) {
